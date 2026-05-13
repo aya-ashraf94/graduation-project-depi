@@ -1,0 +1,118 @@
+<div class="edit-page" *ngIf="product && isOwner">
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="edit-header">
+      <div class="section-label">— EDIT LISTING</div>
+      <h1 class="edit-title">Update Your Listing</h1>
+      <p class="edit-subtitle">Modify the details below and save your changes.</p>
+    </div>
+
+    <!-- FORM -->
+    <div class="edit-form-card">
+
+      <!-- STATUS BAR -->
+      <div class="status-bar">
+        <label class="field-label">LISTING STATUS</label>
+        <div class="status-options">
+          <button
+            *ngFor="let s of statuses"
+            class="status-btn"
+            [class.active]="status === s"
+            [class.status-available]="s === 'available'"
+            [class.status-reserved]="s === 'reserved'"
+            [class.status-sold]="s === 'sold'"
+            (click)="status = s"
+          >
+            {{ s | uppercase }}
+          </button>
+        </div>
+      </div>
+
+      <!-- TITLE -->
+      <div class="field-group">
+        <label class="field-label" for="edit-title">TITLE</label>
+        <input
+          id="edit-title"
+          class="field-input"
+          type="text"
+          [(ngModel)]="title"
+          placeholder="Item title"
+        />
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="field-group">
+        <label class="field-label" for="edit-desc">DESCRIPTION</label>
+        <textarea
+          id="edit-desc"
+          class="field-textarea"
+          [(ngModel)]="description"
+          placeholder="Describe your item in detail..."
+          rows="5"
+        ></textarea>
+      </div>
+
+      <!-- ROW: PRICE + CATEGORY -->
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="edit-price">PRICE ($)</label>
+          <input
+            id="edit-price"
+            class="field-input"
+            type="number"
+            [(ngModel)]="price"
+            placeholder="0.00"
+            min="0"
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="edit-category">CATEGORY</label>
+          <select id="edit-category" class="field-select" [(ngModel)]="category">
+            <option value="">Select a category</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabels[cat] }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ROW: CONDITION + SIZE -->
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="edit-condition">CONDITION</label>
+          <select id="edit-condition" class="field-select" [(ngModel)]="condition">
+            <option value="">Select condition</option>
+            <option *ngFor="let cond of conditions" [value]="cond">{{ conditionLabels[cond] }}</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="edit-size">SIZE (optional)</label>
+          <input
+            id="edit-size"
+            class="field-input"
+            type="text"
+            [(ngModel)]="size"
+            placeholder="e.g. M, L, W32"
+          />
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="form-actions">
+        <div class="actions-left">
+          <button
+            class="btn btn-primary save-btn"
+            [disabled]="!formValid || saving()"
+            (click)="saveChanges()"
+          >
+            {{ saving() ? 'SAVING...' : 'SAVE CHANGES' }}
+          </button>
+          <button class="btn btn-outline cancel-btn" (click)="cancel()">CANCEL</button>
+        </div>
+        <button class="btn-danger" (click)="deleteListing()">DELETE LISTING</button>
+      </div>
+
+    </div>
+  </div>
+</div>

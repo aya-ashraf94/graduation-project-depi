@@ -1,0 +1,421 @@
+<div class="wiz-page">
+
+  <!-- ══ STEP INDICATOR ═══════════════════════════════════════════════════ -->
+  <div class="wiz-stepper">
+    <div class="wiz-stepper-inner">
+      @for (step of steps; track step.num) {
+        <div
+          class="wiz-step"
+          [class.active]="currentStep() === step.num"
+          [class.done]="currentStep() > step.num"
+          (click)="goToStep(step.num)"
+        >
+          <div class="wiz-step-bubble">
+            @if (currentStep() > step.num) {
+              <span class="wiz-step-check">✓</span>
+            } @else {
+              <span>{{ step.num }}</span>
+            }
+          </div>
+          <div class="wiz-step-text">
+            <span class="wiz-step-label">{{ step.label }}</span>
+            <span class="wiz-step-sub">{{ step.sub }}</span>
+          </div>
+        </div>
+        @if (step.num < totalSteps) {
+          <div class="wiz-step-connector" [class.done]="currentStep() > step.num"></div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- ══ STEP CONTENT ═════════════════════════════════════════════════════ -->
+  <div class="wiz-body">
+
+    <!-- ────────────────────────────────────────────────────────────────────
+         PHASE 1 — ITEM DETAILS + VISUAL PROOF
+         ──────────────────────────────────────────────────────────────────── -->
+    @if (currentStep() === 1) {
+      <div class="wiz-phase">
+        <div class="wiz-phase-header">
+          <span class="wiz-phase-num">PHASE 01 / 03</span>
+          <h2 class="wiz-phase-title">Tell Us About Your Item</h2>
+          <p class="wiz-phase-desc">Start with the basics — what condition is it in and how does it look?</p>
+        </div>
+
+        <div class="wiz-columns">
+
+          <!-- ── ITEM DETAILS ─────────────────────────────────────────── -->
+          <div class="wiz-section">
+            <div class="wiz-section-header">
+              <span class="wiz-sec-tag">A</span>
+              <span class="wiz-sec-title">ITEM DETAILS</span>
+            </div>
+            <div class="wiz-section-body">
+
+              <div class="wiz-field">
+                <label class="wiz-label" for="w-title">ITEM TITLE *</label>
+                <input
+                  id="w-title" class="wiz-input" type="text"
+                  placeholder="e.g. Vintage 35mm SLR Camera"
+                  [(ngModel)]="title"
+                />
+                <span class="wiz-hint">Be specific — good titles get more views</span>
+              </div>
+
+              <div class="wiz-field">
+                <label class="wiz-label" for="w-desc">DESCRIPTION</label>
+                <textarea
+                  id="w-desc" class="wiz-input wiz-textarea"
+                  placeholder="Describe the item's history, included accessories, any flaws..."
+                  [(ngModel)]="description" rows="4"
+                ></textarea>
+              </div>
+
+              <div class="wiz-field">
+                <label class="wiz-label" for="w-cat">CATEGORY *</label>
+                <select id="w-cat" class="wiz-input wiz-select" [(ngModel)]="category">
+                  <option value="" disabled>Select a category...</option>
+                  @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="wiz-field">
+                <label class="wiz-label">CONDITION *</label>
+                <div class="wiz-condition-grid">
+                  @for (cond of conditions; track cond) {
+                    <button
+                      type="button"
+                      class="wiz-cond-btn"
+                      [class.selected]="selectedCondition === cond"
+                      (click)="selectCondition(cond)"
+                    >{{ cond }}</button>
+                  }
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ── VISUAL PROOF ─────────────────────────────────────────── -->
+          <div class="wiz-section">
+            <div class="wiz-section-header">
+              <span class="wiz-sec-tag">B</span>
+              <span class="wiz-sec-title">VISUAL PROOF</span>
+            </div>
+            <div class="wiz-section-body">
+
+              <div class="wiz-dropzone">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span class="wiz-drop-title">DROP IMAGES HERE</span>
+                <span class="wiz-drop-sub">or click to browse</span>
+                <button class="wiz-browse-btn" type="button">BROWSE FILES</button>
+              </div>
+
+              <div class="wiz-slots">
+                @for (slot of imageSlots; track $index) {
+                  <div
+                    class="wiz-slot"
+                    [class.filled]="slot !== null"
+                    (click)="onImageSlotClick($index)"
+                  >
+                    @if (slot !== null) {
+                      <div class="wiz-slot-filled">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        <span>PHOTO {{ $index + 1 }}</span>
+                        <button class="wiz-slot-remove" (click)="removeImage($index, $event)" type="button">✕</button>
+                      </div>
+                    } @else {
+                      <div class="wiz-slot-empty">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        <span>ADD PHOTO</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              @if (!imageSlots.some(s => s !== null)) {
+                <p class="wiz-photo-warn">⚠ At least one photo is required to continue.</p>
+              }
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    }
+
+    <!-- ────────────────────────────────────────────────────────────────────
+         PHASE 2 — PRICING & EXCHANGE + LOCATION & CONTACT
+         ──────────────────────────────────────────────────────────────────── -->
+    @if (currentStep() === 2) {
+      <div class="wiz-phase">
+        <div class="wiz-phase-header">
+          <span class="wiz-phase-num">PHASE 02 / 03</span>
+          <h2 class="wiz-phase-title">Set Your Terms</h2>
+          <p class="wiz-phase-desc">Define your asking price and where buyers can find you.</p>
+        </div>
+
+        <div class="wiz-columns">
+
+          <!-- ── PRICING ──────────────────────────────────────────────── -->
+          <div class="wiz-section">
+            <div class="wiz-section-header">
+              <span class="wiz-sec-tag">A</span>
+              <span class="wiz-sec-title">PRICING &amp; EXCHANGE</span>
+            </div>
+            <div class="wiz-section-body">
+
+              <div class="wiz-field">
+                <label class="wiz-label">LISTING TYPE *</label>
+                <div class="wiz-toggle">
+                  <button
+                    type="button" class="wiz-toggle-btn"
+                    [class.active]="pricingMode === 'fixed'"
+                    (click)="setPricingMode('fixed')"
+                  >FIXED PRICE</button>
+                  <button
+                    type="button" class="wiz-toggle-btn"
+                    [class.active]="pricingMode === 'trade'"
+                    (click)="setPricingMode('trade')"
+                  >OPEN TO TRADE</button>
+                </div>
+              </div>
+
+              @if (pricingMode === 'fixed') {
+                <div class="wiz-field">
+                  <label class="wiz-label" for="w-price">ASK PRICE *</label>
+                  <div class="wiz-price-wrap">
+                    <span class="wiz-currency">$</span>
+                    <input
+                      id="w-price" class="wiz-input wiz-price-input"
+                      type="number" placeholder="0" min="0"
+                      [(ngModel)]="price"
+                    />
+                  </div>
+                </div>
+              }
+
+              @if (pricingMode === 'trade') {
+                <div class="wiz-field">
+                  <label class="wiz-label" for="w-trade">WHAT ARE YOU LOOKING FOR? *</label>
+                  <textarea
+                    id="w-trade" class="wiz-input wiz-textarea"
+                    placeholder="e.g. Looking to trade for a DSLR camera or laptop of similar value..."
+                    [(ngModel)]="tradeDescription" rows="4"
+                  ></textarea>
+                  <span class="wiz-hint">You can mention cash offers too.</span>
+                </div>
+              }
+
+            </div>
+          </div>
+
+          <!-- ── LOCATION ─────────────────────────────────────────────── -->
+          <div class="wiz-section">
+            <div class="wiz-section-header">
+              <span class="wiz-sec-tag">B</span>
+              <span class="wiz-sec-title">LOCATION &amp; CONTACT</span>
+            </div>
+            <div class="wiz-section-body">
+
+              <div class="wiz-field">
+                <label class="wiz-label" for="w-city">CITY / AREA *</label>
+                <input
+                  id="w-city" class="wiz-input" type="text"
+                  placeholder="e.g. Cairo, Zamalek"
+                  [(ngModel)]="city"
+                />
+              </div>
+
+              <div class="wiz-field">
+                <label class="wiz-label" for="w-phone">WHATSAPP / PHONE</label>
+                <input
+                  id="w-phone" class="wiz-input" type="tel"
+                  placeholder="+20 1xx xxx xxxx"
+                  [(ngModel)]="phone"
+                />
+              </div>
+
+              <div class="wiz-check-row">
+                <input id="w-show" type="checkbox" class="wiz-checkbox" [(ngModel)]="showContact" />
+                <label for="w-show" class="wiz-check-label">Show contact info publicly on listing</label>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    }
+
+    <!-- ────────────────────────────────────────────────────────────────────
+         PHASE 3 — CONFIRM + LIVE PREVIEW
+         ──────────────────────────────────────────────────────────────────── -->
+    @if (currentStep() === 3) {
+      <div class="wiz-phase">
+        <div class="wiz-phase-header">
+          <span class="wiz-phase-num">PHASE 03 / 03</span>
+          <h2 class="wiz-phase-title">Review &amp; Publish</h2>
+          <p class="wiz-phase-desc">This is exactly how buyers will see your listing. Ready to go?</p>
+        </div>
+
+        <div class="wiz-confirm-layout">
+
+          <!-- Live Preview Card ────────────────────────────────────────── -->
+          <div class="wiz-preview-wrap">
+            <div class="wiz-preview-eyebrow">
+              <div class="wiz-eyebrow-bar"></div>
+              <span>LIVE PREVIEW</span>
+            </div>
+
+            <div class="wiz-preview-card">
+              <div class="wiz-preview-img">
+                @if (imageSlots[0] !== null) {
+                  <div class="wiz-preview-photo">📷</div>
+                } @else {
+                  <div class="wiz-preview-no-photo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>No photo</span>
+                  </div>
+                }
+                @if (selectedCondition) {
+                  <div class="wiz-badge">{{ selectedCondition }}</div>
+                }
+              </div>
+              <div class="wiz-preview-body">
+                <div class="wiz-preview-cat">{{ category || '—' }}</div>
+                <h3 class="wiz-preview-title">{{ title || 'Your Item Title' }}</h3>
+                @if (pricingMode === 'fixed') {
+                  <div class="wiz-preview-price">${{ price ?? '—' }}</div>
+                } @else {
+                  <div class="wiz-preview-trade">OPEN TO TRADE</div>
+                }
+                @if (city) {
+                  <div class="wiz-preview-loc">📍 {{ city }}</div>
+                }
+                <button class="wiz-preview-cta" type="button" disabled>CONTACT SELLER</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Checklist ────────────────────────────────────────── -->
+          <div class="wiz-summary">
+            <div class="wiz-sum-block">
+              <div class="wiz-sum-header">LISTING SUMMARY</div>
+              <div class="wiz-sum-list">
+                <div class="wiz-sum-row">
+                  <span class="wiz-sum-key">Title</span>
+                  <span class="wiz-sum-val">{{ title || '—' }}</span>
+                </div>
+                <div class="wiz-sum-row">
+                  <span class="wiz-sum-key">Category</span>
+                  <span class="wiz-sum-val">{{ category || '—' }}</span>
+                </div>
+                <div class="wiz-sum-row">
+                  <span class="wiz-sum-key">Condition</span>
+                  <span class="wiz-sum-val">{{ selectedCondition || '—' }}</span>
+                </div>
+                <div class="wiz-sum-row">
+                  <span class="wiz-sum-key">Photos</span>
+                  <span class="wiz-sum-val">{{ imageSlots.filter(s => s !== null).length }} / {{ imageSlots.length }}</span>
+                </div>
+                <div class="wiz-sum-row">
+                  <span class="wiz-sum-key">Price</span>
+                  <span class="wiz-sum-val">
+                    @if (pricingMode === 'fixed') { ${{ price }} }
+                    @else { Open to Trade }
+                  </span>
+                </div>
+                <div class="wiz-sum-row">
+                  <span class="wiz-sum-key">Location</span>
+                  <span class="wiz-sum-val">{{ city || '—' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons ─────────────────────────────────────────── -->
+            <div class="wiz-confirm-actions">
+              <p class="wiz-confirm-note">
+                @if (allValid) {
+                  <span class="ready">✓ Everything looks good. Ready to publish!</span>
+                } @else {
+                  <span class="warn">⚠ Go back and complete missing fields.</span>
+                }
+              </p>
+              <button
+                id="btn-save-draft"
+                class="wiz-btn wiz-btn-draft"
+                (click)="saveDraft()"
+                type="button"
+              >SAVE AS DRAFT</button>
+              <button
+                id="btn-publish"
+                class="wiz-btn wiz-btn-publish"
+                (click)="publish()"
+                type="button"
+                [disabled]="!allValid"
+              >PUBLISH LISTING →</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    }
+
+  </div><!-- /wiz-body -->
+
+  <!-- ══ BOTTOM NAV BAR ══════════════════════════════════════════════════ -->
+  <div class="wiz-nav-bar">
+    <div class="wiz-nav-inner">
+      <!-- Back -->
+      <button
+        class="wiz-nav-btn wiz-nav-back"
+        (click)="prevStep()"
+        type="button"
+        [disabled]="currentStep() === 1"
+      >
+        ← BACK
+      </button>
+
+      <!-- Step pills -->
+      <div class="wiz-nav-pills">
+        @for (step of steps; track step.num) {
+          <div
+            class="wiz-nav-pill"
+            [class.active]="currentStep() === step.num"
+            [class.done]="currentStep() > step.num"
+          ></div>
+        }
+      </div>
+
+      <!-- Next / this is step 3 so show nothing here (actions are inline) -->
+      @if (currentStep() < totalSteps) {
+        <button
+          class="wiz-nav-btn wiz-nav-next"
+          (click)="nextStep()"
+          type="button"
+          [disabled]="!canProceed()"
+        >
+          NEXT →
+        </button>
+      } @else {
+        <div class="wiz-nav-spacer"></div>
+      }
+    </div>
+  </div>
+
+</div>
