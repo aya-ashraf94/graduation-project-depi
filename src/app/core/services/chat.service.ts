@@ -20,7 +20,7 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     id: 'conv-001',
     participants: [
       { id: 'user-001', firstName: 'Alex', lastName: 'Doe', rating: 4.8, isVerified: true },
-      { id: 'user-002', firstName: 'Mia', lastName: 'K.', rating: 4.9, isVerified: true },
+      { id: 'user-002', firstName: 'P.Rick', lastName: '', rating: 4.9, isVerified: true },
     ],
     productId: 'prod-001',
     productTitle: 'Muted Moto Jacket 2018',

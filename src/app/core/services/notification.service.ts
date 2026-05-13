@@ -31,7 +31,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     userId: 'user-001',
     type: 'review',
     title: 'New Review',
-    body: 'Mia K. left you a 4-star review.',
+    body: 'P.Rick left you a 4-star review.',
     isRead: true,
     linkedEntityId: 'rev-002',
     linkedRoute: '/profile/me',
