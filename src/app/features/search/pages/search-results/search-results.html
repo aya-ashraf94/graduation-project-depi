@@ -1,0 +1,91 @@
+<div class="search-page">
+  <div class="container">
+
+    <!-- SEARCH HEADER -->
+    <div class="search-header">
+      <div class="search-eyebrow">
+        <span class="section-label">— SEARCH</span>
+      </div>
+      <h1 class="search-title" *ngIf="query">
+        Results for "<span class="highlight">{{ query }}</span>"
+      </h1>
+      <h1 class="search-title" *ngIf="!query">Browse All Listings</h1>
+      <p class="search-count">{{ totalResults }} item{{ totalResults !== 1 ? 's' : '' }} found</p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="search-bar-wrap">
+      <div class="search-input-row">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input
+          type="text"
+          class="search-input"
+          [(ngModel)]="query"
+          placeholder="Search items, brands, categories..."
+          (keyup.enter)="applyFilters()"
+        />
+        <button class="btn btn-primary search-btn" (click)="applyFilters()">SEARCH</button>
+      </div>
+    </div>
+
+    <!-- FILTERS ROW -->
+    <div class="filters-row">
+      <div class="filter-group">
+        <label class="filter-label">Category</label>
+        <select class="filter-select" [(ngModel)]="selectedCategory" (change)="applyFilters()">
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabels[cat] }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Condition</label>
+        <select class="filter-select" [(ngModel)]="selectedCondition" (change)="applyFilters()">
+          <option value="">All Conditions</option>
+          <option *ngFor="let cond of conditions" [value]="cond">{{ conditionLabels[cond] }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Sort By</label>
+        <select class="filter-select" [(ngModel)]="sortBy" (change)="applyFilters()">
+          <option value="newest">Newest First</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="popular">Most Popular</option>
+        </select>
+      </div>
+
+      <button class="btn-clear" (click)="clearFilters()">CLEAR FILTERS</button>
+    </div>
+
+    <!-- RESULTS GRID -->
+    <div class="results-grid" *ngIf="results.length > 0; else noResults">
+      <a class="result-card" *ngFor="let item of results" [routerLink]="['/products', item.id]">
+        <div class="result-img-wrap">
+          <img [src]="item.thumbnail" [alt]="item.title" appImageFallback />
+          <span *ngIf="item.badge" class="result-badge">{{ item.badge }}</span>
+        </div>
+        <div class="result-body">
+          <div class="result-brand">{{ item.brand }}</div>
+          <h3 class="result-title">{{ item.title }}</h3>
+          <div class="result-meta">
+            <span class="result-price">{{ item.price | currencyFormat }}</span>
+            <span class="result-condition">{{ conditionLabels[item.condition] }}</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <ng-template #noResults>
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <h3>No items found</h3>
+        <p>Try adjusting your search or filters to find what you're looking for.</p>
+        <button class="btn btn-primary" (click)="clearFilters()">CLEAR ALL FILTERS</button>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

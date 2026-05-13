@@ -1,0 +1,191 @@
+<div class="product-list-page">
+  <div class="product-layout">
+
+    <!-- ══ SIDEBAR FILTERS ══════════════════════════════════════════════ -->
+    <aside class="sidebar-filters">
+      <div class="filter-header">
+        <h2 class="filter-title">FILTERS</h2>
+        <button class="btn-reset" (click)="resetFilters()">Reset</button>
+      </div>
+
+      <div class="filter-groups">
+
+        <!-- Category -->
+        <div class="filter-group">
+          <label class="filter-label">CATEGORY</label>
+          <div class="filter-options">
+            <div
+              *ngFor="let cat of categories"
+              class="checkbox-wrapper"
+              (click)="selectCategory(cat)"
+            >
+              <div class="custom-checkbox" [class.checked]="selectedCategory === cat">
+                <svg *ngIf="selectedCategory === cat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </div>
+              <span class="checkbox-label">{{ cat }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Range -->
+        <div class="filter-group">
+          <label class="filter-label">PRICE RANGE</label>
+          <div class="price-range-row">
+            <div class="price-input-wrapper">
+              <span class="currency-symbol">$</span>
+              <input
+                id="filter-min-price"
+                class="price-input-field"
+                type="number"
+                [(ngModel)]="minPrice"
+                min="0"
+              />
+            </div>
+            <span class="range-dash">—</span>
+            <div class="price-input-wrapper">
+              <span class="currency-symbol">$</span>
+              <input
+                id="filter-max-price"
+                class="price-input-field"
+                type="number"
+                [(ngModel)]="maxPrice"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Condition -->
+        <div class="filter-group">
+          <label class="filter-label">CONDITION</label>
+          <div class="filter-options">
+            <div
+              *ngFor="let cond of conditionOptions"
+              class="checkbox-wrapper"
+              (click)="toggleCondition(cond)"
+            >
+              <div class="custom-checkbox" [class.checked]="isConditionSelected(cond)">
+                <svg *ngIf="isConditionSelected(cond)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </div>
+              <span class="checkbox-label">{{ cond }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apply Button -->
+        <button id="btn-apply-filters" class="btn-apply-filters" (click)="applyFilters()">
+          APPLY FILTERS
+        </button>
+
+      </div>
+    </aside>
+
+    <!-- ══ MAIN CONTENT ═════════════════════════════════════════════════ -->
+    <main class="product-main">
+
+      <!-- Header + Sort -->
+      <header class="inventory-header">
+        <div class="inventory-top-row">
+          <div class="header-text-main">
+            <h1 class="inventory-title">BROWSE ALL ARCHIVE</h1>
+            <p class="verified-count">{{ products.length }} ITEMS SHOWN</p>
+          </div>
+
+          <div class="sort-control-container">
+            <button id="btn-sort-toggle" class="btn-sort" (click)="toggleSort()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 6h16M4 12h10M4 18h7" />
+              </svg>
+              {{ selectedSortLabel }}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+
+            <!-- Sort Dropdown -->
+            <div class="sort-dropdown" [class.active]="sortOpen">
+              <div
+                *ngFor="let key of sortKeys"
+                class="sort-option"
+                [class.active]="selectedSort === key"
+                (click)="selectSort(key)"
+              >
+                {{ sortLabels[key] }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Product Grid -->
+      <section class="grid-container">
+        <div class="products-grid-layout">
+
+          <!-- Empty state -->
+          <div *ngIf="products.length === 0" class="empty-state">
+            <p>No items match your filters.</p>
+            <button class="btn-apply-filters" (click)="resetFilters()">CLEAR FILTERS</button>
+          </div>
+
+          <div *ngFor="let product of products" class="product-card">
+            <div class="product-img-wrap" [routerLink]="['/products', product.id]" style="cursor: pointer;">
+              <div class="card-badges">
+                <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
+                <span class="badge-sku">{{ product.sku }}</span>
+              </div>
+              <button class="btn-wishlist">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+              </button>
+              <img [src]="product.image" [alt]="product.name" class="product-img" />
+              <div class="card-overlay">
+                <button class="btn-quick-look">QUICK VIEW</button>
+              </div>
+            </div>
+
+            <div class="product-info">
+              <div class="product-meta">
+                <div class="brand-name">{{ product.brand }}</div>
+                <h3 class="item-name">{{ product.name }}</h3>
+              </div>
+              <div class="price-box">${{ product.price | number }}</div>
+            </div>
+
+            <div class="product-tags">
+              <div class="tag-row">
+                <span class="tag-box">{{ product.size }}</span>
+                <span class="tag-box">{{ product.condition }}</span>
+              </div>
+              <span class="score-tag">SCORE: {{ product.conditionScore }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <button class="pag-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <div class="pag-numbers">
+            <button class="num-btn active">1</button>
+            <button class="num-btn">2</button>
+            <button class="num-btn">3</button>
+          </div>
+          <button class="pag-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>

@@ -1,0 +1,242 @@
+/* ============================================================
+   NEFISANT – Global Design System
+   Neo-Brutalist Industrial Marketplace
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ---------- CSS Variables ---------- */
+:root {
+  /* Colors */
+  --yellow: #e8bd18;
+  --yellow-dark: #c79e10;
+  --rust: #9b5f22;
+  --black: #0a0a0a;
+  --dark: #111111;
+  --dark-2: #1a1a1a;
+  --dark-3: #222222;
+  --white: #ffffff;
+  --surface: #fcfbf8;
+  --surface-2: #f6f2eb;
+  --gray: #f1efe9;
+  --gray-2: #d4d4d4;
+  --gray-3: #5d5d5d;
+  --border: #dcd6cc;
+
+  /* Typography */
+  --font-primary: 'Barlow Condensed', sans-serif;
+  --font-secondary: 'Inter', sans-serif;
+
+  /* Layout */
+  --navbar-height: 68px;
+
+  /* Spacing & Radius */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  /* Borders & Shadows */
+  --border-width: 1.5px;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-brutal: 4px 4px 0 var(--black);
+  --shadow-brutal-hover: 6px 6px 0 var(--black);
+  --shadow-soft: 0 4px 20px rgba(10, 10, 10, 0.03);
+  --shadow-heavy: 0 20px 40px rgba(10, 10, 10, 0.08);
+}
+
+/* ---------- Reset & Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  scroll-padding-top: 84px;
+}
+
+body {
+  font-family: var(--font-secondary);
+  background: var(--surface);
+  color: var(--black);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Global navbar offset ──────────────────────────────────────────────────
+   The navbar is position:fixed so every page needs top padding equal to its
+   height. We apply it once here on the <main> wrapper instead of repeating
+   padding-top on every individual page component.
+   The home hero already had padding-top:68px — that local rule is still fine
+   and will simply override this one for that specific element.
+── */
+main {
+  padding-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+ul {
+  list-style: none;
+}
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(245, 197, 24, 0.6);
+  outline-offset: 3px;
+}
+
+/* ---------- Typography ---------- */
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: var(--border-width) solid var(--black);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--yellow);
+  color: var(--black);
+  box-shadow: var(--shadow-brutal);
+}
+.btn-primary:hover {
+  background: var(--yellow-dark);
+  box-shadow: var(--shadow-brutal-hover);
+  transform: translate(-2px, -2px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--black);
+  box-shadow: var(--shadow-brutal);
+}
+.btn-outline:hover {
+  background: var(--black);
+  color: var(--white);
+  box-shadow: var(--shadow-brutal-hover);
+  transform: translate(-2px, -2px);
+}
+
+.btn-outline-white {
+  background: transparent;
+  color: var(--white);
+  border-color: var(--white);
+  box-shadow: none;
+}
+.btn-outline-white:hover {
+  background: var(--white);
+  color: var(--black);
+  transform: translate(-2px, -2px);
+}
+
+/* ---------- Section Utilities ---------- */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: 96px 0;
+}
+.section-sm {
+  padding: 56px 0;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  margin-bottom: 16px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 2px;
+  background: var(--yellow);
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--black);
+}
+
+/* ---------- Badge ---------- */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-family: var(--font-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--yellow);
+  color: var(--black);
+  border: 1px solid var(--black);
+  border-radius: 2px;
+}
+.badge-dark {
+  background: var(--black);
+  color: var(--yellow);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--gray);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--black);
+  border-radius: 3px;
+}

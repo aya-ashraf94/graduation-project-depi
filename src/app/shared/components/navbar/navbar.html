@@ -1,0 +1,141 @@
+<nav class="navbar" [class.scrolled]="isScrolled" [class.menu-open]="menuOpen">
+  <div class="nav-container">
+
+    <!-- Logo -->
+    <a routerLink="/" class="nav-logo" (click)="closeMenu()">
+      <span class="logo-text">Nafa3ni</span>
+    </a>
+
+    <!-- SEARCH BAR (Desktop) -->
+    <div class="nav-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input
+        type="text"
+        class="nav-search-input"
+        [(ngModel)]="searchQuery"
+        placeholder="Search items..."
+        (keyup.enter)="submitSearch()"
+      />
+    </div>
+
+    <!-- Desktop Nav Links -->
+    <ul class="nav-links" [class.open]="menuOpen">
+      <li>
+        <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}"
+           class="nav-link" (click)="closeMenu()">Home</a>
+      </li>
+      <li>
+        <a routerLink="/products" routerLinkActive="active-link"
+           class="nav-link" (click)="closeMenu()">Marketplace</a>
+      </li>
+
+      <!-- LOGGED-IN ONLY links -->
+      @if (isLoggedIn()) {
+        <li>
+          <a routerLink="/listings/create" routerLinkActive="active-link"
+             class="nav-link" (click)="closeMenu()">Post Item</a>
+        </li>
+        <li>
+          <a routerLink="/chat" routerLinkActive="active-link"
+             class="nav-link" (click)="closeMenu()">Messages</a>
+        </li>
+
+        <!-- Mobile-only: profile + logout in the drawer -->
+        <li class="mobile-only">
+          <a routerLink="/profile/me" class="nav-link" (click)="closeMenu()">My Profile</a>
+        </li>
+        <li class="mobile-only">
+          <button class="nav-link nav-link-btn" (click)="logout()">Log Out</button>
+        </li>
+      }
+
+      <!-- LOGGED-OUT ONLY links (mobile drawer) -->
+      @if (!isLoggedIn()) {
+        <li class="mobile-only">
+          <a routerLink="/auth/login" class="nav-link" (click)="closeMenu()">Log In</a>
+        </li>
+        <li class="mobile-only">
+          <a routerLink="/auth/register" class="nav-link" (click)="closeMenu()">Register</a>
+        </li>
+      }
+    </ul>
+
+    <!-- Desktop CTA Area -->
+    <div class="nav-cta">
+      @if (isLoggedIn()) {
+        <!-- Wishlist Icon -->
+        <a class="nav-icon-btn" title="Wishlist" (click)="goToWishlist()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          @if (wishlistService.count() > 0) {
+            <span class="icon-badge">{{ wishlistService.count() }}</span>
+          }
+        </a>
+
+        <!-- Notification Bell -->
+        <div class="notif-wrap">
+          <button class="nav-icon-btn" (click)="toggleNotifications()" title="Notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            @if (notificationService.unreadCount() > 0) {
+              <span class="icon-badge">{{ notificationService.unreadCount() }}</span>
+            }
+          </button>
+
+          <!-- Notification Dropdown -->
+          @if (showNotifDropdown) {
+            <div class="notif-dropdown">
+              <div class="notif-dropdown-header">
+                <span>NOTIFICATIONS</span>
+                <button class="notif-mark-all" (click)="markAllRead()">Mark all read</button>
+              </div>
+              <div class="notif-list">
+                @for (notif of getNotifications(); track notif.id) {
+                  <div class="notif-item" [class.unread]="!notif.isRead" (click)="onNotifClick(notif)">
+                    <div class="notif-dot" *ngIf="!notif.isRead"></div>
+                    <div class="notif-body">
+                      <div class="notif-title">{{ notif.title }}</div>
+                      <div class="notif-text">{{ notif.body }}</div>
+                    </div>
+                  </div>
+                }
+                @if (getNotifications().length === 0) {
+                  <div class="notif-empty">No notifications</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- User avatar / profile link -->
+        <a id="nav-profile-link" routerLink="/profile/me" class="nav-avatar" title="My Profile">
+          @if (currentUser()?.avatar) {
+            <img [src]="currentUser()!.avatar" [alt]="currentUser()!.firstName" />
+          } @else {
+            <span>{{ currentUser()?.firstName?.[0] }}{{ currentUser()?.lastName?.[0] }}</span>
+          }
+        </a>
+        <a id="nav-post-item" routerLink="/listings/create" class="btn btn-primary">
+          + Sell Item
+        </a>
+        <button id="nav-logout" class="btn btn-outline" (click)="logout()">Log Out</button>
+      } @else {
+        <a id="nav-login" routerLink="/auth/login" class="btn btn-outline">Log In</a>
+        <a id="nav-register" routerLink="/auth/register" class="btn btn-primary">Register</a>
+      }
+    </div>
+
+    <!-- Hamburger -->
+    <button
+      class="hamburger"
+      (click)="toggleMenu()"
+      [class.active]="menuOpen"
+      aria-label="Toggle menu"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Drawer Overlay -->
+<div class="nav-overlay" [class.visible]="menuOpen" (click)="closeMenu()"></div>

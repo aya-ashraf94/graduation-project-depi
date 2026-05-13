@@ -1,0 +1,29 @@
+<!-- Global Navbar: Hidden on Auth pages -->
+<app-navbar *ngIf="!isAuthRoute()"></app-navbar>
+
+<!-- Minimal Navbar: Shown only on Auth pages -->
+<header class="auth-minimal-nav" *ngIf="isAuthRoute()">
+  <div class="minimal-nav-container">
+    <a routerLink="/" class="minimal-brand">
+      <div class="brand-box"></div>
+      <span class="brand-text">NAFA3NI</span>
+    </a>
+    <a routerLink="/" class="back-home-btn">← Back to Home</a>
+  </div>
+</header>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Minimal Footer: Shown only on Auth pages -->
+<footer class="auth-minimal-footer" *ngIf="isAuthRoute()">
+  <div class="minimal-footer-container">
+    <a href="#" class="minimal-footer-link">Privacy Policy</a>
+    <a href="#" class="minimal-footer-link">Terms & Conditions</a>
+    <a href="#" class="minimal-footer-link">Help Center</a>
+  </div>
+</footer>
+
+<!-- Global Footer: Hidden on Auth pages and Chat page -->
+<app-footer *ngIf="!isAuthRoute() && !isChatRoute()"></app-footer>
