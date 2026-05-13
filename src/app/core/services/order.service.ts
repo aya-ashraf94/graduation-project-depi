@@ -37,7 +37,7 @@ const MOCK_ORDERS: Order[] = [
       createdAt: new Date('2025-04-10'),
     },
     buyer: { id: 'user-001', firstName: 'Alex', lastName: 'Doe', rating: 4.8, isVerified: true },
-    seller: { id: 'user-002', firstName: 'Mia', lastName: 'K.', rating: 4.9, isVerified: true },
+    seller: { id: 'user-002', firstName: 'P.Rick', lastName: '', rating: 4.9, isVerified: true },
     price: 850,
     status: 'delivered',
     paymentMethod: 'online',

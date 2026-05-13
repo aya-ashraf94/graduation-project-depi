@@ -28,8 +28,8 @@ const MOCK_USERS: User[] = [
   },
   {
     id: 'user-002',
-    firstName: 'Mia',
-    lastName: 'K.',
+    firstName: 'P.Rick',
+    lastName: '',
     email: 'mia@example.com',
     avatar: 'https://i.pravatar.cc/150?img=5',
     role: 'user',
