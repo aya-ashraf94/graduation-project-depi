@@ -71,9 +71,12 @@
 
       <!-- Nav Columns -->
       <div class="footer-nav">
-        <div class="footer-col">
-          <h4 class="footer-col-title">Platform</h4>
-          <ul>
+        <div class="footer-col" [class.open]="openDropdown() === 'platform'">
+          <h4 class="footer-col-title" (click)="toggleDropdown('platform')">
+            <span>Platform</span>
+            <span class="dropdown-arrow">▼</span>
+          </h4>
+          <ul class="footer-col-links">
             <li><a href="#home">Home</a></li>
             <li><a href="#departments">Categories</a></li>
             <li><a href="#products">Featured Items</a></li>
@@ -81,9 +84,12 @@
           </ul>
         </div>
 
-        <div class="footer-col">
-          <h4 class="footer-col-title">Trade</h4>
-          <ul>
+        <div class="footer-col" [class.open]="openDropdown() === 'trade'">
+          <h4 class="footer-col-title" (click)="toggleDropdown('trade')">
+            <span>Trade</span>
+            <span class="dropdown-arrow">▼</span>
+          </h4>
+          <ul class="footer-col-links">
             <li><a routerLink="/products">Buy Items</a></li>
             <li><a routerLink="/listings/create">Start Selling</a></li>
             <li><a routerLink="/guidelines">Safety Tips</a></li>
@@ -91,9 +97,12 @@
           </ul>
         </div>
 
-        <div class="footer-col">
-          <h4 class="footer-col-title">Support</h4>
-          <ul>
+        <div class="footer-col" [class.open]="openDropdown() === 'support'">
+          <h4 class="footer-col-title" (click)="toggleDropdown('support')">
+            <span>Support</span>
+            <span class="dropdown-arrow">▼</span>
+          </h4>
+          <ul class="footer-col-links">
             <li><a routerLink="/contact">Contact Us</a></li>
             <li><a routerLink="/faq">FAQ</a></li>
             <li><a routerLink="/terms">Terms of Service</a></li>

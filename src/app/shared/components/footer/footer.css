@@ -85,7 +85,11 @@
   margin-bottom: 20px;
 }
 
-.footer-col ul { display: flex; flex-direction: column; gap: 12px; }
+.dropdown-arrow {
+  display: none;
+}
+
+.footer-col-links { display: flex; flex-direction: column; gap: 12px; }
 
 .footer-col a {
   font-size: 0.88rem;
@@ -131,13 +135,58 @@
 
 .footer-bottom-links a:hover { color: var(--yellow); }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive Accordion Dropdowns ---------- */
 @media (max-width: 900px) {
   .footer-top { grid-template-columns: 1fr; gap: 40px; }
 }
 
 @media (max-width: 600px) {
-  .footer-nav { grid-template-columns: repeat(2, 1fr); }
+  .footer-nav { 
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .footer-col {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .footer-col:first-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .footer-col-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    margin-bottom: 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--white);
+    user-select: none;
+  }
+
+  .dropdown-arrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: var(--yellow);
+    transition: transform 0.3s ease;
+  }
+
+  .footer-col-links {
+    display: none;
+    padding-bottom: 20px;
+    padding-top: 4px;
+  }
+
+  .footer-col.open .footer-col-links {
+    display: flex;
+  }
+
+  .footer-col.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
   .footer-bottom { justify-content: center; text-align: center; }
   .footer-bottom-links { justify-content: center; }
 }

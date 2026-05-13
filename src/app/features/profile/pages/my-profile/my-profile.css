@@ -648,12 +648,18 @@
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 1024px) {
+  .dashboard-main {
+    padding: 32px 24px;
+  }
+
   .grid-top-row {
     grid-template-columns: 1fr;
   }
+
   .grid-bottom-row {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .stats-dashboard-row {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -663,23 +669,50 @@
   .dashboard-layout {
     flex-direction: column;
   }
+
   .dashboard-sidebar {
     width: 100%;
     border-right: none;
     border-bottom: var(--border-width) solid var(--black);
   }
+
+  .dashboard-main {
+    padding: 24px 16px;
+  }
+
+  .profile-main-title {
+    font-size: clamp(2.4rem, 10vw, 3.5rem);
+    text-align: center;
+  }
+
   .profile-header-card {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: 20px;
+    margin-bottom: 32px;
   }
+
   .info-meta-row {
     justify-content: center;
   }
+
+  .profile-tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tab-item {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+  }
+
   .grid-bottom-row {
     grid-template-columns: 1fr;
   }
+
   .stats-dashboard-row {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }

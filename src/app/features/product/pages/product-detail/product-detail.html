@@ -114,12 +114,12 @@
         </div>
       </div>
 
-      <!-- BOTTOM: Related Items using standard products-grid-layout -->
+      <!-- BOTTOM: Related Items Slider -->
       <section class="related-section">
-        <h2 class="inventory-title" style="font-size: 2rem; margin-bottom: 24px;">MORE ITEMS YOU MIGHT LIKE</h2>
+        <h2 class="inventory-title related-slider-title">MORE ITEMS YOU MIGHT LIKE</h2>
         
-        <div class="products-grid-layout" style="grid-template-columns: repeat(3, 1fr); padding-bottom: 40px;">
-          <div *ngFor="let item of relatedProducts" class="product-card">
+        <div class="related-slider">
+          <div *ngFor="let item of relatedProducts" class="product-card slider-card">
             <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer;">
               <div class="card-badges">
                 <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>

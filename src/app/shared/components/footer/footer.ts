@@ -1,11 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './footer.html',
   styleUrl: './footer.css',
 })
-export class Footer {}
+export class Footer {
+  openDropdown = signal<string | null>(null);
+
+  toggleDropdown(col: string): void {
+    this.openDropdown.update(current => current === col ? null : col);
+  }
+}

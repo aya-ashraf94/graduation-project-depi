@@ -2,10 +2,13 @@
   <div class="product-layout">
 
     <!-- ══ SIDEBAR FILTERS ══════════════════════════════════════════════ -->
-    <aside class="sidebar-filters">
-      <div class="filter-header">
-        <h2 class="filter-title">FILTERS</h2>
-        <button class="btn-reset" (click)="resetFilters()">Reset</button>
+    <aside class="sidebar-filters" [class.expanded]="mobileFiltersOpen">
+      <div class="filter-header" (click)="toggleMobileFilters()">
+        <div class="filter-header-left">
+          <h2 class="filter-title">FILTERS</h2>
+          <span class="mobile-filter-arrow">▼</span>
+        </div>
+        <button class="btn-reset" (click)="resetFilters(); $event.stopPropagation()">Reset</button>
       </div>
 
       <div class="filter-groups">
@@ -96,6 +99,14 @@
           </div>
 
           <div class="sort-control-container">
+            <!-- Mobile dedicated Refine Toggle -->
+            <button class="btn-refine-mobile" (click)="toggleMobileFilters()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+              REFINE
+            </button>
+
             <button id="btn-sort-toggle" class="btn-sort" (click)="toggleSort()">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 6h16M4 12h10M4 18h7" />
