@@ -64,6 +64,9 @@ export class ProductList implements OnInit {
 
   sortKeys: SortOption[] = ['relevance', 'price_asc', 'price_desc', 'newest'];
 
+  // Track if mobile filter panel is expanded
+  mobileFiltersOpen = false;
+
   get selectedSortLabel(): string {
     return this.sortLabels[this.selectedSort];
   }
@@ -124,6 +127,7 @@ export class ProductList implements OnInit {
 
     this.products = result;
     this.sortOpen = false;
+    this.mobileFiltersOpen = false; // Auto-close drawer on apply
   }
 
   resetFilters(): void {
@@ -133,5 +137,9 @@ export class ProductList implements OnInit {
     this.maxPrice = 15000;
     this.selectedSort = 'relevance';
     this.applyFilters();
+  }
+
+  toggleMobileFilters(): void {
+    this.mobileFiltersOpen = !this.mobileFiltersOpen;
   }
 }

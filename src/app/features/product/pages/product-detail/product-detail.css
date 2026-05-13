@@ -353,10 +353,73 @@
   color: var(--black);
 }
 
-/* ---------- 4. RELATED ITEMS ---------- */
+/* ---------- 4. RELATED ITEMS SLIDER ---------- */
 .related-section {
-  padding-top: 40px;
+  padding-top: 48px;
   border-top: var(--border-width) solid var(--border);
+  margin-bottom: 64px;
+}
+
+.related-slider-title {
+  font-family: var(--font-primary);
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+.related-slider {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Premium Neo-Brutalist Scrollbar */
+.related-slider::-webkit-scrollbar {
+  height: 8px;
+}
+.related-slider::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.related-slider::-webkit-scrollbar-thumb {
+  background: var(--yellow);
+  border: 1.5px solid var(--black);
+  border-radius: 4px;
+}
+.related-slider:hover::-webkit-scrollbar-thumb {
+  background: var(--yellow-dark);
+}
+
+.slider-card {
+  flex: 0 0 320px;
+  scroll-snap-align: start;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .related-section {
+    padding-top: 32px;
+    margin-bottom: 40px;
+  }
+  .related-slider-title {
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+  }
+  .related-slider {
+    gap: 16px;
+    padding-bottom: 20px;
+  }
+  .slider-card {
+    flex: 0 0 280px;
+  }
 }
 
 /* ---------- Edit Button ---------- */
@@ -669,6 +732,7 @@
 .product-main {
   flex: 1;
   padding: 0 48px;
+  min-width: 0;
 }
 
 .products-grid-layout {
@@ -870,4 +934,113 @@
   color: var(--white);
   padding: 2px 8px;
   border-radius: 4px;
+}
+
+/* ---------- RESPONSIVE GRID OVERRIDES ---------- */
+@media (max-width: 1440px) {
+  .products-grid-layout { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1100px) {
+  .product-main {
+    padding: 0 24px;
+  }
+
+  .products-grid-layout {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-main {
+    padding: 0 16px;
+  }
+
+  .detail-header {
+    padding: 24px 0 16px;
+    margin-bottom: 24px;
+  }
+
+  .detail-grid {
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+
+  .thumb-wrap {
+    width: 72px;
+    height: 72px;
+  }
+
+  .brand-name-large {
+    font-size: 1.1rem;
+  }
+
+  .item-title-large {
+    font-size: clamp(2.2rem, 9vw, 2.8rem);
+    margin-bottom: 20px;
+  }
+
+  .price-box-large {
+    padding: 12px 24px;
+    font-size: 1.8rem;
+    margin-bottom: 28px;
+  }
+
+  .description-text {
+    font-size: 1rem;
+    margin-bottom: 32px;
+  }
+
+  .specs-panel {
+    margin-bottom: 32px;
+  }
+
+  .actions {
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .btn-neo-primary,
+  .btn-neo-edit {
+    flex: 1 1 100%;
+    height: 52px;
+    font-size: 1rem;
+  }
+
+  .btn-wishlist-large,
+  .btn-report {
+    flex: 1;
+    height: 48px;
+    border-radius: var(--radius-sm);
+  }
+
+  .system-card.seller-card {
+    padding: 20px 16px;
+  }
+
+  .seller-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .seller-metrics {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .metric-box {
+    align-items: center;
+    text-align: center;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .products-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
