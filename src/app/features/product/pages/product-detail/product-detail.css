@@ -371,6 +371,7 @@
 .related-slider {
   display: flex;
   gap: 24px;
+  justify-content: center;
   overflow-x: auto;
   padding-bottom: 32px;
   width: 100%;
