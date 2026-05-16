@@ -9,6 +9,11 @@ export const routes: Routes = [
       import('./features/home/pages/home-page/home').then((m) => m.Home),
   },
   {
+    path: 'home',
+    redirectTo: '',
+    pathMatch: 'full',
+  },
+  {
     path: 'auth/login',
     loadComponent: () =>
       import('./features/auth/pages/login-page/login').then((m) => m.Login),
@@ -45,18 +50,28 @@ export const routes: Routes = [
   },
   {
     path: 'faq',
-    loadComponent: () =>
-      import('./features/support/pages/faq/faq').then((m) => m.Faq),
+    redirectTo: 'support',
+    pathMatch: 'full'
+  },
+  {
+    path: 'help',
+    redirectTo: 'support?tab=help',
+    pathMatch: 'full'
   },
   {
     path: 'terms',
-    loadComponent: () =>
-      import('./features/support/pages/terms/terms').then((m) => m.Terms),
+    redirectTo: 'support?tab=terms',
+    pathMatch: 'full'
   },
   {
     path: 'privacy',
+    redirectTo: 'support?tab=privacy',
+    pathMatch: 'full'
+  },
+  {
+    path: 'support',
     loadComponent: () =>
-      import('./features/support/pages/privacy/privacy').then((m) => m.Privacy),
+      import('./features/support/pages/support-center/support-center').then((m) => m.SupportCenter),
   },
 
   // ── Protected Routes (require login) ────────────────────────────────────
