@@ -87,24 +87,24 @@ import { LoginRequest } from '../../../../core/models/user.model';
   styles: [`
     .auth-page {
       background: var(--surface);
-      min-height: 90vh;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 40px 20px;
+      padding: 20px;
       box-sizing: border-box;
     }
 
     .split-card {
       display: flex;
       width: 100%;
-      max-width: 1000px;
+      max-width: 800px;
       background: var(--white);
       border: 3px solid var(--black);
       border-radius: var(--radius-lg);
       box-shadow: 8px 8px 0 var(--black);
       overflow: hidden;
-      min-height: 560px;
+      min-height: 480px;
       animation: riseUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
@@ -116,7 +116,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     /* ── LEFT SIDE (FORM) ───────────────────────── */
     .split-left {
       flex: 1;
-      padding: 64px 48px;
+      padding: 32px 40px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -151,11 +151,11 @@ import { LoginRequest } from '../../../../core/models/user.model';
 
     .auth-title {
       font-family: var(--font-secondary);
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       color: var(--black);
       line-height: 1.1;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .auth-desc {
@@ -167,7 +167,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     .auth-form {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .auth-field {
@@ -177,8 +177,8 @@ import { LoginRequest } from '../../../../core/models/user.model';
 
     .auth-input {
       font-family: var(--font-secondary);
-      font-size: 0.95rem;
-      padding: 14px 16px;
+      font-size: 0.9rem;
+      padding: 10px 14px;
       background: var(--white);
       border: 2px solid var(--gray-2);
       border-radius: var(--radius-sm);
@@ -264,7 +264,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     }
 
     .auth-footer {
-      margin-top: 48px;
+      margin-top: 32px;
     }
 
     .auth-link {
@@ -285,7 +285,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
 
     /* ── RIGHT SIDE (GRAPHIC) ─────────────────────── */
     .split-right {
-      flex: 1.1;
+      flex: 1;
       background: var(--yellow);
       border-left: 3px solid var(--black);
       position: relative;
@@ -293,7 +293,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 48px;
+      padding: 32px;
       overflow: hidden;
       z-index: 1;
     }
@@ -311,35 +311,35 @@ import { LoginRequest } from '../../../../core/models/user.model';
       background: var(--white);
       border: 3px solid var(--black);
       border-radius: var(--radius-md);
-      padding: 40px;
+      padding: 24px;
       text-align: center;
-      box-shadow: 8px 8px 0 var(--black);
-      max-width: 320px;
+      box-shadow: 6px 6px 0 var(--black);
+      max-width: 260px;
       position: relative;
       z-index: 2;
     }
 
     .graphic-icon {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
       background: var(--surface-2);
       border: 3px solid var(--black);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 24px;
-      box-shadow: 4px 4px 0 var(--black);
+      margin: 0 auto 16px;
+      box-shadow: 3px 3px 0 var(--black);
       color: var(--black);
     }
 
     .graphic-title {
       font-family: var(--font-primary);
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 900;
       text-transform: uppercase;
       line-height: 1;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .graphic-desc {
