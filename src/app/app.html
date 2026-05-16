@@ -12,16 +12,16 @@
   </div>
 </header>
 
-<main>
+<main [class.auth-main]="isAuthRoute()">
   <router-outlet></router-outlet>
 </main>
 
 <!-- Minimal Footer: Shown only on Auth pages -->
 <footer class="auth-minimal-footer" *ngIf="isAuthRoute()">
   <div class="minimal-footer-container">
-    <a href="#" class="minimal-footer-link">Privacy Policy</a>
-    <a href="#" class="minimal-footer-link">Terms & Conditions</a>
-    <a href="#" class="minimal-footer-link">Help Center</a>
+    <a routerLink="/support" [queryParams]="{tab: 'privacy'}" class="minimal-footer-link">Privacy Policy</a>
+    <a routerLink="/support" [queryParams]="{tab: 'terms'}" class="minimal-footer-link">Terms & Conditions</a>
+    <a routerLink="/support" [queryParams]="{tab: 'help'}" class="minimal-footer-link">Help Center</a>
   </div>
 </footer>
 
