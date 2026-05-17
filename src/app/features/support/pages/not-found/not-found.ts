@@ -25,50 +25,51 @@ import { RouterLink } from '@angular/router';
       align-items: center;
       justify-content: center;
       background: var(--surface);
-      padding: 32px;
+      padding: 2rem;
     }
 
     .not-found-content {
       text-align: center;
-      max-width: 500px;
+      max-width: 31.25rem;
     }
 
     .error-code {
       font-family: var(--font-primary);
-      font-size: 10rem;
+      font-size: 6rem;
       font-weight: 900;
       line-height: 1;
       color: var(--yellow);
       -webkit-text-stroke: 3px var(--black);
       paint-order: stroke fill;
-      margin-bottom: 8px;
+      margin-bottom: 0.5rem;
     }
 
     .error-title {
       font-family: var(--font-primary);
-      font-size: 2rem;
+      font-size: 1.4rem;
       font-weight: 900;
-      letter-spacing: 2px;
-      margin-bottom: 16px;
+      letter-spacing: 0.16em;
+      margin-bottom: 1rem;
     }
 
     .error-desc {
       font-size: 1rem;
       color: var(--gray-3);
-      margin-bottom: 32px;
+      margin-bottom: 2rem;
       line-height: 1.5;
     }
 
     .error-actions {
       display: flex;
-      gap: 12px;
+      gap: 0.75rem;
       justify-content: center;
+      flex-direction: column;
     }
 
-    @media (max-width: 480px) {
-      .error-code { font-size: 6rem; }
-      .error-title { font-size: 1.4rem; }
-      .error-actions { flex-direction: column; }
+    @media (min-width: 481px) {
+      .error-code { font-size: 10rem; }
+      .error-title { font-size: 2rem; }
+      .error-actions { flex-direction: row; }
     }
   `],
 })

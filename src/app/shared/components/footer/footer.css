@@ -1,21 +1,21 @@
 /* ============================================================
-   FOOTER COMPONENT
+   FOOTER COMPONENT - MOBILE FIRST
    ============================================================ */
 
 .footer {
   background: var(--black);
   color: var(--white);
-  padding: 64px 0 0;
+  padding: 4rem 0 0;
   border-top: 3px solid var(--yellow);
 }
 
 /* ---------- Top ---------- */
 .footer-top {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 64px;
-  padding-bottom: 48px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* --- Brand --- */
@@ -25,9 +25,9 @@
   font-size: 2rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: -1px;
+  letter-spacing: -0.04em;
   color: var(--white);
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 .footer-logo span {
@@ -38,27 +38,27 @@
 
 .footer-tagline {
   font-size: 0.88rem;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
   line-height: 1.6;
-  margin-bottom: 24px;
-  max-width: 260px;
+  margin-bottom: 1.5rem;
+  max-width: 16.25rem;
 }
 
 /* --- Socials --- */
 .footer-socials {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .social-link {
-  width: 38px;
-  height: 38px;
+  width: 2.375rem;
+  height: 2.375rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid rgba(255,255,255,0.15);
-  border-radius: 4px;
-  color: rgba(255,255,255,0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.25rem;
+  color: rgba(255, 255, 255, 0.6);
   transition: var(--transition);
 }
 
@@ -68,125 +68,162 @@
   color: var(--black);
 }
 
-/* --- Nav Columns --- */
+/* --- Nav Columns (Mobile Accordion Defaults) --- */
 .footer-nav {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.footer-col {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-col:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .footer-col-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  margin-bottom: 0;
+  cursor: pointer;
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 800;
-  letter-spacing: 2px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 20px;
+  color: var(--white);
+  user-select: none;
 }
 
 .dropdown-arrow {
-  display: none;
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--yellow);
+  transition: transform 0.3s ease;
 }
 
-.footer-col-links { display: flex; flex-direction: column; gap: 12px; }
+.footer-col-links {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  padding-top: 0.25rem;
+}
+
+.footer-col.open .footer-col-links {
+  display: flex;
+}
+
+.footer-col.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
 
 .footer-col a {
   font-size: 0.88rem;
-  color: rgba(255,255,255,0.65);
+  color: rgba(255, 255, 255, 0.65);
   transition: var(--transition);
   display: inline-block;
 }
 
 .footer-col a:hover {
   color: var(--yellow);
-  transform: translateX(4px);
+  transform: translateX(0.25rem);
 }
 
 /* ---------- Bottom ---------- */
 .footer-bottom {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px 0;
-  gap: 16px;
+  text-align: center;
+  padding: 1.25rem 0;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .footer-copy {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .footer-bottom-links {
   display: flex;
-  gap: 24px;
+  justify-content: center;
+  gap: 1.5rem;
 }
 
 .footer-bottom-links a {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.4);
   transition: var(--transition);
 }
 
-.footer-bottom-links a:hover { color: var(--yellow); }
-
-/* ---------- Responsive Accordion Dropdowns ---------- */
-@media (max-width: 900px) {
-  .footer-top { grid-template-columns: 1fr; gap: 40px; }
+.footer-bottom-links a:hover {
+  color: var(--yellow);
 }
 
-@media (max-width: 600px) {
-  .footer-nav { 
-    grid-template-columns: 1fr; 
-    gap: 0; 
+/* ============================================================
+   PROGRESSIVE FOOTER ENHANCEMENTS
+   ============================================================ */
+
+/* --- Tablet / Multi-Column Nav (>= 601px) --- */
+@media (min-width: 601px) {
+  .footer-nav {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
   }
 
   .footer-col {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
   }
 
   .footer-col:first-child {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: none;
   }
 
   .footer-col-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 0;
-    margin-bottom: 0;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--white);
-    user-select: none;
+    display: block;
+    padding: 0;
+    margin-bottom: 1.25rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: default;
+    user-select: auto;
   }
 
   .dropdown-arrow {
-    display: inline-block;
-    font-size: 0.7rem;
-    color: var(--yellow);
-    transition: transform 0.3s ease;
+    display: none;
   }
 
   .footer-col-links {
-    display: none;
-    padding-bottom: 20px;
-    padding-top: 4px;
-  }
-
-  .footer-col.open .footer-col-links {
     display: flex;
+    padding-bottom: 0;
+    padding-top: 0;
   }
 
-  .footer-col.open .dropdown-arrow {
-    transform: rotate(180deg);
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
   }
 
-  .footer-bottom { justify-content: center; text-align: center; }
-  .footer-bottom-links { justify-content: center; }
+  .footer-bottom-links {
+    justify-content: flex-start;
+  }
+}
+
+/* --- Desktop Layout split (>= 901px) --- */
+@media (min-width: 901px) {
+  .footer-top {
+    grid-template-columns: 20rem 1fr;
+    gap: 4rem;
+  }
 }

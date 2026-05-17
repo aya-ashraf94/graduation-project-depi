@@ -120,26 +120,26 @@ type SupportTab = 'privacy' | 'terms' | 'help';
   `,
   styles: [`
     .support-page {
-      padding: 64px 0;
+      padding: 4rem 0;
       background: var(--surface);
       min-height: 80vh;
     }
 
     .support-header {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 3rem;
     }
 
     .support-title {
-      font-size: 3.5rem;
+      font-size: 2.5rem;
       color: var(--black);
-      margin-bottom: 12px;
+      margin-bottom: 0.75rem;
     }
 
     .support-subtitle {
       font-size: 1.1rem;
       color: var(--gray-3);
-      max-width: 600px;
+      max-width: 37.5rem;
       margin: 0 auto;
     }
 
@@ -147,13 +147,13 @@ type SupportTab = 'privacy' | 'terms' | 'help';
     .support-tabs {
       display: flex;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 32px;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
       flex-wrap: wrap;
     }
 
     .tab-btn {
-      padding: 12px 24px;
+      padding: 0.75rem 1.5rem;
       background: var(--white);
       border: 2px solid var(--black);
       border-radius: var(--radius-sm);
@@ -163,6 +163,8 @@ type SupportTab = 'privacy' | 'terms' | 'help';
       cursor: pointer;
       box-shadow: 4px 4px 0 var(--black);
       transition: var(--transition);
+      flex: 1;
+      min-width: 9.375rem;
     }
 
     .tab-btn:hover {
@@ -182,41 +184,41 @@ type SupportTab = 'privacy' | 'terms' | 'help';
       border: 3px solid var(--black);
       border-radius: var(--radius-md);
       box-shadow: 12px 12px 0 var(--black);
-      padding: 48px;
-      max-width: 900px;
+      padding: 1.5rem;
+      max-width: 56.25rem;
       margin: 0 auto;
     }
 
     .pane-title {
       font-size: 2.2rem;
-      margin-bottom: 32px;
+      margin-bottom: 2rem;
       border-bottom: 3px solid var(--yellow);
-      padding-bottom: 8px;
+      padding-bottom: 0.5rem;
       display: inline-block;
     }
 
     .legal-text h3 {
       font-size: 1.2rem;
-      margin: 24px 0 8px;
+      margin: 1.5rem 0 0.5rem;
       color: var(--black);
     }
 
     .legal-text p {
       color: var(--gray-3);
       line-height: 1.7;
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
     }
 
     /* FAQ */
     .faq-list {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 1.5rem;
     }
 
     .faq-item {
       background: var(--surface-2);
-      padding: 24px;
+      padding: 1.5rem;
       border: 2px solid var(--black);
       border-radius: var(--radius-sm);
     }
@@ -224,7 +226,7 @@ type SupportTab = 'privacy' | 'terms' | 'help';
     .faq-q {
       font-weight: 800;
       font-size: 1.1rem;
-      margin-bottom: 8px;
+      margin-bottom: 0.5rem;
       color: var(--black);
     }
 
@@ -234,9 +236,9 @@ type SupportTab = 'privacy' | 'terms' | 'help';
     }
 
     .contact-support {
-      margin-top: 40px;
+      margin-top: 2.5rem;
       text-align: center;
-      padding: 24px;
+      padding: 1.5rem;
       background: var(--yellow);
       border: 2px solid var(--black);
       border-radius: var(--radius-sm);
@@ -256,10 +258,11 @@ type SupportTab = 'privacy' | 'terms' | 'help';
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 768px) {
-      .support-content-box { padding: 24px; }
-      .support-title { font-size: 2.5rem; }
-      .tab-btn { flex: 1; min-width: 150px; }
+    /* Desktop enhancement */
+    @media (min-width: 769px) {
+      .support-content-box { padding: 3rem; }
+      .support-title { font-size: 3.5rem; }
+      .tab-btn { flex: none; min-width: auto; }
     }
   `]
 })

@@ -15,7 +15,7 @@
 
 /* ── SIDEBAR (CONV LIST) ── */
 .conv-list {
-  width: 340px;
+  width: 21.25rem;
   background: var(--white);
   border-right: 2px solid var(--black);
   display: flex;
@@ -24,7 +24,7 @@
 }
 
 .conv-list-header {
-  padding: 20px 24px;
+  padding: 1.25rem 1.5rem;
   border-bottom: 2px solid var(--black);
   background: var(--surface);
 }
@@ -34,8 +34,8 @@
   font-size: 1.25rem;
   font-weight: 900;
   color: var(--black);
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
 }
 
 .search-bar {
@@ -46,7 +46,7 @@
 
 .search-bar svg {
   position: absolute;
-  left: 12px;
+  left: 0.75rem;
   color: var(--gray-3);
 }
 
@@ -55,7 +55,7 @@
   background: var(--white);
   border: 2px solid var(--gray-2);
   border-radius: var(--radius-sm);
-  padding: 10px 12px 10px 36px;
+  padding: 0.625rem 0.75rem 0.625rem 2.25rem;
   font-size: 0.9rem;
   color: var(--black);
   transition: var(--transition);
@@ -73,7 +73,7 @@
 }
 
 .conv-empty {
-  padding: 32px;
+  padding: 2rem;
   color: var(--gray-3);
   text-align: center;
   font-size: 0.95rem;
@@ -81,8 +81,8 @@
 
 .conv-item {
   display: flex;
-  gap: 16px;
-  padding: 16px 24px;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--gray-1);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -103,8 +103,8 @@
 
 .conv-avatar {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   background: var(--gray-1);
   border: 2px solid var(--black);
   border-radius: 50%;
@@ -159,7 +159,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--gray-3);
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
   text-transform: uppercase;
 }
 
@@ -177,7 +177,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
-  margin-right: 8px;
+  margin-right: 0.5rem;
 }
 
 .unread-badge {
@@ -185,9 +185,9 @@
   color: var(--black);
   font-size: 0.75rem;
   font-weight: 800;
-  padding: 2px 6px;
+  padding: 0.125rem 0.375rem;
   border-radius: 12px;
-  min-width: 20px;
+  min-width: 1.25rem;
   text-align: center;
 }
 
@@ -201,24 +201,24 @@
 }
 
 .thread-header {
-  padding: 16px 24px;
+  padding: 1rem 1.5rem;
   background: var(--white);
   border-bottom: 2px solid var(--black);
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .thread-user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   flex: 1;
 }
 
 .thread-avatar {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   background: var(--yellow);
   border: 2px solid var(--black);
   border-radius: 50%;
@@ -239,7 +239,7 @@
   color: var(--gray-3);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .status-dot {
@@ -252,16 +252,16 @@
 .thread-product-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
   background: var(--surface);
   border: 2px solid var(--gray-2);
   border-radius: var(--radius-sm);
 }
 
 .product-thumb {
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   background: var(--gray-2);
   border-radius: 4px;
 }
@@ -286,7 +286,7 @@
 .btn-view-listing {
   background: transparent;
   border: 2px solid var(--black);
-  padding: 6px 12px;
+  padding: 0.375rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 800;
   border-radius: 4px;
@@ -304,7 +304,7 @@
   border: none;
   cursor: pointer;
   color: var(--gray-3);
-  padding: 8px;
+  padding: 0.5rem;
 }
 
 .btn-options:hover {
@@ -322,17 +322,17 @@
 
 .chat-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 50rem;
   display: flex;
   flex-direction: column;
 }
 
 .messages {
   flex: 1;
-  padding: 32px 24px;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .message {
@@ -356,7 +356,7 @@
 .bubble {
   background: var(--white);
   border: 1px solid var(--gray-2);
-  padding: 14px 18px;
+  padding: 0.875rem 1.125rem;
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.5;
@@ -378,8 +378,8 @@
 .msg-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
   padding: 0 8px;
 }
 
@@ -397,8 +397,8 @@
 .typing-bubble {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 16px 20px;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
   background: var(--white);
 }
 
@@ -433,10 +433,10 @@
 .compose {
   display: flex;
   align-items: center;
-  padding: 16px 24px;
+  padding: 1rem 1.5rem;
   background: var(--white);
   border-top: 2px solid var(--gray-2);
-  gap: 16px;
+  gap: 1rem;
 }
 
 .btn-utility {
@@ -444,7 +444,7 @@
   border: none;
   cursor: pointer;
   color: var(--gray-3);
-  padding: 8px;
+  padding: 0.5rem;
   transition: var(--transition);
 }
 
@@ -459,7 +459,7 @@
   background: var(--surface);
   border: 2px solid var(--gray-2);
   border-radius: 24px;
-  padding: 0 16px;
+  padding: 0 1rem;
   transition: var(--transition);
 }
 
@@ -472,7 +472,7 @@
   flex: 1;
   background: transparent;
   border: none;
-  padding: 14px 8px;
+  padding: 0.875rem 0.5rem;
   font-size: 0.95rem;
   color: var(--black);
 }
@@ -495,8 +495,8 @@
 }
 
 .btn-send {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   background: var(--black);
   color: var(--white);
   border: none;
@@ -530,14 +530,14 @@
 }
 
 .no-thread-icon {
-  width: 80px;
-  height: 80px;
+  width: 5rem;
+  height: 5rem;
   background: var(--surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
   color: var(--gray-2);
 }
 
@@ -546,23 +546,42 @@
   font-size: 1.25rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
 }
 
-@media (max-width: 960px) {
+/* ---------- RESPONSIVE: Mobile-First ---------- */
+/* Mobile defaults */
+.chat-card {
+  flex-direction: column;
+}
+.chat-page {
+  padding: 1rem;
+}
+.conv-list {
+  width: 100%;
+  border-right: none;
+  border-bottom: 2px solid var(--black);
+  max-height: 40vh;
+}
+.thread-product-card {
+  display: none;
+}
+
+/* Desktop enhancements */
+@media (min-width: 961px) {
   .chat-card {
-    flex-direction: column;
+    flex-direction: row;
   }
   .chat-page {
-    padding: 16px;
+    padding: 0;
   }
   .conv-list {
-    width: 100%;
-    border-right: none;
-    border-bottom: 2px solid var(--black);
-    max-height: 40vh;
+    width: 21.25rem;
+    border-right: 2px solid var(--black);
+    border-bottom: none;
+    max-height: none;
   }
   .thread-product-card {
-    display: none;
+    display: flex;
   }
 }
