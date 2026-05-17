@@ -1,11 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
 /* ============================================================
    NEFISANT – Global Design System
    Neo-Brutalist Industrial Marketplace
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+/* ---------- Tailwind v4 Theme Configuration ---------- */
+@theme {
+  /* Colors */
+  --color-yellow: #e8bd18;
+  --color-yellow-dark: #c79e10;
+  --color-rust: #9b5f22;
+  --color-black: #0a0a0a;
+  --color-dark: #111111;
+  --color-dark-2: #1a1a1a;
+  --color-dark-3: #222222;
+  --color-white: #ffffff;
+  --color-surface: #fcfbf8;
+  --color-surface-2: #f6f2eb;
+  --color-gray: #f1efe9;
+  --color-gray-2: #d4d4d4;
+  --color-gray-3: #5d5d5d;
+  --color-border: #dcd6cc;
 
-/* ---------- CSS Variables ---------- */
+  /* Typography */
+  --font-primary: 'Barlow Condensed', sans-serif;
+  --font-secondary: 'Inter', sans-serif;
+
+  /* Spacing & Radius */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  
+  /* Borders & Shadows */
+  --shadow-brutal: 4px 4px 0 #0a0a0a;
+  --shadow-brutal-hover: 6px 6px 0 #0a0a0a;
+  --shadow-soft: 0 4px 20px rgba(10, 10, 10, 0.03);
+  --shadow-heavy: 0 20px 40px rgba(10, 10, 10, 0.08);
+}
+
+/* ---------- CSS Variables (Backward Compatibility) ---------- */
 :root {
   /* Colors */
   --yellow: #e8bd18;
@@ -28,14 +65,14 @@
   --font-secondary: 'Inter', sans-serif;
 
   /* Layout */
-  --navbar-height: 68px;
+  --navbar-height: 4.25rem;
 
   /* Spacing & Radius */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
   
   /* Borders & Shadows */
   --border-width: 1.5px;
@@ -57,8 +94,8 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 16px;
-  scroll-padding-top: 84px;
+  font-size: 100%;
+  scroll-padding-top: 5.25rem;
 }
 
 body {
@@ -69,13 +106,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Global navbar offset ──────────────────────────────────────────────────
-   The navbar is position:fixed so every page needs top padding equal to its
-   height. We apply it once here on the <main> wrapper instead of repeating
-   padding-top on every individual page component.
-   The home hero already had padding-top:68px — that local rule is still fine
-   and will simply override this one for that specific element.
-── */
+/* ── Global navbar offset ── */
 main {
   padding-top: var(--navbar-height);
   min-height: calc(100vh - var(--navbar-height));
@@ -102,7 +133,7 @@ button {
 
 :focus-visible {
   outline: 3px solid rgba(245, 197, 24, 0.6);
-  outline-offset: 3px;
+  outline-offset: 0.1875rem;
 }
 
 /* ---------- Typography ---------- */
@@ -115,20 +146,20 @@ h5 {
   font-weight: 900;
   text-transform: uppercase;
   line-height: 1.05;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   font-family: var(--font-primary);
   font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   border: var(--border-width) solid var(--black);
   border-radius: var(--radius-sm);
   transition: var(--transition);
@@ -170,49 +201,65 @@ h5 {
   transform: translate(-2px, -2px);
 }
 
-/* ---------- Section Utilities ---------- */
-.container {
-  width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 48px;
+.hero-btn {
+  padding: 0.875rem 1.75rem;
+  font-size: 0.95rem;
+  flex: 1;
+  min-width: 13.75rem;
+  justify-content: center;
 }
 
-@media (max-width: 1100px) {
-  .container {
-    padding: 0 32px;
+@media (min-width: 1101px) {
+  .hero-btn {
+    flex: none;
+    width: 13.75rem;
   }
 }
 
-@media (max-width: 768px) {
+
+/* ---------- Section Utilities ---------- */
+.container {
+  width: 100%;
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+@media (min-width: 769px) {
   .container {
-    padding: 0 20px;
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1101px) {
+  .container {
+    padding: 0 3rem;
   }
 }
 
 .section {
-  padding: 96px 0;
+  padding: 6rem 0;
 }
 .section-sm {
-  padding: 56px 0;
+  padding: 3.5rem 0;
 }
 
 .section-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   font-family: var(--font-primary);
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--gray-3);
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 .section-label::before {
   content: '';
   display: block;
-  width: 32px;
+  width: 2rem;
   height: 2px;
   background: var(--yellow);
 }
@@ -225,11 +272,11 @@ h5 {
 /* ---------- Badge ---------- */
 .badge {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 0.1875rem 0.625rem;
   font-family: var(--font-primary);
   font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   background: var(--yellow);
   color: var(--black);
@@ -243,12 +290,12 @@ h5 {
 
 /* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 0.375rem;
 }
 ::-webkit-scrollbar-track {
   background: var(--gray);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--black);
-  border-radius: 3px;
+  border-radius: 0.1875rem;
 }
