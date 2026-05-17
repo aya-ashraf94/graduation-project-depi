@@ -1,13 +1,13 @@
 .legal-page {
-  max-width: 1000px;
+  max-width: 62.5rem;
   margin: 0 auto;
-  padding: 80px 24px;
+  padding: 5rem 1.5rem;
 }
 
 .legal-header {
   border-bottom: var(--border-width) solid var(--border);
-  padding-bottom: 24px;
-  margin-bottom: 40px;
+  padding-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .legal-title {
@@ -16,7 +16,7 @@
   font-weight: 900;
   text-transform: uppercase;
   color: var(--black);
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 }
 
 .legal-subtitle {
@@ -27,26 +27,26 @@
 .contact-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 2.5rem;
 }
 
 .contact-info h3 {
   font-family: var(--font-primary);
   font-size: 1.5rem;
   font-weight: 900;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 .contact-info p {
   color: var(--gray-3);
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
   line-height: 1.6;
 }
 
 .info-block {
   background: var(--surface-2);
   border: var(--border-width) solid var(--border);
-  padding: 24px;
+  padding: 1.5rem;
   border-radius: var(--radius-sm);
   line-height: 1.8;
 }
@@ -55,26 +55,26 @@
   background: var(--surface-1);
   border: var(--border-width) solid var(--black);
   box-shadow: var(--shadow-heavy);
-  padding: 32px;
+  padding: 2rem;
   border-radius: var(--radius-md);
 }
 
 .neo-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .form-group label {
   display: block;
   font-family: var(--font-primary);
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .neo-input {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem;
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--white);
@@ -88,7 +88,7 @@
 }
 
 .btn-neo-primary {
-  padding: 16px;
+  padding: 1rem;
   background: var(--black);
   color: var(--yellow);
   font-family: var(--font-primary);
@@ -107,8 +107,15 @@
   box-shadow: 6px 6px 0 var(--yellow);
 }
 
-@media (max-width: 768px) {
+/* ---------- RESPONSIVE: Mobile-First ---------- */
+/* Mobile default */
+.contact-grid {
+  grid-template-columns: 1fr;
+}
+
+/* Desktop enhancement */
+@media (min-width: 769px) {
   .contact-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }

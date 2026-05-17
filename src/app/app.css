@@ -7,7 +7,7 @@
 .sell-cta.section-dark {
   background: #111111;
   color: #f7f7f7;
-  padding: 80px 0;
+  padding: 5rem 0;
   position: relative;
   overflow: hidden;
 }
@@ -17,46 +17,47 @@
 }
 .sell-cta-row {
   display: flex;
-  align-items: center;
-  gap: 40px;
-  justify-content: space-between;
+  flex-direction: column;
+  text-align: center;
+  gap: 2.5rem;
+  justify-content: center;
 }
 .sell-cta-content {
-  max-width: 600px;
+  max-width: 37.5rem;
 }
 .sell-cta-eyebrow .badge-yellow {
   display: inline-block;
   background: #ffcc00;
   color: #000;
   font-weight: 800;
-  padding: 6px 12px;
+  padding: 0.375rem 0.75rem;
   border-radius: 2px;
-  font-size: 13px;
-  letter-spacing: 0.8px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .sell-cta-title {
-  font-size: 80px;
+  font-size: 2.25rem;
   line-height: 0.9;
-  margin: 12px 0 20px;
+  margin: 0.75rem 0 1.25rem;
   text-transform: uppercase;
-  letter-spacing: -1.5px;
+  letter-spacing: -0.04em;
   font-weight: 900;
   color: #ffffff;
 }
 .sell-cta-desc {
   color: #a0a0a0;
-  margin-bottom: 30px;
+  margin-bottom: 1.875rem;
   max-width: 50ch;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.6;
 }
 .sell-cta-actions .hero-btn {
-  margin-right: 12px;
+  margin-right: 0.75rem;
   border-radius: 2px;
-  padding: 12px 24px;
+  padding: 0.75rem 1.5rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   transition: all 0.2s ease;
 }
 .btn-yellow {
@@ -81,22 +82,26 @@
 .sell-cta-visual {
   flex: 1;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   position: relative;
+  order: 2;
+  margin-top: 1.125rem;
 }
 .visual-grid {
   position: relative;
-  width: 320px;
-  height: 280px;
+  width: 20rem;
+  height: 17.5rem;
+  display: flex;
+  justify-content: center;
 }
 .visual-square {
   position: absolute;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0.625rem 2.5rem rgba(0, 0, 0, 0.5);
 }
 .visual-sq-1 {
-  width: 140px;
-  height: 140px;
+  width: 8.75rem;
+  height: 8.75rem;
   background: transparent;
   top: 50%;
   transform: translateY(-50%);
@@ -106,8 +111,8 @@
   z-index: 1;
 }
 .visual-sq-2 {
-  width: 180px;
-  height: 180px;
+  width: 11.25rem;
+  height: 11.25rem;
   background: #2a2211;
   top: 50%;
   transform: translateY(-50%);
@@ -117,11 +122,11 @@
   z-index: 2;
 }
 .visual-sq-3 {
-  width: 80px;
-  height: 80px;
+  width: 5rem;
+  height: 5rem;
   background: #1a1a1a;
   bottom: 0;
-  right: 40px;
+  right: 2.5rem;
   border-color: rgba(255, 255, 255, 0.05);
   border-radius: 2px;
   z-index: 3;
@@ -146,30 +151,27 @@
   pointer-events: none;
 }
 
-@media (max-width: 880px) {
+@media (min-width: 881px) {
   .sell-cta-row {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
+    justify-content: space-between;
   }
   .sell-cta-visual {
-    order: 2;
-    margin-top: 18px;
-  }
-  .visual-grid {
-    justify-content: center;
+    order: 0;
+    margin-top: 0;
+    justify-content: flex-end;
   }
   .sell-cta-title {
-    font-size: 36px;
+    font-size: 5rem;
   }
 }
 
 /* ===== Minimal Auth Navbar ===== */
 .auth-minimal-nav {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100%;
-  height: var(--navbar-height, 80px);
+  height: 5rem;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -177,23 +179,15 @@
 
 .auth-main {
   padding-top: 0 !important;
-  min-height: 100vh !important;
-  height: 100vh;
-  overflow: hidden;
-}
-
-@media (max-width: 860px) {
-  .auth-main {
-    height: auto;
-    overflow: visible;
-  }
+  min-height: calc(100vh - 10rem);
+  height: auto;
 }
 
 .minimal-nav-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 75rem;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -202,13 +196,13 @@
 .minimal-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   text-decoration: none;
 }
 
 .minimal-brand .brand-box {
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   background: var(--yellow);
   border: 2px solid var(--black);
   box-shadow: 2px 2px 0 var(--black);
@@ -220,7 +214,7 @@
   font-size: 1.4rem;
   color: var(--black);
   text-transform: uppercase;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .back-home-btn {
@@ -230,7 +224,7 @@
   color: var(--black);
   text-decoration: none;
   border: 2px solid var(--black);
-  padding: 8px 16px;
+  padding: 0.5rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--white);
   box-shadow: 2px 2px 0 var(--black);
@@ -244,22 +238,20 @@
 
 /* ===== Minimal Auth Footer ===== */
 .auth-minimal-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  position: relative;
   width: 100%;
-  padding: 24px 0;
+  padding: 1.5rem 0;
   z-index: 100;
 }
 
 .minimal-footer-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 75rem;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 2rem;
 }
 
 .minimal-footer-link {
@@ -276,3 +268,23 @@
   text-decoration: underline;
 }
 
+/* Progressive enhancement for Desktop (min-width: 861px) */
+@media (min-width: 861px) {
+  .auth-minimal-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .auth-main {
+    height: 100vh;
+    min-height: 100vh !important;
+    overflow: hidden;
+  }
+
+  .auth-minimal-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+}
