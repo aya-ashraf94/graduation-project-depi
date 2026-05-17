@@ -91,20 +91,21 @@ import { LoginRequest } from '../../../../core/models/user.model';
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 1.25rem;
       box-sizing: border-box;
     }
 
     .split-card {
       display: flex;
+      flex-direction: column;
       width: 100%;
-      max-width: 800px;
+      max-width: 31.25rem;
       background: var(--white);
       border: 3px solid var(--black);
       border-radius: var(--radius-lg);
       box-shadow: 8px 8px 0 var(--black);
       overflow: hidden;
-      min-height: 480px;
+      min-height: 30rem;
       animation: riseUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
@@ -116,7 +117,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     /* ── LEFT SIDE (FORM) ───────────────────────── */
     .split-left {
       flex: 1;
-      padding: 32px 40px;
+      padding: 2.5rem 2rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -124,20 +125,20 @@ import { LoginRequest } from '../../../../core/models/user.model';
     }
 
     .auth-header {
-      margin-bottom: 32px;
+      margin-bottom: 2rem;
       text-align: left;
     }
 
     .brand-tag {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.375rem;
       font-family: var(--font-primary);
       font-size: 0.85rem;
       font-weight: 900;
-      letter-spacing: 1px;
+      letter-spacing: 0.08em;
       color: var(--black);
-      margin-bottom: 24px;
+      margin-bottom: 1.5rem;
     }
 
     .brand-tag::before {
@@ -155,7 +156,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
       font-weight: 800;
       color: var(--black);
       line-height: 1.1;
-      margin-bottom: 6px;
+      margin-bottom: 0.375rem;
     }
 
     .auth-desc {
@@ -167,7 +168,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     .auth-form {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 0.75rem;
     }
 
     .auth-field {
@@ -178,7 +179,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     .auth-input {
       font-family: var(--font-secondary);
       font-size: 0.9rem;
-      padding: 10px 14px;
+      padding: 0.625rem 0.875rem;
       background: var(--white);
       border: 2px solid var(--gray-2);
       border-radius: var(--radius-sm);
@@ -203,14 +204,14 @@ import { LoginRequest } from '../../../../core/models/user.model';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 4px;
-      margin-bottom: 8px;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
     }
 
     .remember-me {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.5rem;
       cursor: pointer;
     }
 
@@ -244,8 +245,8 @@ import { LoginRequest } from '../../../../core/models/user.model';
 
     .auth-submit-btn {
       align-self: center;
-      margin-top: 8px;
-      padding: 12px 32px;
+      margin-top: 0.5rem;
+      padding: 0.75rem 32px;
       background: var(--yellow);
       border: 2px solid var(--black);
       border-radius: var(--radius-sm);
@@ -264,7 +265,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     }
 
     .auth-footer {
-      margin-top: 32px;
+      margin-top: 2rem;
     }
 
     .auth-link {
@@ -285,111 +286,114 @@ import { LoginRequest } from '../../../../core/models/user.model';
 
     /* ── RIGHT SIDE (GRAPHIC) ─────────────────────── */
     .split-right {
-      flex: 1;
-      background: var(--yellow);
-      border-left: 3px solid var(--black);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 32px;
-      overflow: hidden;
-      z-index: 1;
+      display: none; /* Hide graphic on mobile by default */
     }
 
-    .graphic-bg-pattern {
-      position: absolute;
-      inset: 0;
-      opacity: 0.1;
-      background-image: radial-gradient(var(--black) 2px, transparent 2px);
-      background-size: 32px 32px;
-      z-index: -1;
-    }
-
-    .graphic-content {
-      background: var(--white);
-      border: 3px solid var(--black);
-      border-radius: var(--radius-md);
-      padding: 24px;
-      text-align: center;
-      box-shadow: 6px 6px 0 var(--black);
-      max-width: 260px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .graphic-icon {
-      width: 60px;
-      height: 60px;
-      background: var(--surface-2);
-      border: 3px solid var(--black);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      box-shadow: 3px 3px 0 var(--black);
-      color: var(--black);
-    }
-
-    .graphic-title {
-      font-family: var(--font-primary);
-      font-size: 1.5rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-
-    .graphic-desc {
-      font-family: var(--font-secondary);
-      font-size: 0.95rem;
-      color: var(--gray-3);
-      line-height: 1.5;
-    }
-
-    /* Decorative elements */
-    .dec-circle {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border: 4px solid var(--black);
-      border-radius: 50%;
-      background: var(--white);
-      z-index: 1;
-    }
-    .dec-1 {
-      top: 40px;
-      right: -40px;
-      box-shadow: inset -6px -6px 0 rgba(0,0,0,0.1);
-    }
-
-    .dec-box {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      border: 4px solid var(--black);
-      background: var(--white);
-      z-index: 1;
-      transform: rotate(15deg);
-    }
-    .dec-2 {
-      bottom: 60px;
-      left: 40px;
-      box-shadow: 6px 6px 0 var(--black);
-    }
-
-    @media (max-width: 860px) {
+    /* Progressive enhancement for Desktop (min-width: 861px) */
+    @media (min-width: 861px) {
       .split-card {
-        flex-direction: column;
-        max-width: 500px;
+        flex-direction: row;
+        max-width: 800px;
       }
-      .split-right {
-        display: none; /* Hide graphic on mobile */
-      }
+
       .split-left {
-        padding: 40px 32px;
+        padding: 2rem 40px;
+      }
+
+      .split-right {
+        display: flex;
+        flex: 1;
+        background: var(--yellow);
+        border-left: 3px solid var(--black);
+        position: relative;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      .graphic-bg-pattern {
+        position: absolute;
+        inset: 0;
+        opacity: 0.1;
+        background-image: radial-gradient(var(--black) 2px, transparent 2px);
+        background-size: 2rem 2rem;
+        z-index: -1;
+      }
+
+      .graphic-content {
+        background: var(--white);
+        border: 3px solid var(--black);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 6px 6px 0 var(--black);
+        max-width: 16.25rem;
+        position: relative;
+        z-index: 2;
+      }
+
+      .graphic-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--surface-2);
+        border: 3px solid var(--black);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        box-shadow: 3px 3px 0 var(--black);
+        color: var(--black);
+      }
+
+      .graphic-title {
+        font-family: var(--font-primary);
+        font-size: 1.5rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+      }
+
+      .graphic-desc {
+        font-family: var(--font-secondary);
+        font-size: 0.95rem;
+        color: var(--gray-3);
+        line-height: 1.5;
+      }
+
+      /* Decorative elements */
+      .dec-circle {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border: 4px solid var(--black);
+        border-radius: 50%;
+        background: var(--white);
+        z-index: 1;
+      }
+      .dec-1 {
+        top: 2.5rem;
+        right: -40px;
+        box-shadow: inset -6px -6px 0 rgba(0,0,0,0.1);
+      }
+
+      .dec-box {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border: 4px solid var(--black);
+        background: var(--white);
+        z-index: 1;
+        transform: rotate(15deg);
+      }
+      .dec-2 {
+        bottom: 3.75rem;
+        left: 2.5rem;
+        box-shadow: 6px 6px 0 var(--black);
       }
     }
   `]
