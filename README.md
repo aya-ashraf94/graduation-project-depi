@@ -1,96 +1,146 @@
-# Market.Arch (Nafa3ni) — Full-Stack Monorepo
+# 🛒 Market.Arch (Nafa3ni) — Full-Stack Monorepo
 
-Welcome to the **Market.Arch (Nafa3ni)** graduation project repository. This repository has been structured as a full-stack monorepo containing both the Frontend (Angular) and the Backend (Express & MongoDB) systems.
+> A premium, full-stack campus peer-to-peer trading hub built on **Angular 21** and **Node.js/Express**, featuring a bold, high-fidelity **Neo-Brutalist** design system.
 
 ---
 
-## 📂 Project Structure
+<p align="center">
+  <img src="https://img.shields.io/badge/Angular-21.2-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Node.js-v18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
+  <img src="https://img.shields.io/badge/MongoDB-Mongoose-4ea94b?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/JWT-Protected-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+  <img src="https://img.shields.io/badge/Design-Neo--Brutalist-yellow?style=for-the-badge" alt="Neo-Brutalist" />
+</p>
+
+---
+
+## 🏛️ System Architecture
+
+The following diagram illustrates how the **Angular 21** frontend communicates with the **Node.js & Express** API endpoints, which are validated by **JWT authentication guards** and mapped to **MongoDB Mongoose** schemas.
+
+```mermaid
+flowchart TD
+    subgraph Frontend [Angular Client]
+        Pages[Angular Components & Pages]
+        Services[Angular Services]
+        Guards[Route Guards]
+        Pages --> Services
+        Pages --> Guards
+    end
+
+    subgraph Backend [Express API Server]
+        Server[server.js Engine]
+        AuthMiddleware[authMiddleware.js JWT Gate]
+        AuthRoutes[authRoutes.js]
+        ProdRoutes[productRoutes.js]
+        AuthController[authController.js]
+        ProdController[productController.js]
+
+        Server --> AuthRoutes
+        Server --> ProdRoutes
+
+        ProdRoutes -.->|Requires Auth| AuthMiddleware
+        AuthMiddleware --> ProdController
+        ProdRoutes --> ProdController
+        AuthRoutes --> AuthController
+    end
+
+    subgraph Database [MongoDB Atlas]
+        UserSchema[(User Model)]
+        ProdSchema[(Product Model)]
+    end
+
+    Services -->|HTTP Requests| Server
+    AuthController <--> UserSchema
+    ProdController <--> ProdSchema
+```
+
+---
+
+## 📂 Monorepo Directory Layout
 
 ```text
 graduation-project-depi/
-├── Frontend/          # Angular 21 application
-│   ├── src/           # Angular source code
-│   ├── package.json   # Frontend dependencies and scripts
-│   └── README.md      # Detailed Frontend documentation
+├── Frontend/               # Angular 21 Single Page Application
+│   ├── src/                # Component architecture, styles, assets
+│   ├── package.json        # Frontend specific scripts & node modules
+│   └── README.md           # [Detailed Frontend documentation]
 │
-├── Backend/           # Express.js REST API
-│   ├── controllers/   # Request handlers
-│   ├── models/        # MongoDB Mongoose schemas
-│   ├── routes/        # Express routers
-│   ├── server.js      # Main Express application entrypoint
-│   ├── package.json   # Backend dependencies and scripts
-│   └── README.md      # Detailed Backend documentation
+├── Backend/                # Express.js REST API Server
+│   ├── config/             # DB settings
+│   ├── controllers/        # Request handlers & logic
+│   ├── middleware/         # Security & JWT validators
+│   ├── models/             # Mongoose Schemas (User, Product)
+│   ├── routes/             # Express routes defining API endpoints
+│   ├── server.js           # Server application startup & middleware setup
+│   ├── package.json        # Backend specific scripts & node modules
+│   └── README.md           # [Detailed Backend documentation]
 │
-├── package.json       # Monorepo configuration and scripts
-└── README.md          # Project overview and root configuration (this file)
+├── package.json            # Monorepo command runner definitions
+└── README.md               # Monorepo main overview (this file)
 ```
 
 ---
 
-## 🛠️ Getting Started
+## ✨ Design Concept: Neo-Brutalist Aesthetics
 
-### 1. Prerequisites
-Ensure you have the following installed on your local environment:
-- **Node.js** (v18.x or higher recommended)
-- **MongoDB** (local installation or MongoDB Atlas URI)
-- **Angular CLI** (v17.x or higher)
+Our frontend uses a curated **Neo-Brutalist Architectural Design System**:
+* **High Contrast Borders**: Hard-coded thick dark outlines (`3px solid var(--black)`).
+* **Flat Offset Drop Shadows**: Solid geometric shadows (`box-shadow: 4px 4px 0 var(--black)`) on cards, inputs, and buttons.
+* **Vibrant Typography**: Modern, crisp editorial text layout leveraging Outfit and Inter fonts.
+* **Active Status Feedback**: Highly interactive hover micro-animations and status badges to guide student navigation.
 
 ---
 
-### 2. Installation
+## 🛠️ Installation & Getting Started
 
-You can install all dependencies for both the frontend and backend concurrently from the root directory using the root-level scripts:
+### 1. Prerequisites
+Ensure you have the following installed on your machine:
+* **Node.js** (v18.x or higher)
+* **MongoDB** (Local instance or MongoDB Atlas Connection URI)
 
+### 2. Workspace Setup
+Clone the repository and install dependencies for both components simultaneously from the root directory:
 ```bash
-# Install dependencies for both Frontend and Backend
+# Clone the repository
+git clone https://github.com/aya-ashraf94/graduation-project-depi.git
+cd graduation-project-depi
+
+# Run automated dependency install script for both Frontend & Backend
 npm run install-all
 ```
 
-Alternatively, you can install them individually:
-```bash
-# Frontend
-cd Frontend && npm install
-
-# Backend
-cd ../Backend && npm install
-```
-
----
-
-### 3. Local Development
-
-To run the application, configure your environments:
-
-#### Backend Environment Setup:
-Create a `.env` file inside the `Backend/` directory:
+### 3. Backend Environment Setup
+Create a `.env` file in the `Backend/` directory:
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/nafa3ni
+MONGO_URI=mongodb://localhost:27017/nafa3ni
 JWT_SECRET=your_jwt_secret_key_here
 ```
 
-#### Run both Frontend & Backend concurrently:
-From the root directory, run:
+### 4. Running the Complete App
+Launch both the **Frontend** development server and the **Backend** API concurrently with a single command from the root directory:
 ```bash
 npm run dev
 ```
-This will start:
-- The **Backend API** at `http://localhost:5000` (using `nodemon`)
-- The **Frontend App** at `http://localhost:4200` (using Angular dev server)
+
+* **Frontend**: Accessible at [http://localhost:4200](http://localhost:4200) (Angular Dev Server)
+* **Backend API**: Accessible at [http://localhost:5000](http://localhost:5000) (Express Server)
 
 ---
 
-## 🧪 Service Architecture
+## 🤝 Collaborative Setup (GitHub Workflow)
 
-### 🏛️ Frontend (Angular)
-Implements a bold **Neo-Brutalist** Architectural Design System with strict brand visuals, universal modern dialogs, multi-state authorization, split hero dashboard, active search engine, and P2P communication simulation hub.
+To contribute to this codebase smoothly:
+1. Always pull the latest version of the default branch: `git pull origin main`
+2. Create your feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes and push to origin: `git push origin feature/your-feature-name`
+4. Open a Pull Request for peer code and design system validation review.
 
-For more details, see the [Frontend README](file:///d:/AngPath/GIGS/FinalProject/Frontend/README.md).
+---
 
-### ⚙️ Backend (Node.js & Express)
-A robust Node.js backend using Express, MongoDB, and JWT authentication. It manages:
-- **Authentication**: JWT token issuance, password hashing (bcrypt), and authentication middleware.
-- **Product Listings**: CRUD endpoints for listings.
-- **Chat/Messages**: P2P communication services.
-
-For more details, see the [Backend README](file:///d:/AngPath/GIGS/FinalProject/Backend/README.md).
+## 🔗 Sub-Component Documentation
+* 💻 [Angular Frontend Documentation](./Frontend/README.md)
+* ⚙️ [Express Backend Documentation](./Backend/README.md)
