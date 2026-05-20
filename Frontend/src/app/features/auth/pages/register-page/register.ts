@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +21,17 @@ import { RegisterRequest } from '../../../../core/models/user.model';
             <p class="auth-desc">Join the community and start buying or selling today.</p>
           </div>
 
+          @if (errorMessage()) {
+            <div class="auth-error-banner">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
           <form class="auth-form" (ngSubmit)="register()">
             <div class="auth-row">
               <div class="auth-field">
@@ -32,6 +43,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
                   [(ngModel)]="form.firstName"
                   name="firstName"
                   required
+                  [disabled]="isLoading()"
                 />
               </div>
               <div class="auth-field">
@@ -43,6 +55,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
                   [(ngModel)]="form.lastName"
                   name="lastName"
                   required
+                  [disabled]="isLoading()"
                 />
               </div>
             </div>
@@ -56,6 +69,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
                 [(ngModel)]="form.email"
                 name="email"
                 required
+                [disabled]="isLoading()"
               />
             </div>
 
@@ -69,6 +83,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
                   [(ngModel)]="form.password"
                   name="password"
                   required
+                  [disabled]="isLoading()"
                 />
               </div>
               <div class="auth-field">
@@ -80,12 +95,13 @@ import { RegisterRequest } from '../../../../core/models/user.model';
                   [(ngModel)]="form.confirmPassword"
                   name="confirmPassword"
                   required
+                  [disabled]="isLoading()"
                 />
               </div>
             </div>
 
-            <button type="submit" class="auth-submit-btn">
-              REGISTER
+            <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">
+              {{ isLoading() ? 'REGISTERING...' : 'REGISTER' }}
             </button>
           </form>
 
@@ -198,6 +214,29 @@ import { RegisterRequest } from '../../../../core/models/user.model';
       color: var(--gray-3);
     }
 
+    .auth-error-banner {
+      background: #ff4d4d;
+      color: var(--black);
+      border: 3px solid var(--black);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 3px 3px 0 var(--black);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      animation: shake 0.2s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
     .auth-form {
       display: flex;
       flex-direction: column;
@@ -239,6 +278,11 @@ import { RegisterRequest } from '../../../../core/models/user.model';
       font-weight: 500;
     }
 
+    .auth-input:disabled {
+      background: var(--surface-2);
+      cursor: not-allowed;
+    }
+
     .auth-submit-btn {
       align-self: center;
       margin-top: 1rem;
@@ -255,9 +299,16 @@ import { RegisterRequest } from '../../../../core/models/user.model';
       color: var(--black);
     }
 
-    .auth-submit-btn:hover {
+    .auth-submit-btn:hover:not(:disabled) {
       transform: translate(-2px, -2px);
       box-shadow: 5px 5px 0 var(--black);
+    }
+
+    .auth-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: 3px 3px 0 var(--black) !important;
     }
 
     .auth-footer {
@@ -404,22 +455,35 @@ export class Register {
   private router = inject(Router);
 
   form = { firstName: '', lastName: '', email: '', password: '', confirmPassword: '' };
+  errorMessage = signal<string | null>(null);
+  isLoading = signal(false);
 
   register() {
     if (!this.form.email || !this.form.password || !this.form.firstName) return;
     if (this.form.password !== this.form.confirmPassword) {
-      alert("Passwords do not match");
+      this.errorMessage.set("Passwords do not match");
       return;
     }
-    
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
     const request: RegisterRequest = {
       firstName: this.form.firstName,
       lastName: this.form.lastName,
       email: this.form.email,
       password: this.form.password
     };
-    
-    this.auth.register(request);
-    this.router.navigate(['/']);
+
+    this.auth.register(request).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err?.error?.message || 'Registration failed');
+      }
+    });
   }
 }
