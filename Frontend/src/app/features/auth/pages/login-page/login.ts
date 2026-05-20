@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,17 @@ import { LoginRequest } from '../../../../core/models/user.model';
             <h2 class="auth-title">Welcome Back</h2>
             <p class="auth-desc">Hey, welcome back to your special place</p>
           </div>
+
+          @if (errorMessage()) {
+            <div class="auth-error-banner">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
           
           <form class="auth-form" (ngSubmit)="signIn()">
             <div class="auth-field">
@@ -31,6 +42,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
                 [(ngModel)]="form.email"
                 name="email"
                 required
+                [disabled]="isLoading()"
               />
             </div>
             
@@ -43,19 +55,20 @@ import { LoginRequest } from '../../../../core/models/user.model';
                 [(ngModel)]="form.password"
                 name="password"
                 required
+                [disabled]="isLoading()"
               />
             </div>
 
             <div class="auth-options">
               <label class="remember-me">
-                <input type="checkbox" class="auth-checkbox">
+                <input type="checkbox" class="auth-checkbox" [disabled]="isLoading()">
                 <span>Remember me</span>
               </label>
               <a class="forgot-link" href="#">Forgot Password?</a>
             </div>
 
-            <button type="submit" class="auth-submit-btn">
-              LOGIN
+            <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">
+              {{ isLoading() ? 'LOGGING IN...' : 'LOGIN' }}
             </button>
           </form>
 
@@ -165,6 +178,29 @@ import { LoginRequest } from '../../../../core/models/user.model';
       color: var(--gray-3);
     }
 
+    .auth-error-banner {
+      background: #ff4d4d;
+      color: var(--black);
+      border: 3px solid var(--black);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 3px 3px 0 var(--black);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      animation: shake 0.2s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
     .auth-form {
       display: flex;
       flex-direction: column;
@@ -198,6 +234,11 @@ import { LoginRequest } from '../../../../core/models/user.model';
     .auth-input::placeholder {
       color: var(--gray-2);
       font-weight: 500;
+    }
+
+    .auth-input:disabled {
+      background: var(--surface-2);
+      cursor: not-allowed;
     }
 
     .auth-options {
@@ -259,9 +300,16 @@ import { LoginRequest } from '../../../../core/models/user.model';
       color: var(--black);
     }
 
-    .auth-submit-btn:hover {
+    .auth-submit-btn:hover:not(:disabled) {
       transform: translate(-2px, -2px);
       box-shadow: 5px 5px 0 var(--black);
+    }
+
+    .auth-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: 3px 3px 0 var(--black) !important;
     }
 
     .auth-footer {
@@ -403,10 +451,24 @@ export class Login {
   private router = inject(Router);
 
   form: LoginRequest = { email: '', password: '' };
+  errorMessage = signal<string | null>(null);
+  isLoading = signal(false);
 
   signIn() {
     if (!this.form.email || !this.form.password) return;
-    this.auth.login(this.form);
-    this.router.navigate(['/']);
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.auth.login(this.form).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err?.error?.message || 'Invalid email or password');
+      }
+    });
   }
 }
