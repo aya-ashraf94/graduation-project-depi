@@ -1,17 +1,38 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Repository-wide ignore rules for the full-stack project.
 
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+# Dependencies
+node_modules/
+Frontend/node_modules/
+Backend/node_modules/
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# Build outputs
+Frontend/dist/
+Frontend/out-tsc/
+Frontend/tmp/
+Frontend/bazel-out/
+Frontend/.angular/cache/
+Frontend/coverage/
+Backend/dist/
+Backend/build/
+Backend/tmp/
+Backend/coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+testem.log
+libpeerconnection.log
+
+# Environment and secrets
+Backend/.env
+Backend/.env.*
+!Backend/.env.example
 
 # IDEs and editors
+.vscode/
 .idea/
 .project
 .classpath
@@ -19,31 +40,17 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
+.history/
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/mcp.json
-.history/*
-
-# Miscellaneous
-/.angular/cache
+# Miscellaneous caches and temp files
+.cache/
+.eslintcache
+.nyc_output/
 .sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
+connect.lock
+typings/
 __screenshots__/
 
 # System files
 .DS_Store
 Thumbs.db
-
-# Local agent scratchpads and planning documents
-*.txt
-implementation_plan.md
-project_structure_analysis.md
