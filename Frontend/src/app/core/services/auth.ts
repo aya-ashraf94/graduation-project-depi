@@ -1,44 +1,23 @@
 // ============================================================
-// AUTH SERVICE — MOCK + API-READY
+// AUTH SERVICE — REAL BACKEND
 //
-// HOW TO UPGRADE TO REAL BACKEND:
-//   1. Inject HttpClient
-//   2. Replace mock methods with:
-//      this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, payload)
-//   3. Remove MOCK_USER and MOCK_TOKEN constants
+// Connected to the Express REST API endpoints for login/register.
 // ============================================================
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { tap, switchMap } from 'rxjs/operators';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'arch_token';
 const USER_KEY = 'arch_user';
 
-// ─── MOCK DATA (remove when backend is ready) ─────────────────────────────
-const MOCK_TOKEN = 'mock-jwt-token-abc123';
-const MOCK_USER: User = {
-  id: 'user-001',
-  firstName: 'Alex',
-  lastName: 'Doe',
-  email: 'alex@example.com',
-  avatar: 'https://i.pravatar.cc/150?img=12',
-  role: 'user',
-  rating: 4.8,
-  totalSales: 23,
-  totalPurchases: 7,
-  joinedAt: new Date('2024-01-15'),
-  isVerified: true,
-  location: 'The Grid',
-  bio: 'Architect of digital artifacts and high-fidelity textures. Curating a collection of neo-brutalist assets for the modern web since 2018. Based in the Grid.',
-  tags: ['BAUHAUS_COLLECTOR', 'CYBER_CURATOR'],
-  reviewsCount: 124,
-  successRate: 99,
-  yearsExperience: 3,
-};
-// ──────────────────────────────────────────────────────────────────────────
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private http = inject(HttpClient);
+
   // ── State ────────────────────────────────────────────────────────────────
   private readonly _token = signal<string | null>(this._loadToken());
   private readonly _currentUser = signal<User | null>(this._loadUser());
@@ -52,37 +31,30 @@ export class AuthService {
 
   /**
    * LOGIN
-   * MOCK: accepts any email/password, returns mock user.
-   * REAL: replace body with:
-   *   return this.http.post<ApiResponse<AuthResponse>>(
-   *     `${environment.apiUrl}/auth/login`, payload
-   *   ).pipe(tap(res => this._persist(res.data.token, res.data.user)));
+   * Sends credentials to Backend, maps user and persists token & user.
    */
-  login(payload: LoginRequest): void {
-    // -- MOCK implementation --
-    const response: AuthResponse = { token: MOCK_TOKEN, user: MOCK_USER };
-    this._persist(response.token, response.user);
+  login(payload: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, payload).pipe(
+      tap((res) => {
+        const mappedUser = this._mapUser(res.user);
+        this._persist(res.token, mappedUser);
+      })
+    );
   }
 
   /**
    * REGISTER
-   * MOCK: immediately "creates" account and logs in.
-   * REAL: replace body with HTTP POST to /auth/register
+   * Sends details to Backend, then automatically logs the user in.
    */
-  register(payload: RegisterRequest): void {
-    // -- MOCK implementation --
-    const newUser: User = {
-      ...MOCK_USER,
-      id: `user-${Date.now()}`,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
+  register(payload: RegisterRequest): Observable<AuthResponse> {
+    const backendPayload = {
+      name: `${payload.firstName} ${payload.lastName}`.trim(),
       email: payload.email,
-      totalSales: 0,
-      totalPurchases: 0,
-      joinedAt: new Date(),
-      isVerified: false,
+      password: payload.password,
     };
-    this._persist(MOCK_TOKEN, newUser);
+    return this.http.post<{ message: string; user: any }>(`${environment.apiUrl}/auth/register`, backendPayload).pipe(
+      switchMap(() => this.login({ email: payload.email, password: payload.password }))
+    );
   }
 
   /** Logout — clears token and user from memory and storage */
@@ -109,5 +81,32 @@ export class AuthService {
   private _loadUser(): User | null {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? (JSON.parse(raw) as User) : null;
+  }
+
+  /** Maps backend User schema fields to Frontend model specifications */
+  private _mapUser(u: any): User {
+    if (!u) return u;
+
+    // Split single "name" string into "firstName" and "lastName"
+    const nameParts = (u.name || '').trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    return {
+      id: u._id || u.id,
+      firstName,
+      lastName,
+      email: u.email,
+      role: u.role || 'user',
+      rating: u.rating ?? 5.0,
+      totalSales: u.totalSales ?? 0,
+      totalPurchases: u.totalPurchases ?? 0,
+      joinedAt: u.createdAt ? new Date(u.createdAt) : new Date(),
+      isVerified: u.isVerified ?? false,
+      avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,
+      bio: u.bio || '',
+      location: u.location || '',
+      tags: u.tags || [],
+    };
   }
 }
