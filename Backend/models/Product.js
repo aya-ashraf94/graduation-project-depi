@@ -1,61 +1,46 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const productSchema = mongoose.Schema(
-    {
-        title: {
-            type: String,
-            required: true
-        },
-        description: { 
-            type: String, 
-            required: true 
-        },
-        price: { 
-            type: Number, 
-            required: true 
-        },
-        currency: { 
-            type: String, 
-            default: "EGP" 
-        },
-        categoryId: { 
-            type: String, 
-            required: true 
-        },
-        condition: { 
-            type: String,
-            enum: ["new", "used"], 
-            default: "used" 
-        },
-        brand: { 
-            type: String 
-        },
-        images: { 
-            type: [String], 
-            default: [] 
-        },
-        attributes: { 
-            color: String, storage: String 
-        },
-        location: { 
-            city: String, area: String 
-        },
-        userId: { 
-            type: String, required: true 
-        },
-        status: { 
-            type: String, default: "active" 
-        }
+const productSchema = new mongoose.Schema({
+    title: { 
+        type: String, 
+        required: true 
     },
-    {
-        timestamps: true,
-        toJSON: { virtuals: true },
-        toObject: { virtuals: true }
+    // السطر ده هو اللي ناقص عشان يخزن الوصف
+    description: { 
+        type: String 
+    }, 
+    price: { 
+        type: Number, 
+        required: true 
+    },
+    images: [{ type: String }],
+    categoryId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Category', 
+        required: true 
+    },
+    // ده ممتاز زي ما هو وهيشيل (type, material, color, condition)
+    dynamicAttributes: {
+        type: Map,
+        of: mongoose.Schema.Types.Mixed 
+    },
+    location: { 
+        type: String, 
+        required: true 
+    },
+    phoneNumber: { 
+        type: String, 
+        required: true 
+    },
+    showContactInfo: { 
+        type: Boolean, 
+        default: true 
+    },
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true 
     }
-);
+}, { timestamps: true });
 
-productSchema.virtual('id').get(function () {
-    return this._id.toHexString();
-});
-
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model('Product', productSchema);
