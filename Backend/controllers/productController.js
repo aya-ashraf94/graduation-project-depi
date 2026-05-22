@@ -1,18 +1,30 @@
 const Product = require("../models/Product");
 
+//Get Product By ID
+const getProductById = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error" });
+    }
+};
+
 // @desc    GET ALL PRODUCTS
-// @route   GET /api/products
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({ status: "active" }).sort({ createdAt: -1 });
+        // تأكدي أن حقل status موجود في الـ Schema، إذا لم يكن موجوداً احذفي الفلتر
+        const products = await Product.find({}).sort({ createdAt: -1 });
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
     }
 };
 
-// @desc    GET USER PRODUCTS (لصفحة البروفايل في Angular)
-// @route   GET /api/products/user/:userId
+// @desc    GET USER PRODUCTS
 const getUserProducts = async (req, res) => {
     try {
         const products = await Product.find({ userId: req.params.userId });
@@ -22,35 +34,35 @@ const getUserProducts = async (req, res) => {
     }
 };
 
-// @desc    CREATE PRODUCT
-// @route   POST /api/products
+// @desc    CREATE PRODUCT (النسخة المعدلة)
 const createProduct = async (req, res) => {
     try {
+        // استخراج البيانات الجديدة بناءً على الـ Schema
         const { 
             title, description, price, categoryId, 
-            condition, brand, images, attributes, 
-            location, userId 
+            dynamicAttributes, images, location, 
+            phoneNumber, showContactInfo, userId 
         } = req.body;
 
-        // VALIDATION (تأكدي من الحقول الأساسية)
-        if (!title || !price || !description || !userId || !categoryId) {
+        // التحقق من الحقول الإجبارية (Required Fields)
+        if (!title || !price || !categoryId || !location || !phoneNumber || !userId) {
             return res.status(400).json({
-                message: "Please provide all required fields (title, price, description, userId, categoryId)",
+                message: "Please provide all required fields (title, price, categoryId, location, phoneNumber, userId)",
             });
         }
 
+        // إنشاء المنتج الجديد
         const product = await Product.create({
             title,
             description,
             price,
             categoryId,
-            condition: condition || "used",
-            brand,
+            dynamicAttributes, // هذا الحقل سيخزن الـ Map (البراند، اللون، إلخ)
             images: images || [],
-            attributes,
             location,
-            userId,
-            status: "active" // المنتج بينزل متاح فوراً
+            phoneNumber,
+            showContactInfo: showContactInfo ?? true, // القيمة الافتراضية
+            userId
         });
 
         res.status(201).json({
@@ -58,19 +70,20 @@ const createProduct = async (req, res) => {
             product,
         });
     } catch (error) {
+        console.error("Error creating product:", error);
         res.status(500).json({ message: error.message || "Server Error" });
     }
 };
 
 // @desc    UPDATE PRODUCT
-// @route   PUT /api/products/:id
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.id;
         
+        // استخدام req.body مباشرة سيعمل إذا كان الـ Front-end يرسل البيانات بنفس أسماء الـ Schema
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
-            req.body, // بياخد التعديلات اللي جاية من الفورم في Angular
+            req.body, 
             { new: true, runValidators: true }
         );
 
@@ -83,23 +96,18 @@ const updateProduct = async (req, res) => {
             product: updatedProduct
         });
     } catch (error) {
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    DELETE PRODUCT (HARD DELETE)
-// @route   DELETE /api/products/:id
+// @desc    DELETE PRODUCT
 const deleteProduct = async (req, res) => {
     try {
-        const productId = req.params.id;
-
-        const deletedProduct = await Product.findByIdAndDelete(productId);
-
+        const deletedProduct = await Product.findByIdAndDelete(req.params.id);
         if (!deletedProduct) {
             return res.status(404).json({ message: "Product not found" });
         }
-
-        res.json({ message: "Product Deleted Successfully from database" });
+        res.json({ message: "Product Deleted Successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
     }
@@ -110,5 +118,6 @@ module.exports = {
     getUserProducts,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getProductById
 };
