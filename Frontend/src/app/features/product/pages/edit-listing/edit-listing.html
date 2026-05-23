@@ -1,5 +1,5 @@
-<div class="edit-page" *ngIf="product && isOwner">
-  <div class="container">
+<div class="edit-page" *ngIf="product; else loadingState">
+  <div class="container" *ngIf="isOwner; else notOwner">
 
     <!-- HEADER -->
     <div class="edit-header">
@@ -116,3 +116,15 @@
     </div>
   </div>
 </div>
+
+<ng-template #loadingState>
+  <div class="container">
+    <p>Loading your listing details...</p>
+  </div>
+</ng-template>
+
+<ng-template #notOwner>
+  <div class="container">
+    <p>You are not authorized to edit this listing.</p>
+  </div>
+</ng-template>

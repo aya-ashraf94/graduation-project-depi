@@ -36,21 +36,30 @@ export class ProductDetail implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id') ?? '';
-      this.product = this.productService.getProductById(id);
       
-      // Fetch related items, excluding the current product
-      if (this.product) {
-        this.relatedProducts = this.productService.getProducts()
-          .filter(p => p.id !== this.product!.id)
-          .slice(0, 3);
-        this.activeImage = 0; // Reset image index on route change
+      // 1. جلب المنتج بـ subscribe
+      this.productService.getProductById(id).subscribe({
+        next: (product) => {
+          this.product = product;
+          this.activeImage = 0;
+          
+          // 2. التحقق من الملكية داخل الـ next
+          const currentUser = this.authService.currentUser();
+          this.isOwner = currentUser?.id === product.seller.id;
 
-        // Check if logged-in user is the seller
-        const currentUser = this.authService.currentUser();
-        this.isOwner = currentUser?.id === this.product.seller.id;
-      }
+          // 3. جلب المنتجات ذات الصلة بعد نجاح جلب المنتج
+          this.productService.getProducts().subscribe(allProducts => {
+            this.relatedProducts = allProducts
+              .filter(p => p.id !== id) // استخدام id مباشرة
+              .slice(0, 3);
+          });
+        },
+        error: (err) => {
+          console.error('Error loading product:', err);
+          this.router.navigate(['/products']);
+        }
+      });
       
-      // Scroll to top
       window.scrollTo(0, 0);
     });
   }

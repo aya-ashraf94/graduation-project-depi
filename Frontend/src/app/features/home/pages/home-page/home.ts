@@ -101,10 +101,18 @@ export class Home implements OnInit {
     private productService: ProductService
   ) {}
 
-  ngOnInit(): void {
-    // Fetch 4 featured products
-    this.featuredProducts = this.productService.getProducts().slice(0, 4);
-  }
+ ngOnInit(): void {
+  // Fetch 4 featured products
+  this.productService.getProducts().subscribe({
+    next: (products) => {
+      // نقوم بعمل slice هنا بعد أن تصبح البيانات متاحة
+      this.featuredProducts = products.slice(0, 4);
+    },
+    error: (err) => {
+      console.error('Error fetching featured products:', err);
+    }
+  });
+}
 
   scrollTo(id: string): void {
     const el = document.getElementById(id);
