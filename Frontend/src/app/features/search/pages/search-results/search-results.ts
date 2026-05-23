@@ -52,8 +52,18 @@ export class SearchResults implements OnInit {
     if (this.selectedCategory) filters.category = this.selectedCategory;
     if (this.selectedCondition) filters.condition = this.selectedCondition;
 
-    this.results = this.productService.getProducts(filters);
-    this.totalResults = this.results.length;
+    // التصحيح هنا: استخدام subscribe لاستقبال البيانات
+    this.productService.getProducts(filters).subscribe({
+      next: (data) => {
+        this.results = data;
+        this.totalResults = data.length;
+      },
+      error: (err) => {
+        console.error('Error fetching search results:', err);
+        this.results = []; // في حال حدوث خطأ، نجعل النتائج فارغة
+        this.totalResults = 0;
+      }
+    });
   }
 
   applyFilters(): void {
