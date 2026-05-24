@@ -217,6 +217,40 @@
   </div>
 </section>
 
+<!-- ===== NEWSLETTER SECTION ===== -->
+<section class="section newsletter-signup" style="background: var(--white); border-top: 3px solid var(--black); border-bottom: 3px solid var(--black); padding: 4rem 1.25rem;">
+  <div class="container" style="max-width: 600px; text-align: center; margin: 0 auto;">
+    <div class="section-label" style="display: inline-block; margin-bottom: 0.5rem; background: var(--yellow); border: 2px solid var(--black); padding: 2px 8px; font-weight: 900; font-size: 0.75rem; text-transform: uppercase;">Newsletter</div>
+    <h2 style="font-family: var(--font-primary); font-weight: 900; font-size: 2.25rem; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--black);">STAY UPDATED</h2>
+    <p style="font-family: var(--font-secondary); font-size: 1rem; color: var(--gray-3); margin-bottom: 2rem;">Subscribe to our newsletter to receive updates on new products, discounts, and campus events.</p>
+    
+    <form (ngSubmit)="subscribeNewsletter()" style="display: flex; flex-direction: row; gap: 0.75rem; width: 100%; max-width: 500px; margin: 0 auto; flex-wrap: wrap; justify-content: center;">
+      <input 
+        type="email" 
+        placeholder="Enter your email address" 
+        [(ngModel)]="newsletterEmail" 
+        name="newsletterEmail" 
+        required 
+        style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.75rem 1rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 3px 3px 0 var(--black); outline: none; flex: 1; min-width: 250px;" 
+      />
+      <button 
+        type="submit" 
+        style="padding: 0.75rem 24px; background: var(--yellow); border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 700; box-shadow: 3px 3px 0 var(--black); cursor: pointer; color: var(--black);"
+      >
+        SUBSCRIBE
+      </button>
+    </form>
+
+    <div *ngIf="newsletterSuccessMessage" style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-top: 1.5rem; display: inline-block;">
+      {{ newsletterSuccessMessage }}
+    </div>
+
+    <div *ngIf="newsletterErrorMessage" style="background: #ff4d4d; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-top: 1.5rem; display: inline-block;">
+      {{ newsletterErrorMessage }}
+    </div>
+  </div>
+</section>
+
 <!-- ===== 7. SELL CTA ===== -->
 <section class="sell-cta section section-dark" id="contact">
   <div class="sell-cta-bg sell-cta-bg-top" aria-hidden="true"></div>

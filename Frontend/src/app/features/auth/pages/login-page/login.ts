@@ -64,7 +64,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
                 <input type="checkbox" class="auth-checkbox" [disabled]="isLoading()">
                 <span>Remember me</span>
               </label>
-              <a class="forgot-link" href="#">Forgot Password?</a>
+              <a class="forgot-link" (click)="openForgotModal()" style="cursor: pointer;">Forgot Password?</a>
             </div>
 
             <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">
@@ -94,6 +94,127 @@ import { LoginRequest } from '../../../../core/models/user.model';
           <div class="dec-box dec-2"></div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="report-overlay" *ngIf="showForgotModal()" (click)="closeForgotModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem;">
+      <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
+        <button class="modal-standard-close" (click)="closeForgotModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
+
+        <h3 style="font-family: var(--font-primary); font-weight: 900; font-size: 1.5rem; text-transform: uppercase; margin-bottom: 0.5rem;">Reset Password</h3>
+        <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem;">Enter your email address and we'll send you a password reset token.</p>
+
+        @if (forgotError()) {
+          <div style="background: #ff4d4d; color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
+            {{ forgotError() }}
+          </div>
+        }
+
+        @if (forgotMessage()) {
+          <div style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+            {{ forgotMessage() }}
+          </div>
+          
+          <div class="mock-email-inbox" style="border: 2px dashed var(--black); background: var(--surface-2); padding: 1.25rem; border-radius: var(--radius-sm); text-align: left; box-shadow: 2px 2px 0 var(--black); margin-top: 1rem;">
+            <div style="font-weight: 800; font-family: var(--font-primary); font-size: 0.9rem; border-bottom: 2px solid var(--black); padding-bottom: 0.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+              <span>📬 DEV SANDBOX EMAIL</span>
+              <span style="background: var(--yellow); color: var(--black); border: 1.5px solid var(--black); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem;">ACTION REQUIRED</span>
+            </div>
+            <p style="font-size: 0.85rem; margin-bottom: 1rem; color: var(--black); font-family: var(--font-secondary);">
+              The secure reset link has been printed to the **Node.js server console terminal** to mimic email receipt. Please copy the token from the terminal log and paste it here:
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <input
+                type="password"
+                placeholder="Paste Reset Token Here"
+                [(ngModel)]="manualToken"
+                name="manualToken"
+                required
+                style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none; background: var(--white); color: var(--black);"
+              />
+              <button *ngIf="manualToken && manualToken.trim()" type="button" (click)="verifyAndOpenReset()" style="width: 100%; text-align: center; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; background: var(--yellow); border: 2px solid var(--black); padding: 8px; border-radius: var(--radius-xs); box-shadow: 2px 2px 0 var(--black); cursor: pointer; font-family: var(--font-primary); margin-top: 0.5rem; color: var(--black);">
+                🔑 OPEN RESET PASSWORD FORM
+              </button>
+            </div>
+          </div>
+        } @else {
+          <form (ngSubmit)="sendForgot()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+            <input
+              type="email"
+              placeholder="Email address"
+              [(ngModel)]="forgotEmail"
+              name="forgotEmail"
+              required
+              [disabled]="forgotLoading()"
+              style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none;"
+            />
+            <button type="submit" [disabled]="forgotLoading()" style="padding: 0.75rem 24px; background: var(--yellow); border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 700; box-shadow: 3px 3px 0 var(--black); cursor: pointer; color: var(--black); align-self: flex-end;">
+              {{ forgotLoading() ? 'SENDING...' : 'SEND TOKEN' }}
+            </button>
+          </form>
+        }
+      </div>
+    </div>
+
+    <!-- RESET PASSWORD MODAL -->
+    <div class="report-overlay" *ngIf="showResetModal()" (click)="closeResetModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 1.25rem;">
+      <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
+        <button class="modal-standard-close" (click)="closeResetModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
+
+        <h3 style="font-family: var(--font-primary); font-weight: 900; font-size: 1.5rem; text-transform: uppercase; margin-bottom: 0.5rem;">Reset Your Password</h3>
+        <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem;">Enter a strong new password below to update your account access.</p>
+
+        @if (resetError()) {
+          <div style="background: #ff4d4d; color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
+            {{ resetError() }}
+          </div>
+        }
+
+        @if (resetSuccess()) {
+          <div style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+            {{ resetSuccess() }}
+          </div>
+        } @else {
+          <form (ngSubmit)="sendReset()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+            <input
+              type="hidden"
+              [(ngModel)]="resetTokenInput"
+              name="resetTokenInput"
+              required
+            />
+            
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+              <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary); color: var(--black);">NEW PASSWORD</label>
+              <input
+                type="password"
+                placeholder="Minimum 6 characters"
+                [(ngModel)]="resetPasswordInput"
+                name="resetPasswordInput"
+                required
+                [disabled]="resetLoading()"
+                style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none;"
+              />
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+              <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary); color: var(--black);">CONFIRM PASSWORD</label>
+              <input
+                type="password"
+                placeholder="Confirm password"
+                [(ngModel)]="resetPasswordConfirm"
+                name="resetPasswordConfirm"
+                required
+                [disabled]="resetLoading()"
+                style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none;"
+              />
+            </div>
+
+            <button type="submit" [disabled]="resetLoading()" style="padding: 0.75rem 24px; background: var(--yellow); border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 700; box-shadow: 3px 3px 0 var(--black); cursor: pointer; color: var(--black); align-self: flex-end; margin-top: 0.5rem;">
+              {{ resetLoading() ? 'RESETTING...' : 'RESET PASSWORD' }}
+            </button>
+          </form>
+        }
       </div>
     </div>
   `,
@@ -454,6 +575,24 @@ export class Login {
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
 
+  // Forgot password signals
+  showForgotModal = signal(false);
+  forgotEmail = '';
+  forgotMessage = signal<string | null>(null);
+  forgotError = signal<string | null>(null);
+  forgotLoading = signal(false);
+  receivedToken = signal<string>('');
+  manualToken = '';
+
+  // Reset password signals
+  showResetModal = signal(false);
+  resetTokenInput = '';
+  resetPasswordInput = '';
+  resetPasswordConfirm = '';
+  resetSuccess = signal<string | null>(null);
+  resetError = signal<string | null>(null);
+  resetLoading = signal(false);
+
   signIn() {
     if (!this.form.email || !this.form.password) return;
 
@@ -468,6 +607,106 @@ export class Login {
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(err?.error?.message || 'Invalid email or password');
+      }
+    });
+  }
+
+  openForgotModal() {
+    this.forgotEmail = '';
+    this.forgotMessage.set(null);
+    this.forgotError.set(null);
+    this.forgotLoading.set(false);
+    this.receivedToken.set('');
+    this.manualToken = '';
+    this.showForgotModal.set(true);
+  }
+
+  closeForgotModal() {
+    this.showForgotModal.set(false);
+  }
+
+  sendForgot() {
+    if (!this.forgotEmail.trim()) return;
+    
+    this.forgotLoading.set(true);
+    this.forgotError.set(null);
+    this.forgotMessage.set(null);
+    
+    this.auth.forgotPassword(this.forgotEmail).subscribe({
+      next: (res) => {
+        this.forgotLoading.set(false);
+        this.receivedToken.set('');
+        this.forgotMessage.set(
+          res.message || 'If your email is registered, we have sent a secure link.'
+        );
+      },
+      error: (err) => {
+        this.forgotLoading.set(false);
+        this.forgotError.set(err?.error?.message || 'Failed to request reset.');
+      }
+    });
+  }
+
+  openResetModal(token: string) {
+    this.receivedToken.set(token);
+    this.resetTokenInput = token;
+    this.resetPasswordInput = '';
+    this.resetPasswordConfirm = '';
+    this.resetError.set(null);
+    this.resetSuccess.set(null);
+    this.resetLoading.set(false);
+    this.showForgotModal.set(false);
+    this.showResetModal.set(true);
+  }
+
+  verifyAndOpenReset() {
+    if (!this.manualToken.trim()) return;
+    
+    this.forgotLoading.set(true);
+    this.forgotError.set(null);
+    
+    this.auth.validateResetToken(this.manualToken).subscribe({
+      next: (res) => {
+        this.forgotLoading.set(false);
+        this.openResetModal(this.manualToken);
+      },
+      error: (err) => {
+        this.forgotLoading.set(false);
+        this.forgotError.set(err?.error?.message || 'Invalid or expired password reset token');
+      }
+    });
+  }
+
+  closeResetModal() {
+    this.showResetModal.set(false);
+  }
+
+  sendReset() {
+    if (!this.resetTokenInput || !this.resetPasswordInput) return;
+    if (this.resetPasswordInput !== this.resetPasswordConfirm) {
+      this.resetError.set('Passwords do not match');
+      return;
+    }
+    if (this.resetPasswordInput.length < 6) {
+      this.resetError.set('Password must be at least 6 characters');
+      return;
+    }
+    
+    this.resetLoading.set(true);
+    this.resetError.set(null);
+    this.resetSuccess.set(null);
+    
+    this.auth.resetPassword(this.resetTokenInput, this.resetPasswordInput).subscribe({
+      next: (res) => {
+        this.resetLoading.set(false);
+        this.resetSuccess.set('Password reset successfully! You can now log in.');
+        setTimeout(() => {
+          this.closeResetModal();
+        }, 2000);
+      },
+      error: (err) => {
+        this.resetLoading.set(false);
+        this.resetError.set(err?.error?.message || 'Failed to reset password. Token might be invalid/expired.');
       }
     });
   }

@@ -171,7 +171,6 @@
             <div class="product-img-wrap" [routerLink]="['/products', product.id]" style="cursor: pointer;">
               <div class="card-badges">
                 <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
-                <span class="badge-sku">{{ product.sku }}</span>
               </div>
               <button class="btn-wishlist" [class.wishlisted]="wishlistService.isWishlisted(product.id)" (click)="toggleWishlist(product.id, $event)">
                 <svg width="22" height="22" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? '#e23b3b' : 'none'" stroke="currentColor" stroke-width="2">

@@ -57,12 +57,33 @@ export class AuthService {
     );
   }
 
+  /** Request password reset token */
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  /** Reset password using token */
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/auth/reset-password`, { token, newPassword });
+  }
+
+  /** Validate password reset token */
+  validateResetToken(token: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/auth/validate-reset-token`, { token });
+  }
+
   /** Logout — clears token and user from memory and storage */
   logout(): void {
     this._token.set(null);
     this._currentUser.set(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+  }
+
+  /** Update current logged in user details locally */
+  updateLocalUser(user: User): void {
+    this._currentUser.set(user);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

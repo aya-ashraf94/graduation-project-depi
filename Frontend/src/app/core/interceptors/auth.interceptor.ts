@@ -14,8 +14,13 @@ const TOKEN_KEY = 'arch_token';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem(TOKEN_KEY);
 
-  // If no token or it's an auth endpoint (login/register), skip
-  if (!token || req.url.includes('/auth/')) {
+  const isPublicAuth = req.url.endsWith('/auth/login') || 
+                       req.url.endsWith('/auth/register') || 
+                       req.url.endsWith('/auth/forgot-password') || 
+                       req.url.endsWith('/auth/reset-password');
+
+  // If no token or it's a public auth endpoint, skip
+  if (!token || isPublicAuth) {
     return next(req);
   }
 

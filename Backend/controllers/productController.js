@@ -1,14 +1,54 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
+const fs = require("fs");
+const path = require("path");
+
+// Helper to save base64 image to disk and return URL path
+const saveBase64Image = (base64Str) => {
+    if (!base64Str) return null;
+    
+    // If it's already a URL or path, keep it
+    if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) {
+        return base64Str;
+    }
+    
+    // Match base64 pattern: data:image/jpeg;base64,...
+    const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+        return base64Str;
+    }
+    
+    const type = matches[1];
+    const extension = type.split("/")[1] || "png";
+    const buffer = Buffer.from(matches[2], "base64");
+    
+    const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
+    const uploadDir = path.join(__dirname, "../public/uploads");
+    
+    // Ensure directory exists
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(path.join(uploadDir, fileName), buffer);
+    return `/uploads/${fileName}`;
+};
 
 //Get Product By ID
 const getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('userId').populate('categoryId');
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            { $inc: { viewCount: 1 } },
+            { new: true }
+        ).populate('userId').populate('categoryId');
+        
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
         res.json(product);
     } catch (error) {
+        console.error("Error in getProductById:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };
@@ -16,14 +56,120 @@ const getProductById = async (req, res) => {
 // @desc    GET ALL PRODUCTS
 const getProducts = async (req, res) => {
     try {
+        const mongoQuery = {};
+
+        // 1. Category Filter
+        if (req.query.category) {
+            const catQuery = req.query.category.toLowerCase();
+            let regex;
+            if (catQuery === 'tops') {
+                regex = /clothes|apparel/i;
+            } else if (catQuery === 'electronics') {
+                regex = /laptop|mobile|electronics/i;
+            } else if (catQuery === 'furniture') {
+                regex = /appliance|furniture/i;
+            } else if (catQuery === 'sports') {
+                regex = /sport/i;
+            } else if (catQuery === 'books') {
+                regex = /book/i;
+            }
+
+            if (regex) {
+                const matchingCategories = await Category.find({ name: regex });
+                const categoryIds = matchingCategories.map(c => c._id);
+                mongoQuery.categoryId = { $in: categoryIds };
+            } else if (catQuery === 'other') {
+                const allCategories = await Category.find({});
+                const excludedRegex = /clothes|apparel|laptop|mobile|electronics|appliance|furniture|sport|book/i;
+                const otherCategories = allCategories.filter(c => !excludedRegex.test(c.name));
+                const categoryIds = otherCategories.map(c => c._id);
+                mongoQuery.categoryId = { $in: categoryIds };
+            } else {
+                const mongoose = require('mongoose');
+                if (mongoose.Types.ObjectId.isValid(req.query.category)) {
+                    mongoQuery.categoryId = req.query.category;
+                } else {
+                    const matchingCategories = await Category.find({ name: new RegExp(req.query.category, 'i') });
+                    const categoryIds = matchingCategories.map(c => c._id);
+                    mongoQuery.categoryId = { $in: categoryIds };
+                }
+            }
+        }
+
+        // 2. Condition Filter
+        if (req.query.condition) {
+            const cond = req.query.condition.toLowerCase();
+            let conditionRegex;
+            if (cond === 'new_with_tags' || cond === 'new') {
+                conditionRegex = /^new(_with_tags)?$/i;
+            } else if (cond === 'good' || cond === 'used') {
+                conditionRegex = /^used|good$/i;
+            } else {
+                conditionRegex = new RegExp('^' + req.query.condition + '$', 'i');
+            }
+
+            mongoQuery.$or = [
+                { "dynamicAttributes.condition": conditionRegex },
+                { "dynamicAttributes.Condition": conditionRegex }
+            ];
+        }
+
+        // 3. Search Filter
+        if (req.query.search) {
+            const searchRegex = new RegExp(req.query.search, 'i');
+            const searchOr = [
+                { title: searchRegex },
+                { description: searchRegex },
+                { "dynamicAttributes.brand": searchRegex },
+                { "dynamicAttributes.Brand": searchRegex }
+            ];
+
+            if (mongoQuery.$or) {
+                mongoQuery.$and = [
+                    { $or: mongoQuery.$or },
+                    { $or: searchOr }
+                ];
+                delete mongoQuery.$or;
+            } else {
+                mongoQuery.$or = searchOr;
+            }
+        }
+
+        // 4. Price Filter
+        if (req.query.minPrice || req.query.maxPrice) {
+            mongoQuery.price = {};
+            if (req.query.minPrice) {
+                mongoQuery.price.$gte = Number(req.query.minPrice);
+            }
+            if (req.query.maxPrice) {
+                mongoQuery.price.$lte = Number(req.query.maxPrice);
+            }
+        }
+
+        // 5. Sorting & Limit
+        let sort = { createdAt: -1 }; // default: newest
+        if (req.query.sortBy) {
+            if (req.query.sortBy === 'price_asc') {
+                sort = { price: 1 };
+            } else if (req.query.sortBy === 'price_desc') {
+                sort = { price: -1 };
+            } else if (req.query.sortBy === 'popular') {
+                sort = { viewCount: -1 };
+            } else if (req.query.sortBy === 'newest') {
+                sort = { createdAt: -1 };
+            }
+        }
+
         const limit = parseInt(req.query.limit);
-        const query = Product.find({}).sort({ createdAt: -1 });
+        const query = Product.find(mongoQuery).sort(sort);
         if (!isNaN(limit) && limit > 0) {
             query.limit(limit);
         }
+
         const products = await query.populate('categoryId');
         res.json(products);
     } catch (error) {
+        console.error("Error in getProducts:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };
@@ -101,6 +247,9 @@ const createProduct = async (req, res) => {
             return res.status(400).json({ message: "Please provide all required fields" });
         }
 
+        // Save base64 images to disk files
+        const savedImages = (images || []).map(img => saveBase64Image(img)).filter(Boolean);
+
         // إنشاء المنتج مع ربطه بـ req.user.id
         let product = await Product.create({
             title,
@@ -108,7 +257,7 @@ const createProduct = async (req, res) => {
             price,
             categoryId,
             dynamicAttributes,
-            images: images || [],
+            images: savedImages,
             location,
             phoneNumber,
             showContactInfo: showContactInfo ?? true,
@@ -164,6 +313,9 @@ const updateProduct = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to update this product" });
         }
 
+        // Save base64 images to disk files
+        const savedImages = (req.body.images || []).map(img => saveBase64Image(img)).filter(Boolean);
+
         // 3. تحديد الحقول المسموح بتعديلها فقط (Security Best Practice)
         // هذا يمنع أي مستخدم من تغيير الـ userId أو بيانات النظام
         const allowedUpdates = {
@@ -172,7 +324,7 @@ const updateProduct = async (req, res) => {
             price: req.body.price,
             categoryId: req.body.categoryId,
             dynamicAttributes: req.body.dynamicAttributes,
-            images: req.body.images,
+            images: savedImages,
             location: req.body.location,
             phoneNumber: req.body.phoneNumber,
             showContactInfo: req.body.showContactInfo

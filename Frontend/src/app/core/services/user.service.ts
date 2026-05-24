@@ -17,9 +17,11 @@ export class UserService {
     );
   }
 
-  /** UPDATE PROFILE (mock/stub) */
-  updateProfile(id: string, payload: Partial<User>): User | undefined {
-    return undefined;
+  /** UPDATE PROFILE */
+  updateProfile(id: string, payload: any): Observable<User> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
+      map(u => this.mapUser(u))
+    );
   }
 
   private mapUser(u: any): User {

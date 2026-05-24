@@ -18,11 +18,14 @@
 
         <!-- Info Block -->
         <div class="info-block">
-          <div class="info-meta-row">
+          <div class="info-meta-row" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
             <div class="rating-box">
               <span class="stars">★★★★★</span>
-              <span class="rating-text">{{ user.rating }} ({{ user.reviewsCount }} REVIEWS)</span>
+              <span class="rating-text">{{ user.rating }} ({{ user.reviewsCount || 0 }} REVIEWS)</span>
             </div>
+            <button class="btn btn-secondary btn-sm" *ngIf="isOwnProfile" (click)="openEditModal()" style="font-family: var(--font-secondary); font-weight: 700; font-size: 0.8rem; background: var(--yellow); border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); padding: 4px 10px; cursor: pointer; border-radius: var(--radius-sm); color: var(--black); margin-left: auto;">
+              EDIT PROFILE
+            </button>
             <div class="tags-row" *ngIf="user.tags">
               <span class="tag-box" *ngFor="let tag of user.tags">{{ tag | uppercase }}</span>
             </div>
@@ -48,6 +51,14 @@
             (click)="activeTab = 'wishlist'"
           >
             WISHLIST
+          </button>
+          <button
+            *ngIf="isOwnProfile"
+            class="tab-item"
+            [class.active]="activeTab === 'orders'"
+            (click)="activeTab = 'orders'"
+          >
+            MY ORDERS
           </button>
           <button
             class="tab-item"
@@ -88,7 +99,6 @@
                 >
                   <div class="card-badges">
                     <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
-                    <span class="badge-sku">{{ item.id.substring(0, 8) | uppercase }}</span>
                   </div>
                   <button
                     class="btn-wishlist"
@@ -166,7 +176,6 @@
                 >
                   <div class="card-badges">
                     <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
-                    <span class="badge-sku">{{ item.id.substring(0, 8) | uppercase }}</span>
                   </div>
                   <button
                     class="btn-wishlist"
@@ -295,6 +304,87 @@
         </ng-template>
       </div>
 
+      <!-- TAB CONTENT: MY ORDERS -->
+      <div class="tab-content" *ngIf="activeTab === 'orders' && isOwnProfile">
+        <div class="orders-wrap">
+          <!-- Purchases Section -->
+          <div class="orders-section">
+            <h2 class="section-title">PURCHASES</h2>
+            <div class="orders-list" *ngIf="getPurchases().length > 0; else noPurchases">
+              <div class="order-card" *ngFor="let order of getPurchases()">
+                <div class="order-header">
+                  <span class="order-id">ORDER #{{ order.id.substring(0, 8) | uppercase }}</span>
+                  <span class="order-date">{{ order.createdAt | date:'short' }}</span>
+                </div>
+                <div class="order-body">
+                  <div class="order-img-wrap" [routerLink]="['/products', order.productId]" style="cursor: pointer;">
+                    <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+                  </div>
+                  <div class="order-details">
+                    <h4 class="product-title" [routerLink]="['/products', order.productId]" style="cursor: pointer;">{{ order.productTitle }}</h4>
+                    <p class="seller-info">Seller: {{ order.counterpartyName }}</p>
+                    <p class="order-price">{{ order.price | currencyFormat }}</p>
+                    <span class="status-badge" [class]="order.status">{{ order.status | uppercase }}</span>
+                  </div>
+                  <div class="order-actions">
+                    <button *ngIf="order.status === 'delivered'" class="btn btn-primary btn-sm btn-review" (click)="openReviewModal(order)">
+                      WRITE REVIEW
+                    </button>
+                    <button *ngIf="order.status === 'shipped'" class="btn btn-primary btn-sm btn-deliver" (click)="updateOrderStatus(order.id, 'delivered')" style="background: #28a745; color: white;">
+                      CONFIRM RECEIVED
+                    </button>
+                    <button *ngIf="order.status === 'pending'" class="btn btn-outline btn-sm btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')" style="background: #dc3545; color: white;">
+                      CANCEL
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noPurchases>
+              <div class="empty-orders">No purchases made yet.</div>
+            </ng-template>
+          </div>
+
+          <!-- Sales Section -->
+          <div class="orders-section">
+            <h2 class="section-title">SALES</h2>
+            <div class="orders-list" *ngIf="getSales().length > 0; else noSales">
+              <div class="order-card" *ngFor="let order of getSales()">
+                <div class="order-header">
+                  <span class="order-id">ORDER #{{ order.id.substring(0, 8) | uppercase }}</span>
+                  <span class="order-date">{{ order.createdAt | date:'short' }}</span>
+                </div>
+                <div class="order-body">
+                  <div class="order-img-wrap" [routerLink]="['/products', order.productId]" style="cursor: pointer;">
+                    <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+                  </div>
+                  <div class="order-details">
+                    <h4 class="product-title" [routerLink]="['/products', order.productId]" style="cursor: pointer;">{{ order.productTitle }}</h4>
+                    <p class="buyer-info">Buyer: {{ order.counterpartyName }}</p>
+                    <p class="order-price">{{ order.price | currencyFormat }}</p>
+                    <span class="status-badge" [class]="order.status">{{ order.status | uppercase }}</span>
+                  </div>
+                  <div class="order-actions">
+                    <button *ngIf="order.status === 'pending'" class="btn btn-primary btn-sm btn-ship" (click)="updateOrderStatus(order.id, 'shipped')" style="background: #17a2b8; color: white;">
+                      MARK SHIPPED
+                    </button>
+                    <button *ngIf="order.status === 'shipped'" class="btn btn-primary btn-sm btn-deliver" (click)="updateOrderStatus(order.id, 'delivered')" style="background: #28a745; color: white;">
+                      MARK DELIVERED
+                    </button>
+                    <button *ngIf="order.status === 'pending'" class="btn btn-outline btn-sm btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')" style="background: #dc3545; color: white;">
+                      CANCEL
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noSales>
+              <div class="empty-orders">No items sold yet.</div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB CONTENT: REVIEWS -->
       <div class="tab-content" *ngIf="activeTab === 'reviews'">
         <div class="reviews-list" *ngIf="reviews.length > 0; else noReviews">
@@ -399,5 +489,101 @@
         >Create an Account</a
       >
     </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="report-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 500px; padding: 2rem;">
+    <button class="modal-standard-close" (click)="closeEditModal()">✕</button>
+
+    <h3 class="modal-standard-title" style="margin-bottom: 1.5rem; text-align: center; font-family: var(--font-primary); font-weight: 900;">EDIT PROFILE</h3>
+    
+    <div *ngIf="profileSuccess()" class="banner banner-success" style="background: #d4edda; color: #155724; border: 2px solid #c3e6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
+      {{ profileSuccess() }}
+    </div>
+    <div *ngIf="profileError()" class="banner banner-error" style="background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
+      {{ profileError() }}
+    </div>
+    
+    <form (ngSubmit)="saveProfile()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">FIRST NAME</label>
+          <input type="text" [(ngModel)]="editForm.firstName" name="firstName" required style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">LAST NAME</label>
+          <input type="text" [(ngModel)]="editForm.lastName" name="lastName" required style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
+        </div>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">AVATAR URL</label>
+        <input type="text" [(ngModel)]="editForm.avatar" name="avatar" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">BIO</label>
+        <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none; resize: vertical;"></textarea>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">LOCATION</label>
+        <input type="text" [(ngModel)]="editForm.location" name="location" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">TAGS (comma separated)</label>
+        <input type="text" [(ngModel)]="editForm.tagsString" name="tagsString" placeholder="e.g. fashion, books, electronics" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end;">
+        <button type="button" class="modal-btn-secondary" (click)="closeEditModal()" style="margin: 0; padding: 10px 20px; cursor: pointer; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); font-weight: 700;">Cancel</button>
+        <button type="submit" class="modal-btn-primary" style="margin: 0; padding: 10px 20px; background: var(--yellow); color: var(--black); font-weight: 700; border: 2px solid var(--black); box-shadow: 3px 3px 0 var(--black); cursor: pointer;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- LEAVE REVIEW MODAL -->
+<div class="report-overlay" *ngIf="showReviewModal" (click)="closeReviewModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 500px; padding: 2rem;">
+    <button class="modal-standard-close" (click)="closeReviewModal()">✕</button>
+
+    <h3 class="modal-standard-title" style="margin-bottom: 1.5rem; text-align: center; font-family: var(--font-primary); font-weight: 900;">LEAVE A REVIEW</h3>
+    
+    <div *ngIf="reviewSuccess()" class="banner banner-success" style="background: #d4edda; color: #155724; border: 2px solid #c3e6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
+      {{ reviewSuccess() }}
+    </div>
+    <div *ngIf="reviewError()" class="banner banner-error" style="background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
+      {{ reviewError() }}
+    </div>
+
+    <form (ngSubmit)="submitReview()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary); margin-bottom: 0.25rem;">RATING</label>
+        <!-- Star rating radio buttons -->
+        <div class="stars-selector">
+          <input type="radio" id="star5" name="rating" [value]="5" [(ngModel)]="reviewForm.rating" /><label for="star5" title="5 stars">★</label>
+          <input type="radio" id="star4" name="rating" [value]="4" [(ngModel)]="reviewForm.rating" /><label for="star4" title="4 stars">★</label>
+          <input type="radio" id="star3" name="rating" [value]="3" [(ngModel)]="reviewForm.rating" /><label for="star3" title="3 stars">★</label>
+          <input type="radio" id="star2" name="rating" [value]="2" [(ngModel)]="reviewForm.rating" /><label for="star2" title="2 stars">★</label>
+          <input type="radio" id="star1" name="rating" [value]="1" [(ngModel)]="reviewForm.rating" /><label for="star1" title="1 star">★</label>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">COMMENTS</label>
+        <textarea [(ngModel)]="reviewForm.comment" name="comment" rows="4" required placeholder="Describe your experience with this transaction..." style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none; resize: vertical;"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end;">
+        <button type="button" class="modal-btn-secondary" (click)="closeReviewModal()" [disabled]="reviewLoading" style="margin: 0; padding: 10px 20px; cursor: pointer; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); font-weight: 700;">Cancel</button>
+        <button type="submit" class="modal-btn-primary" [disabled]="reviewLoading" style="margin: 0; padding: 10px 20px; background: var(--yellow); color: var(--black); font-weight: 700; border: 2px solid var(--black); box-shadow: 3px 3px 0 var(--black); cursor: pointer;">
+          {{ reviewLoading ? 'SUBMITTING...' : 'SUBMIT REVIEW' }}
+        </button>
+      </div>
+    </form>
   </div>
 </div>

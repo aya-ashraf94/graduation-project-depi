@@ -48,6 +48,15 @@ const productSchema = new mongoose.Schema({
     isVerified: {
         type: Boolean,
         default: false
+    },
+    status: {
+        type: String,
+        enum: ['active', 'sold', 'draft'],
+        default: 'active'
+    },
+    viewCount: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

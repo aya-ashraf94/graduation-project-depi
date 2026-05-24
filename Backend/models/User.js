@@ -28,6 +28,51 @@ const userSchema = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+
+        avatar: {
+            type: String,
+            default: ""
+        },
+
+        bio: {
+            type: String,
+            default: ""
+        },
+
+        location: {
+            type: String,
+            default: ""
+        },
+
+        tags: {
+            type: [String],
+            default: []
+        },
+
+        rating: {
+            type: Number,
+            default: 5.0
+        },
+
+        totalSales: {
+            type: Number,
+            default: 0
+        },
+
+        totalPurchases: {
+            type: Number,
+            default: 0
+        },
+
+        resetPasswordToken: {
+            type: String,
+            default: null
+        },
+
+        resetPasswordExpires: {
+            type: Date,
+            default: null
+        }
     },
     {
         timestamps: true,

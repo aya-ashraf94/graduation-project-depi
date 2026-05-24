@@ -245,5 +245,15 @@ export class ProductService {
       categoryName: p.categoryId?.name || ''
     } as any;
   }
+
+  /** Report a listing */
+  reportProduct(productId: string, reason: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/reports`, { productId, reason });
+  }
+
+  /** Subscribe to newsletter */
+  subscribeNewsletter(email: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/support/newsletter`, { email });
+  }
 }
 
