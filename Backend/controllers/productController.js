@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 //Get Product By ID
 const getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById(req.params.id).populate('userId').populate('categoryId');
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
@@ -17,7 +17,7 @@ const getProductById = async (req, res) => {
 const getProducts = async (req, res) => {
     try {
         // تأكدي أن حقل status موجود في الـ Schema، إذا لم يكن موجوداً احذفي الفلتر
-        const products = await Product.find({}).sort({ createdAt: -1 });
+        const products = await Product.find({}).sort({ createdAt: -1 }).populate('userId').populate('categoryId');
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
@@ -28,7 +28,7 @@ const getProducts = async (req, res) => {
 const getMyProducts = async (req, res) => {
     try {
         // يجلب المنتجات الخاصة باليوزر الذي أرسل الـ Token فقط
-        const products = await Product.find({ userId: req.user.id });
+        const products = await Product.find({ userId: req.user.id }).populate('userId').populate('categoryId');
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
@@ -38,7 +38,7 @@ const getMyProducts = async (req, res) => {
 // @desc    GET USER PRODUCTS
 const getUserProducts = async (req, res) => {
     try {
-        const products = await Product.find({ userId: req.params.userId });
+        const products = await Product.find({ userId: req.params.userId }).populate('userId').populate('categoryId');
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
@@ -98,7 +98,7 @@ const createProduct = async (req, res) => {
         }
 
         // إنشاء المنتج مع ربطه بـ req.user.id
-        const product = await Product.create({
+        let product = await Product.create({
             title,
             description,
             price,
@@ -110,6 +110,8 @@ const createProduct = async (req, res) => {
             showContactInfo: showContactInfo ?? true,
             userId: req.user.id // <-- الربط الصحيح هنا
         });
+        product = await product.populate('userId');
+        product = await product.populate('categoryId');
 
         res.status(201).json({ message: "Product Created Successfully", product });
     } catch (error) {
@@ -177,7 +179,7 @@ const updateProduct = async (req, res) => {
             productId,
             { $set: allowedUpdates },
             { new: true, runValidators: true }
-        );
+        ).populate('userId').populate('categoryId');
 
         res.json({
             message: "Product Updated Successfully",

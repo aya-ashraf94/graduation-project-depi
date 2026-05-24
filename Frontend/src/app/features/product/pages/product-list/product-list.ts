@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ProductService } from '../../../../core/services/product.service';
 
 export interface Product {
   id: string;
@@ -15,6 +16,7 @@ export interface Product {
   condition: string;
   conditionScore: string;
   sku: string;
+  categoryName?: string;
 }
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
@@ -27,22 +29,18 @@ type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
   styleUrl: './product-list.css',
 })
 export class ProductList implements OnInit {
+  private productService = inject(ProductService);
+  private cdr = inject(ChangeDetectorRef);
 
   // ── Raw data ───────────────────────────────────────────────────────────
-  private allProducts: Product[] = [
-    { id: 'prod-001', name: 'Muted Moto Jacket 2018',    brand: 'ACNE STUDIOS',      price: 850,   desc: 'Architectural utility meets industrial aesthetics.',          image: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop', badge: '',            size: 'Size M',   condition: 'Excellent',    conditionScore: '9.0/10', sku: 'AS-MJ-2018'   },
-    { id: 'prod-002', name: 'Riot Riot Riot Bomber Camo', brand: 'RAF SIMONS',        price: 12500, desc: 'High-contrast equipment for the modern digital workspace.',   image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop', badge: 'RARE ARCHIVE', size: 'Size L',   condition: 'Good',         conditionScore: '8.0/10', sku: 'RS-RRR-CAMO'  },
-    { id: 'prod-003', name: '1955 501 XX Customized',     brand: "LEVI'S VINTAGE",    price: 450,   desc: 'Engineered for durability and functional performance.',       image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=800&auto=format&fit=crop', badge: '',            size: 'W32 L34',  condition: 'Distressed',   conditionScore: '7.5/10', sku: 'LV-501-1955'  },
-    { id: 'prod-004', name: 'Geobasket Black/Milk',       brand: 'RICK OWENS',        price: 650,   desc: 'The essential tool for heavy-duty operational tasks.',        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop', badge: '',            size: 'EU 43',    condition: 'Excellent',    conditionScore: '9.5/10', sku: 'RO-GB-BLK'    },
-    { id: 'prod-005', name: "Heavy ID Bracelet '11",      brand: 'MAISON MARGIELA',   price: 320,   desc: 'Precision instruments for technical environments.',           image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800&auto=format&fit=crop', badge: '',            size: 'OS',       condition: 'Tarnished',    conditionScore: '6.5/10', sku: 'MM-AC-2011'   },
-    { id: 'prod-006', name: 'Boiled Wool Sweater',        brand: 'COMME DES GARCONS', price: 580,   desc: 'Advanced thermal protection for cold climates.',             image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=800&auto=format&fit=crop', badge: '',            size: 'Size S',   condition: 'New w/ Tags',  conditionScore: '10/10',  sku: 'CDG-TP-004'   },
-  ];
+  private allProducts: Product[] = [];
 
   // ── Displayed (after filters + sort) ──────────────────────────────────
   products: Product[] = [];
+  isLoading = true;
 
   // ── Filter state ───────────────────────────────────────────────────────
-  categories = ['Outerwear', 'Tops', 'Bottoms', 'Footwear', 'Accessories'];
+  categories: string[] = [];
   selectedCategory = '';   // '' = all
 
   conditionOptions = ['New w/ Tags', 'Excellent', 'Good', 'Tarnished', 'Distressed'];
@@ -73,7 +71,65 @@ export class ProductList implements OnInit {
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.applyFilters();
+    // 1. Fetch backend categories
+    this.productService.getCategories().subscribe({
+      next: (cats) => {
+        this.categories = cats.map(c => c.name);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching categories:', err);
+        this.categories = ['Outerwear', 'Tops', 'Bottoms', 'Footwear', 'Accessories'];
+        this.cdr.detectChanges();
+      }
+    });
+
+    const startTime = Date.now();
+
+    // 2. Fetch products dynamically
+    this.productService.getProducts().subscribe({
+      next: (apiProducts) => {
+        const mapped = apiProducts.map(p => {
+          const conditionLabel = this.productService.conditionLabels[p.condition] || p.condition;
+          return {
+            id: p.id,
+            name: p.title,
+            brand: p.brand || 'ARCHIVE',
+            price: p.price,
+            desc: '',
+            image: p.thumbnail || 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
+            badge: p.badge || '',
+            size: (p as any).size || 'OS',
+            condition: conditionLabel,
+            conditionScore: p.conditionScore ? `${p.conditionScore}/10` : '8.0/10',
+            sku: p.id.substring(0, 8).toUpperCase(),
+            categoryName: (p as any).categoryName || ''
+          };
+        });
+
+        const elapsed = Date.now() - startTime;
+        const delayTime = Math.max(0, 400 - elapsed);
+
+        setTimeout(() => {
+          this.isLoading = false;
+          this.allProducts = mapped;
+          this.applyFilters();
+          this.cdr.detectChanges();
+        }, delayTime);
+      },
+      error: (err) => {
+        console.error('Error loading products:', err);
+        const elapsed = Date.now() - startTime;
+        const delayTime = Math.max(0, 400 - elapsed);
+
+        setTimeout(() => {
+          this.isLoading = false;
+          this.allProducts = [];
+          this.applyFilters();
+          this.cdr.detectChanges();
+        }, delayTime);
+      }
+    });
   }
 
   // ── Category ──────────────────────────────────────────────────────────
@@ -109,6 +165,11 @@ export class ProductList implements OnInit {
   applyFilters(): void {
     let result = [...this.allProducts];
 
+    // Filter by category
+    if (this.selectedCategory) {
+      result = result.filter(p => p.categoryName === this.selectedCategory);
+    }
+
     // Filter by condition
     if (this.selectedConditions.size > 0) {
       result = result.filter(p => this.selectedConditions.has(p.condition));
@@ -128,6 +189,7 @@ export class ProductList implements OnInit {
     this.products = result;
     this.sortOpen = false;
     this.mobileFiltersOpen = false; // Auto-close drawer on apply
+    this.cdr.detectChanges();
   }
 
   resetFilters(): void {

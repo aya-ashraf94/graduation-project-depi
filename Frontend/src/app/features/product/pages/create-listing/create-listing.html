@@ -1,4 +1,12 @@
 <div class="wiz-page">
+  <input
+    type="file"
+    #fileInput
+    style="display: none"
+    accept="image/*"
+    multiple
+    (change)="onFileSelected($event)"
+  />
 
   <!-- ══ STEP INDICATOR ═══════════════════════════════════════════════════ -->
   <div class="wiz-stepper">
@@ -162,42 +170,47 @@
         </div>
         <div class="wiz-section-body">
 
-          <div class="wiz-dropzone">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-            <span class="wiz-drop-title">DROP IMAGES HERE</span>
-            <span class="wiz-drop-sub">or click to browse</span>
-            <button class="wiz-browse-btn" type="button">BROWSE FILES</button>
-          </div>
-
           <div class="wiz-slots">
-            @for (slot of imageSlots; track $index) {
-            <div class="wiz-slot" [class.filled]="slot !== null" (click)="onImageSlotClick($index)">
+            @for (slot of imageSlots(); track $index) {
+            <div class="wiz-slot" [class.filled]="slot !== null">
               @if (slot !== null) {
-              <div class="wiz-slot-filled">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span>PHOTO {{ $index + 1 }}</span>
+              <div class="wiz-slot-filled" [style.background-image]="'url(' + slot + ')'" style="background-size: cover; background-position: center; width: 100%; height: 100%; border-radius: 8px;">
                 <button class="wiz-slot-remove" (click)="removeImage($index, $event)" type="button">✕</button>
               </div>
               } @else {
               <div class="wiz-slot-empty">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
                 </svg>
-                <span>ADD PHOTO</span>
+                <span style="opacity: 0.6; font-size: 0.55rem; margin-top: 0.25rem;">PHOTO {{ $index + 1 }}</span>
               </div>
               }
             </div>
             }
           </div>
 
-          @if (!imageSlots.some(s => s !== null)) {
-          <p class="wiz-photo-warn">⚠ At least one photo is required to continue.</p>
+          <div style="margin-top: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;">
+            <button class="wiz-browse-btn" type="button" (click)="triggerDropzoneInput()" style="width: 100%; height: 3.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.95rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 0.25rem;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              BROWSE FILES FROM DEVICE
+            </button>
+            <span style="font-family: var(--font-secondary); font-size: 0.78rem; color: var(--gray-3); text-align: center;">You can select multiple photos at once</span>
+          </div>
+
+          @if (missingPhase1Fields.length > 0) {
+          <div class="wiz-validation-errors" style="margin-top: 1.25rem; padding: 1rem; background: rgba(226, 59, 59, 0.05); border: 2px solid #e23b3b; border-radius: 8px; width: 100%;">
+            <span style="font-family: var(--font-primary); font-weight: 900; font-size: 0.8rem; color: #e23b3b; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">REQUIRED TO PROCEED:</span>
+            <ul style="margin: 0; padding-left: 1.25rem; font-family: var(--font-secondary); font-size: 0.85rem; color: var(--black); line-height: 1.5; text-align: left;">
+              @for (field of missingPhase1Fields; track field) {
+              <li>{{ field }}</li>
+              }
+            </ul>
+          </div>
           }
 
         </div>
@@ -347,8 +360,8 @@
 
       <div class="wiz-preview-card">
         <div class="wiz-preview-img">
-          @if (imageSlots[0] !== null) {
-          <div class="wiz-preview-photo">📷</div>
+          @if (imageSlots()[0] !== null) {
+          <img [src]="imageSlots()[0]" style="width: 100%; height: 100%; object-fit: cover;" />
           } @else {
           <div class="wiz-preview-no-photo">
             <span>No photo</span>
@@ -429,7 +442,7 @@
             </div>
             <div class="wiz-sum-row">
               <span class="wiz-sum-key">Photos</span>
-              <span class="wiz-sum-val">{{ imageSlots.filter(s => s !== null).length }} / {{ imageSlots.length }}</span>
+              <span class="wiz-sum-val">{{ imageSlots().filter(s => s !== null).length }} / {{ imageSlots().length }}</span>
             </div>
             <div class="wiz-sum-row">
               <span class="wiz-sum-key">Price</span>
@@ -491,7 +504,29 @@
       } @else {
       <div class="wiz-nav-spacer"></div>
       }
-  </div>
 </div>
 
+  <!-- Max Image Limit Warning Modal -->
+  @if (showMaxImageWarning()) {
+  <div class="wiz-modal-backdrop" (click)="showMaxImageWarning.set(false)">
+    <div class="wiz-modal-card" (click)="$event.stopPropagation()">
+      <div class="wiz-modal-header">
+        <span class="wiz-modal-title">LIMIT EXCEEDED</span>
+        <button class="wiz-modal-close" (click)="showMaxImageWarning.set(false)">✕</button>
+      </div>
+      <div class="wiz-modal-body">
+        <div class="wiz-modal-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e23b3b" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h3>MAXIMUM 4 IMAGES</h3>
+        <p>You can only upload up to 4 images for a listing.</p>
+        <button class="wiz-modal-btn" (click)="showMaxImageWarning.set(false)">UNDERSTOOD</button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth';
+import { environment } from '../../../../../environments/environment';
 
 export type PricingMode = 'fixed' | 'trade';
 
@@ -15,6 +16,9 @@ export type PricingMode = 'fixed' | 'trade';
   styleUrl: './create-listing.css',
 })
 export class CreateListing implements OnInit {
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  activeSlotIndex = 0;
+
   // ── Wizard State ────────────────────────────────────────────────────────
   currentStep = signal(1);
   readonly totalSteps = 3;
@@ -28,7 +32,8 @@ export class CreateListing implements OnInit {
   // ── Form Data ─────────────────────────────────────────────────────────────
   title = '';
   description = '';
-  imageSlots: (string | null)[] = [null, null, null];
+  imageSlots = signal<(string | null)[]>([null, null, null, null]);
+  showMaxImageWarning = signal(false);
 
   // ── Dynamic & Category Data ──────────────────────────────────────────────
   allCategories = signal<any[]>([]);
@@ -46,7 +51,8 @@ export class CreateListing implements OnInit {
   constructor(
     private router: Router,
     private http: HttpClient,
-    public authService: AuthService // تأكدي من جعلها public لتستطيعي الوصول لها في الـ html إذا احتجتِ
+    public authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -55,20 +61,32 @@ export class CreateListing implements OnInit {
 
 
   // ── Step validation ─────────────────────────────────────────────────────
-  get phase1Valid(): boolean {
-    // التأكد من اختيار كاتيجوري
-    const hasCategory = this.selectedCategory() !== null;
-    // التأكد من ملء كل الخصائص الديناميكية المطلوبة
-    const hasDynamicFields = this.selectedCategory()?.attributes.every((attr: any) =>
-      this.dynamicFields[attr.name] !== undefined && this.dynamicFields[attr.name] !== ''
-    ) ?? true;
+  get missingPhase1Fields(): string[] {
+    const missing: string[] = [];
+    if (!this.title.trim()) {
+      missing.push('Title');
+    }
+    if (!this.selectedCategory()) {
+      missing.push('Category');
+    } else {
+      const attrs = this.selectedCategory().attributes || [];
+      for (const attr of attrs) {
+        if (attr.required !== false) {
+          const val = this.dynamicFields[attr.name];
+          if (val === undefined || val === '') {
+            missing.push(attr.name);
+          }
+        }
+      }
+    }
+    if (!this.imageSlots().some(s => s !== null)) {
+      missing.push('At least one photo');
+    }
+    return missing;
+  }
 
-    return (
-      this.title.trim().length > 0 &&
-      hasCategory &&
-      hasDynamicFields &&
-      this.imageSlots.some(s => s !== null)
-    );
+  get phase1Valid(): boolean {
+    return this.missingPhase1Fields.length === 0;
   }
 
   get phase2Valid(): boolean {
@@ -119,18 +137,80 @@ export class CreateListing implements OnInit {
 
   setPricingMode(mode: PricingMode) { this.pricingMode = mode; }
 
-  onImageSlotClick(index: number) {
-    this.imageSlots = this.imageSlots.map((s, i) => i === index ? 'placeholder' : s);
+  triggerFileInput(index: number) {
+    this.activeSlotIndex = index;
+    this.fileInput.nativeElement.click();
+  }
+
+  triggerDropzoneInput() {
+    const firstEmptyIndex = this.imageSlots().findIndex(s => s === null);
+    this.activeSlotIndex = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
+    this.fileInput.nativeElement.click();
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const files = Array.from(input.files);
+      
+      // Limit check: maximum of 4 images total
+      const currentFilledCount = this.imageSlots().filter(s => s !== null).length;
+      if (files.length > 4 || files.length + currentFilledCount > 4) {
+        this.showMaxImageWarning.set(true);
+        input.value = '';
+        this.cdr.detectChanges();
+        return;
+      }
+
+      let slotIndex = this.activeSlotIndex;
+      let fileIndex = 0;
+
+      const readNextFile = () => {
+        if (fileIndex >= files.length || slotIndex >= this.imageSlots().length) {
+          input.value = '';
+          this.cdr.detectChanges();
+          return;
+        }
+
+        const file = files[fileIndex];
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64String = reader.result as string;
+
+          // Find next empty slot if we're dealing with multiple files
+          while (slotIndex < this.imageSlots().length && this.imageSlots()[slotIndex] !== null && fileIndex > 0) {
+            slotIndex++;
+          }
+
+          if (slotIndex < this.imageSlots().length) {
+            const currentSlots = [...this.imageSlots()];
+            currentSlots[slotIndex] = base64String;
+            this.imageSlots.set(currentSlots);
+            slotIndex++;
+            this.cdr.detectChanges();
+          }
+
+          fileIndex++;
+          readNextFile();
+        };
+        reader.readAsDataURL(file);
+      };
+
+      readNextFile();
+    }
   }
 
   removeImage(index: number, event: Event) {
     event.stopPropagation();
-    this.imageSlots = this.imageSlots.map((s, i) => i === index ? null : s);
+    const currentSlots = [...this.imageSlots()];
+    currentSlots[index] = null;
+    this.imageSlots.set(currentSlots);
+    this.cdr.detectChanges();
   }
 
   // ── API Actions ────────────────────────────────────────────────────────
   fetchCategories() {
-    this.http.get<any[]>('http://localhost:3000/api/categories').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/categories`).subscribe({
       next: (data) => this.allCategories.set(data),
       error: (err) => console.error('Error fetching categories:', err)
     });
@@ -153,14 +233,14 @@ export class CreateListing implements OnInit {
       price: this.pricingMode === 'trade' ? 0 : this.price,
       categoryId: this.selectedCategory()?._id,
       dynamicAttributes: this.dynamicFields, // شامل كل الخصائص (الحالة، النوع، إلخ)
-      images: this.imageSlots.filter(img => img !== null),
+      images: this.imageSlots().filter(img => img !== null),
       location: this.city,
       phoneNumber: this.phone,
       showContactInfo: this.showContact,
       userId: currentUser.id
     };
 
-    this.http.post('http://localhost:3000/api/products', finalPayload).subscribe({
+    this.http.post(`${environment.apiUrl}/products`, finalPayload).subscribe({
       next: () => {
         alert('Listing published successfully!');
         this.router.navigate(['/products']);

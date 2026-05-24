@@ -61,6 +61,8 @@ export interface ProductSummary {
   status: ProductStatus;
   sellerId: string;
   createdAt: Date;
+  size?: string;
+  categoryName?: string;
 }
 
 /** Payload to create a new listing */
