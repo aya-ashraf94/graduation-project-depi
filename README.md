@@ -129,6 +129,21 @@ npm run dev
 * **Frontend**: Accessible at [http://localhost:4200](http://localhost:4200) (Angular Dev Server)
 * **Backend API**: Accessible at [http://localhost:5000](http://localhost:5000) (Express Server)
 
+### 5. Database Synchronization (Seeding)
+To keep the database data (especially categories, products, and default users) in sync across all team members' devices:
+* **To Export Data**: If you have made database changes on your local machine and want to share them, run the export script from the root directory:
+  ```bash
+  npm run db:export
+  ```
+  This creates JSON backup files of your database under `Backend/data/`. Commit and push these JSON files to GitHub.
+
+* **To Seed/Import Data**: When other team members pull the latest commits from GitHub, they can sync their local MongoDB database with the shared state by running:
+  ```bash
+  npm run db:seed
+  ```
+  > [!WARNING]
+  > Running `db:seed` will clear/wipe the existing local database tables (Categories, Products, Users) before writing the shared data.
+
 ---
 
 ## 🤝 Collaborative Setup (GitHub Workflow)

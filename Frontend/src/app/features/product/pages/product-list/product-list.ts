@@ -1,8 +1,10 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
+import { AuthService } from '../../../../core/services/auth';
+import { WishlistService } from '../../../../core/services/wishlist.service';
 
 export interface Product {
   id: string;
@@ -30,7 +32,12 @@ type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 })
 export class ProductList implements OnInit {
   private productService = inject(ProductService);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
+  wishlistService = inject(WishlistService);
+
+  showAuthModal = false;
 
   // ── Raw data ───────────────────────────────────────────────────────────
   private allProducts: Product[] = [];
@@ -38,6 +45,12 @@ export class ProductList implements OnInit {
   // ── Displayed (after filters + sort) ──────────────────────────────────
   products: Product[] = [];
   isLoading = true;
+
+  // ── Pagination state ───────────────────────────────────────────────────
+  currentPage = 1;
+  pageSize = 12;
+  totalPages = 1;
+  pagesArray: number[] = [];
 
   // ── Filter state ───────────────────────────────────────────────────────
   categories: string[] = [];
@@ -47,7 +60,7 @@ export class ProductList implements OnInit {
   selectedConditions: Set<string> = new Set();
 
   minPrice = 0;
-  maxPrice = 15000;
+  maxPrice = 100000;
 
   // ── Sort state ─────────────────────────────────────────────────────────
   sortOpen = false;
@@ -84,9 +97,20 @@ export class ProductList implements OnInit {
       }
     });
 
+    // 2. Subscribe to query params for category filtering from Home Page
+    this.route.queryParams.subscribe(params => {
+      const cat = params['category'];
+      if (cat) {
+        this.selectedCategory = cat;
+        if (this.allProducts.length > 0) {
+          this.applyFilters();
+        }
+      }
+    });
+
     const startTime = Date.now();
 
-    // 2. Fetch products dynamically
+    // 3. Fetch products dynamically
     this.productService.getProducts().subscribe({
       next: (apiProducts) => {
         const mapped = apiProducts.map(p => {
@@ -135,6 +159,7 @@ export class ProductList implements OnInit {
   // ── Category ──────────────────────────────────────────────────────────
   selectCategory(category: string): void {
     this.selectedCategory = this.selectedCategory === category ? '' : category;
+    this.currentPage = 1; // Reset to first page
   }
 
   // ── Condition ─────────────────────────────────────────────────────────
@@ -144,6 +169,7 @@ export class ProductList implements OnInit {
     } else {
       this.selectedConditions.add(condition);
     }
+    this.currentPage = 1; // Reset to first page
   }
 
   isConditionSelected(condition: string): boolean {
@@ -158,16 +184,32 @@ export class ProductList implements OnInit {
   selectSort(sort: SortOption): void {
     this.selectedSort = sort;
     this.sortOpen = false;
+    this.currentPage = 1; // Reset to first page
     this.applyFilters();
   }
 
-  // ── Apply Filters + Sort ──────────────────────────────────────────────
+  // ── Category Group Mapping Helper ────────────────────────────────────
+  getCategoryFilterList(selectedCat: string): string[] {
+    if (selectedCat === 'Electronics') {
+      return ['Electronics', 'Mobiles', 'Laptops'];
+    }
+    if (selectedCat === 'Furniture') {
+      return ['Furniture', 'Home Appliances'];
+    }
+    if (selectedCat === 'Other') {
+      return ['Other', 'Sports & Fitness'];
+    }
+    return [selectedCat];
+  }
+
+  // ── Apply Filters + Sort + Paginate ──────────────────────────────────
   applyFilters(): void {
     let result = [...this.allProducts];
 
-    // Filter by category
+    // Filter by category group
     if (this.selectedCategory) {
-      result = result.filter(p => p.categoryName === this.selectedCategory);
+      const allowedCategories = this.getCategoryFilterList(this.selectedCategory);
+      result = result.filter(p => allowedCategories.includes(p.categoryName || ''));
     }
 
     // Filter by condition
@@ -186,19 +228,69 @@ export class ProductList implements OnInit {
       default:           break; // relevance = original order
     }
 
-    this.products = result;
+    // Update pagination metadata
+    this.totalPages = Math.ceil(result.length / this.pageSize) || 1;
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+
+    this.pagesArray = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      this.pagesArray.push(i);
+    }
+
+    // Slice to current page
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    this.products = result.slice(startIndex, startIndex + this.pageSize);
+
     this.sortOpen = false;
     this.mobileFiltersOpen = false; // Auto-close drawer on apply
     this.cdr.detectChanges();
+  }
+
+  // ── Pagination Navigation Helpers ─────────────────────────────────────
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.applyFilters();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
   }
 
   resetFilters(): void {
     this.selectedCategory  = '';
     this.selectedConditions.clear();
     this.minPrice = 0;
-    this.maxPrice = 15000;
+    this.maxPrice = 100000;
     this.selectedSort = 'relevance';
+    this.currentPage = 1; // Reset to page 1
     this.applyFilters();
+  }
+
+  toggleWishlist(productId: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.authService.currentUser()) {
+      this.wishlistService.toggle(productId);
+    } else {
+      this.showAuthModal = true;
+    }
+  }
+
+  closeAuthModal(): void {
+    this.showAuthModal = false;
   }
 
   toggleMobileFilters(): void {

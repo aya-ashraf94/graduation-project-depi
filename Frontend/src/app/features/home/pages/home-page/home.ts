@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -98,21 +98,63 @@ export class Home implements OnInit {
     private authService: AuthService,
     private router: Router,
     private sanitizer: DomSanitizer,
-    private productService: ProductService
+    private productService: ProductService,
+    private cdr: ChangeDetectorRef
   ) {}
 
- ngOnInit(): void {
-  // Fetch 4 featured products
-  this.productService.getProducts().subscribe({
-    next: (products) => {
-      // نقوم بعمل slice هنا بعد أن تصبح البيانات متاحة
-      this.featuredProducts = products.slice(0, 4);
-    },
-    error: (err) => {
-      console.error('Error fetching featured products:', err);
-    }
-  });
-}
+  ngOnInit(): void {
+    // Fetch 4 featured products & update category counts dynamically
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.featuredProducts = products.slice(0, 4);
+
+        const counts = {
+          electronics: 0,
+          furniture: 0,
+          clothes: 0,
+          books: 0,
+          vintage: 0
+        };
+
+        products.forEach(p => {
+          const catName = (p as any).categoryName || '';
+          if (catName === 'Electronics' || catName === 'Mobiles' || catName === 'Laptops') {
+            counts.electronics++;
+          } else if (catName === 'Furniture' || catName === 'Home Appliances') {
+            counts.furniture++;
+          } else if (catName === 'Clothes') {
+            counts.clothes++;
+          } else if (catName.toLowerCase().includes('book')) {
+            counts.books++;
+          } else {
+            counts.vintage++;
+          }
+        });
+
+        if (this.departments[0]) this.departments[0].count = `${counts.electronics} items`;
+        if (this.departments[1]) this.departments[1].count = `${counts.furniture} items`;
+        if (this.departments[2]) this.departments[2].count = `${counts.clothes} items`;
+        if (this.departments[3]) this.departments[3].count = `${counts.books} items`;
+        if (this.departments[4]) this.departments[4].count = `${counts.vintage} items`;
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching products for counts:', err);
+      }
+    });
+  }
+
+  getDbCategoryName(name: string): string {
+    const map: Record<string, string> = {
+      'Electronics & Gadgets': 'Electronics',
+      'Furniture & Home': 'Furniture',
+      'Clothing & Apparel': 'Clothes',
+      'Books & Media': 'Other',
+      'Vintage & Collectibles': 'Other'
+    };
+    return map[name] || '';
+  }
 
   scrollTo(id: string): void {
     const el = document.getElementById(id);

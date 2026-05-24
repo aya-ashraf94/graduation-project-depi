@@ -132,7 +132,7 @@
   <div class="container">
     <div class="section-label">Core Categories</div>
     <div class="departments-grid">
-      <div class="dept-card" *ngFor="let dept of departments" (click)="scrollTo('products')">
+      <div class="dept-card" *ngFor="let dept of departments" [routerLink]="['/products']" [queryParams]="{ category: getDbCategoryName(dept.name) }">
         <div class="dept-icon" [innerHTML]="toSafeHtml(dept.icon)"></div>
         <h3 class="dept-name">{{ dept.name }}</h3>
         <span class="dept-count">{{ dept.count }}</span>

@@ -8,7 +8,10 @@
     "install-all": "npm run install-frontend && npm run install-backend",
     "start-frontend": "npm start --prefix Frontend",
     "start-backend": "npm run dev --prefix Backend",
-    "dev": "concurrently -k -n \"frontend,backend\" -c \"cyan,magenta\" \"npm run start-frontend\" \"npm run start-backend\""
+    "dev": "concurrently -k -n \"frontend,backend\" -c \"cyan,magenta\" \"npm run start-frontend\" \"npm run start-backend\"",
+    "db:export": "npm run export-db --prefix Backend",
+    "db:seed": "npm run seed --prefix Backend",
+    "db:official": "npm run generate-official --prefix Backend && npm run db:export"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

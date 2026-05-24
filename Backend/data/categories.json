@@ -1,0 +1,482 @@
+[
+  {
+    "_id": "6a104027bb9b8da209585cc9",
+    "name": "Furniture",
+    "attributes": [
+      {
+        "name": "type",
+        "type": "select",
+        "options": [
+          "Chair",
+          "Table",
+          "Sofa",
+          "Bed",
+          "Wardrobe",
+          "Desk",
+          "Cabinet",
+          "Bookshelf",
+          "TV Unit",
+          "Dining Set",
+          "Outdoor Furniture",
+          "Office Furniture",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104027bb9b8da209585cca"
+      },
+      {
+        "name": "material",
+        "type": "select",
+        "options": [
+          "Wood",
+          "Metal",
+          "Plastic",
+          "Glass",
+          "Fabric",
+          "Leather",
+          "MDF",
+          "Steel",
+          "Aluminum",
+          "Mixed Materials",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104027bb9b8da209585ccb"
+      },
+      {
+        "name": "color",
+        "type": "select",
+        "options": [
+          "Black",
+          "White",
+          "Brown",
+          "Beige",
+          "Grey",
+          "Red",
+          "Blue",
+          "Green",
+          "Yellow",
+          "Orange",
+          "Pink",
+          "Purple",
+          "Gold",
+          "Silver",
+          "Multi-color",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104027bb9b8da209585ccc"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104027bb9b8da209585ccd"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a1049d4bb9b8da209585ccf",
+    "name": "Mobiles",
+    "attributes": [
+      {
+        "name": "brand",
+        "type": "select",
+        "options": [
+          "Apple",
+          "Samsung",
+          "Huawei",
+          "Xiaomi",
+          "Redmi",
+          "Oppo",
+          "Vivo",
+          "Nokia",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a1049d4bb9b8da209585cd0"
+      },
+      {
+        "name": "storage",
+        "type": "select",
+        "options": [
+          "32GB",
+          "64GB",
+          "128GB",
+          "256GB",
+          "512GB",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a1049d4bb9b8da209585cd1"
+      },
+      {
+        "name": "color",
+        "type": "select",
+        "options": [
+          "Black",
+          "White",
+          "Blue",
+          "Gold",
+          "Silver",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a1049d4bb9b8da209585cd2"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a1049d4bb9b8da209585cd3"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a104ad9bb9b8da209585cd4",
+    "name": "Laptops",
+    "attributes": [
+      {
+        "name": "brand",
+        "type": "select",
+        "options": [
+          "HP",
+          "Dell",
+          "Lenovo",
+          "Apple",
+          "Asus",
+          "Acer",
+          "MSI",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104ad9bb9b8da209585cd5"
+      },
+      {
+        "name": "ram",
+        "type": "select",
+        "options": [
+          "4GB",
+          "8GB",
+          "12GB",
+          "16GB",
+          "32GB",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104ad9bb9b8da209585cd6"
+      },
+      {
+        "name": "storage",
+        "type": "select",
+        "options": [
+          "128GB SSD",
+          "256GB SSD",
+          "512GB SSD",
+          "1TB SSD",
+          "1TB HDD",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104ad9bb9b8da209585cd7"
+      },
+      {
+        "name": "processor",
+        "type": "text",
+        "options": [],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104ad9bb9b8da209585cd8"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104ad9bb9b8da209585cd9"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a104b26bb9b8da209585cda",
+    "name": "Clothes",
+    "attributes": [
+      {
+        "name": "type",
+        "type": "select",
+        "options": [
+          "Shirt",
+          "T-shirt",
+          "Pants",
+          "Dress",
+          "Jacket",
+          "Hoodie",
+          "Suit",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104b26bb9b8da209585cdb"
+      },
+      {
+        "name": "size",
+        "type": "select",
+        "options": [
+          "XS",
+          "S",
+          "M",
+          "L",
+          "XL",
+          "XXL",
+          "3XL",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104b26bb9b8da209585cdc"
+      },
+      {
+        "name": "color",
+        "type": "select",
+        "options": [
+          "Black",
+          "White",
+          "Grey",
+          "Red",
+          "Blue",
+          "Green",
+          "Yellow",
+          "Beige",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104b26bb9b8da209585cdd"
+      },
+      {
+        "name": "brand",
+        "type": "text",
+        "options": [],
+        "required": false,
+        "hasOther": false,
+        "_id": "6a104b26bb9b8da209585cde"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104b26bb9b8da209585cdf"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a104b45bb9b8da209585ce0",
+    "name": "Electronics",
+    "attributes": [
+      {
+        "name": "type",
+        "type": "select",
+        "options": [
+          "TV",
+          "Camera",
+          "Speaker",
+          "Headphones",
+          "Projector",
+          "Smart Watch",
+          "Video Games",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104b45bb9b8da209585ce1"
+      },
+      {
+        "name": "brand",
+        "type": "select",
+        "options": [
+          "Sony",
+          "Samsung",
+          "LG",
+          "Canon",
+          "Nikon",
+          "Apple",
+          "JBL",
+          "Bose",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104b45bb9b8da209585ce2"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104b45bb9b8da209585ce3"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a104bf5bb9b8da209585ce4",
+    "name": "Home Appliances",
+    "attributes": [
+      {
+        "name": "type",
+        "type": "select",
+        "options": [
+          "Refrigerator",
+          "Washing Machine",
+          "Microwave",
+          "Air Conditioner",
+          "Heater",
+          "Dishwasher",
+          "Vacuum Cleaner",
+          "Cooker",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104bf5bb9b8da209585ce5"
+      },
+      {
+        "name": "brand",
+        "type": "select",
+        "options": [
+          "LG",
+          "Samsung",
+          "Bosch",
+          "Sharp",
+          "Toshiba",
+          "Zanussi",
+          "Kiriazi",
+          "Beko",
+          "Fresh",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104bf5bb9b8da209585ce6"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104bf5bb9b8da209585ce7"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a104c27bb9b8da209585ce8",
+    "name": "Sports & Fitness",
+    "attributes": [
+      {
+        "name": "type",
+        "type": "select",
+        "options": [
+          "Treadmill",
+          "Dumbbells",
+          "Bicycle",
+          "Yoga Mat",
+          "Exercise Bike",
+          "Bench Press",
+          "Racket",
+          "Punching Bag",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104c27bb9b8da209585ce9"
+      },
+      {
+        "name": "brand",
+        "type": "text",
+        "options": [],
+        "required": false,
+        "hasOther": false,
+        "_id": "6a104c27bb9b8da209585cea"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104c27bb9b8da209585ceb"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a104cb7bb9b8da209585cec",
+    "name": "Other",
+    "attributes": [
+      {
+        "name": "item_type",
+        "type": "text",
+        "options": [],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104cb7bb9b8da209585ced"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104cb7bb9b8da209585cee"
+      }
+    ],
+    "__v": 0
+  }
+]
