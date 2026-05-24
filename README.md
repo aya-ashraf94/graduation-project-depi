@@ -141,8 +141,14 @@ To keep the database data (especially categories, products, and default users) i
   ```bash
   npm run db:seed
   ```
-  > [!WARNING]
-  > Running `db:seed` will clear/wipe the existing local database tables (Categories, Products, Users) before writing the shared data.
+  > [!NOTE]
+  > Running `db:seed` is now non-destructive! It uses a safe bulk-upsert process that inserts or updates standard categories, users, and products by their `_id` without deleting or affecting your other custom local data.
+
+* **To Generate Official Store Data**: To generate the official Nafa3ni Store admin user and populate the database with 32 premium/official campus listings across all categories, run:
+  ```bash
+  npm run db:official
+  ```
+  This script creates the official listings with detailed dynamic attributes and high-quality stock images, and automatically exports them into the shared data templates.
 
 ---
 

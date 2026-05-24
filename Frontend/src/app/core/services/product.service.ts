@@ -125,6 +125,11 @@ export class ProductService {
     return this.http.get<any[]>(`${environment.apiUrl}/categories`);
   }
 
+  /** Get product counts grouped by category */
+  getCategoryCounts(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/counts/by-category`);
+  }
+
   // ── Mapping functions ─────────────────────────────────────────────────────
 
   private mapProduct(p: any): Product {

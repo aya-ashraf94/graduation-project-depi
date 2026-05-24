@@ -91,6 +91,7 @@ export interface ProductFilters {
   maxPrice?: number;
   search?: string;
   sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'popular';
+  limit?: number;
 }
 
 /** Human-readable label map for condition values */

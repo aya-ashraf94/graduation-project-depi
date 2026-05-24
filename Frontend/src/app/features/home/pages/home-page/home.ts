@@ -20,27 +20,27 @@ export class Home implements OnInit {
   departments = [
     {
       name: 'Electronics & Gadgets',
-      count: '2.4K items',
+      count: '.. items',
       icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>`,
     },
     {
       name: 'Furniture & Home',
-      count: '1.8K items',
+      count: '.. items',
       icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18v11H3z"/><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M8 21v-4"/><path d="M16 21v-4"/><path d="M3 14h18"/></svg>`,
     },
     {
       name: 'Clothing & Apparel',
-      count: '980 items',
+      count: '.. items',
       icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a8.5 8.5 0 0 0-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>`,
     },
     {
       name: 'Books & Media',
-      count: '650 items',
+      count: '.. items',
       icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
     },
     {
       name: 'Vintage & Collectibles',
-      count: '1.1K items',
+      count: '.. items',
       icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>`,
     },
   ];
@@ -103,11 +103,43 @@ export class Home implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Fetch 4 featured products & update category counts dynamically
-    this.productService.getProducts().subscribe({
+    // Fetch a pool of latest products to select diverse featured items
+    this.productService.getProducts({ limit: 20 }).subscribe({
       next: (products) => {
-        this.featuredProducts = products.slice(0, 4);
+        const diverse: ProductSummary[] = [];
+        const seenCategories = new Set<string>();
 
+        // Pick one item from each distinct category first
+        for (const product of products) {
+          const cat = product.categoryName || '';
+          if (cat && !seenCategories.has(cat)) {
+            diverse.push(product);
+            seenCategories.add(cat);
+          }
+          if (diverse.length === 4) break;
+        }
+
+        // If we still have fewer than 4 items, fill the rest with the latest products
+        if (diverse.length < 4) {
+          for (const product of products) {
+            if (!diverse.some(p => p.id === product.id)) {
+              diverse.push(product);
+            }
+            if (diverse.length === 4) break;
+          }
+        }
+
+        this.featuredProducts = diverse;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching featured products:', err);
+      }
+    });
+
+    // Fetch category counts dynamically from backend
+    this.productService.getCategoryCounts().subscribe({
+      next: (categoryCounts) => {
         const counts = {
           electronics: 0,
           furniture: 0,
@@ -116,18 +148,19 @@ export class Home implements OnInit {
           vintage: 0
         };
 
-        products.forEach(p => {
-          const catName = (p as any).categoryName || '';
+        categoryCounts.forEach((c: any) => {
+          const catName = c.name || '';
+          const count = c.count || 0;
           if (catName === 'Electronics' || catName === 'Mobiles' || catName === 'Laptops') {
-            counts.electronics++;
+            counts.electronics += count;
           } else if (catName === 'Furniture' || catName === 'Home Appliances') {
-            counts.furniture++;
+            counts.furniture += count;
           } else if (catName === 'Clothes') {
-            counts.clothes++;
+            counts.clothes += count;
           } else if (catName.toLowerCase().includes('book')) {
-            counts.books++;
+            counts.books += count;
           } else {
-            counts.vintage++;
+            counts.vintage += count;
           }
         });
 
@@ -140,7 +173,7 @@ export class Home implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching products for counts:', err);
+        console.error('Error fetching category counts:', err);
       }
     });
   }
