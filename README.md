@@ -130,20 +130,21 @@ npm run dev
 * **Backend API**: Accessible at [http://localhost:5000](http://localhost:5000) (Express Server)
 
 ### 5. Database Synchronization (Seeding)
-To keep the database data (especially categories, products, and default users) in sync across all team members' devices:
-* **To Export Data**: If you have made database changes on your local machine and want to share them, run the export script from the root directory:
+To keep the database data (especially categories, products, and default users) in sync across all team members' devices without cloud services:
+* **Workflow Best Practice**:
+  - **Do NOT** run `npm run db:export` during regular development. This prevents overwriting the clean test templates in `Backend/data/` with your local testing history.
+  - Keep your local orders, test accounts, and reviews stored locally in your MongoDB instance, and only commit code to GitHub.
+* **To Export Data (Optional/Shared Defaults Update)**: If you have created new default categories, users, or products that the whole team needs as a starting template, run:
   ```bash
   npm run db:export
   ```
-  This creates JSON backup files of your database under `Backend/data/`. Commit and push these JSON files to GitHub.
-
-* **To Seed/Import Data**: When other team members pull the latest commits from GitHub, they can sync their local MongoDB database with the shared state by running:
+  This exports your database collections into JSON backup files under `Backend/data/`. Commit and push these updated JSON files to GitHub.
+* **To Seed/Import Data (After pulling changes)**: When other team members pull the latest commits from GitHub, they can sync their local MongoDB database with the shared state by running:
   ```bash
   npm run db:seed
   ```
   > [!NOTE]
   > Running `db:seed` is now non-destructive! It uses a safe bulk-upsert process that inserts or updates standard categories, users, and products by their `_id` without deleting or affecting your other custom local data.
-
 * **To Generate Official Store Data**: To generate the official Nafa3ni Store admin user and populate the database with 32 premium/official campus listings across all categories, run:
   ```bash
   npm run db:official

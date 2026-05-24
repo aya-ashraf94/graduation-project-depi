@@ -1,7 +1,7 @@
 [
   {
-    "soldByNafa3ni": false,
-    "isVerified": false,
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a122968f278c7b4f7e43f80",
     "title": "tv",
     "description": "sssss",
@@ -21,12 +21,13 @@
     "showContactInfo": true,
     "userId": "6a1224eaf278c7b4f7e43f62",
     "createdAt": "2026-05-23T22:25:44.376Z",
-    "updatedAt": "2026-05-23T22:25:44.376Z",
-    "__v": 0
+    "updatedAt": "2026-05-24T08:17:33.621Z",
+    "__v": 0,
+    "isVerified": false,
+    "soldByNafa3ni": false
   },
   {
-    "soldByNafa3ni": false,
-    "isVerified": false,
+    "status": "active",
     "_id": "6a1236519d93db6d6302cf44",
     "title": "iphone 11",
     "description": "jjsjs",
@@ -43,12 +44,15 @@
     "showContactInfo": true,
     "userId": "6a10b0d1e24456cbac9b4ede",
     "createdAt": "2026-05-23T23:20:49.583Z",
-    "updatedAt": "2026-05-23T23:21:19.123Z",
-    "__v": 0
+    "updatedAt": "2026-05-24T18:56:09.619Z",
+    "__v": 0,
+    "isVerified": false,
+    "soldByNafa3ni": false,
+    "viewCount": 2
   },
   {
-    "soldByNafa3ni": false,
-    "isVerified": false,
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a123e8a9d93db6d6302d4c8",
     "title": "trrt",
     "description": "dgfdfg",
@@ -68,10 +72,14 @@
     "showContactInfo": true,
     "userId": "6a10b0d1e24456cbac9b4ede",
     "createdAt": "2026-05-23T23:55:54.347Z",
-    "updatedAt": "2026-05-24T00:19:01.792Z",
-    "__v": 0
+    "updatedAt": "2026-05-24T08:17:33.621Z",
+    "__v": 0,
+    "isVerified": false,
+    "soldByNafa3ni": false
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce6a",
     "title": "Neo-Brutalist Premium Study Desk",
     "description": "A study desk designed for maximum utility. Heavy-duty construction with high contrast geometric edges, features cable routing, storage hooks, and a solid wood surface. Built to withstand late-night study sessions.",
@@ -97,9 +105,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce6b",
     "title": "Ergonomic High-Back Office Chair",
     "description": "Professional-grade ergonomic mesh chair. Fully adjustable lumbar support, 3D armrests, and dynamic tilt mechanism. Perfect for study spaces and long hours of programming or designing.",
@@ -125,9 +135,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce6c",
     "title": "Minimalist 5-Tier Wooden Bookshelf",
     "description": "A space-saving vertical bookshelf made from high-quality solid pine. Easily fits textbook binders, files, and decor. Sturdy structure with premium varnish finish.",
@@ -153,9 +165,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce6d",
     "title": "Cozy Charcoal Fabric Lounger Sofa",
     "description": "Compact 2-seater sofa upholstered in ultra-durable, spill-resistant fabric. Ergonomic design perfect for dorm lounge areas or quiet reading corners.",
@@ -181,9 +195,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce6e",
     "title": "iPhone 15 Pro Max (Grade A Refurbished)",
     "description": "Official Nafa3ni Certified iPhone 15 Pro Max. 256GB storage, Natural Titanium. Battery health is at 98%, tested and verified by our technical team. Comes with 1-year store warranty and original charging cable.",
@@ -209,9 +225,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce6f",
     "title": "Samsung Galaxy S24 Ultra (Sealed)",
     "description": "Brand new, factory sealed Samsung Galaxy S24 Ultra 512GB in Titanium Gray. Official Egyptian warranty. Dynamic AMOLED 2X, Snapdragon 8 Gen 3, and integrated S-Pen.",
@@ -237,9 +255,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce70",
     "title": "Google Pixel 8 Pro 128GB",
     "description": "Google Pixel 8 Pro in Porcelain white. Flawless condition, box opened only for verification. Outstanding camera capabilities and pure Android experience with Gemini integration.",
@@ -265,9 +285,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce71",
     "title": "Xiaomi Redmi Note 13 Pro 256GB",
     "description": "Great mid-range option for students. 256GB storage, 8GB RAM, Midnight Black. 200MP camera and ultra-fast 67W charging. Factory sealed.",
@@ -293,7 +315,7 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-05-24T01:23:53.744Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
     "_id": "6a125329d2fe0926facbce72",
@@ -322,9 +344,13 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T19:02:08.087Z",
+    "viewCount": 11,
+    "status": "sold"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce73",
     "title": "Dell XPS 13 Core i7 Premium Ultrabook",
     "description": "Dell XPS 13 (9315) featuring Intel Core i7 12th Gen, 16GB LPDDR5 RAM, 512GB PCIe SSD. Gorgeous InfinityEdge display. Elite lightweight device for academic research and productivity.",
@@ -351,9 +377,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce74",
     "title": "Lenovo ThinkPad E14 Gen 5 (Business Black)",
     "description": "Legendary durability. Intel Core i5 13th Gen, 16GB RAM, 512GB SSD. Spill-resistant keyboard, military-grade construction. The best companion for computer science and business majors.",
@@ -380,9 +408,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce75",
     "title": "HP Victus 15 Gaming Laptop (RTX 4050)",
     "description": "Affordable high-performance gaming and graphics machine. Intel Core i5, 16GB DDR5 RAM, 512GB SSD, and NVIDIA GeForce RTX 4050 graphics card. 144Hz high refresh rate screen.",
@@ -409,9 +439,10 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
     "_id": "6a125329d2fe0926facbce76",
     "title": "Nafa3ni Official Oversized Hoodie",
     "description": "High-quality university merchandise. Heavyweight 400GSM organic cotton fabric, features minimal front logo embroidery and soft fleece lining. Perfect comfort clothing for winter study sessions.",
@@ -438,9 +469,12 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T16:49:54.977Z",
+    "viewCount": 10
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce77",
     "title": "Classic Denim Vintage Jacket",
     "description": "Timeless denim design. Made with 100% rigid cotton denim, standard trucker fit, featuring durable brass buttons. Stone washed for a vintage texture.",
@@ -467,9 +501,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce78",
     "title": "Premium Multi-Pocket Cargo Pants",
     "description": "Durable ripstop cotton cargo pants. 6 functional pockets, adjustable drawstring waist and ankles. Highly functional and stylish everyday campus wear.",
@@ -496,9 +532,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce79",
     "title": "University Athletics Premium Tee",
     "description": "Athletic crewneck t-shirt made of 100% breathable combed cotton. Double-stitched seams, regular fit, minimal campus athletic print.",
@@ -525,9 +563,10 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
     "_id": "6a125329d2fe0926facbce7a",
     "title": "Sony WH-1000XM4 Noise Canceling Headphones",
     "description": "Industry-leading noise canceling over-ear headphones. Crystal clear audio, 30-hour battery life, touch controls, and multipoint Bluetooth connection. Ideal for blockout study sessions.",
@@ -552,9 +591,12 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T16:49:18.394Z",
+    "viewCount": 2
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce7b",
     "title": "Logitech MX Master 3S Wireless Mouse",
     "description": "The ultimate mouse for developers and creators. MagSpeed electromagnetic scroll wheel, 8K DPI tracking on any surface, silent clicks, and custom profiles for software tools.",
@@ -579,9 +621,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce7c",
     "title": "Anker Prime 24000mAh Power Bank (140W)",
     "description": "Ultra-high capacity power bank with 140W multi-device fast charging. Features a smart digital display showing battery health, charging speed, and cycle counts. Can charge your laptop on the go.",
@@ -606,9 +650,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce7d",
     "title": "Sony Alpha 4K Action Sports Camera",
     "description": "High-speed action camera capable of recording 4K ultra-smooth video. Built-in stabilization, waterproof casing, and long battery life. Perfect for campus events and field work.",
@@ -633,9 +679,10 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
     "_id": "6a125329d2fe0926facbce7e",
     "title": "Retro Compact Mini Dorm Refrigerator",
     "description": "A stylish 90L mini fridge with separate freezer compartment. Ultra-quiet operation technology, energy star certified, adjustable glass shelves. Ideal for keeping snacks and drinks cold in your dorm room.",
@@ -660,9 +707,12 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T16:46:12.899Z",
+    "viewCount": 1
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce7f",
     "title": "Digital Touch Solo Microwave (20L)",
     "description": "Compact 800W microwave oven with 6 preset cooking programs and child safety lock. Glass turntable, digital LED clock. Perfect for quick heating and cooking inside a student flat.",
@@ -687,9 +737,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce80",
     "title": "DeLonghi Retro Espresso Coffee Maker",
     "description": "Classic pump espresso and cappuccino maker with 15 bar pressure. Dual-option filter holder for ground coffee or pods. Steam wand froth system for barista-quality drinks in your kitchen.",
@@ -714,9 +766,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce81",
     "title": "Ultrasonic Cool Mist Humidifier (4L)",
     "description": "Whisper-quiet humidifier with 4L water tank capacity. Adjustable mist output, automatic shut-off safety sensor, filterless design. Helps maintain healthy humidity levels in dry study spaces.",
@@ -741,9 +795,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce82",
     "title": "Premium Adjustable Steel Dumbbells (Pair)",
     "description": "Heavy duty selectorized dumbbells. Adjusts from 2kg to 24kg with a simple turn of a dial. Replaces 15 separate pairs of dumbbells, perfect space-saving gym gear for campus rooms.",
@@ -768,9 +824,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce83",
     "title": "Foldable Magnetic Exercise Fitness Bike",
     "description": "Compact space-saving design folding exercise bike. 8 levels of smooth magnetic resistance adjustments, clear LCD console tracking distance, speed, time, and calories burned.",
@@ -795,9 +853,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce84",
     "title": "High-Density Non-Slip 8mm Yoga Mat",
     "description": "Premium eco-friendly TPE yoga mat. 8mm thick padding protects joints, dual-texture non-slip surface provides traction. Comes with a carrying strap for campus classes.",
@@ -822,9 +882,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce85",
     "title": "Urban Explorer Commuter Bicycle (21-Speed)",
     "description": "Sturdy steel-framed urban road/trail bicycle. 21-speed twist shifters, front suspension fork, dual disc brakes. Perfect for fast commuting around the university campus and city streets.",
@@ -849,9 +911,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce86",
     "title": "Premium Hardcover Drawing Sketchbook (A4)",
     "description": "Professional grade sketchpad. 120 sheets of 160GSM acid-free sketch paper, durable hardcover binding, flat opening layout. Designed for architecture and fine arts student drafting.",
@@ -875,9 +939,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce87",
     "title": "Dual-Tip Professional Art Markers (80 Colors)",
     "description": "Broad chisel and fine point sketch markers. 80 vibrant permanent colors, fast drying ink, includes portable fabric zipper bag. Excellent for designs, illustrations, and drafting layouts.",
@@ -901,9 +967,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce88",
     "title": "Architectural Drawing Draft Board (A2)",
     "description": "Portable architectural drawing board. Precision parallel motion rule, adjustable elevation angles, non-slip base grip. Perfect for drafting and engineering design students.",
@@ -927,9 +995,11 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   },
   {
+    "status": "active",
+    "viewCount": 0,
     "_id": "6a125329d2fe0926facbce89",
     "title": "Ergonomic Aluminum Adjustable Laptop Stand",
     "description": "Sleek geometric desktop stand for laptops up to 16\". Made of high-quality aluminum alloy, 6 adjustable heights, fully foldable with rubber grips. Enhances posture and laptop airflow.",
@@ -953,6 +1023,6 @@
     "isVerified": true,
     "__v": 0,
     "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-05-24T01:23:53.745Z"
+    "updatedAt": "2026-05-24T08:17:33.621Z"
   }
 ]

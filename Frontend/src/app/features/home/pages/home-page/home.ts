@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
+import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth';
@@ -12,11 +12,14 @@ import { ImageFallbackDirective } from '../../../../shared/directives/image-fall
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyFormatPipe, ImageFallbackDirective],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe, ImageFallbackDirective],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home implements OnInit {
+  newsletterEmail = '';
+  newsletterSuccessMessage = '';
+  newsletterErrorMessage = '';
   departments = [
     {
       name: 'Electronics & Gadgets',
@@ -196,5 +199,23 @@ export class Home implements OnInit {
 
   toSafeHtml(svg: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(svg);
+  }
+
+  subscribeNewsletter() {
+    if (!this.newsletterEmail.trim()) return;
+    
+    this.productService.subscribeNewsletter(this.newsletterEmail).subscribe({
+      next: (res) => {
+        this.newsletterSuccessMessage = res.message || 'Subscribed successfully!';
+        this.newsletterErrorMessage = '';
+        this.newsletterEmail = '';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.newsletterErrorMessage = err?.error?.message || 'Subscription failed. Please check your email.';
+        this.newsletterSuccessMessage = '';
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

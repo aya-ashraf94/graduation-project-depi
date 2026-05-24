@@ -1,9 +1,12 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
+import { OrderService } from '../../../../core/services/order.service';
+import { PaymentMethod } from '../../../../core/models/order.model';
 import { Product, ProductSummary, CONDITION_LABELS } from '../../../../core/models/product.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
@@ -12,7 +15,7 @@ import { ImageFallbackDirective } from '../../../../shared/directives/image-fall
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective],
+  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -21,6 +24,7 @@ export class ProductDetail implements OnInit {
   private router = inject(Router);
   private productService = inject(ProductService);
   private authService = inject(AuthService);
+  private orderService = inject(OrderService);
   wishlistService = inject(WishlistService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -34,6 +38,15 @@ export class ProductDetail implements OnInit {
   reportReason = '';
   reportSubmitted = false;
   isLoading = true;
+
+  // Buy Flow state variables
+  showBuyModal = false;
+  paymentMethod: PaymentMethod = 'cash_on_delivery';
+  shippingAddress = '';
+  orderNotes = '';
+  buyLoading = false;
+  buySuccess = signal<string | null>(null);
+  buyError = signal<string | null>(null);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -103,7 +116,14 @@ export class ProductDetail implements OnInit {
 
   startChat(): void {
     this.executeAuthorizedAction(() => {
-      this.router.navigate(['/chat']);
+      if (this.product) {
+        this.router.navigate(['/chat'], {
+          queryParams: {
+            recipientId: this.product.seller.id,
+            productId: this.product.id
+          }
+        });
+      }
     });
   }
 
@@ -136,10 +156,67 @@ export class ProductDetail implements OnInit {
   }
 
   submitReport(): void {
-    if (this.reportReason.trim()) {
-      // REAL: this.http.post(`${environment.apiUrl}/reports`, { productId, reason })
-      this.reportSubmitted = true;
-      setTimeout(() => this.closeReport(), 2000);
+    if (this.reportReason.trim() && this.product) {
+      this.productService.reportProduct(this.product.id, this.reportReason).subscribe({
+        next: () => {
+          this.reportSubmitted = true;
+          setTimeout(() => this.closeReport(), 2000);
+        },
+        error: (err) => {
+          console.error('Error submitting report:', err);
+        }
+      });
     }
+  }
+
+  openBuy(): void {
+    this.executeAuthorizedAction(() => {
+      this.showBuyModal = true;
+      this.paymentMethod = 'cash_on_delivery';
+      this.shippingAddress = '';
+      this.orderNotes = '';
+      this.buyLoading = false;
+      this.buySuccess.set(null);
+      this.buyError.set(null);
+    });
+  }
+
+  closeBuy(): void {
+    this.showBuyModal = false;
+  }
+
+  submitOrder(): void {
+    if (!this.shippingAddress.trim() || !this.product) {
+      this.buyError.set('Please provide a shipping address');
+      return;
+    }
+    
+    this.buyLoading = true;
+    this.buyError.set(null);
+    this.buySuccess.set(null);
+    
+    const payload = {
+      productId: this.product.id,
+      paymentMethod: this.paymentMethod,
+      shippingAddress: this.shippingAddress,
+      notes: this.orderNotes
+    };
+    
+    this.orderService.createOrder(payload).subscribe({
+      next: (order) => {
+        this.buyLoading = false;
+        this.buySuccess.set('Order placed successfully! Product is now marked as Sold.');
+        if (this.product) {
+          this.product.status = 'sold';
+        }
+        setTimeout(() => {
+          this.closeBuy();
+        }, 2500);
+      },
+      error: (err) => {
+        this.buyLoading = false;
+        this.buyError.set(err?.error?.message || 'Failed to place order. Please try again.');
+      }
+    });
   }
 }
