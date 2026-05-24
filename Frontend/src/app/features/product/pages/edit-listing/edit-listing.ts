@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -24,10 +24,12 @@ export class EditListing implements OnInit {
   private router = inject(Router);
   private productService = inject(ProductService);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   product: Product | null = null;
   isOwner = false;
   saving = signal(false);
+  isLoading = true;
 
   // Editable fields
   title = '';
@@ -52,6 +54,9 @@ export class EditListing implements OnInit {
       return;
     }
 
+    const startTime = Date.now();
+    this.isLoading = true;
+
     this.productService.getProductById(id).subscribe({
       next: (product) => {
         if (!product) {
@@ -59,24 +64,39 @@ export class EditListing implements OnInit {
           return;
         }
 
-        this.product = product;
-        const currentUser = this.authService.currentUser();
-        this.isOwner = currentUser?.id === product.seller.id;
+        const elapsed = Date.now() - startTime;
+        const delayTime = Math.max(0, 400 - elapsed);
 
-        if (!this.isOwner) {
-          this.router.navigate(['/products', id]);
-          return;
-        }
+        setTimeout(() => {
+          this.product = product;
+          const currentUser = this.authService.currentUser();
+          this.isOwner = currentUser?.id === product.seller.id;
 
-        this.title = product.title;
-        this.description = product.description;
-        this.price = product.price;
-        this.category = product.category;
-        this.condition = product.condition;
-        this.size = product.size || '';
-        this.status = product.status;
+          if (!this.isOwner) {
+            this.router.navigate(['/products', id]);
+            return;
+          }
+
+          this.title = product.title;
+          this.description = product.description;
+          this.price = product.price;
+          this.category = product.category;
+          this.condition = product.condition;
+          this.size = product.size || '';
+          this.status = product.status;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }, delayTime);
       },
-      error: () => this.router.navigate(['/products'])
+      error: () => {
+        const elapsed = Date.now() - startTime;
+        const delayTime = Math.max(0, 400 - elapsed);
+        setTimeout(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          this.router.navigate(['/products']);
+        }, delayTime);
+      }
     });
   }
 

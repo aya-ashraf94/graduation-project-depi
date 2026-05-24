@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
@@ -22,6 +22,7 @@ export class ProductDetail implements OnInit {
   private productService = inject(ProductService);
   private authService = inject(AuthService);
   wishlistService = inject(WishlistService);
+  private cdr = inject(ChangeDetectorRef);
 
   product: Product | undefined;
   relatedProducts: ProductSummary[] = [];
@@ -32,31 +33,51 @@ export class ProductDetail implements OnInit {
   showAuthModal = false;
   reportReason = '';
   reportSubmitted = false;
+  isLoading = true;
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id') ?? '';
+      this.isLoading = true;
+      this.product = undefined;
       
+      const startTime = Date.now();
+
       // 1. جلب المنتج بـ subscribe
       this.productService.getProductById(id).subscribe({
         next: (product) => {
-          this.product = product;
-          this.activeImage = 0;
-          
-          // 2. التحقق من الملكية داخل الـ next
-          const currentUser = this.authService.currentUser();
-          this.isOwner = currentUser?.id === product.seller.id;
+          const elapsed = Date.now() - startTime;
+          const delayTime = Math.max(0, 400 - elapsed);
 
-          // 3. جلب المنتجات ذات الصلة بعد نجاح جلب المنتج
-          this.productService.getProducts().subscribe(allProducts => {
-            this.relatedProducts = allProducts
-              .filter(p => p.id !== id) // استخدام id مباشرة
-              .slice(0, 3);
-          });
+          setTimeout(() => {
+            this.product = product;
+            this.activeImage = 0;
+            this.isLoading = false;
+
+            // 2. التحقق من الملكية داخل الـ next
+            const currentUser = this.authService.currentUser();
+            this.isOwner = currentUser?.id === product.seller.id;
+
+            // 3. جلب المنتجات ذات الصلة بعد نجاح جلب المنتج
+            this.productService.getProducts().subscribe(allProducts => {
+              this.relatedProducts = allProducts
+                .filter(p => p.id !== id) // استخدام id مباشرة
+                .slice(0, 3);
+              this.cdr.detectChanges();
+            });
+            this.cdr.detectChanges();
+          }, delayTime);
         },
         error: (err) => {
           console.error('Error loading product:', err);
-          this.router.navigate(['/products']);
+          const elapsed = Date.now() - startTime;
+          const delayTime = Math.max(0, 400 - elapsed);
+
+          setTimeout(() => {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+            this.router.navigate(['/products']);
+          }, delayTime);
         }
       });
       

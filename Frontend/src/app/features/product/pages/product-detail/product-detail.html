@@ -1,4 +1,4 @@
-<div class="product-detail-page" *ngIf="product; else notFound">
+<div class="product-detail-page fade-in" *ngIf="!isLoading && product; else checkLoading">
   <div class="product-layout">
     <main class="product-main">
       
@@ -208,8 +208,65 @@
   </div>
 </div>
 
-<ng-template #notFound>
-  <div class="product-list-page">
+<ng-template #checkLoading>
+  <!-- Loading state (Skeletons) -->
+  <div *ngIf="isLoading" class="product-detail-page" style="pointer-events: none; opacity: 0.85;">
+    <div class="product-layout">
+      <main class="product-main" style="padding-top: 1.5rem;">
+        <header class="detail-header" style="height: 3rem; margin-bottom: 2rem;">
+          <div class="skeleton-box" style="width: 10rem; height: 1.5rem;"></div>
+        </header>
+
+        <div class="detail-grid">
+          <!-- LEFT: Image Gallery Skeleton -->
+          <div class="gallery-col">
+            <div class="main-image-wrap" style="height: 30rem; background: var(--surface-2); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); overflow: hidden;">
+              <div class="skeleton-box" style="width: 100%; height: 100%; border: none; border-radius: 0;"></div>
+            </div>
+            <div class="thumbnails" style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+              <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-sm);"></div>
+              <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-sm);"></div>
+              <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-sm);"></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Product Info Skeleton -->
+          <div class="info-col" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="product-meta-top">
+              <div class="skeleton-box" style="width: 6rem; height: 1rem; margin-bottom: 0.5rem;"></div>
+              <div style="display: flex; gap: 0.5rem;">
+                <div class="skeleton-box" style="width: 4rem; height: 1.2rem;"></div>
+                <div class="skeleton-box" style="width: 5rem; height: 1.2rem;"></div>
+              </div>
+            </div>
+
+            <div class="skeleton-box" style="width: 90%; height: 2.5rem; margin: 0.5rem 0;"></div>
+            
+            <div class="skeleton-box" style="width: 8rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
+
+            <div class="skeleton-box" style="width: 100%; height: 5rem;"></div>
+
+            <div class="specs-panel" style="padding: 1.5rem; border: var(--border-width) solid var(--border); border-radius: var(--radius-md);">
+              <div class="skeleton-box" style="width: 12rem; height: 1rem; margin-bottom: 1rem;"></div>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; justify-content: space-between;"><div class="skeleton-box" style="width: 6rem; height: 0.8rem;"></div><div class="skeleton-box" style="width: 8rem; height: 0.8rem;"></div></div>
+                <div style="display: flex; justify-content: space-between;"><div class="skeleton-box" style="width: 4rem; height: 0.8rem;"></div><div class="skeleton-box" style="width: 5rem; height: 0.8rem;"></div></div>
+                <div style="display: flex; justify-content: space-between;"><div class="skeleton-box" style="width: 3rem; height: 0.8rem;"></div><div class="skeleton-box" style="width: 6rem; height: 0.8rem;"></div></div>
+              </div>
+            </div>
+
+            <div class="actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
+              <div class="skeleton-box" style="flex: 1; height: 3.2rem; border-radius: var(--radius-sm);"></div>
+              <div class="skeleton-box" style="width: 3.2rem; height: 3.2rem; border-radius: 50%;"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Not Found state -->
+  <div *ngIf="!isLoading && !product" class="product-list-page">
     <div class="empty-state">
       <h2>LISTING NOT FOUND</h2>
       <button class="btn-apply-filters" routerLink="/products">RETURN TO ARCHIVE</button>
