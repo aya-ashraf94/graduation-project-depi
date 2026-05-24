@@ -1,0 +1,144 @@
+[
+  {
+    "role": "user",
+    "isVerified": false,
+    "_id": "69fd10135a9e74a1a2ac3d6a",
+    "name": "Abdo",
+    "email": "abdo999@test.com",
+    "password": "$2b$10$jnRu//f2gsIbQZj29Ff8Deaiqd30Rg.ubNQFquRaVrNLRz8McmMme",
+    "createdAt": "2026-05-07T22:20:03.628Z",
+    "updatedAt": "2026-05-07T22:20:03.628Z",
+    "__v": 0
+  },
+  {
+    "role": "user",
+    "isVerified": false,
+    "_id": "6a0f5b8bf20d17be99186968",
+    "name": "ali mohamed",
+    "email": "ali@gmail.com",
+    "password": "$2b$10$REx9k15bLYcs4OUvrjwYbOitpt35GGaR/c.5Rgh.oipyB17vq.KLy",
+    "createdAt": "2026-05-21T19:22:51.345Z",
+    "updatedAt": "2026-05-21T19:22:51.345Z",
+    "__v": 0
+  },
+  {
+    "role": "user",
+    "isVerified": false,
+    "_id": "6a10b0d1e24456cbac9b4ede",
+    "name": "abdo gamal",
+    "email": "g@gmail.com",
+    "password": "$2b$10$8KlaS1Z0UO4ZwzhqRosxyuxzViJHeaY/70pj7.ZLv2wOwZ1NEtAty",
+    "createdAt": "2026-05-22T19:38:57.268Z",
+    "updatedAt": "2026-05-22T19:38:57.268Z",
+    "__v": 0
+  },
+  {
+    "role": "user",
+    "isVerified": false,
+    "_id": "6a1224eaf278c7b4f7e43f62",
+    "name": "abdo gamal",
+    "email": "a@gmail.com",
+    "password": "$2b$10$O4vNme3o.9/9pFWJeNJVueSCaQyH/Oiv.um8f8NTzNAoHmaHXYP0q",
+    "createdAt": "2026-05-23T22:06:34.281Z",
+    "updatedAt": "2026-05-23T22:06:34.281Z",
+    "__v": 0
+  },
+  {
+    "role": "user",
+    "isVerified": false,
+    "_id": "6a104027bb9b8da209585cc9",
+    "name": "Furniture",
+    "attributes": [
+      {
+        "name": "type",
+        "type": "select",
+        "options": [
+          "Chair",
+          "Table",
+          "Sofa",
+          "Bed",
+          "Wardrobe",
+          "Desk",
+          "Cabinet",
+          "Bookshelf",
+          "TV Unit",
+          "Dining Set",
+          "Outdoor Furniture",
+          "Office Furniture",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104027bb9b8da209585cca"
+      },
+      {
+        "name": "material",
+        "type": "select",
+        "options": [
+          "Wood",
+          "Metal",
+          "Plastic",
+          "Glass",
+          "Fabric",
+          "Leather",
+          "MDF",
+          "Steel",
+          "Aluminum",
+          "Mixed Materials",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104027bb9b8da209585ccb"
+      },
+      {
+        "name": "color",
+        "type": "select",
+        "options": [
+          "Black",
+          "White",
+          "Brown",
+          "Beige",
+          "Grey",
+          "Red",
+          "Blue",
+          "Green",
+          "Yellow",
+          "Orange",
+          "Pink",
+          "Purple",
+          "Gold",
+          "Silver",
+          "Multi-color",
+          "Other"
+        ],
+        "required": true,
+        "hasOther": true,
+        "_id": "6a104027bb9b8da209585ccc"
+      },
+      {
+        "name": "condition",
+        "type": "radio",
+        "options": [
+          "New",
+          "Used"
+        ],
+        "required": true,
+        "hasOther": false,
+        "_id": "6a104027bb9b8da209585ccd"
+      }
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce4c",
+    "name": "Nafa3ni Store",
+    "email": "store@nafa3ni.com",
+    "password": "$2b$10$0oJEC/RpzREadJuwLlOL8uymnI1avECV.COUCoE4hlGjfbgG6/Vte",
+    "role": "admin",
+    "isVerified": true,
+    "createdAt": "2026-05-24T01:23:53.728Z",
+    "updatedAt": "2026-05-24T01:23:53.728Z",
+    "__v": 0
+  }
+]

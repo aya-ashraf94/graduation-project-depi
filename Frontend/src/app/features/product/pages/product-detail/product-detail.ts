@@ -58,11 +58,11 @@ export class ProductDetail implements OnInit {
             const currentUser = this.authService.currentUser();
             this.isOwner = currentUser?.id === product.seller.id;
 
-            // 3. جلب المنتجات ذات الصلة بعد نجاح جلب المنتج
+            // 3. جلب المنتجات ذات الصلة بعد نجاح جلب المنتج (نفس القسم ومخلوطين عشوائياً)
             this.productService.getProducts().subscribe(allProducts => {
-              this.relatedProducts = allProducts
-                .filter(p => p.id !== id) // استخدام id مباشرة
-                .slice(0, 3);
+              const matched = allProducts.filter(p => p.id !== id && p.category === product.category);
+              const shuffled = matched.sort(() => 0.5 - Math.random());
+              this.relatedProducts = shuffled.slice(0, 3);
               this.cdr.detectChanges();
             });
             this.cdr.detectChanges();

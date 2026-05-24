@@ -77,7 +77,7 @@
 
 .dashboard-container {
   width: 100%;
-  max-width: 80rem;
+  max-width: 70rem;
 }
 
 .profile-main-title {
@@ -989,4 +989,147 @@
   width: 100%;
   max-width: 25rem;
   height: 12rem;
+}
+
+.profile-listings-scroll {
+  max-height: 38.75rem; /* ~620px */
+  overflow-y: auto;
+  border: var(--border-width) solid var(--black);
+  box-shadow: 4px 4px 0 var(--black);
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 2rem;
+}
+
+/* ============================================================
+   PROFILE PRODUCTS SLIDER MODE
+   ============================================================ */
+
+.profile-slider-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.profile-slider-track {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  width: 100%;
+  padding: 1rem 0.25rem;
+  /* Hide scrollbar */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.profile-slider-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.profile-slider-track .product-card {
+  flex: 0 0 18rem; /* Fixed width in slider */
+  max-width: 18rem;
+}
+
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--yellow);
+  border: var(--border-width) solid var(--black);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--black);
+  z-index: 15;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+.slider-arrow svg {
+  color: var(--black);
+  transform-origin: center;
+}
+
+.slider-arrow:hover {
+  transform: translateY(-52%) scale(1.05);
+  box-shadow: 6px 6px 0 var(--black);
+  background: var(--white);
+}
+
+.slider-arrow:active {
+  transform: translateY(-48%) scale(0.95);
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.slider-arrow.left {
+  left: 0.5rem;
+}
+
+.slider-arrow.right {
+  right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .slider-arrow {
+    width: 2.75rem;
+    height: 2.75rem;
+    box-shadow: 2px 2px 0 var(--black);
+  }
+  .slider-arrow.left {
+    left: 0.25rem;
+  }
+  .slider-arrow.right {
+    right: 0.25rem;
+  }
+  .profile-slider-track .product-card {
+    flex: 0 0 15rem;
+    max-width: 15rem;
+  }
+}
+
+.btn-view-all-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.btn-view-all {
+  background: var(--white);
+  color: var(--black);
+  border: var(--border-width) solid var(--black);
+  padding: 0.75rem 2rem;
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--black);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+.btn-view-all:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 var(--black);
+  background: var(--yellow);
+}
+
+.btn-view-all:active {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0 var(--black);
 }

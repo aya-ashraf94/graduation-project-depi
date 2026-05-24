@@ -134,3 +134,24 @@ The server will output:
 Server Running On Port 5000
 MongoDB Connected
 ```
+
+---
+
+## 🗄️ Database Exporting & Seeding (Syncing Data)
+
+To keep your local databases synchronized with other developers:
+
+### 1. Export local database state
+Run this command from inside the `Backend/` directory:
+```bash
+npm run export-db
+```
+This dumps your local MongoDB collections into JSON backup files located at `Backend/data/`. Push these JSON files to GitHub.
+
+### 2. Seed/Import shared database state
+To import the shared database status:
+```bash
+npm run seed
+```
+> [!WARNING]
+> This drops the existing local collections (users, categories, products) before populating them with the shared JSON values to avoid duplicate key conflicts and ID mismatches.

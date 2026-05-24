@@ -1,17 +1,17 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth';
 import { ProductService } from '../../../../core/services/product.service';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ReviewService } from '../../../../core/services/review.service';
+import { UserService } from '../../../../core/services/user.service';
 import { User } from '../../../../core/models/user.model';
 import { ProductSummary } from '../../../../core/models/product.model';
 import { Review } from '../../../../core/models/review.model';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
-import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-my-profile',
@@ -25,101 +25,73 @@ export class MyProfile implements OnInit {
   private productService = inject(ProductService);
   wishlistService = inject(WishlistService);
   private reviewService = inject(ReviewService);
-
+  private userService = inject(UserService);
   private route = inject(ActivatedRoute);
-
   private cdr = inject(ChangeDetectorRef);
 
+  @ViewChild('profileSliderTrack') profileSliderTrack!: ElementRef;
+
   user: User | null = null;
+  isOwnProfile = true;
   myListings: ProductSummary[] = [];
   wishlistItems: ProductSummary[] = [];
   reviews: Review[] = [];
   activeTab: 'products' | 'wishlist' | 'reviews' = 'products';
-
-  // ngOnInit() {
-  //   this.user = this.authService.currentUser();
-
-  //   if (this.user) {
-  //     // 1. جلب المنتجات (تأكدي أن هذه الدالة في الـ Service تعيد Observable)
-  //     this.productService.getProductsBySeller(this.user.id).subscribe({
-  //       next: (products) => {
-  //         console.log('Fetched products:', products); // أضيفي هذا للـ console للتأكد من وصول البيانات
-  //         this.myListings = products;
-  //       },
-  //       error: (err) => {
-  //         console.error('Error:', err);
-  //       }
-  //     });
-
-  //     this.loadWishlist();
-  //     this.reviews = this.reviewService.getReviewsForUser(this.user.id);
-  //   }
-
-
-  //   this.route.queryParams.subscribe(params => {
-  //     const tab = params['tab'];
-  //     if (tab) this.activeTab = tab;
-  //   });
-  // }
-
-  // ngOnInit() {
-  //   this.user = this.authService.currentUser();
-
-  //   // نتحقق من وجود المستخدم ووجود الـ ID الخاص به
-  //   if (this.user?.id) {
-  //     this.productService.getProductsBySeller(this.user.id).subscribe({
-  //       next: (products) => {
-  //         console.log('Fetched products:', products); 
-  //         this.myListings = products;
-  //       },
-  //       error: (err) => {
-  //         console.error('Error fetching products:', err);
-  //       }
-  //     });
-
-  //     this.loadWishlist();
-  //     this.reviews = this.reviewService.getReviewsForUser(this.user.id);
-  //   }
-
-
-  //   this.route.queryParams.subscribe(params => {
-  //     const tab = params['tab'];
-  //     if (tab === 'products' || tab === 'wishlist' || tab === 'reviews') {
-  //       this.activeTab = tab;
-  //     }
-
-  //   });
-  // }
+  
+  showAllListings = false;
+  showAuthModal = false;
 
   ngOnInit() {
-    this.user = this.authService.currentUser();
-
-    // 1. جلب البيانات الأساسية للمستخدم
-    if (this.user?.id) {
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      const currentUser = this.authService.currentUser();
       
-      // جلب منتجات هذا المستخدم فقط
-      this.productService.getProductsBySeller(this.user.id).subscribe({
-        next: (products) => {
-          console.log('Fetched products:', products);
-          this.myListings = products;
-          this.cdr.detectChanges(); // تحديث الواجهة فور وصول البيانات
-        },
-        error: (err) => {
-          console.error('Error fetching products:', err);
+      if (id && id !== 'me' && id !== currentUser?.id) {
+        this.isOwnProfile = false;
+        // Load target user profile
+        this.userService.getUserById(id).subscribe({
+          next: (user) => {
+            this.user = user;
+            if (user && user.id) {
+              this.loadUserListings(user.id);
+              this.reviews = this.reviewService.getReviewsForUser(user.id);
+            }
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Error loading user profile:', err);
+          }
+        });
+      } else {
+        this.isOwnProfile = true;
+        // Load current logged-in user profile
+        this.user = currentUser;
+        if (this.user?.id) {
+          this.loadUserListings(this.user.id);
+          this.loadWishlist();
+          this.reviews = this.reviewService.getReviewsForUser(this.user.id);
         }
-      });
+      }
+    });
 
-      // جلب الـ wishlist والـ reviews
-      this.loadWishlist();
-      this.reviews = this.reviewService.getReviewsForUser(this.user.id);
-    }
-
-    // 2. معالجة الـ Tabs (قراءة من الـ URL)
+    // Handle Tabs (reading from query params)
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
       if (tab === 'products' || tab === 'wishlist' || tab === 'reviews') {
         this.activeTab = tab;
-        
+      }
+    });
+  }
+
+  loadUserListings(userId: string) {
+    this.productService.getProductsBySeller(userId).subscribe({
+      next: (products) => {
+        console.log('Fetched products for user:', userId, products);
+        this.myListings = products;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching products:', err);
       }
     });
   }
@@ -156,5 +128,31 @@ export class MyProfile implements OnInit {
 
   logout() {
     this.authService.logout();
+  }
+
+  slideLeft() {
+    if (this.profileSliderTrack) {
+      this.profileSliderTrack.nativeElement.scrollBy({ left: -320, behavior: 'smooth' });
+    }
+  }
+
+  slideRight() {
+    if (this.profileSliderTrack) {
+      this.profileSliderTrack.nativeElement.scrollBy({ left: 320, behavior: 'smooth' });
+    }
+  }
+
+  toggleWishlist(productId: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.authService.currentUser()) {
+      this.wishlistService.toggle(productId);
+    } else {
+      this.showAuthModal = true;
+    }
+  }
+
+  closeAuthModal(): void {
+    this.showAuthModal = false;
   }
 }
