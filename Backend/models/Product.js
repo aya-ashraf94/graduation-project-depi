@@ -51,4 +51,9 @@ const productSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Optimize query performance with indexes
+productSchema.index({ categoryId: 1 });
+productSchema.index({ userId: 1 });
+productSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Product', productSchema);

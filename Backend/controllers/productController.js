@@ -16,8 +16,12 @@ const getProductById = async (req, res) => {
 // @desc    GET ALL PRODUCTS
 const getProducts = async (req, res) => {
     try {
-        // تأكدي أن حقل status موجود في الـ Schema، إذا لم يكن موجوداً احذفي الفلتر
-        const products = await Product.find({}).sort({ createdAt: -1 }).populate('userId').populate('categoryId');
+        const limit = parseInt(req.query.limit);
+        const query = Product.find({}).sort({ createdAt: -1 });
+        if (!isNaN(limit) && limit > 0) {
+            query.limit(limit);
+        }
+        const products = await query.populate('categoryId');
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
@@ -221,6 +225,45 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+// @desc    GET PRODUCT COUNTS BY CATEGORY
+const getCategoryCounts = async (req, res) => {
+    try {
+        const counts = await Product.aggregate([
+            {
+                $group: {
+                    _id: "$categoryId",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "category"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$category",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: { $ifNull: ["$category.name", "Other"] },
+                    count: 1
+                }
+            }
+        ]);
+        res.json(counts);
+    } catch (error) {
+        console.error("Error getting category counts:", error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
+
 module.exports = {
     getProducts,
     getUserProducts,
@@ -228,5 +271,6 @@ module.exports = {
     getMyProducts,
     updateProduct,
     deleteProduct,
-    getProductById
+    getProductById,
+    getCategoryCounts
 };

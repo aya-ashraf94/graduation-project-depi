@@ -153,5 +153,12 @@ To import the shared database status:
 ```bash
 npm run seed
 ```
-> [!WARNING]
-> This drops the existing local collections (users, categories, products) before populating them with the shared JSON values to avoid duplicate key conflicts and ID mismatches.
+> [!NOTE]
+> Seeding is now non-destructive! Instead of deleting all documents, the script uses a bulk-upsert mechanism to add or update records based on their `_id`, keeping your other local custom test listings intact.
+
+### 3. Generate Official Store Catalog Data
+To generate the official Nafa3ni Store admin profile and load the database with 32 premium campus listings across all categories, run:
+```bash
+npm run generate-official
+```
+This runs the generation script which populates official products with complete specifications, location coordinates, and stock graphics, and updates local data templates.
