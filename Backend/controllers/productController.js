@@ -414,6 +414,9 @@ const getCategoryCounts = async (req, res) => {
     try {
         const counts = await Product.aggregate([
             {
+                $match: { status: { $ne: 'sold' } }
+            },
+            {
                 $group: {
                     _id: "$categoryId",
                     count: { $sum: 1 }

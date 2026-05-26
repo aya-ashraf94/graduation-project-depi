@@ -22,8 +22,8 @@
               class="checkbox-wrapper"
               (click)="selectCategory(cat)"
             >
-              <div class="custom-checkbox" [class.checked]="selectedCategory === cat">
-                <svg *ngIf="selectedCategory === cat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+              <div class="custom-checkbox" [class.checked]="selectedCategories.has(cat)">
+                <svg *ngIf="selectedCategories.has(cat)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
               </div>
