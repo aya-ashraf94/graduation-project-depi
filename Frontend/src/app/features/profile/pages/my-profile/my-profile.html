@@ -141,7 +141,7 @@
         <div class="ref-stats-divider"></div>
         
         <!-- Rating -->
-        <div class="ref-stats-col" (click)="activeTab = 'reviews'" style="cursor: pointer;">
+        <div class="ref-stats-col" (click)="selectTab('reviews')" style="cursor: pointer;">
           <div class="ref-stats-icon-wrap icon-rating">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #e8bd18;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
@@ -187,7 +187,7 @@
             <button
               class="tab-item"
               [class.active]="activeTab === 'products'"
-              (click)="activeTab = 'products'"
+              (click)="selectTab('products')"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               Products
@@ -197,7 +197,7 @@
             <button
               class="tab-item"
               [class.active]="activeTab === 'reviews'"
-              (click)="activeTab = 'reviews'"
+              (click)="selectTab('reviews')"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               Reviews
@@ -208,7 +208,7 @@
               *ngIf="isOwnProfile"
               class="tab-item"
               [class.active]="activeTab === 'wishlist'"
-              (click)="activeTab = 'wishlist'"
+              (click)="selectTab('wishlist')"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               Wishlist
@@ -219,7 +219,7 @@
               *ngIf="isOwnProfile"
               class="tab-item"
               [class.active]="activeTab === 'orders'"
-              (click)="activeTab = 'orders'"
+              (click)="selectTab('orders')"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
               Orders
@@ -464,45 +464,78 @@
 
       <!-- TAB CONTENT: WISHLIST -->
       <div class="tab-content" *ngIf="activeTab === 'wishlist'">
-        <div class="wishlist-grid" *ngIf="wishlistItems.length > 0; else noWishlist">
-          <div class="wishlist-card" *ngFor="let item of wishlistItems">
-            <a [routerLink]="['/products', item.id]" class="wishlist-img-wrap">
-              <img [src]="item.thumbnail" [alt]="item.title" appImageFallback />
-            </a>
-            <div class="wishlist-info">
-              <div class="wishlist-brand">{{ item.brand }}</div>
-              <a [routerLink]="['/products', item.id]" class="wishlist-title">{{ item.title }}</a>
-              <div class="wishlist-price">{{ item.price | currencyFormat }}</div>
-            </div>
-            <button
-              type="button"
-              class="wishlist-remove"
-              (click)="removeFromWishlist(item.id)"
-              title="Remove from wishlist"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
+        <div class="wishlist-dashboard-grid" *ngIf="wishlistItems.length > 0; else noWishlist">
+          <div class="wishlist-item-card" *ngFor="let item of wishlistItems" [class.product-sold]="item.status === 'sold'">
+            <div class="wishlist-card-img-wrap">
+              <a [routerLink]="['/products', item.id]">
+                <img [src]="item.thumbnail" [alt]="item.title" appImageFallback class="wishlist-card-img" />
+              </a>
+              
+              <!-- Condition Badge -->
+              <div class="wishlist-card-cond-badge" [class]="getConditionClass(item.condition)">
+                {{ getConditionLabel(item.condition) }}
+              </div>
+
+              <!-- Sold / Reserved Overlay Badge -->
+              <div class="wishlist-status-overlay" *ngIf="item.status === 'sold'">
+                <span class="status-overlay-tag sold-tag">SOLD</span>
+              </div>
+              <div class="wishlist-status-overlay" *ngIf="item.status === 'reserved'">
+                <span class="status-overlay-tag reserved-tag">RESERVED</span>
+              </div>
+
+              <!-- Floating Remove Cancel Button -->
+              <button
+                type="button"
+                class="wishlist-card-remove-btn"
+                (click)="removeFromWishlist(item.id, $event)"
+                title="Remove from wishlist"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="wishlist-card-body">
+              <div class="wishlist-card-brand" *ngIf="item.brand">{{ item.brand }}</div>
+              <h3 class="wishlist-card-title">
+                <a [routerLink]="['/products', item.id]">{{ item.title }}</a>
+              </h3>
+              
+              <div class="wishlist-card-footer">
+                <div class="wishlist-card-price">{{ item.price | currencyFormat }}</div>
+                <a [routerLink]="['/products', item.id]" class="wishlist-card-action-btn">
+                  {{ item.status === 'sold' ? 'View Details' : 'Buy Now' }}
+                </a>
+              </div>
+            </div>
           </div>
         </div>
         <ng-template #noWishlist>
           <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-3)" stroke-width="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
             <p>Your wishlist is empty. Browse the marketplace and save items you like!</p>
-            <a routerLink="/products" class="btn btn-primary">BROWSE MARKETPLACE</a>
+            <a routerLink="/products" class="btn-view-all" style="text-decoration: none; display: inline-block;">BROWSE MARKETPLACE</a>
           </div>
         </ng-template>
       </div><!-- /wishlist tab-content -->
 
-            <!-- TAB CONTENT: MY ORDERS -->
+      <!-- TAB CONTENT: MY ORDERS -->
       <div class="tab-content" *ngIf="activeTab === 'orders' && isOwnProfile">
 
         <!-- View Toggle: Purchases | Sales -->
@@ -515,7 +548,7 @@
           <button class="orders-toggle-btn" [class.active]="orderView === 'sales'"
             (click)="orderView = 'sales'; orderStatusFilter = 'all'">
             MY SALES
-            <span class="orders-count-badge">{{ getSales().length }}</span>
+            <span class="orders-count-badge">{{ user.totalSales || 0 }}</span>
           </button>
         </div>
 
@@ -528,37 +561,144 @@
           <button class="filter-pill" [class.active]="orderStatusFilter === 'cancelled'" (click)="orderStatusFilter = 'cancelled'">Cancelled</button>
         </div>
 
-        <!-- Orders List -->
-        <div class="orders-list-v2">
+        <!-- Orders List (Dashboard Style) -->
+        <div class="orders-dashboard-list">
 
           <!-- ── PURCHASES VIEW ── -->
           <ng-container *ngIf="orderView === 'purchases'">
             <div class="orders-empty-v2" *ngIf="getFilteredPurchases().length === 0">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-3)" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
               <p *ngIf="orderStatusFilter === 'all'">No purchases yet.</p>
               <p *ngIf="orderStatusFilter !== 'all'">No <strong>{{ orderStatusFilter }}</strong> purchases.</p>
             </div>
 
-            <div class="order-row" *ngFor="let order of getFilteredPurchases()">
-              <div class="order-row-thumb" [routerLink]="['/products', order.productId]">
-                <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+            <!-- Redesigned Purchases Card -->
+            <div class="order-dashboard-card" *ngFor="let order of getFilteredPurchases()">
+              <!-- Card Header -->
+              <div class="order-card-header">
+                <div class="order-meta-info">
+                  <span class="order-meta-id">Order ID: <strong>#{{ order.id.substring(0, 8) | uppercase }}</strong></span>
+                  <span class="order-meta-date">Placed: <strong>{{ order.createdAt | date:'mediumDate' }}</strong></span>
+                </div>
+                <div class="order-status-badge-wrap">
+                  <span class="order-status-badge" [ngClass]="order.status">
+                    {{ order.status | uppercase }}
+                  </span>
+                </div>
               </div>
-              <div class="order-row-info">
-                <span class="order-row-id">#{{ order.id.substring(0, 8) | uppercase }}</span>
-                <h4 class="order-row-title" [routerLink]="['/products', order.productId]">{{ order.productTitle }}</h4>
-                <p class="order-row-party">Seller: {{ order.counterpartyName }}</p>
+
+              <!-- Card Body -->
+              <div class="order-card-body">
+                <div class="order-main-details">
+                  <div class="order-card-thumb" [routerLink]="['/products', order.productId]">
+                    <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+                  </div>
+                  <div class="order-card-info-text">
+                    <h4 class="order-card-product-title" [routerLink]="['/products', order.productId]">{{ order.productTitle }}</h4>
+                    <p class="order-card-partner-name">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; display: inline-block; vertical-align: middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Seller: <strong>{{ order.counterpartyName }}</strong>
+                    </p>
+                    <div class="order-card-price-tag">
+                      {{ order.price | currencyFormat }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Timeline / Stepper Column -->
+                <div class="order-stepper-column">
+                  <div class="order-timeline-stepper" *ngIf="order.status !== 'cancelled'">
+                    <!-- Step 1: Placed -->
+                    <div class="timeline-step active">
+                      <div class="step-bullet">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span class="step-label">Ordered</span>
+                    </div>
+
+                    <div class="timeline-line" [class.completed]="order.status === 'shipped' || order.status === 'delivered'"></div>
+
+                    <!-- Step 2: Shipped -->
+                    <div class="timeline-step" [class.active]="order.status === 'shipped' || order.status === 'delivered'" [class.current]="order.status === 'shipped'">
+                      <div class="step-bullet">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" *ngIf="order.status === 'shipped' || order.status === 'delivered'"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span class="step-label">Shipped</span>
+                    </div>
+
+                    <div class="timeline-line" [class.completed]="order.status === 'delivered'"></div>
+
+                    <!-- Step 3: Delivered -->
+                    <div class="timeline-step" [class.active]="order.status === 'delivered'" [class.current]="order.status === 'delivered'">
+                      <div class="step-bullet">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" *ngIf="order.status === 'delivered'"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span class="step-label">Delivered</span>
+                    </div>
+                  </div>
+
+                  <!-- Cancelled Banner -->
+                  <div class="order-cancelled-panel" *ngIf="order.status === 'cancelled'">
+                    <div class="cancelled-icon-wrap">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </div>
+                    <div class="cancelled-text-wrap">
+                      <h5>Order Cancelled</h5>
+                      <p>This transaction has been cancelled.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="order-row-meta">
-                <span class="order-row-price">{{ order.price | currencyFormat }}</span>
-                <span class="status-badge" [ngClass]="order.status">{{ order.status | uppercase }}</span>
-                <span class="order-row-date">{{ order.createdAt | date:'mediumDate' }}</span>
+
+              <!-- Collapsible Details Toggle -->
+              <div class="order-details-toggle-bar" (click)="toggleOrderDetails(order.id)">
+                <span class="toggle-text">
+                  {{ isOrderExpanded(order.id) ? 'Hide Order Details' : 'Show Order Details' }}
+                </span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" [style.transform]="isOrderExpanded(order.id) ? 'rotate(180deg)' : 'none'" style="transition: transform 0.2s ease;">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </div>
-              <div class="order-row-actions">
-                <span *ngIf="order.status === 'delivered' && reviewedOrderIds.has(order.id)" class="reviewed-badge">✓ REVIEWED</span>
-                <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="ordr-btn ordr-btn-review" (click)="openReviewModal(order)">REVIEW</button>
-                <button *ngIf="order.status === 'shipped'"  type="button" class="ordr-btn ordr-btn-confirm" (click)="updateOrderStatus(order.id, 'delivered')">✓ RECEIVED</button>
-                <button *ngIf="order.status === 'pending'"  type="button" class="ordr-btn ordr-btn-cancel"  (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL</button>
-                <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss</button>
+
+              <!-- Expanded Details Panel -->
+              <div class="order-details-panel" *ngIf="isOrderExpanded(order.id)">
+                <div class="details-grid">
+                  <div class="details-col">
+                    <span class="details-col-lbl">SHIPPING DETAILS</span>
+                    <p class="details-col-val">{{ order.shippingAddress || 'No shipping address provided.' }}</p>
+                  </div>
+                  <div class="details-col">
+                    <span class="details-col-lbl">PAYMENT METHOD</span>
+                    <p class="details-col-val">
+                      {{ order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Online Payment' }}
+                    </p>
+                  </div>
+                  <div class="details-col">
+                    <span class="details-col-lbl">NOTES & INSTRUCTIONS</span>
+                    <p class="details-col-val italic-note">"{{ order.notes || 'No special instructions left.' }}"</p>
+                  </div>
+                  <div class="details-col">
+                    <span class="details-col-lbl">PARTNER SUPPORT</span>
+                    <div class="details-support-action">
+                      <a [routerLink]="['/chat']" [queryParams]="{ recipientId: order.sellerId }" class="details-chat-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Chat with Seller
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Actions Footer -->
+              <div class="order-card-actions-footer">
+                <div class="left-actions-placeholder"></div>
+                <div class="right-actions-wrap">
+                  <span *ngIf="order.status === 'delivered' && reviewedOrderIds.has(order.id)" class="reviewed-badge">✓ REVIEWED</span>
+                  <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="ordr-btn ordr-btn-review" (click)="openReviewModal(order)">REVIEW PRODUCT</button>
+                  <button *ngIf="order.status === 'shipped'"  type="button" class="ordr-btn ordr-btn-confirm" (click)="updateOrderStatus(order.id, 'delivered')">✓ CONFIRM RECEIVED</button>
+                  <button *ngIf="order.status === 'pending'"  type="button" class="ordr-btn ordr-btn-cancel"  (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
+                  <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
+                </div>
               </div>
             </div>
           </ng-container>
@@ -566,36 +706,143 @@
           <!-- ── SALES VIEW ── -->
           <ng-container *ngIf="orderView === 'sales'">
             <div class="orders-empty-v2" *ngIf="getFilteredSales().length === 0">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-3)" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
               <p *ngIf="orderStatusFilter === 'all'">No sales yet.</p>
               <p *ngIf="orderStatusFilter !== 'all'">No <strong>{{ orderStatusFilter }}</strong> sales.</p>
             </div>
 
-            <div class="order-row" *ngFor="let order of getFilteredSales()">
-              <div class="order-row-thumb" [routerLink]="['/products', order.productId]">
-                <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+            <!-- Redesigned Sales Card -->
+            <div class="order-dashboard-card" *ngFor="let order of getFilteredSales()">
+              <!-- Card Header -->
+              <div class="order-card-header">
+                <div class="order-meta-info">
+                  <span class="order-meta-id">Order ID: <strong>#{{ order.id.substring(0, 8) | uppercase }}</strong></span>
+                  <span class="order-meta-date">Placed: <strong>{{ order.createdAt | date:'mediumDate' }}</strong></span>
+                </div>
+                <div class="order-status-badge-wrap">
+                  <span class="order-status-badge" [ngClass]="order.status">
+                    {{ order.status | uppercase }}
+                  </span>
+                </div>
               </div>
-              <div class="order-row-info">
-                <span class="order-row-id">#{{ order.id.substring(0, 8) | uppercase }}</span>
-                <h4 class="order-row-title" [routerLink]="['/products', order.productId]">{{ order.productTitle }}</h4>
-                <p class="order-row-party">Buyer: {{ order.counterpartyName }}</p>
+
+              <!-- Card Body -->
+              <div class="order-card-body">
+                <div class="order-main-details">
+                  <div class="order-card-thumb" [routerLink]="['/products', order.productId]">
+                    <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+                  </div>
+                  <div class="order-card-info-text">
+                    <h4 class="order-card-product-title" [routerLink]="['/products', order.productId]">{{ order.productTitle }}</h4>
+                    <p class="order-card-partner-name">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; display: inline-block; vertical-align: middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Buyer: <strong>{{ order.counterpartyName }}</strong>
+                    </p>
+                    <div class="order-card-price-tag">
+                      {{ order.price | currencyFormat }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Timeline / Stepper Column -->
+                <div class="order-stepper-column">
+                  <div class="order-timeline-stepper" *ngIf="order.status !== 'cancelled'">
+                    <!-- Step 1: Placed -->
+                    <div class="timeline-step active">
+                      <div class="step-bullet">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span class="step-label">Ordered</span>
+                    </div>
+
+                    <div class="timeline-line" [class.completed]="order.status === 'shipped' || order.status === 'delivered'"></div>
+
+                    <!-- Step 2: Shipped -->
+                    <div class="timeline-step" [class.active]="order.status === 'shipped' || order.status === 'delivered'" [class.current]="order.status === 'shipped'">
+                      <div class="step-bullet">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" *ngIf="order.status === 'shipped' || order.status === 'delivered'"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span class="step-label">Shipped</span>
+                    </div>
+
+                    <div class="timeline-line" [class.completed]="order.status === 'delivered'"></div>
+
+                    <!-- Step 3: Delivered -->
+                    <div class="timeline-step" [class.active]="order.status === 'delivered'" [class.current]="order.status === 'delivered'">
+                      <div class="step-bullet">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" *ngIf="order.status === 'delivered'"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span class="step-label">Delivered</span>
+                    </div>
+                  </div>
+
+                  <!-- Cancelled Banner -->
+                  <div class="order-cancelled-panel" *ngIf="order.status === 'cancelled'">
+                    <div class="cancelled-icon-wrap">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </div>
+                    <div class="cancelled-text-wrap">
+                      <h5>Order Cancelled</h5>
+                      <p>This transaction has been cancelled.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="order-row-meta">
-                <span class="order-row-price">{{ order.price | currencyFormat }}</span>
-                <span class="status-badge" [ngClass]="order.status">{{ order.status | uppercase }}</span>
-                <span class="order-row-date">{{ order.createdAt | date:'mediumDate' }}</span>
+
+              <!-- Collapsible Details Toggle -->
+              <div class="order-details-toggle-bar" (click)="toggleOrderDetails(order.id)">
+                <span class="toggle-text">
+                  {{ isOrderExpanded(order.id) ? 'Hide Order Details' : 'Show Order Details' }}
+                </span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" [style.transform]="isOrderExpanded(order.id) ? 'rotate(180deg)' : 'none'" style="transition: transform 0.2s ease;">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </div>
-              <div class="order-row-actions">
-                <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
-                <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL</button>
-                <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">⏳ AWAITING BUYER</span>
-                <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">✓ DELIVERED</span>
-                <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss</button>
+
+              <!-- Expanded Details Panel -->
+              <div class="order-details-panel" *ngIf="isOrderExpanded(order.id)">
+                <div class="details-grid">
+                  <div class="details-col">
+                    <span class="details-col-lbl">SHIPPING DETAILS</span>
+                    <p class="details-col-val">{{ order.shippingAddress || 'No shipping address provided.' }}</p>
+                  </div>
+                  <div class="details-col">
+                    <span class="details-col-lbl">PAYMENT METHOD</span>
+                    <p class="details-col-val">
+                      {{ order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Online Payment' }}
+                    </p>
+                  </div>
+                  <div class="details-col">
+                    <span class="details-col-lbl">NOTES & INSTRUCTIONS</span>
+                    <p class="details-col-val italic-note">"{{ order.notes || 'No special instructions left.' }}"</p>
+                  </div>
+                  <div class="details-col">
+                    <span class="details-col-lbl">PARTNER SUPPORT</span>
+                    <div class="details-support-action">
+                      <a [routerLink]="['/chat']" [queryParams]="{ recipientId: order.buyerId }" class="details-chat-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Chat with Buyer
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Actions Footer -->
+              <div class="order-card-actions-footer">
+                <div class="left-actions-placeholder"></div>
+                <div class="right-actions-wrap">
+                  <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
+                  <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
+                  <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745; display: inline-flex; align-items: center;"><span class="pulse-dot"></span>⏳ AWAITING BUYER RECEIPT</span>
+                  <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">✓ DELIVERED</span>
+                  <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
+                </div>
               </div>
             </div>
           </ng-container>
 
-        </div><!-- /orders-list-v2 -->
+        </div><!-- /orders-dashboard-list -->
       </div><!-- /orders tab-content -->
 
       <!-- TAB CONTENT: REVIEWS -->

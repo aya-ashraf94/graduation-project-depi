@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { updateUserStats } = require("../utils/userStats");
 
 // REGISTER
 const registerUser = async (req, res) => {
@@ -81,6 +82,9 @@ const loginUser = async (req, res) => {
 
         // FIND USER
         const user = await User.findOne({ email });
+        if (user) {
+            await updateUserStats(user._id);
+        }
 
         if (!user) {
             return res.status(400).json({
@@ -126,7 +130,9 @@ const loginUser = async (req, res) => {
 
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select("-password");
+        const userId = req.params.id;
+        await updateUserStats(userId);
+        const user = await User.findById(userId).select("-password");
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -174,6 +180,10 @@ const updateProfile = async (req, res) => {
             { $set: updateData },
             { new: true, runValidators: true }
         ).select("-password");
+        
+        if (updatedUser) {
+            await updateUserStats(userId);
+        }
         
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });

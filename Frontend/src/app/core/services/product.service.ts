@@ -222,7 +222,7 @@ export class ProductService {
         ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
         : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       badge: dynamic.badge || '',
-      status: p.status || 'available',
+      status: (p.status === 'active' || p.status === 'available') ? 'available' : (p.status || 'available'),
       seller,
       viewCount: p.viewCount || 0,
       favoriteCount: p.favoriteCount || 0,

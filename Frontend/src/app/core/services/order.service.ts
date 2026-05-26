@@ -37,7 +37,12 @@ export class OrderService {
             counterpartyName: counterpartyName || 'Unknown',
             createdAt: o.createdAt,
             buyerId: o.buyer?.id,
-            sellerId: o.seller?.id
+            sellerId: o.seller?.id,
+            paymentMethod: o.paymentMethod,
+            shippingAddress: o.shippingAddress,
+            notes: o.notes,
+            trackingNumber: o.trackingNumber,
+            updatedAt: o.updatedAt
           } as unknown as OrderSummary;
         });
       })

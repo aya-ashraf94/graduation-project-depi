@@ -39,6 +39,13 @@ export interface OrderSummary {
   status: OrderStatus;
   counterpartyName: string;   // buyer sees seller name, seller sees buyer name
   createdAt: Date;
+  buyerId?: string;
+  sellerId?: string;
+  paymentMethod?: PaymentMethod;
+  shippingAddress?: string;
+  notes?: string;
+  trackingNumber?: string;
+  updatedAt?: Date;
 }
 
 /** Payload to create a new order (buyer clicks "Buy Now") */
