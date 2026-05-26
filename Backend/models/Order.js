@@ -36,6 +36,9 @@ const orderSchema = new mongoose.Schema(
         },
         notes: {
             type: String
+        },
+        trackingNumber: {
+            type: String
         }
     },
     {

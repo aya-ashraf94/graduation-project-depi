@@ -54,6 +54,7 @@ const getReviewsForUser = async (req, res) => {
         const { userId } = req.params;
         const reviews = await Review.find({ revieweeId: userId })
             .populate("reviewerId", "name email avatar")
+            .populate("productId", "title price thumbnail")
             .sort({ createdAt: -1 });
             
         res.json(reviews);

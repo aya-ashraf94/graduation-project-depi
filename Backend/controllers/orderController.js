@@ -140,7 +140,7 @@ const getOrderById = async (req, res) => {
 const updateOrder = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { status } = req.body;
+        const { status, trackingNumber } = req.body;
         
         if (!status) {
             return res.status(400).json({ message: "Please provide order status" });
@@ -151,15 +151,34 @@ const updateOrder = async (req, res) => {
             return res.status(404).json({ message: "Order not found" });
         }
         
-        if (order.buyerId.toString() !== userId && order.sellerId.toString() !== userId) {
+        const isBuyer  = order.buyerId.toString()  === userId;
+        const isSeller = order.sellerId.toString() === userId;
+        
+        if (!isBuyer && !isSeller) {
             return res.status(403).json({ message: "Not authorized to update this order" });
         }
         
+        // --- Role-based status enforcement ---
+        if (status === "shipped" && !isSeller) {
+            return res.status(403).json({ message: "Only the seller can mark an order as shipped" });
+        }
+        if (status === "delivered" && !isBuyer) {
+            return res.status(403).json({ message: "Only the buyer can confirm delivery" });
+        }
+        
+        // --- Revert product to available when order is cancelled ---
+        if (status === "cancelled") {
+            await Product.findByIdAndUpdate(order.productId, { status: "available" });
+        }
+        
         order.status = status;
+        if (trackingNumber !== undefined) {
+            order.trackingNumber = trackingNumber;
+        }
         await order.save();
         
         const populatedOrder = await Order.findById(order._id)
-            .populate("buyerId", "name email avatar rating isVerified")
+            .populate("buyerId",  "name email avatar rating isVerified")
             .populate("sellerId", "name email avatar rating isVerified")
             .populate("productId");
             

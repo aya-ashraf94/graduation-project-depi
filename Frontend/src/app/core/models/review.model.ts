@@ -11,7 +11,10 @@ export interface Review {
   productId: string;
   rating: number;           // 1–5
   comment: string;
-  createdAt: Date;
+  createdAt: Date | string;
+  response?: string | null;
+  reviewerName?: string;
+  reviewerAvatar?: string;
 }
 
 /** Lightweight version for display in lists */
@@ -24,11 +27,10 @@ export interface ReviewSummary {
   createdAt: Date;
 }
 
-/** Payload to submit a review after a completed order */
+/** Payload to submit a review after a completed order.
+ *  The backend auto-derives revieweeId and productId from orderId. */
 export interface CreateReviewRequest {
   orderId: string;
-  revieweeId: string;
-  productId: string;
   rating: number;
   comment: string;
 }

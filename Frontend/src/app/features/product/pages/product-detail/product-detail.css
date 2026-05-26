@@ -120,6 +120,13 @@
   color: var(--black);
 }
 
+.tag-box.sold-out {
+  background: #ff4d4d;
+  border-color: var(--black);
+  color: var(--black);
+  font-weight: 900;
+}
+
 .item-title-large {
   font-family: var(--font-primary);
   font-size: clamp(2.2rem, 9vw, 2.8rem);
