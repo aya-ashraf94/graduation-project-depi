@@ -2,79 +2,238 @@
   <!-- MAIN CONTENT -->
   <main class="dashboard-main">
     <div class="dashboard-container">
-      <!-- PROFILE HEADER -->
-      <h1 class="profile-main-title">
-        {{ user.firstName | uppercase }}_{{ user.lastName | uppercase }}
-      </h1>
+      <!-- Success/Error Global Banners -->
+      <div *ngIf="profileSuccess() && !showEditModal" class="brutalist-banner brutalist-banner-success" style="margin-bottom: 2rem;">
+        <div class="banner-icon-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="banner-message">{{ profileSuccess() }}</div>
+      </div>
 
-      <div class="profile-header-card">
-        <!-- Avatar Block -->
-        <div class="avatar-block">
-          <div class="avatar-bg">
-            <img *ngIf="user.avatar" [src]="user.avatar" [alt]="user.firstName" />
+      <!-- REDESIGNED PROFILE HERO SECTION (MATCHING IMAGE REFERENCE) -->
+      <div class="ref-profile-header">
+        
+        <!-- Left Side: Main Info Column -->
+        <div class="ref-header-left-col">
+          <!-- Avatar Block -->
+          <div class="ref-avatar-container">
+            <div class="ref-avatar-frame">
+              <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" [alt]="user.firstName" appImageFallback />
+              <ng-template #defaultAvatar>
+                <div class="ref-avatar-fallback">
+                  {{ user.firstName.substring(0, 1) | uppercase }}{{ user.lastName.substring(0, 1) | uppercase }}
+                </div>
+              </ng-template>
+            </div>
+            <!-- pulsating green online indicator dot -->
+            <div class="ref-status-dot" title="Active Campus Member"></div>
           </div>
-          <div class="pro-tag" *ngIf="user.isVerified && user.totalSales > 10">PRO SELLER</div>
+
+          <!-- Info Details Block -->
+          <div class="ref-info-details">
+            <div class="ref-name-wrapper">
+              <h1 class="ref-profile-name">{{ user.firstName }} {{ user.lastName }}</h1>
+              <div class="ref-verify-badge" title="Verified Trader" *ngIf="user.isVerified">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
+                  <path d="M23 12l-2.4-2.7.3-3.6-3.5-.8-1.8-3.2-3.3 1.4-3.3-1.4-1.8 3.2-3.5.8.3 3.6-2.4 2.7 2.4 2.7-.3 3.6 3.5.8 1.8 3.2 3.3-1.4 3.3 1.4 1.8-3.2 3.5-.8-.3-3.6z" fill="#e8bd18"/>
+                  <path d="M9.5 15.5L5.5 11.5L6.9 10.1L9.5 12.7L16.1 6.1L17.5 7.5L9.5 15.5Z" fill="#ffffff"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Subheader Location/Role info -->
+            <div class="ref-subheader-row">
+              <!-- Store Partner Icon (Shopping Bag) -->
+              <svg *ngIf="user.role === 'admin'" class="icon-store-partner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+              <!-- Seller Icon (User) -->
+              <svg *ngIf="user.role !== 'admin'" class="icon-seller" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+
+              <span class="ref-role-text">{{ user.role === 'admin' ? 'Store Partner' : 'Seller' }}</span>
+              <span class="ref-dot-separator">•</span>
+              <svg class="icon-map-pin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; display: inline-block; vertical-align: middle; margin-left: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="ref-location-text">{{ user.location || 'Cairo, Egypt' }}</span>
+            </div>
+
+            <!-- Bio text (short, clean, 2 lines) -->
+            <p class="ref-bio-text">
+              {{ user.bio || 'Frontend developer selling tech, gadgets, and collectibles. Fast replies & trusted transactions.' }}
+            </p>
+
+            <!-- Pill Badges row -->
+            <div class="ref-pills-row">
+              <!-- Verified Seller Pill -->
+              <span class="ref-pill pill-yellow" *ngIf="user.isVerified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11 11 13 15 9"/></svg>
+                Verified Seller
+              </span>
+              <!-- Seller Pill -->
+              <span class="ref-pill pill-green">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Seller
+              </span>
+              <!-- Fast Responder Pill -->
+              <span class="ref-pill pill-blue">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                Fast Responder
+              </span>
+            </div>
+
+            <!-- Member date strip -->
+            <div class="ref-footer-strip">
+              <span class="strip-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="strip-icon" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Member since <strong class="strip-bold">{{ user.joinedAt | date:'MMM yyyy' }}</strong>
+              </span>
+            </div>
+          </div>
         </div>
 
-        <!-- Info Block -->
-        <div class="info-block">
-          <div class="info-meta-row" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-            <div class="rating-box">
-              <span class="stars">★★★★★</span>
-              <span class="rating-text">{{ user.rating }} ({{ user.reviewsCount || 0 }} REVIEWS)</span>
-            </div>
-            <button class="btn btn-secondary btn-sm" *ngIf="isOwnProfile" (click)="openEditModal()" style="font-family: var(--font-secondary); font-weight: 700; font-size: 0.8rem; background: var(--yellow); border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); padding: 4px 10px; cursor: pointer; border-radius: var(--radius-sm); color: var(--black); margin-left: auto;">
-              EDIT PROFILE
+        <!-- Right Side: Vertical Stack Action Buttons Column -->
+        <div class="ref-header-right-col">
+          <!-- If Own Profile -->
+          <ng-container *ngIf="isOwnProfile">
+            <button type="button" class="ref-action-btn btn-primary-yellow" (click)="openEditModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Profile
             </button>
-            <div class="tags-row" *ngIf="user.tags">
-              <span class="tag-box" *ngFor="let tag of user.tags">{{ tag | uppercase }}</span>
-            </div>
+            <button type="button" class="ref-action-btn btn-secondary-white" (click)="shareProfile()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share Profile
+            </button>
+          </ng-container>
+
+          <!-- If Other User Profile -->
+          <ng-container *ngIf="!isOwnProfile">
+            <button type="button" class="ref-action-btn btn-primary-yellow" [routerLink]="['/chat']" [queryParams]="{ recipientId: user.id }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Message
+            </button>
+            <button type="button" class="ref-action-btn btn-secondary-white" (click)="toggleFollowSeller()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {{ isFollowing ? 'Unfollow Seller' : 'Follow Seller' }}
+            </button>
+            <button type="button" class="ref-action-btn btn-secondary-white" (click)="shareProfile()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share Profile
+            </button>
+          </ng-container>
+        </div>
+      </div>
+      <!-- SELLER STATS STRIP -->
+      <div class="ref-stats-strip">
+        <!-- Products -->
+        <div class="ref-stats-col">
+          <div class="ref-stats-icon-wrap icon-products">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </div>
-          <p class="bio-text">{{ user.bio }}</p>
+          <div class="ref-stats-text-stack">
+            <div class="ref-stats-val">{{ myListings.length }}</div>
+            <div class="ref-stats-lbl">Products</div>
+          </div>
+        </div>
+        
+        <div class="ref-stats-divider"></div>
+        
+        <!-- Rating -->
+        <div class="ref-stats-col" (click)="activeTab = 'reviews'" style="cursor: pointer;">
+          <div class="ref-stats-icon-wrap icon-rating">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #e8bd18;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="ref-stats-text-stack">
+            <div class="ref-stats-val">{{ (user.rating || 4.9) | number:'1.1-1' }}</div>
+            <div class="ref-stats-lbl">Rating</div>
+          </div>
+        </div>
+        
+        <div class="ref-stats-divider"></div>
+        
+        <!-- Sales -->
+        <div class="ref-stats-col">
+          <div class="ref-stats-icon-wrap icon-sales">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <div class="ref-stats-text-stack">
+            <div class="ref-stats-val">{{ user.totalSales || 0 }}</div>
+            <div class="ref-stats-lbl">Sales</div>
+          </div>
+        </div>
+        
+        <div class="ref-stats-divider"></div>
+        
+        <!-- Success Rate -->
+        <div class="ref-stats-col">
+          <div class="ref-stats-icon-wrap icon-success">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="ref-stats-text-stack">
+            <div class="ref-stats-val">{{ user.successRate || 100 }}%</div>
+            <div class="ref-stats-lbl">Success Rate</div>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- TABS SECTION -->
+      <div class="profile-tabs-wrap">
+        <div class="profile-tabs-container">
+          <div class="profile-tabs">
+            <!-- Products Tab -->
+            <button
+              class="tab-item"
+              [class.active]="activeTab === 'products'"
+              (click)="activeTab = 'products'"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Products
+            </button>
+            
+            <!-- Reviews Tab -->
+            <button
+              class="tab-item"
+              [class.active]="activeTab === 'reviews'"
+              (click)="activeTab = 'reviews'"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Reviews
+            </button>
+
+            <!-- Wishlist Tab -->
+            <button
+              *ngIf="isOwnProfile"
+              class="tab-item"
+              [class.active]="activeTab === 'wishlist'"
+              (click)="activeTab = 'wishlist'"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Wishlist
+            </button>
+            
+            <!-- Orders Tab -->
+            <button
+              *ngIf="isOwnProfile"
+              class="tab-item"
+              [class.active]="activeTab === 'orders'"
+              (click)="activeTab = 'orders'"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              Orders
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- TABS -->
-      <div class="profile-tabs-wrap">
-        <div class="profile-tabs">
-          <button
-            class="tab-item"
-            [class.active]="activeTab === 'products'"
-            (click)="activeTab = 'products'"
-          >
-            {{ isOwnProfile ? 'MY PRODUCTS' : 'PRODUCTS' }}
-          </button>
-          <button
-            *ngIf="isOwnProfile"
-            class="tab-item"
-            [class.active]="activeTab === 'wishlist'"
-            (click)="activeTab = 'wishlist'"
-          >
-            WISHLIST
-          </button>
-          <button
-            *ngIf="isOwnProfile"
-            class="tab-item"
-            [class.active]="activeTab === 'orders'"
-            (click)="activeTab = 'orders'"
-          >
-            MY ORDERS
-          </button>
-          <button
-            class="tab-item"
-            [class.active]="activeTab === 'reviews'"
-            (click)="activeTab = 'reviews'"
-          >
-            REVIEWS
-          </button>
-        </div>
-      </div>
       <!-- TAB CONTENT: MY PRODUCTS -->
       <div class="tab-content" *ngIf="activeTab === 'products'">
         <div *ngIf="myListings.length > 0; else noListings">
           <!-- Slider Mode -->
           <div *ngIf="!showAllListings" class="profile-slider-container">
-            <button class="slider-arrow left" (click)="slideLeft()" *ngIf="myListings.length > 3">
+            <button type="button" class="slider-arrow left" (click)="slideLeft()" *ngIf="myListings.length > 3">
               <svg
                 width="24"
                 height="24"
@@ -92,26 +251,22 @@
             <div class="profile-slider-track" #profileSliderTrack>
               <!-- Card loop -->
               <div class="product-card" *ngFor="let item of myListings">
-                <div
-                  class="product-img-wrap"
-                  [routerLink]="['/products', item.id]"
-                  style="cursor: pointer"
-                >
-                  <div class="card-badges">
-                    <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
-                  </div>
+                <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
+                  <!-- Else: Show Wishlist Button -->
                   <button
+                    *ngIf="!isOwnProfile"
+                    type="button"
                     class="btn-wishlist"
                     [class.wishlisted]="wishlistService.isWishlisted(item.id)"
                     (click)="toggleWishlist(item.id, $event)"
                   >
                     <svg
-                      width="22"
-                      height="22"
+                      width="18"
+                      height="18"
                       viewBox="0 0 24 24"
                       [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'"
                       stroke="currentColor"
-                      stroke-width="2"
+                      stroke-width="2.5"
                     >
                       <path
                         d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
@@ -124,32 +279,65 @@
                     appImageFallback
                     class="product-img"
                   />
-                  <div class="card-overlay">
-                    <button class="btn-quick-look">QUICK VIEW</button>
+                  <div class="ref-card-condition-badge" [class]="getConditionClass(item.condition)">
+                    {{ getConditionLabel(item.condition) }}
                   </div>
                 </div>
 
-                <div class="product-info">
-                  <div class="product-meta">
-                    <div class="brand-name">{{ item.brand }}</div>
-                    <h3 class="item-name">{{ item.title }}</h3>
+                <div class="product-info-ref">
+                  <div class="ref-card-title-price-row">
+                    <div class="ref-card-meta-left">
+                      <div class="ref-card-brand">{{ item.brand }}</div>
+                      <h3 class="ref-card-title" [routerLink]="['/products', item.id]">{{ item.title }}</h3>
+                    </div>
+                    <div class="ref-card-price">{{ item.price | currencyFormat }}</div>
                   </div>
-                  <div class="price-box">{{ item.price | currencyFormat }}</div>
-                </div>
-
-                <div class="product-tags">
-                  <div class="tag-row">
-                    <span class="tag-box" *ngIf="item.size">{{ item.size }}</span>
-                    <span class="tag-box">{{ item.condition | uppercase }}</span>
+                  <div class="ref-card-details-row">
+                    <span class="ref-card-loc">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {{ user.location || 'Cairo, Egypt' }}
+                    </span>
+                    <span class="ref-card-dot">•</span>
+                    <span class="ref-card-date">{{ item.createdAt | timeAgo }}</span>
                   </div>
-                  <span class="score-tag"
-                    >SCORE: {{ item.conditionScore ? item.conditionScore + '/10' : '8/10' }}</span
-                  >
+                  <div class="ref-card-seller-row">
+                    <div class="ref-card-meta-left">
+                    <div class="ref-card-seller-avatar-wrap">
+                      <img *ngIf="user.avatar; else defaultCardAvatar" [src]="user.avatar" appImageFallback class="ref-card-seller-avatar" />
+                      <ng-template #defaultCardAvatar>
+                        <div class="ref-card-seller-avatar-fallback">
+                          {{ user.firstName.substring(0, 1) | uppercase }}
+                        </div>
+                      </ng-template>
+                    </div>
+                    <span class="ref-card-seller-rating">★ {{ (user.rating || 4.9) | number:'1.1-1' }}</span>
+                    </div>
+                    <!-- If Own Profile: Show Edit & Delete Quick Actions -->
+                  <div class="ref-card-quick-actions" *ngIf="isOwnProfile" (click)="$event.stopPropagation(); $event.preventDefault();">
+                    <button
+                      type="button"
+                      class="btn-quick-action btn-edit"
+                      (click)="editProduct(item.id)"
+                      title="Edit listing"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-quick-action btn-delete"
+                      (click)="confirmDeleteProduct(item.id)"
+                      title="Delete listing"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </button>
+                  </div>
+                  </div>
+                  
                 </div>
               </div>
             </div>
 
-            <button class="slider-arrow right" (click)="slideRight()" *ngIf="myListings.length > 3">
+            <button type="button" class="slider-arrow right" (click)="slideRight()" *ngIf="myListings.length > 3">
               <svg
                 width="24"
                 height="24"
@@ -169,26 +357,41 @@
           <div *ngIf="showAllListings" class="profile-listings-scroll">
             <div class="product-dashboard-grid">
               <div class="product-card" *ngFor="let item of myListings">
-                <div
-                  class="product-img-wrap"
-                  [routerLink]="['/products', item.id]"
-                  style="cursor: pointer"
-                >
-                  <div class="card-badges">
-                    <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
+                <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
+                  <!-- If Own Profile: Show Edit & Delete Quick Actions -->
+                  <div class="ref-card-quick-actions" *ngIf="isOwnProfile" (click)="$event.stopPropagation(); $event.preventDefault();">
+                    <button
+                      type="button"
+                      class="btn-quick-action btn-edit"
+                      (click)="editProduct(item.id)"
+                      title="Edit listing"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-quick-action btn-delete"
+                      (click)="confirmDeleteProduct(item.id)"
+                      title="Delete listing"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </button>
                   </div>
+                  <!-- Else: Show Wishlist Button -->
                   <button
+                    *ngIf="!isOwnProfile"
+                    type="button"
                     class="btn-wishlist"
                     [class.wishlisted]="wishlistService.isWishlisted(item.id)"
                     (click)="toggleWishlist(item.id, $event)"
                   >
                     <svg
-                      width="22"
-                      height="22"
+                      width="18"
+                      height="18"
                       viewBox="0 0 24 24"
                       [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'"
                       stroke="currentColor"
-                      stroke-width="2"
+                      stroke-width="2.5"
                     >
                       <path
                         d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
@@ -201,27 +404,38 @@
                     appImageFallback
                     class="product-img"
                   />
-                  <div class="card-overlay">
-                    <button class="btn-quick-look">QUICK VIEW</button>
+                  <div class="ref-card-condition-badge" [class]="getConditionClass(item.condition)">
+                    {{ getConditionLabel(item.condition) }}
                   </div>
                 </div>
 
-                <div class="product-info">
-                  <div class="product-meta">
-                    <div class="brand-name">{{ item.brand }}</div>
-                    <h3 class="item-name">{{ item.title }}</h3>
+                <div class="product-info-ref">
+                  <div class="ref-card-title-price-row">
+                    <div class="ref-card-meta-left">
+                      <div class="ref-card-brand">{{ item.brand }}</div>
+                      <h3 class="ref-card-title" [routerLink]="['/products', item.id]">{{ item.title }}</h3>
+                    </div>
+                    <div class="ref-card-price">{{ item.price | currencyFormat }}</div>
                   </div>
-                  <div class="price-box">{{ item.price | currencyFormat }}</div>
-                </div>
-
-                <div class="product-tags">
-                  <div class="tag-row">
-                    <span class="tag-box" *ngIf="item.size">{{ item.size }}</span>
-                    <span class="tag-box">{{ item.condition | uppercase }}</span>
+                  <div class="ref-card-details-row">
+                    <span class="ref-card-loc">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {{ user.location || 'Cairo, Egypt' }}
+                    </span>
+                    <span class="ref-card-dot">•</span>
+                    <span class="ref-card-date">{{ item.createdAt | timeAgo }}</span>
                   </div>
-                  <span class="score-tag"
-                    >SCORE: {{ item.conditionScore ? item.conditionScore + '/10' : '8/10' }}</span
-                  >
+                  <div class="ref-card-seller-row">
+                    <div class="ref-card-seller-avatar-wrap">
+                      <img *ngIf="user.avatar; else defaultCardAvatarGrid" [src]="user.avatar" appImageFallback class="ref-card-seller-avatar" />
+                      <ng-template #defaultCardAvatarGrid>
+                        <div class="ref-card-seller-avatar-fallback">
+                          {{ user.firstName.substring(0, 1) | uppercase }}
+                        </div>
+                      </ng-template>
+                    </div>
+                    <span class="ref-card-seller-rating">★ {{ (user.rating || 4.9) | number:'1.1-1' }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -229,29 +443,12 @@
 
           <!-- Toggle grid view button -->
           <div class="btn-view-all-container">
-            <button class="btn-view-all" (click)="showAllListings = !showAllListings">
-              {{ showAllListings ? 'COLLAPSE PRODUCTS' : 'VIEW ALL PRODUCTS' }}
+            <button type="button" class="btn-view-all" (click)="showAllListings = !showAllListings">
+              {{ showAllListings ? 'Collapse Products' : 'View All Products' }}
             </button>
           </div>
         </div>
-
-        <!-- CENTERED ADD NEW ITEM DIV -->
-        <div class="add-item-container" *ngIf="isOwnProfile && myListings.length > 0">
-          <div class="commissions-box" routerLink="/listings/create" style="cursor: pointer">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              stroke-width="2"
-            >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <h3>ADD NEW ITEM</h3>
-          </div>
-        </div>
+      
       </div>
 
       <!-- EMPTY STATE -->
@@ -278,6 +475,7 @@
               <div class="wishlist-price">{{ item.price | currencyFormat }}</div>
             </div>
             <button
+              type="button"
               class="wishlist-remove"
               (click)="removeFromWishlist(item.id)"
               title="Remove from wishlist"
@@ -302,148 +500,242 @@
             <a routerLink="/products" class="btn btn-primary">BROWSE MARKETPLACE</a>
           </div>
         </ng-template>
-      </div>
+      </div><!-- /wishlist tab-content -->
 
-      <!-- TAB CONTENT: MY ORDERS -->
+            <!-- TAB CONTENT: MY ORDERS -->
       <div class="tab-content" *ngIf="activeTab === 'orders' && isOwnProfile">
-        <div class="orders-wrap">
-          <!-- Purchases Section -->
-          <div class="orders-section">
-            <h2 class="section-title">PURCHASES</h2>
-            <div class="orders-list" *ngIf="getPurchases().length > 0; else noPurchases">
-              <div class="order-card" *ngFor="let order of getPurchases()">
-                <div class="order-header">
-                  <span class="order-id">ORDER #{{ order.id.substring(0, 8) | uppercase }}</span>
-                  <span class="order-date">{{ order.createdAt | date:'short' }}</span>
-                </div>
-                <div class="order-body">
-                  <div class="order-img-wrap" [routerLink]="['/products', order.productId]" style="cursor: pointer;">
-                    <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
-                  </div>
-                  <div class="order-details">
-                    <h4 class="product-title" [routerLink]="['/products', order.productId]" style="cursor: pointer;">{{ order.productTitle }}</h4>
-                    <p class="seller-info">Seller: {{ order.counterpartyName }}</p>
-                    <p class="order-price">{{ order.price | currencyFormat }}</p>
-                    <span class="status-badge" [class]="order.status">{{ order.status | uppercase }}</span>
-                  </div>
-                  <div class="order-actions">
-                    <button *ngIf="order.status === 'delivered'" class="btn btn-primary btn-sm btn-review" (click)="openReviewModal(order)">
-                      WRITE REVIEW
-                    </button>
-                    <button *ngIf="order.status === 'shipped'" class="btn btn-primary btn-sm btn-deliver" (click)="updateOrderStatus(order.id, 'delivered')" style="background: #28a745; color: white;">
-                      CONFIRM RECEIVED
-                    </button>
-                    <button *ngIf="order.status === 'pending'" class="btn btn-outline btn-sm btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')" style="background: #dc3545; color: white;">
-                      CANCEL
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <ng-template #noPurchases>
-              <div class="empty-orders">No purchases made yet.</div>
-            </ng-template>
-          </div>
 
-          <!-- Sales Section -->
-          <div class="orders-section">
-            <h2 class="section-title">SALES</h2>
-            <div class="orders-list" *ngIf="getSales().length > 0; else noSales">
-              <div class="order-card" *ngFor="let order of getSales()">
-                <div class="order-header">
-                  <span class="order-id">ORDER #{{ order.id.substring(0, 8) | uppercase }}</span>
-                  <span class="order-date">{{ order.createdAt | date:'short' }}</span>
-                </div>
-                <div class="order-body">
-                  <div class="order-img-wrap" [routerLink]="['/products', order.productId]" style="cursor: pointer;">
-                    <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
-                  </div>
-                  <div class="order-details">
-                    <h4 class="product-title" [routerLink]="['/products', order.productId]" style="cursor: pointer;">{{ order.productTitle }}</h4>
-                    <p class="buyer-info">Buyer: {{ order.counterpartyName }}</p>
-                    <p class="order-price">{{ order.price | currencyFormat }}</p>
-                    <span class="status-badge" [class]="order.status">{{ order.status | uppercase }}</span>
-                  </div>
-                  <div class="order-actions">
-                    <button *ngIf="order.status === 'pending'" class="btn btn-primary btn-sm btn-ship" (click)="updateOrderStatus(order.id, 'shipped')" style="background: #17a2b8; color: white;">
-                      MARK SHIPPED
-                    </button>
-                    <button *ngIf="order.status === 'shipped'" class="btn btn-primary btn-sm btn-deliver" (click)="updateOrderStatus(order.id, 'delivered')" style="background: #28a745; color: white;">
-                      MARK DELIVERED
-                    </button>
-                    <button *ngIf="order.status === 'pending'" class="btn btn-outline btn-sm btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')" style="background: #dc3545; color: white;">
-                      CANCEL
-                    </button>
-                  </div>
-                </div>
+        <!-- View Toggle: Purchases | Sales -->
+        <div class="orders-view-toggle">
+          <button class="orders-toggle-btn" [class.active]="orderView === 'purchases'"
+            (click)="orderView = 'purchases'; orderStatusFilter = 'all'">
+            MY PURCHASES
+            <span class="orders-count-badge">{{ getPurchases().length }}</span>
+          </button>
+          <button class="orders-toggle-btn" [class.active]="orderView === 'sales'"
+            (click)="orderView = 'sales'; orderStatusFilter = 'all'">
+            MY SALES
+            <span class="orders-count-badge">{{ getSales().length }}</span>
+          </button>
+        </div>
+
+        <!-- Status Filter Pills -->
+        <div class="orders-filter-pills">
+          <button class="filter-pill" [class.active]="orderStatusFilter === 'all'"       (click)="orderStatusFilter = 'all'">All</button>
+          <button class="filter-pill" [class.active]="orderStatusFilter === 'pending'"   (click)="orderStatusFilter = 'pending'">Pending</button>
+          <button class="filter-pill" [class.active]="orderStatusFilter === 'shipped'"   (click)="orderStatusFilter = 'shipped'">Shipped</button>
+          <button class="filter-pill" [class.active]="orderStatusFilter === 'delivered'" (click)="orderStatusFilter = 'delivered'">Delivered</button>
+          <button class="filter-pill" [class.active]="orderStatusFilter === 'cancelled'" (click)="orderStatusFilter = 'cancelled'">Cancelled</button>
+        </div>
+
+        <!-- Orders List -->
+        <div class="orders-list-v2">
+
+          <!-- ── PURCHASES VIEW ── -->
+          <ng-container *ngIf="orderView === 'purchases'">
+            <div class="orders-empty-v2" *ngIf="getFilteredPurchases().length === 0">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              <p *ngIf="orderStatusFilter === 'all'">No purchases yet.</p>
+              <p *ngIf="orderStatusFilter !== 'all'">No <strong>{{ orderStatusFilter }}</strong> purchases.</p>
+            </div>
+
+            <div class="order-row" *ngFor="let order of getFilteredPurchases()">
+              <div class="order-row-thumb" [routerLink]="['/products', order.productId]">
+                <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+              </div>
+              <div class="order-row-info">
+                <span class="order-row-id">#{{ order.id.substring(0, 8) | uppercase }}</span>
+                <h4 class="order-row-title" [routerLink]="['/products', order.productId]">{{ order.productTitle }}</h4>
+                <p class="order-row-party">Seller: {{ order.counterpartyName }}</p>
+              </div>
+              <div class="order-row-meta">
+                <span class="order-row-price">{{ order.price | currencyFormat }}</span>
+                <span class="status-badge" [ngClass]="order.status">{{ order.status | uppercase }}</span>
+                <span class="order-row-date">{{ order.createdAt | date:'mediumDate' }}</span>
+              </div>
+              <div class="order-row-actions">
+                <span *ngIf="order.status === 'delivered' && reviewedOrderIds.has(order.id)" class="reviewed-badge">✓ REVIEWED</span>
+                <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="ordr-btn ordr-btn-review" (click)="openReviewModal(order)">REVIEW</button>
+                <button *ngIf="order.status === 'shipped'"  type="button" class="ordr-btn ordr-btn-confirm" (click)="updateOrderStatus(order.id, 'delivered')">✓ RECEIVED</button>
+                <button *ngIf="order.status === 'pending'"  type="button" class="ordr-btn ordr-btn-cancel"  (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL</button>
+                <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss</button>
               </div>
             </div>
-            <ng-template #noSales>
-              <div class="empty-orders">No items sold yet.</div>
-            </ng-template>
-          </div>
-        </div>
-      </div>
+          </ng-container>
+
+          <!-- ── SALES VIEW ── -->
+          <ng-container *ngIf="orderView === 'sales'">
+            <div class="orders-empty-v2" *ngIf="getFilteredSales().length === 0">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              <p *ngIf="orderStatusFilter === 'all'">No sales yet.</p>
+              <p *ngIf="orderStatusFilter !== 'all'">No <strong>{{ orderStatusFilter }}</strong> sales.</p>
+            </div>
+
+            <div class="order-row" *ngFor="let order of getFilteredSales()">
+              <div class="order-row-thumb" [routerLink]="['/products', order.productId]">
+                <img [src]="order.productThumbnail" [alt]="order.productTitle" appImageFallback />
+              </div>
+              <div class="order-row-info">
+                <span class="order-row-id">#{{ order.id.substring(0, 8) | uppercase }}</span>
+                <h4 class="order-row-title" [routerLink]="['/products', order.productId]">{{ order.productTitle }}</h4>
+                <p class="order-row-party">Buyer: {{ order.counterpartyName }}</p>
+              </div>
+              <div class="order-row-meta">
+                <span class="order-row-price">{{ order.price | currencyFormat }}</span>
+                <span class="status-badge" [ngClass]="order.status">{{ order.status | uppercase }}</span>
+                <span class="order-row-date">{{ order.createdAt | date:'mediumDate' }}</span>
+              </div>
+              <div class="order-row-actions">
+                <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
+                <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL</button>
+                <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">⏳ AWAITING BUYER</span>
+                <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">✓ DELIVERED</span>
+                <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss</button>
+              </div>
+            </div>
+          </ng-container>
+
+        </div><!-- /orders-list-v2 -->
+      </div><!-- /orders tab-content -->
 
       <!-- TAB CONTENT: REVIEWS -->
       <div class="tab-content" *ngIf="activeTab === 'reviews'">
-        <div class="reviews-list" *ngIf="reviews.length > 0; else noReviews">
-          <div class="review-card" *ngFor="let review of reviews">
-            <div class="review-header">
-              <div class="review-stars">{{ getStars(review.rating) }}</div>
-              <div class="review-date">{{ review.createdAt | timeAgo }}</div>
+        <div class="ref-reviews-card" *ngIf="reviews.length > 0; else noReviews">
+          <!-- Reviews Header Row -->
+          <div class="ref-reviews-card-header-row">
+            <h2 class="ref-reviews-card-title">
+              Reviews
+              <span class="ref-reviews-title-star">★ {{ (user.rating || 5.0) | number:'1.1-1' }}</span>
+              <span class="ref-reviews-title-count">({{ reviews.length }} reviews)</span>
+            </h2>
+            <button type="button" class="ref-view-all-reviews-btn">View All Reviews</button>
+          </div>
+
+          <div class="ref-reviews-layout">
+            <!-- Left Column: Star Rating Stats -->
+            <div class="ref-reviews-stats-col">
+              <div class="ref-rating-bars-stack">
+                <!-- Star 5 -->
+                <div class="ref-rating-bar-row">
+                  <span class="ref-bar-stars">5 <span class="ref-bar-star-icon">★</span></span>
+                  <div class="ref-bar-track">
+                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(5)"></div>
+                  </div>
+                  <span class="ref-bar-pct">{{ getRatingPercentage(5) }}%</span>
+                </div>
+                <!-- Star 4 -->
+                <div class="ref-rating-bar-row">
+                  <span class="ref-bar-stars">4 <span class="ref-bar-star-icon">★</span></span>
+                  <div class="ref-bar-track">
+                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(4)"></div>
+                  </div>
+                  <span class="ref-bar-pct">{{ getRatingPercentage(4) }}%</span>
+                </div>
+                <!-- Star 3 -->
+                <div class="ref-rating-bar-row">
+                  <span class="ref-bar-stars">3 <span class="ref-bar-star-icon">★</span></span>
+                  <div class="ref-bar-track">
+                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(3)"></div>
+                  </div>
+                  <span class="ref-bar-pct">{{ getRatingPercentage(3) }}%</span>
+                </div>
+                <!-- Star 2 -->
+                <div class="ref-rating-bar-row">
+                  <span class="ref-bar-stars">2 <span class="ref-bar-star-icon">★</span></span>
+                  <div class="ref-bar-track">
+                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(2)"></div>
+                  </div>
+                  <span class="ref-bar-pct">{{ getRatingPercentage(2) }}%</span>
+                </div>
+                <!-- Star 1 -->
+                <div class="ref-rating-bar-row">
+                  <span class="ref-bar-stars">1 <span class="ref-bar-star-icon">★</span></span>
+                  <div class="ref-bar-track">
+                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(1)"></div>
+                  </div>
+                  <span class="ref-bar-pct">{{ getRatingPercentage(1) }}%</span>
+                </div>
+              </div>
             </div>
-            <p class="review-comment">{{ review.comment }}</p>
-            <div class="review-meta">
-              <span class="review-order">Order #{{ review.orderId }}</span>
+            
+            <!-- Right Column: Horizontal Cards -->
+            <div class="ref-reviews-list-col">
+              <div class="ref-review-card-modern" *ngFor="let review of reviews">
+                <div class="ref-rev-card-header">
+                  <div class="ref-rev-buyer-info">
+                    <div class="ref-rev-buyer-avatar">
+                      <img *ngIf="getReviewerAvatar(review); else initialsAvatar" [src]="getReviewerAvatar(review)" appImageFallback />
+                      <ng-template #initialsAvatar>
+                        <div class="ref-rev-buyer-avatar-fallback">
+                          {{ getReviewerName(review).substring(0, 1) | uppercase }}
+                        </div>
+                      </ng-template>
+                    </div>
+                    <div class="ref-rev-buyer-meta">
+                      <div class="ref-rev-buyer-name">{{ getReviewerName(review) }}</div>
+                      <div class="ref-rev-stars-row" style="color: #e8bd18; font-weight: bold;">{{ getStars(review.rating) }}</div>
+                    </div>
+                  </div>
+                  <div class="ref-rev-date">{{ review.createdAt | date:'mediumDate' }}</div>
+                </div>
+                <div class="ref-rev-card-body">
+                  <p class="ref-rev-comment">"{{ review.comment }}"</p>
+                  
+                  <div class="ref-seller-response-box" *ngIf="review.response">
+                    <div class="ref-response-label">Seller Response:</div>
+                    <div class="ref-response-text">{{ review.response }}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <ng-template #noReviews>
           <div class="empty-state">
-            <p>No reviews yet. Reviews will appear after completed transactions.</p>
+            <p>No reviews received yet.</p>
           </div>
         </ng-template>
       </div>
 
-      <!-- STATS ROW -->
-      <!-- <div class="stats-dashboard-row">
-        <div class="stat-box">
-          <div class="stat-num">{{ user.totalSales }}</div>
-          <div class="stat-label">SALES</div>
+
+
+      <!-- TRUST BADGES STRIP -->
+      <div class="ref-trust-strip">
+        <div class="ref-trust-item">
+          <div class="ref-trust-icon icon-green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11 11 13 15 9"/></svg>
+          </div>
+          <div class="ref-trust-info">
+            <h4 class="ref-trust-title">Trusted Seller</h4>
+            <p class="ref-trust-desc">Verified and reliable</p>
+          </div>
         </div>
-        <div class="stat-box active-stat">
-          <div class="stat-num">{{ user.reviewsCount || 0 }}</div>
-          <div class="stat-label">REVIEWS</div>
+        <div class="ref-trust-item">
+          <div class="ref-trust-icon icon-blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="ref-trust-info">
+            <h4 class="ref-trust-title">Campus Handover</h4>
+            <p class="ref-trust-desc">Direct trade on campus</p>
+          </div>
         </div>
-        <div class="stat-box">
-          <div class="stat-num">{{ user.successRate || 0 }}%</div>
-          <div class="stat-label">SUCCESS RATE</div>
+        <div class="ref-trust-item">
+          <div class="ref-trust-icon icon-purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="ref-trust-info">
+            <h4 class="ref-trust-title">Secure Payments</h4>
+            <p class="ref-trust-desc">Safe & protected</p>
+          </div>
         </div>
-        <div class="stat-box">
-          <div class="stat-num">{{ wishlistService.count() }}</div>
-          <div class="stat-label">WISHLIST</div>
-        </div>
-      </div> -->
-      <div
-        class="stats-dashboard-row"
-        [style.grid-template-columns]="isOwnProfile ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)'"
-      >
-        <div class="stat-box">
-          <div class="stat-num">{{ user.totalSales || 0 }}</div>
-          <div class="stat-label">SALES</div>
-        </div>
-        <div class="stat-box active-stat">
-          <div class="stat-num">{{ user.reviewsCount || 0 }}</div>
-          <div class="stat-label">REVIEWS</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">{{ user.successRate || 0 }}%</div>
-          <div class="stat-label">SUCCESS RATE</div>
-        </div>
-        <div class="stat-box" *ngIf="isOwnProfile">
-          <div class="stat-num">{{ wishlistService.count() || 0 }}</div>
-          <div class="stat-label">WISHLIST</div>
+        <div class="ref-trust-item">
+          <div class="ref-trust-icon icon-yellow">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#e8bd18" stroke="#000" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="ref-trust-info">
+            <h4 class="ref-trust-title">Top Rated</h4>
+            <p class="ref-trust-desc">4.9 average rating</p>
+          </div>
         </div>
       </div>
     </div>
@@ -493,56 +785,185 @@
 </div>
 
 <!-- EDIT PROFILE MODAL -->
-<div class="report-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
-  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 500px; padding: 2rem;">
-    <button class="modal-standard-close" (click)="closeEditModal()">✕</button>
+<div class="glass-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="brutalist-modal-card" (click)="$event.stopPropagation()">
+    <button class="brutalist-modal-close" (click)="closeEditModal()" aria-label="Close modal">✕</button>
 
-    <h3 class="modal-standard-title" style="margin-bottom: 1.5rem; text-align: center; font-family: var(--font-primary); font-weight: 900;">EDIT PROFILE</h3>
-    
-    <div *ngIf="profileSuccess()" class="banner banner-success" style="background: #d4edda; color: #155724; border: 2px solid #c3e6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
-      {{ profileSuccess() }}
-    </div>
-    <div *ngIf="profileError()" class="banner banner-error" style="background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
-      {{ profileError() }}
+    <div class="modal-header-banner">
+      <h3 class="brutalist-modal-title">EDIT PROFILE</h3>
+      <p class="modal-subtitle">Update your public campus trader details</p>
     </div>
     
-    <form (ngSubmit)="saveProfile()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">FIRST NAME</label>
-          <input type="text" [(ngModel)]="editForm.firstName" name="firstName" required style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">LAST NAME</label>
-          <input type="text" [(ngModel)]="editForm.lastName" name="lastName" required style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
-        </div>
+    <!-- Success Banner -->
+    <div *ngIf="profileSuccess()" class="brutalist-banner brutalist-banner-success">
+      <div class="banner-icon-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">AVATAR URL</label>
-        <input type="text" [(ngModel)]="editForm.avatar" name="avatar" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
-      </div>
+      <div class="banner-message">{{ profileSuccess() }}</div>
+    </div>
 
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">BIO</label>
-        <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none; resize: vertical;"></textarea>
+    <!-- Error Banner -->
+    <div *ngIf="profileError()" class="brutalist-banner brutalist-banner-error">
+      <div class="banner-icon-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </div>
+      <div class="banner-message">{{ profileError() }}</div>
+    </div>
 
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">LOCATION</label>
-        <input type="text" [(ngModel)]="editForm.location" name="location" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
-      </div>
+    <div class="modal-split-layout">
+      <!-- Left Sidebar Navigation -->
+      <aside class="modal-sidebar">
+        <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'profile'" (click)="editActiveTab = 'profile'">
+          Profile Info
+        </button>
+        <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'account'" (click)="editActiveTab = 'account'">
+          Account Info
+        </button>
+        <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'seller'" (click)="editActiveTab = 'seller'">
+          Seller Settings
+        </button>
+        <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'security'" (click)="editActiveTab = 'security'">
+          Security
+        </button>
+      </aside>
 
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary);">TAGS (comma separated)</label>
-        <input type="text" [(ngModel)]="editForm.tagsString" name="tagsString" placeholder="e.g. fashion, books, electronics" style="padding: 8px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" />
-      </div>
+      <!-- Right Form Area -->
+      <div class="modal-form-area">
+        <form (ngSubmit)="saveProfile()" class="brutalist-form">
+          
+          <!-- TAB 1: PROFILE INFO -->
+          <div class="form-section-content" *ngIf="editActiveTab === 'profile'">
+            <div class="form-row-two-cols">
+              <div class="form-group">
+                <label class="form-label">FIRST NAME</label>
+                <input type="text" [(ngModel)]="editForm.firstName" name="firstName" required class="form-input" placeholder="e.g. John" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">LAST NAME</label>
+                <input type="text" [(ngModel)]="editForm.lastName" name="lastName" required class="form-input" placeholder="e.g. Doe" />
+              </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">AVATAR URL</label>
+              <input type="text" [(ngModel)]="editForm.avatar" name="avatar" class="form-input" placeholder="https://example.com/avatar.jpg" />
+            </div>
 
-      <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end;">
-        <button type="button" class="modal-btn-secondary" (click)="closeEditModal()" style="margin: 0; padding: 10px 20px; cursor: pointer; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); font-weight: 700;">Cancel</button>
-        <button type="submit" class="modal-btn-primary" style="margin: 0; padding: 10px 20px; background: var(--yellow); color: var(--black); font-weight: 700; border: 2px solid var(--black); box-shadow: 3px 3px 0 var(--black); cursor: pointer;">Save Changes</button>
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">BIO</label>
+              <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" class="form-textarea" placeholder="Tell students about what you sell, your major, or response times..."></textarea>
+              <span class="field-hint" style="font-family: var(--font-secondary); font-size: 0.75rem; color: var(--gray-3); margin-top: 0.15rem;">Max 2 lines recommended. Be concise and professional.</span>
+            </div>
+
+            <div class="form-row-two-cols" style="margin-top: 1.25rem;">
+              <div class="form-group">
+                <label class="form-label">LOCATION</label>
+                <input type="text" [(ngModel)]="editForm.location" name="location" class="form-input" placeholder="e.g. Dorms, Library" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">TAGS (comma separated)</label>
+                <input type="text" [(ngModel)]="editForm.tagsString" name="tagsString" class="form-input" placeholder="fashion, books, electronics" />
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: ACCOUNT INFO -->
+          <div class="form-section-content" *ngIf="editActiveTab === 'account'">
+            <div class="form-group">
+              <label class="form-label">EMAIL ADDRESS</label>
+              <input type="email" [(ngModel)]="editForm.email" name="email" required class="form-input" placeholder="e.g. email@test.com" />
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">PHONE NUMBER (MOCKED)</label>
+              <input type="text" name="phoneMock" class="form-input" placeholder="e.g. +20 123 456 7890" disabled />
+              <span class="field-hint" style="font-family: var(--font-secondary); font-size: 0.75rem; color: var(--gray-3); margin-top: 0.15rem;">Securely stored for transactions and support.</span>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">SOCIAL LINKS (MOCKED)</label>
+              <div class="social-input-row" style="display: flex; gap: 0.5rem; flex-direction: column;">
+                <input type="text" name="instagramMock" class="form-input" placeholder="Instagram Username (e.g. @abdo_gamal)" disabled />
+                <input type="text" name="linkedinMock" class="form-input" placeholder="LinkedIn Profile Link" disabled />
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: SELLER SETTINGS -->
+          <div class="form-section-content" *ngIf="editActiveTab === 'seller'">
+            <div class="form-group">
+              <label class="form-label">RESPONSE AVAILABILITY (MOCKED)</label>
+              <select name="responseAvailabilityMock" class="form-input" disabled style="background: var(--white); cursor: not-allowed;">
+                <option value="10">Typically replies within 10 minutes</option>
+                <option value="60">Typically replies within an hour</option>
+                <option value="1440">Typically replies within 24 hours</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">SHIPPING PREFERENCES (MOCKED)</label>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
+                  <input type="checkbox" name="shipOnCampusMock" checked disabled /> Handover on Campus
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
+                  <input type="checkbox" name="shipLocalMock" checked disabled /> Local Shipping / Delivery
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
+                  <input type="checkbox" name="shipInternationalMock" disabled /> Shipping Outside City
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">ACCEPTED PAYMENT METHODS (MOCKED)</label>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
+                  <input type="checkbox" name="payCashMock" checked disabled /> Cash on Delivery
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
+                  <input type="checkbox" name="payInstapayMock" checked disabled /> InstaPay / Wallet Transfer
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
+                  <input type="checkbox" name="payBankMock" disabled /> Bank Transfer
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: SECURITY -->
+          <div class="form-section-content" *ngIf="editActiveTab === 'security'">
+            <div class="form-group">
+              <label class="form-label">CURRENT PASSWORD</label>
+              <input type="password" name="currentPasswordMock" class="form-input" placeholder="••••••••" disabled />
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">NEW PASSWORD</label>
+              <input type="password" name="newPasswordMock" class="form-input" placeholder="••••••••" disabled />
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label class="form-label">CONFIRM NEW PASSWORD</label>
+              <input type="password" name="confirmPasswordMock" class="form-input" placeholder="••••••••" disabled />
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.5rem;">
+              <label class="form-label">TWO-FACTOR AUTHENTICATION (MOCKED)</label>
+              <button type="button" class="brutalist-btn" style="font-size: 0.9rem; padding: 0.5rem 1rem; width: fit-content; background: #e3f2fd; color: #0d47a1; pointer-events: none; border-color: var(--black);" disabled>
+                ENABLE 2FA
+              </button>
+            </div>
+          </div>
+
+          <div class="brutalist-form-actions">
+            <button type="button" class="brutalist-btn btn-cancel" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="brutalist-btn btn-submit">Save Changes</button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   </div>
 </div>
 
@@ -585,5 +1006,36 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="report-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 450px;">
+    <button class="modal-standard-close" (click)="closeDeleteModal()">✕</button>
+
+    <div class="modal-standard-icon-header">
+      <div class="lock-icon-circle" style="background: #ffebee; border-color: #ff4d4d; color: #c62828;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      </div>
+      <h3 class="modal-standard-title" style="color: var(--black); font-family: var(--font-primary); font-weight: 900; text-transform: uppercase;">Delete Listing</h3>
+      <p class="modal-standard-desc" style="font-family: var(--font-secondary); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.4;">
+        Are you sure you want to delete this listing? This action is permanent and cannot be undone.
+      </p>
+    </div>
+
+    <div class="modal-standard-footer" style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+      <button type="button" class="modal-btn-secondary" (click)="closeDeleteModal()" style="margin: 0; padding: 10px 20px; font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); cursor: pointer;">
+        Cancel
+      </button>
+      <button type="button" class="modal-btn-primary" (click)="deleteSelectedProduct()" style="margin: 0; padding: 10px 20px; background: #ff4d4d; color: var(--white); font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); cursor: pointer;">
+        Delete
+      </button>
+    </div>
   </div>
 </div>

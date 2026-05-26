@@ -53,6 +53,7 @@ export class Navbar {
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/']);
     this.closeMenu();
   }
 

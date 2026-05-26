@@ -37,7 +37,9 @@
             <div class="brand-name-large">{{ product.brand }}</div>
             <div class="tag-row">
               <span class="tag-box">{{ product.category }}</span>
-              <span class="tag-box highlight">IN STOCK</span>
+              <span class="tag-box" [ngClass]="product.status === 'sold' ? 'sold-out' : 'highlight'">
+                {{ product.status === 'sold' ? 'SOLD OUT' : 'IN STOCK' }}
+              </span>
             </div>
           </div>
 

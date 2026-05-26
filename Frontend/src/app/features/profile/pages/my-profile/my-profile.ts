@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth';
 import { ProductService } from '../../../../core/services/product.service';
@@ -32,6 +32,7 @@ export class MyProfile implements OnInit {
   private orderService = inject(OrderService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   @ViewChild('profileSliderTrack') profileSliderTrack!: ElementRef;
 
@@ -41,13 +42,19 @@ export class MyProfile implements OnInit {
   wishlistItems: ProductSummary[] = [];
   reviews: Review[] = [];
   myOrders: OrderSummary[] = [];
+  reviewedOrderIds: Set<string> = new Set();
+  dismissedOrderIds: Set<string> = new Set();
   activeTab: 'products' | 'wishlist' | 'reviews' | 'orders' = 'products';
+  orderView: 'purchases' | 'sales' = 'purchases';
+  orderStatusFilter: string = 'all';
+
   
   showAllListings = false;
   showAuthModal = false;
   
   // Edit profile modal state
   showEditModal = false;
+  editActiveTab: 'profile' | 'account' | 'security' | 'seller' = 'profile';
   profileSuccess = signal<string | null>(null);
   profileError = signal<string | null>(null);
   editForm = {
@@ -56,7 +63,8 @@ export class MyProfile implements OnInit {
     bio: '',
     location: '',
     tagsString: '',
-    avatar: ''
+    avatar: '',
+    email: ''
   };
 
   // Review modal state
@@ -70,6 +78,44 @@ export class MyProfile implements OnInit {
     comment: ''
   };
 
+  showDeleteModal = false;
+  productIdToDelete: string | null = null;
+
+  editProduct(productId: string) {
+    this.router.navigate(['/listings/edit', productId]);
+  }
+
+  confirmDeleteProduct(productId: string) {
+    this.productIdToDelete = productId;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.productIdToDelete = null;
+  }
+
+  deleteSelectedProduct() {
+    if (!this.productIdToDelete) return;
+    const id = this.productIdToDelete;
+    this.closeDeleteModal();
+
+    this.productService.deleteProduct(id).subscribe({
+      next: () => {
+        this.profileSuccess.set('Product listing deleted successfully!');
+        setTimeout(() => this.profileSuccess.set(null), 3000);
+        if (this.user?.id) {
+          this.loadUserListings(this.user.id);
+        }
+      },
+      error: (err) => {
+        console.error('Error deleting product:', err);
+        this.profileError.set(err?.error?.message || 'Failed to delete product. Please try again.');
+        setTimeout(() => this.profileError.set(null), 3000);
+      }
+    });
+  }
+
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -82,6 +128,12 @@ export class MyProfile implements OnInit {
           next: (user) => {
             this.user = user;
             if (user && user.id) {
+              const currentId = this.authService.currentUser()?.id;
+              if (user.id === currentId) {
+                this.isOwnProfile = true;
+              } else {
+                this.isOwnProfile = false;
+              }
               this.loadUserListings(user.id);
               this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
                 this.reviews = revs;
@@ -107,6 +159,10 @@ export class MyProfile implements OnInit {
           });
           this.orderService.getOrders().subscribe(orders => {
             this.myOrders = orders;
+            this.cdr.detectChanges();
+          });
+          this.reviewService.getReviewsByUser(this.user.id).subscribe(written => {
+            this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
             this.cdr.detectChanges();
           });
         }
@@ -165,6 +221,48 @@ export class MyProfile implements OnInit {
     return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
   }
 
+  getRatingPercentage(stars: number): number {
+    if (this.reviews.length === 0) return 0;
+    const count = this.reviews.filter(r => Math.round(r.rating) === stars).length;
+    return Math.round((count / this.reviews.length) * 100);
+  }
+
+  getRatingCount(stars: number): number {
+    return this.reviews.filter(r => Math.round(r.rating) === stars).length;
+  }
+
+  getReviewerName(review: any): string {
+    return review.reviewerId?.name || review.reviewerName || 'Campus Member';
+  }
+
+  getReviewerAvatar(review: any): string {
+    return review.reviewerId?.avatar || review.reviewerAvatar || '';
+  }
+
+  getReviewProductName(review: any): string {
+    return review.productId?.title || review.productTitle || '';
+  }
+
+  getConditionLabel(condition: string): string {
+    switch (condition) {
+      case 'new_with_tags': return 'Like New';
+      case 'excellent': return 'Fresh';
+      case 'good': return 'Good';
+      case 'fair': case 'distressed': return 'Used';
+      default: return 'Used';
+    }
+  }
+
+  getConditionClass(condition: string): string {
+    switch (condition) {
+      case 'new_with_tags': return 'cond-like-new';
+      case 'excellent': return 'cond-fresh';
+      case 'good': return 'cond-good';
+      case 'fair': case 'distressed': return 'cond-used';
+      default: return 'cond-used';
+    }
+  }
+
   logout() {
     this.authService.logout();
   }
@@ -199,19 +297,38 @@ export class MyProfile implements OnInit {
     if (!this.user) return;
     this.profileSuccess.set(null);
     this.profileError.set(null);
+    this.editActiveTab = 'profile';
     this.editForm = {
       firstName: this.user.firstName || '',
       lastName: this.user.lastName || '',
       bio: this.user.bio || '',
       location: this.user.location || '',
       tagsString: (this.user.tags || []).join(', '),
-      avatar: this.user.avatar || ''
+      avatar: this.user.avatar || '',
+      email: this.user.email || ''
     };
     this.showEditModal = true;
   }
 
   closeEditModal() {
     this.showEditModal = false;
+  }
+
+  shareProfile() {
+    navigator.clipboard.writeText(window.location.href);
+    this.profileSuccess.set('Profile link copied to clipboard!');
+    setTimeout(() => {
+      this.profileSuccess.set(null);
+    }, 3000);
+  }
+
+  isFollowing = false;
+  toggleFollowSeller() {
+    this.isFollowing = !this.isFollowing;
+    this.profileSuccess.set(this.isFollowing ? 'You are now following this seller!' : 'You have unfollowed this seller.');
+    setTimeout(() => {
+      this.profileSuccess.set(null);
+    }, 3000);
   }
 
   saveProfile() {
@@ -230,7 +347,8 @@ export class MyProfile implements OnInit {
       bio: this.editForm.bio,
       location: this.editForm.location,
       tags,
-      avatar: this.editForm.avatar
+      avatar: this.editForm.avatar,
+      email: this.editForm.email
     };
     
     this.userService.updateProfile(this.user.id, payload).subscribe({
@@ -279,61 +397,21 @@ export class MyProfile implements OnInit {
     
     const payload = {
       orderId: this.selectedOrderForReview.id,
-      revieweeId: this.selectedOrderForReview.productId ? this.selectedOrderForReview.productId : '', 
-      productId: this.selectedOrderForReview.productId,
       rating: this.reviewForm.rating,
       comment: this.reviewForm.comment
     };
-    
-    // In our model structure, getcounterparty user:
-    // We need to send revieweeId. Since order has sellerId and buyerId, the backend createReview takes revieweeId.
-    // Let's query backend with the correct revieweeId.
-    // Wait, let's see: who is the reviewee? It is the seller of the product, which is NOT the buyer (current user).
-    // So the revieweeId is the other participant in the transaction.
-    // Let's get the seller's ID. In getOrdersByUser, counterpartyName was mapped.
-    // Wait! Let's check how OrderSummary is mapped in OrderService:
-    // Wait! Does OrderSummary contain the sellerId?
-    // Let's check orderController.js formatOrder:
-    // It maps `sellerId` inside product: `sellerId: orderObj.productId.userId`
-    // And it has `buyer: { id: buyerId }`, `seller: { id: sellerId }`.
-    // Wait, let's check what fields OrderSummary has in `order.model.ts`! Let's do `grep_search` or view it.
-    // We already read OrderService maps:
-    // buyer/seller details. Let's just find the seller's ID by checking if the current user is the buyer.
-    // Wait, in orderController formatOrder, the backend returned the entire order object which we can read.
-    // Let's check what orderController return properties are:
-    // formatOrder returns:
-    // id: orderObj._id,
-    // product: { id, title, price, thumbnail, brand, condition, status, sellerId }
-    // buyer: { id, firstName, lastName... }
-    // seller: { id, firstName, lastName... }
-    // So order.seller.id contains the seller's user ID!
-    // And order.buyer.id contains the buyer's user ID!
-    // This is perfect! Let's fetch the order details via getOrderById or extract it if available.
-    // Wait, in OrderSummary (returned by getOrders), it returns:
-    // id, productId, productTitle, productThumbnail, price, status, counterpartyName, createdAt.
-    // Wait, OrderSummary does NOT contain the full seller object.
-    // But we can fetch the full order using `orderService.getOrderById(order.id)` first, or let's pass the revieweeId directly!
-    // Wait! How do we know the sellerId from OrderSummary?
-    // Since the current user is the buyer, the counterparty of the purchase is the seller!
-    // Wait, does the backend have the sellerId? Yes, the backend has `order.productId.userId` as the seller.
-    // Let's check if the backend `createReview` can look up the order and find the sellerId automatically instead of requiring the frontend to pass it!
-    // Let's check `reviewController.js` `createReview`:
-    // It currently reads: `const { orderId, revieweeId, productId, rating, comment } = req.body;`
-    // If we modify backend `createReview` to look up the `Order` by `orderId` and find the seller (`order.sellerId`), it would be 100% automatic and bulletproof!
-    // Yes! That is extremely elegant and requires zero complex logic on the frontend.
-    // Let's write the backend lookup in `reviewController.js`:
-    //   const order = await Order.findById(orderId);
-    //   const revieweeId = order.sellerId;
-    //   const productId = order.productId;
-    // This is incredibly smart! Let's do this backend update, so the frontend only needs to send `{ orderId, rating, comment }`.
-    // This is super clean!
     
     this.reviewService.createReview(payload).subscribe({
       next: (rev) => {
         this.reviewLoading = false;
         this.reviewSuccess.set('Review submitted successfully!');
         
-        // Refresh reviews
+        // Mark order as reviewed in the local set so the button disappears immediately
+        if (this.selectedOrderForReview) {
+          this.reviewedOrderIds.add(this.selectedOrderForReview.id);
+        }
+        
+        // Refresh reviews displayed on profile
         if (this.user?.id) {
           this.reviewService.getReviewsForUser(this.user.id).subscribe(revs => {
             this.reviews = revs;
@@ -373,5 +451,21 @@ export class MyProfile implements OnInit {
   getSales(): OrderSummary[] {
     if (!this.user) return [];
     return this.myOrders.filter((o: any) => o.sellerId === this.user?.id);
+  }
+
+  dismissOrder(orderId: string): void {
+    this.dismissedOrderIds.add(orderId);
+  }
+
+  getFilteredPurchases(): OrderSummary[] {
+    return this.getPurchases()
+      .filter(o => !this.dismissedOrderIds.has(o.id))
+      .filter(o => this.orderStatusFilter === 'all' || o.status === this.orderStatusFilter);
+  }
+
+  getFilteredSales(): OrderSummary[] {
+    return this.getSales()
+      .filter(o => !this.dismissedOrderIds.has(o.id))
+      .filter(o => this.orderStatusFilter === 'all' || o.status === this.orderStatusFilter);
   }
 }

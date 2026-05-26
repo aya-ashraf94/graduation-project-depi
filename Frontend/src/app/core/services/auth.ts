@@ -6,6 +6,7 @@
 
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models/user.model';
@@ -17,6 +18,7 @@ const USER_KEY = 'arch_user';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
+  private router = inject(Router);
 
   // ── State ────────────────────────────────────────────────────────────────
   private readonly _token = signal<string | null>(this._loadToken());
@@ -72,12 +74,13 @@ export class AuthService {
     return this.http.post<any>(`${environment.apiUrl}/auth/validate-reset-token`, { token });
   }
 
-  /** Logout — clears token and user from memory and storage */
+  /** Logout — clears token and user from memory and storage, and redirects to home */
   logout(): void {
     this._token.set(null);
     this._currentUser.set(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    this.router.navigate(['/']);
   }
 
   /** Update current logged in user details locally */

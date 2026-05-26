@@ -32,10 +32,6 @@
       <!-- LOGGED-IN ONLY links -->
       @if (isLoggedIn()) {
         <li>
-          <a routerLink="/listings/create" routerLinkActive="active-link"
-             class="nav-link" (click)="closeMenu()">Post Item</a>
-        </li>
-        <li>
           <a routerLink="/chat" routerLinkActive="active-link"
              class="nav-link" (click)="closeMenu()">Messages</a>
         </li>

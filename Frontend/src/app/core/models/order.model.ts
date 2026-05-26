@@ -8,11 +8,9 @@ import { ProductSummary } from './product.model';
 
 export type OrderStatus =
   | 'pending'
-  | 'paid'
   | 'shipped'
   | 'delivered'
-  | 'cancelled'
-  | 'disputed';
+  | 'cancelled';
 
 export type PaymentMethod = 'cash_on_delivery' | 'bank_transfer' | 'online';
 
@@ -60,9 +58,7 @@ export interface UpdateOrderRequest {
 /** Human-readable labels for order status */
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'Pending',
-  paid: 'Paid',
   shipped: 'Shipped',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
-  disputed: 'Disputed',
 };
