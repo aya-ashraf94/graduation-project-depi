@@ -44,6 +44,7 @@ export class MyProfile implements OnInit {
   myOrders: OrderSummary[] = [];
   reviewedOrderIds: Set<string> = new Set();
   dismissedOrderIds: Set<string> = new Set();
+  expandedOrderIds: Set<string> = new Set();
   activeTab: 'products' | 'wishlist' | 'reviews' | 'orders' = 'products';
   orderView: 'purchases' | 'sales' = 'purchases';
   orderStatusFilter: string = 'all';
@@ -117,6 +118,7 @@ export class MyProfile implements OnInit {
   }
 
   ngOnInit() {
+    this.loadDismissedOrders();
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       const currentUser = this.authService.currentUser();
@@ -148,12 +150,25 @@ export class MyProfile implements OnInit {
         });
       } else {
         this.isOwnProfile = true;
-        // Load current logged-in user profile
-        this.user = currentUser;
-        if (this.user?.id) {
-          this.loadUserListings(this.user.id);
+        if (currentUser && currentUser.id) {
+          // Load fresh user profile details (sales/purchases/successRate) from backend
+          this.userService.getUserById(currentUser.id).subscribe({
+            next: (freshUser) => {
+              this.user = freshUser;
+              this.authService.updateLocalUser(freshUser);
+              this.cdr.detectChanges();
+            },
+            error: (err) => {
+              console.error('Error fetching fresh user profile:', err);
+              // Fallback to local storage if API fails
+              this.user = currentUser;
+              this.cdr.detectChanges();
+            }
+          });
+          
+          this.loadUserListings(currentUser.id);
           this.loadWishlist();
-          this.reviewService.getReviewsForUser(this.user.id).subscribe(revs => {
+          this.reviewService.getReviewsForUser(currentUser.id).subscribe(revs => {
             this.reviews = revs;
             this.cdr.detectChanges();
           });
@@ -161,7 +176,7 @@ export class MyProfile implements OnInit {
             this.myOrders = orders;
             this.cdr.detectChanges();
           });
-          this.reviewService.getReviewsByUser(this.user.id).subscribe(written => {
+          this.reviewService.getReviewsByUser(currentUser.id).subscribe(written => {
             this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
             this.cdr.detectChanges();
           });
@@ -174,6 +189,7 @@ export class MyProfile implements OnInit {
       const tab = params['tab'];
       if (tab === 'products' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders') {
         this.activeTab = tab;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -209,10 +225,13 @@ export class MyProfile implements OnInit {
       this.wishlistItems = ids
         .map(id => allProducts.find(p => p.id === id))
         .filter((p): p is ProductSummary => !!p);
+      this.cdr.detectChanges();
     });
   }
 
-  removeFromWishlist(productId: string): void {
+  removeFromWishlist(productId: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
     this.wishlistService.remove(productId);
     this.loadWishlist();
   }
@@ -438,6 +457,12 @@ export class MyProfile implements OnInit {
           this.myOrders = orders;
           this.cdr.detectChanges();
         });
+
+        // Refresh listings and wishlist so the product status updates instantly
+        if (this.user?.id) {
+          this.loadUserListings(this.user.id);
+        }
+        this.loadWishlist();
       },
       error: (err) => console.error('Error updating order:', err)
     });
@@ -453,8 +478,49 @@ export class MyProfile implements OnInit {
     return this.myOrders.filter((o: any) => o.sellerId === this.user?.id);
   }
 
+  selectTab(tab: 'products' | 'wishlist' | 'reviews' | 'orders'): void {
+    this.activeTab = tab;
+    const currentScroll = window.scrollY;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge'
+    }).then(() => {
+      setTimeout(() => {
+        window.scrollTo(0, currentScroll);
+      }, 0);
+    });
+  }
+
+  loadDismissedOrders(): void {
+    const raw = localStorage.getItem('arch_dismissed_orders');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          this.dismissedOrderIds = new Set(parsed);
+        }
+      } catch (e) {
+        console.error('Error loading dismissed orders:', e);
+      }
+    }
+  }
+
   dismissOrder(orderId: string): void {
     this.dismissedOrderIds.add(orderId);
+    localStorage.setItem('arch_dismissed_orders', JSON.stringify(Array.from(this.dismissedOrderIds)));
+  }
+
+  toggleOrderDetails(orderId: string): void {
+    if (this.expandedOrderIds.has(orderId)) {
+      this.expandedOrderIds.delete(orderId);
+    } else {
+      this.expandedOrderIds.add(orderId);
+    }
+  }
+
+  isOrderExpanded(orderId: string): boolean {
+    return this.expandedOrderIds.has(orderId);
   }
 
   getFilteredPurchases(): OrderSummary[] {

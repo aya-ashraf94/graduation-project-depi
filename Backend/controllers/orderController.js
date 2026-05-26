@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const { updateUserStats } = require("../utils/userStats");
 
 const formatOrder = (order, currentUserId) => {
     const orderObj = order.toObject();
@@ -80,8 +81,8 @@ const createOrder = async (req, res) => {
         product.status = "sold";
         await product.save();
         
-        await User.findByIdAndUpdate(buyerId, { $inc: { totalPurchases: 1 } });
-        await User.findByIdAndUpdate(sellerId, { $inc: { totalSales: 1 } });
+        await updateUserStats(buyerId);
+        await updateUserStats(sellerId);
         
         const populatedOrder = await Order.findById(order._id)
             .populate("buyerId", "name email avatar rating isVerified")
@@ -166,9 +167,9 @@ const updateOrder = async (req, res) => {
             return res.status(403).json({ message: "Only the buyer can confirm delivery" });
         }
         
-        // --- Revert product to available when order is cancelled ---
+        // --- Revert product to active when order is cancelled ---
         if (status === "cancelled") {
-            await Product.findByIdAndUpdate(order.productId, { status: "available" });
+            await Product.findByIdAndUpdate(order.productId, { status: "active" });
         }
         
         order.status = status;
@@ -176,6 +177,9 @@ const updateOrder = async (req, res) => {
             order.trackingNumber = trackingNumber;
         }
         await order.save();
+        
+        await updateUserStats(order.buyerId);
+        await updateUserStats(order.sellerId);
         
         const populatedOrder = await Order.findById(order._id)
             .populate("buyerId",  "name email avatar rating isVerified")
