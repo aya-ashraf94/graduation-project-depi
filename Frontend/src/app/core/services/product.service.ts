@@ -135,6 +135,7 @@ export class ProductService {
   private mapProduct(p: any): Product {
     if (!p) return p;
     const dynamic = p.dynamicAttributes || {};
+    const baseUrl = environment.apiUrl.replace('/api', '');
     
     // Parse condition
     let condition: ProductCondition = 'good';
@@ -196,7 +197,9 @@ export class ProductService {
         id: u._id || u.id,
         firstName,
         lastName,
-        avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+        avatar: u.avatar && u.avatar.startsWith('/uploads')
+          ? `${baseUrl}${u.avatar}`
+          : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
         rating: u.rating ?? 5.0,
         isVerified: u.isVerified ?? false
       };
@@ -215,7 +218,9 @@ export class ProductService {
       category,
       size,
       sku: p._id ? p._id.substring(0, 8).toUpperCase() : '',
-      images: p.images && p.images.length > 0 ? p.images : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
+      images: p.images && p.images.length > 0 
+        ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
+        : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       badge: dynamic.badge || '',
       status: p.status || 'available',
       seller,
