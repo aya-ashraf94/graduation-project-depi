@@ -28,6 +28,7 @@ export class AuthService {
   readonly isLoggedIn = computed(() => !!this._token());
   readonly currentUser = computed(() => this._currentUser());
   readonly token = computed(() => this._token());
+  readonly isAdmin = computed(() => this._currentUser()?.role === 'admin');
 
   // ── Public methods ────────────────────────────────────────────────────────
 
@@ -115,6 +116,7 @@ export class AuthService {
     const nameParts = (u.name || '').trim().split(/\s+/);
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
+    const baseUrl = environment.apiUrl.replace('/api', '');
 
     return {
       id: u._id || u.id,
@@ -127,7 +129,9 @@ export class AuthService {
       totalPurchases: u.totalPurchases ?? 0,
       joinedAt: u.createdAt ? new Date(u.createdAt) : new Date(),
       isVerified: u.isVerified ?? false,
-      avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,
+      avatar: u.avatar && u.avatar.startsWith('/uploads')
+        ? `${baseUrl}${u.avatar}`
+        : u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,
       bio: u.bio || '',
       location: u.location || '',
       tags: u.tags || [],

@@ -29,12 +29,15 @@ export class UserService {
     const nameParts = (u.name || '').trim().split(/\s+/);
     const firstName = nameParts[0] || 'USER';
     const lastName = nameParts.slice(1).join(' ') || '';
+    const baseUrl = environment.apiUrl.replace('/api', '');
     return {
       id: u._id || u.id,
       firstName,
       lastName,
       email: u.email || '',
-      avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+      avatar: u.avatar && u.avatar.startsWith('/uploads')
+        ? `${baseUrl}${u.avatar}`
+        : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
       role: u.role || 'user',
       rating: u.rating ?? 5.0,
       totalSales: u.totalSales ?? 0,

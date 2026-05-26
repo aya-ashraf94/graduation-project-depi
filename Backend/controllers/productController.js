@@ -161,6 +161,7 @@ const getProducts = async (req, res) => {
         }
 
         const limit = parseInt(req.query.limit);
+        mongoQuery.status = { $ne: 'sold' };
         const query = Product.find(mongoQuery).sort(sort);
         if (!isNaN(limit) && limit > 0) {
             query.limit(limit);
@@ -316,6 +317,21 @@ const updateProduct = async (req, res) => {
         // Save base64 images to disk files
         const savedImages = (req.body.images || []).map(img => saveBase64Image(img)).filter(Boolean);
 
+        // Delete physical files from disk if they were removed/replaced in this update
+        const deletedImages = (product.images || []).filter(img => !savedImages.includes(img));
+        deletedImages.forEach(img => {
+            if (img.startsWith("/uploads/")) {
+                const filePath = path.join(__dirname, "../public", img);
+                if (fs.existsSync(filePath)) {
+                    try {
+                        fs.unlinkSync(filePath);
+                    } catch (err) {
+                        console.error(`Failed to delete physical file: ${filePath}`, err);
+                    }
+                }
+            }
+        });
+
         // 3. تحديد الحقول المسموح بتعديلها فقط (Security Best Practice)
         // هذا يمنع أي مستخدم من تغيير الـ userId أو بيانات النظام
         const allowedUpdates = {
@@ -368,6 +384,22 @@ const deleteProduct = async (req, res) => {
         // التأكد من أن المستخدم الحالي هو صاحب المنتج
         if (product.userId.toString() !== req.user.id) {
             return res.status(403).json({ message: "Not authorized to delete this product" });
+        }
+
+        // Delete associated physical files from disk
+        if (product.images && product.images.length > 0) {
+            product.images.forEach(img => {
+                if (img.startsWith("/uploads/")) {
+                    const filePath = path.join(__dirname, "../public", img);
+                    if (fs.existsSync(filePath)) {
+                        try {
+                            fs.unlinkSync(filePath);
+                        } catch (err) {
+                            console.error(`Failed to delete physical file: ${filePath}`, err);
+                        }
+                    }
+                }
+            });
         }
 
         await product.deleteOne(); // أو findByIdAndDelete
