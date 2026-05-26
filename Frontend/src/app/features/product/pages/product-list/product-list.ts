@@ -54,7 +54,7 @@ export class ProductList implements OnInit {
 
   // ── Filter state ───────────────────────────────────────────────────────
   categories: string[] = [];
-  selectedCategory = '';   // '' = all
+  selectedCategories: Set<string> = new Set();
 
   conditionOptions = ['New w/ Tags', 'Excellent', 'Good', 'Tarnished', 'Distressed'];
   selectedConditions: Set<string> = new Set();
@@ -101,7 +101,8 @@ export class ProductList implements OnInit {
     this.route.queryParams.subscribe(params => {
       const cat = params['category'];
       if (cat) {
-        this.selectedCategory = cat;
+        this.selectedCategories.clear();
+        this.selectedCategories.add(cat);
         if (this.allProducts.length > 0) {
           this.applyFilters();
         }
@@ -158,7 +159,11 @@ export class ProductList implements OnInit {
 
   // ── Category ──────────────────────────────────────────────────────────
   selectCategory(category: string): void {
-    this.selectedCategory = this.selectedCategory === category ? '' : category;
+    if (this.selectedCategories.has(category)) {
+      this.selectedCategories.delete(category);
+    } else {
+      this.selectedCategories.add(category);
+    }
     this.currentPage = 1; // Reset to first page
   }
 
@@ -207,9 +212,12 @@ export class ProductList implements OnInit {
     let result = [...this.allProducts];
 
     // Filter by category group
-    if (this.selectedCategory) {
-      const allowedCategories = this.getCategoryFilterList(this.selectedCategory);
-      result = result.filter(p => allowedCategories.includes(p.categoryName || ''));
+    if (this.selectedCategories.size > 0) {
+      const allowedCategories = new Set<string>();
+      this.selectedCategories.forEach(cat => {
+        this.getCategoryFilterList(cat).forEach(allowed => allowedCategories.add(allowed));
+      });
+      result = result.filter(p => allowedCategories.has(p.categoryName || ''));
     }
 
     // Filter by condition
@@ -270,7 +278,7 @@ export class ProductList implements OnInit {
   }
 
   resetFilters(): void {
-    this.selectedCategory  = '';
+    this.selectedCategories.clear();
     this.selectedConditions.clear();
     this.minPrice = 0;
     this.maxPrice = 100000;
