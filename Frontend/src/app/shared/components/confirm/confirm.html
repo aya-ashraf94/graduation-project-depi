@@ -1,0 +1,18 @@
+<div class="confirm-overlay" *ngIf="confirmService.isOpen()" (click)="confirmService.cancel()">
+  <div class="confirm-card modal-standard-card" (click)="$event.stopPropagation()">
+    <button class="confirm-close modal-standard-close" (click)="confirmService.cancel()">✕</button>
+    
+    <div class="modal-standard-icon-header">
+      <div class="alert-icon-circle">
+        ⚠️
+      </div>
+      <h3 class="modal-standard-title">{{ confirmService.title() }}</h3>
+      <p class="modal-standard-desc">{{ confirmService.message() }}</p>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="confirm-btn confirm-btn-yes" (click)="confirmService.confirm()">YES, CONTINUE</button>
+      <button class="confirm-btn confirm-btn-no" (click)="confirmService.cancel()">CANCEL</button>
+    </div>
+  </div>
+</div>

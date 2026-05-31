@@ -170,6 +170,7 @@
           <div *ngFor="let product of products" class="product-card fade-in">
             <div class="product-img-wrap" [routerLink]="['/products', product.id]" style="cursor: pointer;">
               <div class="card-badges">
+                <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
                 <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
               </div>
               <button class="btn-wishlist" [class.wishlisted]="wishlistService.isWishlisted(product.id)" (click)="toggleWishlist(product.id, $event)">
@@ -197,6 +198,12 @@
                 <span class="tag-box">{{ product.condition }}</span>
               </div>
               <span class="score-tag">SCORE: {{ product.conditionScore }}</span>
+            </div>
+
+            <div class="product-card-admin-actions" *ngIf="authService.isAdmin() && product.soldByNafa3ni" (click)="$event.stopPropagation();">
+              <a [routerLink]="['/listings/edit', product.id]" class="btn-edit-card">
+                ✏️ Edit Listing
+              </a>
             </div>
           </div>
         </div>

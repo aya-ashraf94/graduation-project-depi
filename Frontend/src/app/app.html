@@ -1,8 +1,8 @@
-<!-- Global Navbar: Hidden on Auth pages -->
-<app-navbar *ngIf="!isAuthRoute()"></app-navbar>
+<!-- Global Navbar: Hidden on Auth and Admin pages -->
+<app-navbar *ngIf="!isAuthRoute() && !isAdminRoute()"></app-navbar>
 
-<!-- Minimal Navbar: Shown only on Auth pages -->
-<header class="auth-minimal-nav" *ngIf="isAuthRoute()">
+<!-- Minimal Navbar: Shown only on Auth pages, hidden on Admin pages -->
+<header class="auth-minimal-nav" *ngIf="isAuthRoute() && !isAdminRoute()">
   <div class="minimal-nav-container">
     <a routerLink="/" class="minimal-brand">
       <div class="brand-box"></div>
@@ -12,12 +12,12 @@
   </div>
 </header>
 
-<main [class.auth-main]="isAuthRoute()">
+<main [class.auth-main]="isAuthRoute() && !isAdminRoute()" [class.admin-main]="isAdminRoute()">
   <router-outlet></router-outlet>
 </main>
 
-<!-- Minimal Footer: Shown only on Auth pages -->
-<footer class="auth-minimal-footer" *ngIf="isAuthRoute()">
+<!-- Minimal Footer: Shown only on Auth pages, hidden on Admin pages -->
+<footer class="auth-minimal-footer" *ngIf="isAuthRoute() && !isAdminRoute()">
   <div class="minimal-footer-container">
     <a routerLink="/support" [queryParams]="{tab: 'privacy'}" class="minimal-footer-link">Privacy Policy</a>
     <a routerLink="/support" [queryParams]="{tab: 'terms'}" class="minimal-footer-link">Terms & Conditions</a>
@@ -25,5 +25,11 @@
   </div>
 </footer>
 
-<!-- Global Footer: Hidden on Auth pages and Chat page -->
-<app-footer *ngIf="!isAuthRoute() && !isChatRoute()"></app-footer>
+<!-- Global Footer: Hidden on Auth, Chat, and Admin pages -->
+<app-footer *ngIf="!isAuthRoute() && !isChatRoute() && !isAdminRoute()"></app-footer>
+
+<!-- Global Toast Notifications -->
+<app-toast></app-toast>
+
+<!-- Global Confirmation Modals -->
+<app-confirm></app-confirm>

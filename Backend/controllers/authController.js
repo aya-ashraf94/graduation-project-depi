@@ -92,6 +92,12 @@ const loginUser = async (req, res) => {
             });
         }
 
+        if (user.isSuspended) {
+            return res.status(403).json({
+                message: "Your account has been suspended. Please contact support.",
+            });
+        }
+
         // CHECK PASSWORD
         const isMatch = await bcrypt.compare(password, user.password);
 
@@ -105,6 +111,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             {
                 id: user._id,
+                role: user.role,
             },
             process.env.JWT_SECRET,
             {

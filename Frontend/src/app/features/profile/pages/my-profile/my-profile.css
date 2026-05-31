@@ -2426,3 +2426,34 @@
   background: #ff4d4d;
   color: var(--white);
 }
+
+/* Admin Dashboard styles */
+.btn-admin-panel {
+  background-color: var(--black) !important;
+  color: var(--yellow) !important;
+  border-color: var(--black) !important;
+  font-weight: 800 !important;
+}
+.btn-admin-panel:hover {
+  background-color: var(--yellow) !important;
+  color: var(--black) !important;
+  border-color: var(--black) !important;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--black);
+}
+.admin-badge-team {
+  background-color: var(--black);
+  color: var(--yellow);
+  border: 1.5px solid var(--black);
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-xs);
+  box-shadow: 2px 2px 0 var(--yellow);
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+

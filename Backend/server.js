@@ -52,6 +52,7 @@ app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/reviews", require("./routes/reviewRoutes"));
 app.use("/api/reports", require("./routes/reportRoutes"));
 app.use("/api/support", require("./routes/supportRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
 
 // HOME ROUTE
 app.get("/", (req, res) => {

@@ -19,6 +19,7 @@ export interface Product {
   conditionScore: string;
   sku: string;
   categoryName?: string;
+  soldByNafa3ni?: boolean;
 }
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
@@ -34,7 +35,7 @@ export class ProductList implements OnInit {
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
-  private authService = inject(AuthService);
+  protected authService = inject(AuthService);
   wishlistService = inject(WishlistService);
 
   showAuthModal = false;
@@ -128,7 +129,8 @@ export class ProductList implements OnInit {
             condition: conditionLabel,
             conditionScore: p.conditionScore ? `${p.conditionScore}/10` : '8.0/10',
             sku: p.id.substring(0, 8).toUpperCase(),
-            categoryName: (p as any).categoryName || ''
+            categoryName: (p as any).categoryName || '',
+            soldByNafa3ni: p.soldByNafa3ni
           };
         });
 
