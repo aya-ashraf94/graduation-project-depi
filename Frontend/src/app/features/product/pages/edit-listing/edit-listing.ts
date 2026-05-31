@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import {
   Product,
   ProductCondition,
   ProductCategory,
+  ProductStatus,
   CONDITION_LABELS,
   CATEGORY_LABELS,
 } from '../../../../core/models/product.model';
@@ -25,6 +27,7 @@ export class EditListing implements OnInit {
   private productService = inject(ProductService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private confirmService = inject(ConfirmService);
 
   product: Product | null = null;
   isOwner = false;
@@ -38,7 +41,7 @@ export class EditListing implements OnInit {
   category: ProductCategory | '' = '';
   condition: ProductCondition | '' = '';
   size = '';
-  status: 'available' | 'reserved' | 'sold' = 'available';
+  status: ProductStatus = 'available';
 
   // Lookup data
   readonly categoryLabels = CATEGORY_LABELS;
@@ -139,10 +142,14 @@ export class EditListing implements OnInit {
 
   deleteListing(): void {
     if (!this.product) return;
-    if (!confirm('Are you sure you want to delete this listing? This cannot be undone.')) return;
-
-    this.productService.deleteProduct(this.product.id).subscribe(() => {
-      this.router.navigate(['/profile/me']);
+    this.confirmService.show({
+      title: 'Delete Listing',
+      message: 'Are you sure you want to delete this listing? This cannot be undone.',
+      onConfirm: () => {
+        this.productService.deleteProduct(this.product!.id).subscribe(() => {
+          this.router.navigate(['/profile/me']);
+        });
+      }
     });
   }
 

@@ -1061,3 +1061,88 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* Official Nafa3ni Store Card */
+.official-store-card {
+  border: 3px solid var(--black) !important;
+  box-shadow: 4px 4px 0 var(--yellow) !important;
+  background-color: var(--white) !important;
+}
+
+.official-logo-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  border: 2px solid var(--black);
+  background-color: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 2px 2px 0 var(--black);
+  flex-shrink: 0;
+}
+
+.official-store-title {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 1.4rem;
+  color: var(--black);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.official-desc-box {
+  background-color: var(--surface-2);
+  border: 2px solid var(--black);
+  border-radius: var(--radius-xs);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 2px 2px 0 var(--black);
+  text-align: left;
+}
+
+.official-desc-box p {
+  font-size: 0.85rem;
+  color: var(--black);
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.official-store-footer {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 2px dashed var(--border);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-store-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--black);
+  color: var(--yellow);
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-xs);
+  box-shadow: 3px 3px 0 var(--yellow);
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.btn-store-link:hover {
+  background-color: var(--yellow);
+  color: var(--black);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--black);
+}
+
+

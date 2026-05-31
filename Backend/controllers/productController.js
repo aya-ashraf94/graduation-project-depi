@@ -262,7 +262,8 @@ const createProduct = async (req, res) => {
             location,
             phoneNumber,
             showContactInfo: showContactInfo ?? true,
-            userId: req.user.id // <-- الربط الصحيح هنا
+            userId: req.user.id, // <-- الربط الصحيح هنا
+            soldByNafa3ni: req.user.role === 'admin'
         });
         product = await product.populate('userId');
         product = await product.populate('categoryId');

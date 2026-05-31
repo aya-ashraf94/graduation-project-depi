@@ -29,6 +29,11 @@ const userSchema = mongoose.Schema(
             default: false,
         },
 
+        isSuspended: {
+            type: Boolean,
+            default: false,
+        },
+
         avatar: {
             type: String,
             default: ""

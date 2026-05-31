@@ -112,6 +112,11 @@ main {
   min-height: calc(100vh - var(--navbar-height));
 }
 
+main.admin-main {
+  padding-top: 0 !important;
+  min-height: 100vh !important;
+}
+
 img {
   display: block;
   max-width: 100%;

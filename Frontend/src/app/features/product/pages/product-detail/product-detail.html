@@ -90,34 +90,64 @@
           </div>
 
           <!-- Seller Dashboard Card -->
-          <div class="system-card seller-card">
-            <div class="seller-header">
-              <div class="seller-avatar">
-                @if (product.seller.avatar) {
-                  <img [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
-                } @else {
-                  <span>{{ product.seller.firstName[0] }}</span>
-                }
+          @if (product.soldByNafa3ni) {
+            <div class="system-card official-store-card">
+              <div class="seller-header">
+                <div class="official-logo-box">🏛️</div>
+                <div class="seller-name-row">
+                  <span class="official-store-title">OFFICIAL NAFA3NI STORE</span>
+                  <div class="seller-stars">★★★★★ (100% TRUSTED PLATFORM)</div>
+                </div>
               </div>
-              <div class="seller-name-row">
-                <a [routerLink]="['/profile', product.seller.id]" class="seller-name">
-                  {{ product.seller.firstName | uppercase }} {{ product.seller.lastName | uppercase }}
+              <div class="official-desc-box">
+                <p>This item is shipped and sold by the official Nafa3ni Marketplace Team. Purchase with complete trust and security guarantee.</p>
+              </div>
+              <div class="seller-metrics">
+                <div class="metric-box">
+                  <span class="metric-label">SHIPPING TIME</span>
+                  <span class="metric-value">SAME DAY</span>
+                </div>
+                <div class="metric-box">
+                  <span class="metric-label">RETURN POLICY</span>
+                  <span class="metric-value">48H GUARANTEE</span>
+                </div>
+              </div>
+              <div class="official-store-footer">
+                <a [routerLink]="['/profile', product.seller.id]" class="btn-store-link">
+                  🛍️ View Official Store Listings →
                 </a>
-                <div class="seller-stars">★★★★★ ({{ product.seller.rating }} REVIEWS)</div>
               </div>
             </div>
-            
-            <div class="seller-metrics">
-              <div class="metric-box">
-                <span class="metric-label">RESPONSE TIME</span>
-                <span class="metric-value">INSTANT</span>
+          } @else {
+            <div class="system-card seller-card">
+              <div class="seller-header">
+                <div class="seller-avatar">
+                  @if (product.seller.avatar) {
+                    <img [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
+                  } @else {
+                    <span>{{ product.seller.firstName[0] }}</span>
+                  }
+                </div>
+                <div class="seller-name-row">
+                  <a [routerLink]="['/profile', product.seller.id]" class="seller-name">
+                    {{ product.seller.firstName | uppercase }} {{ product.seller.lastName | uppercase }}
+                  </a>
+                  <div class="seller-stars">★★★★★ ({{ product.seller.rating }} REVIEWS)</div>
+                </div>
               </div>
-              <div class="metric-box">
-                <span class="metric-label">SUCCESS RATE</span>
-                <span class="metric-value">99.8%</span>
+              
+              <div class="seller-metrics">
+                <div class="metric-box">
+                  <span class="metric-label">RESPONSE TIME</span>
+                  <span class="metric-value">INSTANT</span>
+                </div>
+                <div class="metric-box">
+                  <span class="metric-label">SUCCESS RATE</span>
+                  <span class="metric-value">99.8%</span>
+                </div>
               </div>
             </div>
-          </div>
+          }
 
         </div>
       </div>

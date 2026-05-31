@@ -1,10 +1,11 @@
-import { Component, OnInit, signal, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth';
 import { environment } from '../../../../../environments/environment';
+import { ToastService } from '../../../../core/services/toast.service';
 
 export type PricingMode = 'fixed' | 'trade';
 
@@ -48,12 +49,11 @@ export class CreateListing implements OnInit {
   phone = '';
   showContact = true;
 
-  constructor(
-    private router: Router,
-    private http: HttpClient,
-    public authService: AuthService,
-    private cdr: ChangeDetectorRef
-  ) { }
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  public authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+  private toastService = inject(ToastService);
 
   ngOnInit() {
     this.fetchCategories();
@@ -223,7 +223,7 @@ export class CreateListing implements OnInit {
     const currentUser = this.authService.currentUser();
 
     if (!currentUser) {
-      alert('Please login to publish a listing.');
+      this.toastService.error('Please login to publish a listing.');
       return;
     }
 
@@ -242,15 +242,15 @@ export class CreateListing implements OnInit {
 
     this.http.post(`${environment.apiUrl}/products`, finalPayload).subscribe({
       next: () => {
-        alert('Listing published successfully!');
+        this.toastService.success('Listing published successfully!');
         this.router.navigate(['/products']);
       },
       error: (err) => {
         console.error('Error publishing:', err);
-        alert('Failed to publish. Check console.');
+        this.toastService.error('Failed to publish product listing.');
       }
     });
   }
 
-  saveDraft() { alert('Draft saved!'); }
+  saveDraft() { this.toastService.info('Draft saved successfully!'); }
 }
