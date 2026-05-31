@@ -1,0 +1,87 @@
+<div class="admin-layout">
+  <!-- Desktop Sidebar: Aligned with Website Layout -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Admin Dashboard</span>
+    </div>
+
+    <!-- Admin Profile Section in Sidebar -->
+    <div class="admin-profile-box">
+      <div class="admin-avatar-container">
+        <div class="admin-avatar-frame">
+          <img *ngIf="authService.currentUser()?.avatar; else defaultAvatar" [src]="authService.currentUser()?.avatar" [alt]="authService.currentUser()?.firstName" />
+          <ng-template #defaultAvatar>
+            <div class="admin-avatar-fallback">
+              {{ authService.currentUser()?.firstName?.substring(0, 1) | uppercase }}{{ authService.currentUser()?.lastName?.substring(0, 1) | uppercase }}
+            </div>
+          </ng-template>
+        </div>
+        <div class="admin-status-dot" title="Active Admin Session"></div>
+      </div>
+
+      <div class="admin-info-details">
+        <span class="admin-profile-name">{{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}</span>
+        <span class="admin-badge-team">🛡️ NAFA3NI TEAM</span>
+      </div>
+    </div>
+
+    <!-- Navigation List: Clean Sidebar Style -->
+    <nav class="sidebar-nav">
+      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Overview</span>
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Users Database</span>
+      </a>
+      <a routerLink="/admin/listings" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Product Inventory</span>
+      </a>
+      <a routerLink="/admin/reports" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">🚨</span>
+        <span class="nav-label">Reports Queue</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/" class="btn-sidebar btn-back-site">
+        <span>← Back to Site</span>
+      </a>
+      <button (click)="logout()" class="btn-sidebar btn-logout-brutal">
+        <span>Log Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="admin-main-wrapper">
+    <!-- Mobile Horizontal Tabs Navigation -->
+    <nav class="admin-mobile-tabs">
+      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="mobile-tab-item">
+        <span>📊 Overview</span>
+      </a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="mobile-tab-item">
+        <span>👥 Users</span>
+      </a>
+      <a routerLink="/admin/listings" routerLinkActive="active" class="mobile-tab-item">
+        <span>📦 Listings</span>
+      </a>
+      <a routerLink="/admin/reports" routerLinkActive="active" class="mobile-tab-item">
+        <span>🚨 Reports</span>
+      </a>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="admin-main-content">
+      
+
+
+      <!-- Router Content -->
+      <div class="admin-router-content">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>

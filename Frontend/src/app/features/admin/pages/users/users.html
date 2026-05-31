@@ -1,0 +1,187 @@
+<div class="users-page-container">
+  <div class="page-header-actions">
+    <div class="title-section">
+      <h1>Users Database</h1>
+      <p>Manage accounts, toggle roles, verify seller badges, and suspend/delete profiles.</p>
+    </div>
+    <div class="search-box-brutal">
+      <span class="search-icon">🔍</span>
+      <input 
+        [formControl]="searchControl" 
+        type="text" 
+        placeholder="Search users by name or email..." 
+        aria-label="Search users"
+      >
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-panel">
+      <h3>⚠️ Error</h3>
+      <p>{{ errorMessage() }}</p>
+      <button (click)="loadUsers()" class="btn btn-primary">Retry</button>
+    </div>
+  } @else {
+    <div class="admin-table-card">
+      <div class="table-container">
+        <table class="admin-data-table">
+          <thead>
+            <tr>
+              <th>Profile User</th>
+              <th>Email Address</th>
+              <th>Status</th>
+              <th>Role</th>
+              <th>Verification</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (isLoading()) {
+              @for (item of [1, 2, 3, 4, 5]; track item) {
+                <tr class="table-row-skeleton">
+                  <td>
+                    <div class="user-profile-cell">
+                      <div class="skeleton-avatar"></div>
+                      <div class="skeleton-text-block">
+                        <div class="skeleton-line name"></div>
+                        <div class="skeleton-line sub"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-actions"></div></td>
+                </tr>
+              }
+            } @else if (users().length === 0) {
+              <tr>
+                <td colspan="6" class="empty-table-cell">
+                  <span>🤷</span>
+                  <p>No user profiles match your query.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (user of users(); track user.id) {
+                <tr [class.user-suspended-row]="user.isSuspended">
+                  <td>
+                    <div class="user-profile-cell">
+                      <div class="avatar-container">
+                        <div class="avatar-frame">
+                          <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" [alt]="user.firstName">
+                          <ng-template #defaultAvatar>
+                            <div class="avatar-fallback">
+                              {{ user.firstName.substring(0, 1) | uppercase }}{{ user.lastName.substring(0, 1) | uppercase }}
+                            </div>
+                          </ng-template>
+                        </div>
+                        <div class="user-status-dot" [class.suspended]="user.isSuspended" [class.active]="!user.isSuspended"></div>
+                      </div>
+                      <div class="user-info-text">
+                        <a [routerLink]="['/profile', user.id]" class="user-link">
+                          {{ user.firstName }} {{ user.lastName }}
+                        </a>
+                        <span class="user-join-date">Joined {{ user.joinedAt | date:'mediumDate' }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="email-cell">{{ user.email }}</td>
+                  <td>
+                    @if (user.isSuspended) {
+                      <span class="status-pill status-suspended">Suspended</span>
+                    } @else {
+                      <span class="status-pill status-active">Active</span>
+                    }
+                  </td>
+                  <td>
+                    <span 
+                      class="role-pill" 
+                      [class.role-admin]="user.role === 'admin'"
+                      [class.role-user]="user.role !== 'admin'"
+                    >
+                      {{ user.role }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (user.isVerified) {
+                      <span class="verified-pill verified-true">✓ Verified</span>
+                    } @else {
+                      <span class="verified-pill verified-false">Unverified</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="table-row-actions">
+                      <!-- Verify Toggle -->
+                      <button 
+                        (click)="toggleVerify(user)" 
+                        class="row-action-btn verify-btn"
+                        [class.active-verified]="user.isVerified"
+                        [title]="user.isVerified ? 'Remove Verification' : 'Verify User'"
+                      >
+                        <span class="btn-icon">{{ user.isVerified ? '✕' : '✓' }}</span>
+                      </button>
+
+                      <!-- Suspend Toggle -->
+                      <button 
+                        (click)="toggleSuspend(user)" 
+                        class="row-action-btn suspend-btn"
+                        [class.unsuspend]="user.isSuspended"
+                        [title]="user.isSuspended ? 'Activate Account' : 'Suspend Account'"
+                      >
+                        <span class="btn-icon">{{ user.isSuspended ? '🔓' : '⛔' }}</span>
+                      </button>
+
+                      <!-- Role Toggle -->
+                      @if (user.id !== authService.currentUser()?.id) {
+                        <button 
+                          (click)="toggleRole(user)" 
+                          class="row-action-btn role-btn"
+                          [title]="user.role === 'admin' ? 'Revoke Admin Privileges' : 'Make Administrator'"
+                        >
+                          <span class="btn-icon">⚙️</span>
+                        </button>
+                      }
+
+                      <!-- Delete Action -->
+                      @if (user.id !== authService.currentUser()?.id) {
+                        <button 
+                          (click)="deleteUser(user)" 
+                          class="row-action-btn delete-btn" 
+                          title="Delete User Account"
+                        >
+                          <span class="btn-icon">🗑️</span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="brutal-pagination">
+        <button 
+          [disabled]="currentPage() === 1 || isLoading()" 
+          (click)="prevPage()"
+          class="pag-btn prev-btn"
+        >
+          ← Previous
+        </button>
+        <span class="pag-info">Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalUsers() }} total users)</span>
+        <button 
+          [disabled]="currentPage() === totalPages() || isLoading()" 
+          (click)="nextPage()"
+          class="pag-btn next-btn"
+        >
+          Next →
+        </button>
+      </div>
+    }
+  }
+</div>

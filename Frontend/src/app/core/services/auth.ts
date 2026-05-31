@@ -129,6 +129,7 @@ export class AuthService {
       totalPurchases: u.totalPurchases ?? 0,
       joinedAt: u.createdAt ? new Date(u.createdAt) : new Date(),
       isVerified: u.isVerified ?? false,
+      isSuspended: u.isSuspended ?? false,
       avatar: u.avatar && u.avatar.startsWith('/uploads')
         ? `${baseUrl}${u.avatar}`
         : u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,

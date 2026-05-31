@@ -1,0 +1,200 @@
+<div class="listings-page-container">
+  <div class="page-header-actions">
+    <div class="title-section">
+      <h1>Marketplace Listings</h1>
+      <p>Moderate user items, toggle verification marks, verify official store stock, and purge spam.</p>
+    </div>
+
+    <!-- Filters Panel -->
+    <form [formGroup]="filterForm" class="brutal-filters-form">
+      <div class="filter-field">
+        <label for="status-select">Status</label>
+        <select id="status-select" formControlName="status">
+          @for (s of statusList; track s.value) {
+            <option [value]="s.value">{{ s.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label for="category-select">Category</label>
+        <select id="category-select" formControlName="category">
+          @for (c of categoriesList; track c.value) {
+            <option [value]="c.value">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+    </form>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-panel">
+      <h3>⚠️ Error</h3>
+      <p>{{ errorMessage() }}</p>
+      <button (click)="loadListings()" class="btn btn-primary">Retry</button>
+    </div>
+  } @else {
+    <div class="admin-table-card">
+      <div class="table-container">
+        <table class="admin-data-table">
+          <thead>
+            <tr>
+              <th>Listing / Product</th>
+              <th>Seller</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Verification</th>
+              <th>Stats</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (isLoading()) {
+              @for (item of [1, 2, 3, 4, 5]; track item) {
+                <tr class="table-row-skeleton">
+                  <td>
+                    <div class="product-cell-skeleton">
+                      <div class="skeleton-thumb"></div>
+                      <div class="skeleton-text-block">
+                        <div class="skeleton-line title"></div>
+                        <div class="skeleton-line sub"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-line number"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-line views"></div></td>
+                  <td><div class="skeleton-actions"></div></td>
+                </tr>
+              }
+            } @else if (products().length === 0) {
+              <tr>
+                <td colspan="8" class="empty-table-cell">
+                  <span>🏜️</span>
+                  <p>No products match the selected filters.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (product of products(); track product.id) {
+                <tr>
+                  <td>
+                    <div class="product-profile-cell">
+                      <img [src]="product.images[0]" alt="Product thumbnail" class="product-thumbnail">
+                      <div class="product-info-text">
+                        <a [routerLink]="['/products', product.id]" class="product-link">
+                          {{ product.title }}
+                        </a>
+                        <span class="product-sku">SKU: {{ product.sku }} | Posted {{ product.createdAt | date:'shortDate' }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="seller-profile-cell">
+                      @if (product.seller) {
+                        <a [routerLink]="['/profile', product.seller.id]" class="seller-link">
+                          {{ product.seller.firstName }} {{ product.seller.lastName }}
+                        </a>
+                        <span *ngIf="product.seller.isVerified" class="seller-verified-badge" title="Verified Seller">✓</span>
+                      } @else {
+                        <span class="system-tag">Anonymous</span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="category-pill">{{ product.categoryName || 'Other' }}</span>
+                  </td>
+                  <td class="price-cell">
+                    {{ product.price | currency:'EGP ':'code':'1.0-0' }}
+                  </td>
+                  <td>
+                    <span 
+                      class="status-pill"
+                      [class.status-available]="product.status === 'available'"
+                      [class.status-sold]="product.status === 'sold'"
+                      [class.status-draft]="product.status === 'draft'"
+                    >
+                      {{ product.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="badges-row">
+                      @if (product.soldByNafa3ni) {
+                        <span class="official-store-tag">✓ Official</span>
+                      }
+                      @if (product.isVerified) {
+                        <span class="verified-prod-tag">✓ Verified</span>
+                      }
+                      @if (!product.soldByNafa3ni && !product.isVerified) {
+                        <span class="none-text">-</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="views-cell">
+                    <span>👁️ {{ product.viewCount }}</span>
+                  </td>
+                  <td>
+                    <div class="table-row-actions">
+                      <!-- Edit Listing -->
+                      <a 
+                        *ngIf="product.soldByNafa3ni"
+                        [routerLink]="['/listings/edit', product.id]"
+                        class="row-action-btn edit-btn"
+                        title="Edit Official Product"
+                      >
+                        <span class="btn-icon">✏️</span>
+                      </a>
+
+                      <!-- Toggle Verify -->
+                      <button 
+                        (click)="toggleVerify(product)" 
+                        class="row-action-btn verify-btn"
+                        [class.active-verified]="product.isVerified"
+                        [title]="product.isVerified ? 'Remove Verification' : 'Verify Listing'"
+                      >
+                        <span class="btn-icon">{{ product.isVerified ? '✕' : '✓' }}</span>
+                      </button>
+
+                      <!-- Delete Listing -->
+                      <button 
+                        (click)="deleteProduct(product)" 
+                        class="row-action-btn delete-btn"
+                        title="Delete Listing"
+                      >
+                        <span class="btn-icon">🗑️</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="brutal-pagination">
+        <button 
+          [disabled]="currentPage() === 1 || isLoading()" 
+          (click)="prevPage()"
+          class="pag-btn prev-btn"
+        >
+          ← Previous
+        </button>
+        <span class="pag-info">Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalProducts() }} total listings)</span>
+        <button 
+          [disabled]="currentPage() === totalPages() || isLoading()" 
+          (click)="nextPage()"
+          class="pag-btn next-btn"
+        >
+          Next →
+        </button>
+      </div>
+    }
+  }
+</div>

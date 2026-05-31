@@ -1,0 +1,36 @@
+import { Component, signal, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth';
+import { AdminService } from '../../../../core/services/admin.service';
+
+@Component({
+  selector: 'app-admin-shell',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './admin-shell.html',
+  styleUrl: './admin-shell.css'
+})
+export class AdminShell implements OnInit {
+  protected authService = inject(AuthService);
+  private adminService = inject(AdminService);
+  private router = inject(Router);
+
+  isMobileMenuOpen = signal(false);
+
+  ngOnInit(): void {
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(val => !val);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
+  }
+}

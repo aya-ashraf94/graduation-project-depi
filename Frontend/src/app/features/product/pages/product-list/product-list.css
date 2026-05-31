@@ -721,3 +721,58 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* Official Store Badge */
+.badge-official {
+  background: var(--black);
+  color: var(--yellow);
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 0.7rem;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--black);
+  box-shadow: 2px 2px 0 var(--yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Admin Actions Bar on Product Cards */
+.product-card-admin-actions {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 2px dashed var(--black);
+  background: var(--surface-1);
+}
+
+.btn-edit-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--yellow);
+  color: var(--black);
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 0.85rem;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--black);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.btn-edit-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+  background: #ffdd00;
+}
+
+.btn-edit-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--black);
+}
+

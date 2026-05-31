@@ -1,0 +1,139 @@
+<div class="reports-page-container">
+  <div class="page-header-actions">
+    <div class="title-section">
+      <h1>Moderation Reports Queue</h1>
+      <p>Investigate items reported by users, dismiss false reports, or purge problematic products.</p>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-panel">
+      <h3>⚠️ Error</h3>
+      <p>{{ errorMessage() }}</p>
+      <button (click)="loadReports()" class="btn btn-primary">Retry</button>
+    </div>
+  } @else {
+    <div class="brutal-panel">
+      <div class="table-wrapper">
+        <table class="brutal-reports-table">
+          <thead>
+            <tr>
+              <th>Reported Item</th>
+              <th>Seller</th>
+              <th>Flagged By</th>
+              <th>Reason</th>
+              <th>Details & Context</th>
+              <th>Reported Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (isLoading()) {
+              <tr>
+                <td colspan="7" class="table-loading-cell">
+                  <div class="spinner"></div>
+                  <p>Loading reported items...</p>
+                </td>
+              </tr>
+            } @else if (reports().length === 0) {
+              <tr>
+                <td colspan="7" class="empty-table-cell">
+                  <span>🕊️</span>
+                  <p>All clean. No pending moderation reports!</p>
+                </td>
+              </tr>
+            } @else {
+              @for (report of reports(); track report._id) {
+                <tr>
+                  <td>
+                    @if (report.productId) {
+                      <div class="product-info-cell">
+                        <a [routerLink]="['/products', report.productId._id]" class="product-title-link">
+                          {{ report.productId.title }}
+                        </a>
+                      </div>
+                    } @else {
+                      <span class="deleted-tag">[Listing Already Deleted]</span>
+                    }
+                  </td>
+                  <td>
+                    @if (report.productId && report.productId.userId) {
+                      <a [routerLink]="['/profile', report.productId.userId._id]" class="user-link-micro">
+                        {{ report.productId.userId.name }}
+                      </a>
+                    } @else {
+                      <span class="none-text">-</span>
+                    }
+                  </td>
+                  <td>
+                    @if (report.reporterId) {
+                      <a [routerLink]="['/profile', report.reporterId._id]" class="user-link-micro">
+                        {{ report.reporterId.name }}
+                      </a>
+                    } @else {
+                      <span class="system-tag">Anonymous</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="reason-pill">{{ report.reason }}</span>
+                  </td>
+                  <td class="details-cell">
+                    <p class="details-text" [title]="report.details || 'No details provided'">
+                      {{ report.details || 'No additional comments provided.' }}
+                    </p>
+                  </td>
+                  <td class="date-cell">
+                    {{ report.createdAt | date:'short' }}
+                  </td>
+                  <td>
+                    <div class="report-actions">
+                      <!-- Inspect Product -->
+                      @if (report.productId) {
+                        <a 
+                          [routerLink]="['/products', report.productId._id]" 
+                          class="op-action-btn view-btn"
+                          title="View Product Details"
+                        >
+                          <span class="btn-icon">👁️</span>
+                        </a>
+                      }
+
+                      <!-- Dismiss Flag -->
+                      <button 
+                        (click)="dismissReport(report._id)" 
+                        class="op-action-btn dismiss-btn"
+                        title="Dismiss Flag"
+                      >
+                        <span class="btn-icon">✓</span>
+                      </button>
+
+                      <!-- Delete Product -->
+                      @if (report.productId) {
+                        <button 
+                          (click)="deleteProduct(report.productId._id, report._id)" 
+                          class="op-action-btn delete-btn"
+                          title="Delete Flagged Product"
+                        >
+                          <span class="btn-icon">🗑️</span>
+                        </button>
+                      } @else {
+                        <!-- Clean up obsolete report -->
+                        <button 
+                          (click)="dismissReport(report._id)" 
+                          class="op-action-btn delete-btn"
+                          title="Remove Orphan Report"
+                        >
+                          <span class="btn-icon">🗑️</span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
