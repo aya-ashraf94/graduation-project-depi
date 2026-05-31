@@ -26,35 +26,30 @@ flowchart TD
         Pages[Angular Components & Pages]
         Services[Angular Services]
         Guards[Route Guards]
+        Interceptors[HTTP Interceptors]
         Pages --> Services
         Pages --> Guards
+        Services --> Interceptors
     end
 
     subgraph Backend [Express API Server]
         Server[server.js Engine]
         AuthMiddleware[authMiddleware.js JWT Gate]
-        AuthRoutes[authRoutes.js]
-        ProdRoutes[productRoutes.js]
-        AuthController[authController.js]
-        ProdController[productController.js]
+        Routes[API Routers: Auth, Products, Conversations, Orders, Reviews, Reports, Support]
+        Controllers[API Controllers: Auth, Products, Conversations, Orders, Reviews]
 
-        Server --> AuthRoutes
-        Server --> ProdRoutes
-
-        ProdRoutes -.->|Requires Auth| AuthMiddleware
-        AuthMiddleware --> ProdController
-        ProdRoutes --> ProdController
-        AuthRoutes --> AuthController
+        Server --> Routes
+        Routes -.->|Requires Auth| AuthMiddleware
+        AuthMiddleware --> Controllers
+        Routes --> Controllers
     end
 
     subgraph Database [MongoDB Atlas]
-        UserSchema[(User Model)]
-        ProdSchema[(Product Model)]
+        DBModels[(Mongoose Models: User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter)]
     end
 
-    Services -->|HTTP Requests| Server
-    AuthController <--> UserSchema
-    ProdController <--> ProdSchema
+    Interceptors -->|HTTP Requests with JWT| Server
+    Controllers <--> DBModels
 ```
 
 ---
@@ -70,10 +65,10 @@ graduation-project-depi/
 │
 ├── Backend/                # Express.js REST API Server
 │   ├── config/             # DB settings
-│   ├── controllers/        # Request handlers & logic
+│   ├── controllers/        # Request handlers & logic (Auth, Product, Chat, Order, Review)
 │   ├── middleware/         # Security & JWT validators
-│   ├── models/             # Mongoose Schemas (User, Product)
-│   ├── routes/             # Express routes defining API endpoints
+│   ├── models/             # Mongoose Schemas (User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter)
+│   ├── routes/             # Express routes defining API endpoints (8 routers)
 │   ├── server.js           # Server application startup & middleware setup
 │   ├── package.json        # Backend specific scripts & node modules
 │   └── README.md           # [Detailed Backend documentation]

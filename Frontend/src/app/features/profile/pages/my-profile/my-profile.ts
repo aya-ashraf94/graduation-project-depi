@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -81,6 +81,12 @@ export class MyProfile implements OnInit {
 
   showDeleteModal = false;
   productIdToDelete: string | null = null;
+
+  isAdmin = computed(() => this.authService.isAdmin());
+
+  goToAdminPanel() {
+    this.router.navigate(['/admin']);
+  }
 
   editProduct(productId: string) {
     this.router.navigate(['/listings/edit', productId]);

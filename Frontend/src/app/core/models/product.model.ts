@@ -12,7 +12,7 @@ export type ProductCondition =
   | 'fair'
   | 'distressed';
 
-export type ProductStatus = 'available' | 'reserved' | 'sold';
+export type ProductStatus = 'available' | 'reserved' | 'sold' | 'draft';
 
 export type ProductCategory =
   | 'outerwear'
@@ -43,6 +43,9 @@ export interface Product {
   seller: UserSummary;
   viewCount: number;
   favoriteCount: number;
+  soldByNafa3ni?: boolean;
+  isVerified?: boolean;
+  categoryName?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,6 +66,8 @@ export interface ProductSummary {
   createdAt: Date;
   size?: string;
   categoryName?: string;
+  soldByNafa3ni?: boolean;
+  isVerified?: boolean;
 }
 
 /** Payload to create a new listing */

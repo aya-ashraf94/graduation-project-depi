@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   // ── Public Routes ────────────────────────────────────────────────────────
@@ -105,6 +106,36 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/chat/pages/chat-page/chat-page').then((m) => m.ChatPage),
+  },
+
+  // ── Admin Routes ─────────────────────────────────────────────
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/layout/admin-shell/admin-shell').then((m) => m.AdminShell),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/pages/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/admin/pages/users/users').then((m) => m.Users),
+      },
+      {
+        path: 'listings',
+        loadComponent: () =>
+          import('./features/admin/pages/listings/listings').then((m) => m.Listings),
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./features/admin/pages/reports/reports').then((m) => m.Reports),
+      },
+    ],
   },
 
   // ── Fallback ─────────────────────────────────────────────────

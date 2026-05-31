@@ -17,6 +17,7 @@ export interface User {
   totalPurchases: number;
   joinedAt: Date;
   isVerified: boolean;
+  isSuspended?: boolean;
   location?: string;
   bio?: string;
   tags?: string[];

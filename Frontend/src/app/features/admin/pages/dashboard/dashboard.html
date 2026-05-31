@@ -1,0 +1,168 @@
+<div class="dashboard-container">
+  <!-- PERSISTENT ADMIN TOPBAR & STATS (Moved from layout shell to prevent repetition) -->
+  <header class="admin-topbar">
+    <div class="topbar-welcome">
+      <h2>Overview</h2>
+      <p>Welcome back! Here is what's happening on Nafa3ni today.</p>
+    </div>
+    <div class="system-status-pill">
+      🛡️ Active Session
+    </div>
+  </header>
+
+  <div class="ref-stats-strip">
+    <!-- Users -->
+    <div class="ref-stats-col">
+      <div class="ref-stats-icon-wrap icon-users">👥</div>
+      <div class="ref-stats-text-stack">
+        <div class="ref-stats-val">{{ stats()?.totalUsers || 0 }}</div>
+        <div class="ref-stats-lbl">Total Users</div>
+      </div>
+    </div>
+    
+    <div class="ref-stats-divider"></div>
+    
+    <!-- Listings -->
+    <div class="ref-stats-col">
+      <div class="ref-stats-icon-wrap icon-listings">📦</div>
+      <div class="ref-stats-text-stack">
+        <div class="ref-stats-val">{{ stats()?.totalProducts || 0 }}</div>
+        <div class="ref-stats-lbl">Total Listings</div>
+      </div>
+    </div>
+    
+    <div class="ref-stats-divider"></div>
+    
+    <!-- Reports -->
+    <div class="ref-stats-col">
+      <div class="ref-stats-icon-wrap icon-reports">🚨</div>
+      <div class="ref-stats-text-stack">
+        <div class="ref-stats-val">{{ stats()?.openReports || 0 }}</div>
+        <div class="ref-stats-lbl">Open Reports</div>
+      </div>
+    </div>
+    
+    <div class="ref-stats-divider"></div>
+    
+    <!-- Orders Today -->
+    <div class="ref-stats-col">
+      <div class="ref-stats-icon-wrap icon-orders">🛒</div>
+      <div class="ref-stats-text-stack">
+        <div class="ref-stats-val">{{ stats()?.ordersToday || 0 }}</div>
+        <div class="ref-stats-lbl">Orders Today</div>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading() && !stats()) {
+    <div class="dashboard-loader">
+      <div class="spinner"></div>
+      <p>Retrieving control panel metrics...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-panel">
+      <h3>⚠️ Error</h3>
+      <p>{{ errorMessage() }}</p>
+      <button (click)="loadData()" class="btn btn-primary">Try Again</button>
+    </div>
+  } @else {
+    <!-- Dashboard Content Layout (Split column) -->
+    <div class="dashboard-panels">
+      <!-- Recent Reports Table -->
+      <div class="dashboard-panel main-panel">
+        <div class="panel-header">
+          <h3>🚨 Recent Flags & Reports</h3>
+          <a routerLink="/admin/reports" class="panel-link">View All Reports →</a>
+        </div>
+        <div class="panel-body">
+          @if (recentReports().length === 0) {
+            <div class="empty-state">
+              <span class="empty-icon">🎉</span>
+              <p>Everything is clean. No open flags in the reports queue!</p>
+            </div>
+          } @else {
+            <div class="table-wrapper">
+              <table class="brutal-table">
+                <thead>
+                  <tr>
+                    <th>Target Listing</th>
+                    <th>Reporter</th>
+                    <th>Reason</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (report of recentReports(); track report._id) {
+                    <tr>
+                      <td class="bold-text">
+                        @if (report.productId) {
+                          <a [routerLink]="['/products', report.productId._id]" class="listing-link">
+                            {{ report.productId.title }}
+                          </a>
+                        } @else {
+                          <span class="deleted-tag">[Deleted listing]</span>
+                        }
+                      </td>
+                      <td>
+                        @if (report.reporterId) {
+                          <span class="reporter-name">{{ report.reporterId.name }}</span>
+                        } @else {
+                          <span class="system-tag">Anonymous</span>
+                        }
+                      </td>
+                      <td>
+                        <span class="reason-pill">{{ report.reason }}</span>
+                      </td>
+                      <td>
+                        <div class="table-actions">
+                          @if (report.productId) {
+                            <a [routerLink]="['/products', report.productId._id]" class="action-btn view-btn" title="Inspect Listing">
+                              👁️
+                            </a>
+                          }
+                          <button (click)="dismissReport(report._id)" class="action-btn dismiss-btn" title="Dismiss Flag">
+                            ✓
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="dashboard-panel side-panel">
+        <div class="panel-header">
+          <h3>⚡ Quick Operations</h3>
+        </div>
+        <div class="panel-body flex-buttons">
+          <a routerLink="/listings/create" class="quick-op-btn op-yellow">
+            <span class="op-icon">➕</span>
+            <div class="op-desc">
+              <h4>Create Official Product</h4>
+              <p>Post item as 'Official Store'</p>
+            </div>
+          </a>
+          <a routerLink="/admin/users" class="quick-op-btn op-dark">
+            <span class="op-icon">👥</span>
+            <div class="op-desc">
+              <h4>Manage Platforms Users</h4>
+              <p>Verify, suspend, or delete users</p>
+            </div>
+          </a>
+          <a routerLink="/admin/listings" class="quick-op-btn op-outline">
+            <span class="op-icon">📦</span>
+            <div class="op-desc">
+              <h4>Review Marketplace Listings</h4>
+              <p>Verify or remove active items</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+</div>

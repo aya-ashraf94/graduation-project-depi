@@ -132,7 +132,7 @@ export class ProductService {
 
   // ── Mapping functions ─────────────────────────────────────────────────────
 
-  private mapProduct(p: any): Product {
+  public mapProduct(p: any): Product {
     if (!p) return p;
     const dynamic = p.dynamicAttributes || {};
     const baseUrl = environment.apiUrl.replace('/api', '');
@@ -228,7 +228,9 @@ export class ProductService {
       favoriteCount: p.favoriteCount || 0,
       createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
       updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date(),
-      categoryName: p.categoryId?.name || ''
+      categoryName: p.categoryId?.name || '',
+      soldByNafa3ni: p.soldByNafa3ni || false,
+      isVerified: p.isVerified || false
     } as any;
   }
 
@@ -247,7 +249,9 @@ export class ProductService {
       status: mapped.status,
       sellerId: mapped.seller.id,
       createdAt: mapped.createdAt,
-      categoryName: p.categoryId?.name || ''
+      categoryName: p.categoryId?.name || '',
+      soldByNafa3ni: mapped.soldByNafa3ni,
+      isVerified: mapped.isVerified
     } as any;
   }
 
