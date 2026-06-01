@@ -1,6 +1,7 @@
 const Review = require("../models/Review");
 const User = require("../models/User");
 const Order = require("../models/Order");
+const Notification = require("../models/Notification");
 
 const createReview = async (req, res) => {
     try {
@@ -32,6 +33,22 @@ const createReview = async (req, res) => {
             rating: Number(rating),
             comment
         });
+
+        // Trigger notification to the reviewee
+        try {
+            const reviewerUser = await User.findById(reviewerId);
+            const reviewerName = reviewerUser ? reviewerUser.name : "A user";
+            await Notification.create({
+                userId: revieweeId,
+                type: "review",
+                title: "New Review Received",
+                body: `${reviewerName} left you a ${rating}-star review.`,
+                linkedEntityId: review._id.toString(),
+                linkedRoute: "/profile/me?tab=reviews"
+            });
+        } catch (notifErr) {
+            console.error("Error triggering review notification:", notifErr);
+        }
         
         const reviews = await Review.find({ revieweeId });
         const sum = reviews.reduce((acc, r) => acc + r.rating, 0);

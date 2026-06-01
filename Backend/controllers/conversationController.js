@@ -1,6 +1,7 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 
 const getConversations = async (req, res) => {
     try {
@@ -121,6 +122,22 @@ const startConversation = async (req, res) => {
             });
             conversation.lastMessage = msg._id;
             await conversation.save();
+
+            // Trigger notification to recipient
+            try {
+                const senderUser = await User.findById(currentUserId);
+                const senderName = senderUser ? senderUser.name : "A user";
+                await Notification.create({
+                    userId: recipientId,
+                    type: "message",
+                    title: "New Message",
+                    body: `${senderName} sent you a message: "${initialMessage.substring(0, 40)}${initialMessage.length > 40 ? '...' : ''}"`,
+                    linkedEntityId: conversation._id.toString(),
+                    linkedRoute: "/chat"
+                });
+            } catch (notifErr) {
+                console.error("Error triggering initial message notification:", notifErr);
+            }
         }
         
         res.status(201).json({ conversationId: conversation._id });
@@ -150,6 +167,28 @@ const sendMessage = async (req, res) => {
             lastMessage: msg._id,
             updatedAt: Date.now()
         });
+
+        // Trigger notification to recipient
+        try {
+            const conversation = await Conversation.findById(conversationId);
+            if (conversation) {
+                const recipientId = conversation.participants.find(p => p.toString() !== senderId);
+                if (recipientId) {
+                    const senderUser = await User.findById(senderId);
+                    const senderName = senderUser ? senderUser.name : "A user";
+                    await Notification.create({
+                        userId: recipientId,
+                        type: "message",
+                        title: "New Message",
+                        body: `${senderName} sent you a message: "${content.substring(0, 40)}${content.length > 40 ? '...' : ''}"`,
+                        linkedEntityId: conversationId.toString(),
+                        linkedRoute: "/chat"
+                    });
+                }
+            }
+        } catch (notifErr) {
+            console.error("Error triggering message notification:", notifErr);
+        }
         
         res.status(201).json({
             id: msg._id,

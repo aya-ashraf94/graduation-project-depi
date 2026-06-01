@@ -1,24 +1,47 @@
 // ============================================================
-// WISHLIST SERVICE — MOCK + API-READY
-//
-// HOW TO UPGRADE TO REAL BACKEND:
-//   1. Inject HttpClient and environment
-//   2. Replace each method body with an HttpClient call
-//      Example: getWishlist(userId) →
-//        return this.http.get<ApiResponse<string[]>>(
-//          `${environment.apiUrl}/users/${userId}/wishlist`
-//        ).pipe(map(r => r.data));
+// WISHLIST SERVICE — REAL BACKEND INTEGRATION
 // ============================================================
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { AuthService } from './auth';
+import { environment } from '../../../environments/environment';
+import { ProductSummary } from '../models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class WishlistService {
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
   /** Set of product IDs in the user's wishlist */
-  private readonly _wishlistIds = signal<Set<string>>(new Set(this._load()));
+  private readonly _wishlistIds = signal<Set<string>>(new Set());
 
   /** Reactive count for badge display */
   readonly count = computed(() => this._wishlistIds().size);
+
+  constructor() {
+    // Automatically synchronize wishlist IDs when logged-in state changes
+    effect(() => {
+      if (this.authService.isLoggedIn()) {
+        this.fetchWishlistIds();
+      } else {
+        this._wishlistIds.set(new Set());
+      }
+    });
+  }
+
+  /** Fetch wishlist IDs from backend */
+  fetchWishlistIds(): void {
+    this.http.get<string[]>(`${environment.apiUrl}/wishlist/ids`).subscribe({
+      next: (ids) => {
+        this._wishlistIds.set(new Set(ids));
+      },
+      error: (err) => {
+        console.error('Error fetching wishlist IDs:', err);
+      }
+    });
+  }
 
   /** Check if a product is wishlisted */
   isWishlisted(productId: string): boolean {
@@ -30,11 +53,19 @@ export class WishlistService {
     return Array.from(this._wishlistIds());
   }
 
+  /** Fetch fully populated wishlisted products */
+  getWishlistProducts(): Observable<ProductSummary[]> {
+    return this.http.get<ProductSummary[]>(`${environment.apiUrl}/wishlist`);
+  }
+
   /**
-   * TOGGLE WISHLIST
-   * REAL: return this.http.post(`${environment.apiUrl}/wishlist/toggle`, { productId });
+   * TOGGLE WISHLIST (Optimistic UI Update with rollback on error)
    */
   toggle(productId: string): boolean {
+    if (!this.authService.isLoggedIn()) {
+      return false;
+    }
+
     const current = new Set(this._wishlistIds());
     let added: boolean;
 
@@ -46,40 +77,42 @@ export class WishlistService {
       added = true;
     }
 
+    // Optimistically set state
     this._wishlistIds.set(current);
-    this._save(current);
+
+    // Sync with backend API
+    this.http.post<any>(`${environment.apiUrl}/wishlist/toggle`, { productId }).subscribe({
+      error: (err) => {
+        console.error('Error syncing wishlist toggle with backend:', err);
+        // Rollback state on error
+        const rollback = new Set(this._wishlistIds());
+        if (added) {
+          rollback.delete(productId);
+        } else {
+          rollback.add(productId);
+        }
+        this._wishlistIds.set(rollback);
+      }
+    });
+
     return added;
   }
 
   /**
    * ADD TO WISHLIST
-   * REAL: return this.http.post(`${environment.apiUrl}/wishlist`, { productId });
    */
   add(productId: string): void {
-    const current = new Set(this._wishlistIds());
-    current.add(productId);
-    this._wishlistIds.set(current);
-    this._save(current);
+    if (!this.isWishlisted(productId)) {
+      this.toggle(productId);
+    }
   }
 
   /**
    * REMOVE FROM WISHLIST
-   * REAL: return this.http.delete(`${environment.apiUrl}/wishlist/${productId}`);
    */
   remove(productId: string): void {
-    const current = new Set(this._wishlistIds());
-    current.delete(productId);
-    this._wishlistIds.set(current);
-    this._save(current);
-  }
-
-  // ── Persistence (localStorage until backend is ready) ──────────────────
-  private _save(ids: Set<string>): void {
-    localStorage.setItem('arch_wishlist', JSON.stringify(Array.from(ids)));
-  }
-
-  private _load(): string[] {
-    const raw = localStorage.getItem('arch_wishlist');
-    return raw ? JSON.parse(raw) : [];
+    if (this.isWishlisted(productId)) {
+      this.toggle(productId);
+    }
   }
 }
