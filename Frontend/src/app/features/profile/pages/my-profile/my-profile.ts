@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ import { ImageFallbackDirective } from '../../../../shared/directives/image-fall
   templateUrl: './my-profile.html',
   styleUrl: './my-profile.css',
 })
-export class MyProfile implements OnInit {
+export class MyProfile implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private productService = inject(ProductService);
   wishlistService = inject(WishlistService);
@@ -35,9 +35,14 @@ export class MyProfile implements OnInit {
   private router = inject(Router);
 
   @ViewChild('profileSliderTrack') profileSliderTrack!: ElementRef;
+  @ViewChild('tabsSection') tabsSection!: ElementRef;
+
+  private shouldScrollToTabs = false;
+  private isLocalTabClick = false;
 
   user: User | null = null;
   isOwnProfile = true;
+  isLoadingProfile = true;
   myListings: ProductSummary[] = [];
   wishlistItems: ProductSummary[] = [];
   reviews: Review[] = [];
@@ -128,13 +133,15 @@ export class MyProfile implements OnInit {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       const currentUser = this.authService.currentUser();
-      
+      this.isLoadingProfile = true;
+
       if (id && id !== 'me' && id !== currentUser?.id) {
         this.isOwnProfile = false;
         // Load target user profile
         this.userService.getUserById(id).subscribe({
           next: (user) => {
             this.user = user;
+            this.isLoadingProfile = false;
             if (user && user.id) {
               const currentId = this.authService.currentUser()?.id;
               if (user.id === currentId) {
@@ -152,11 +159,17 @@ export class MyProfile implements OnInit {
           },
           error: (err) => {
             console.error('Error loading user profile:', err);
+            this.isLoadingProfile = false;
+            this.cdr.detectChanges();
           }
         });
       } else {
         this.isOwnProfile = true;
         if (currentUser && currentUser.id) {
+          // Initialize user profile synchronously from local storage while fetching fresh details
+          this.user = currentUser;
+          this.isLoadingProfile = false;
+
           // Load fresh user profile details (sales/purchases/successRate) from backend
           this.userService.getUserById(currentUser.id).subscribe({
             next: (freshUser) => {
@@ -171,7 +184,7 @@ export class MyProfile implements OnInit {
               this.cdr.detectChanges();
             }
           });
-          
+
           this.loadUserListings(currentUser.id);
           this.loadWishlist();
           this.reviewService.getReviewsForUser(currentUser.id).subscribe(revs => {
@@ -186,6 +199,8 @@ export class MyProfile implements OnInit {
             this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
             this.cdr.detectChanges();
           });
+        } else {
+          this.isLoadingProfile = false;
         }
       }
     });
@@ -195,8 +210,17 @@ export class MyProfile implements OnInit {
       const tab = params['tab'];
       if (tab === 'products' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders') {
         this.activeTab = tab;
-        this.cdr.detectChanges();
+        if (!this.isLocalTabClick) {
+          this.shouldScrollToTabs = true;
+          this.scrollToTabsSection();
+        }
       }
+      this.isLocalTabClick = false; // Reset local click flag
+      const view = params['view'];
+      if (view === 'purchases' || view === 'sales') {
+        this.orderView = view;
+      }
+      this.cdr.detectChanges();
     });
   }
 
@@ -224,14 +248,14 @@ export class MyProfile implements OnInit {
   // }
 
   loadWishlist(): void {
-    const ids = this.wishlistService.getWishlistIds();
-
-    // جلب كل المنتجات أولاً من السيرفر
-    this.productService.getProducts().subscribe(allProducts => {
-      this.wishlistItems = ids
-        .map(id => allProducts.find(p => p.id === id))
-        .filter((p): p is ProductSummary => !!p);
-      this.cdr.detectChanges();
+    this.wishlistService.getWishlistProducts().subscribe({
+      next: (products) => {
+        this.wishlistItems = products;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading wishlist products:', err);
+      }
     });
   }
 
@@ -239,7 +263,8 @@ export class MyProfile implements OnInit {
     event.stopPropagation();
     event.preventDefault();
     this.wishlistService.remove(productId);
-    this.loadWishlist();
+    this.wishlistItems = this.wishlistItems.filter(item => item.id !== productId);
+    this.cdr.detectChanges();
   }
 
   getStars(rating: number): string {
@@ -486,6 +511,7 @@ export class MyProfile implements OnInit {
 
   selectTab(tab: 'products' | 'wishlist' | 'reviews' | 'orders'): void {
     this.activeTab = tab;
+    this.isLocalTabClick = true;
     const currentScroll = window.scrollY;
     this.router.navigate([], {
       relativeTo: this.route,
@@ -539,5 +565,18 @@ export class MyProfile implements OnInit {
     return this.getSales()
       .filter(o => !this.dismissedOrderIds.has(o.id))
       .filter(o => this.orderStatusFilter === 'all' || o.status === this.orderStatusFilter);
+  }
+
+  ngAfterViewInit(): void {
+    this.scrollToTabsSection();
+  }
+
+  scrollToTabsSection(): void {
+    if (this.shouldScrollToTabs && this.tabsSection) {
+      setTimeout(() => {
+        this.tabsSection.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.shouldScrollToTabs = false;
+      }, 200);
+    }
   }
 }
