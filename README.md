@@ -110,8 +110,8 @@ npm run install-all
 ### 3. Backend Environment Setup
 Create a `.env` file in the `Backend/` directory:
 ```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/nafa3ni
+PORT=3000
+MONGO_URI=mongodb://127.0.0.1:27017/storeDB
 JWT_SECRET=your_jwt_secret_key_here
 ```
 
@@ -122,7 +122,7 @@ npm run dev
 ```
 
 * **Frontend**: Accessible at [http://localhost:4200](http://localhost:4200) (Angular Dev Server)
-* **Backend API**: Accessible at [http://localhost:5000](http://localhost:5000) (Express Server)
+* **Backend API**: Accessible at [http://localhost:3000](http://localhost:3000) (Express Server)
 
 ### 5. Database Synchronization (Seeding)
 To keep the database data (especially categories, products, and default users) in sync across all team members' devices without cloud services:
