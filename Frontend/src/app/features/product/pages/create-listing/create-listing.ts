@@ -61,30 +61,60 @@ export class CreateListing implements OnInit {
 
 
   // ── Step validation ─────────────────────────────────────────────────────
+  // get missingPhase1Fields(): string[] {
+  //   const missing: string[] = [];
+  //   if (!this.title.trim()) {
+  //     missing.push('Title');
+  //   }
+  //   if (!this.selectedCategory()) {
+  //     missing.push('Category');
+  //   } else {
+  //     const attrs = this.selectedCategory().attributes || [];
+  //     for (const attr of attrs) {
+  //       if (attr.required !== false) {
+  //         const val = this.dynamicFields[attr.name];
+  //         if (val === undefined || val === '') {
+  //           missing.push(attr.name);
+  //         }
+  //       }
+  //     }
+  //   }
+  //   if (!this.imageSlots().some(s => s !== null)) {
+  //     missing.push('At least one photo');
+  //   }
+  //   return missing;
+  // }
+
   get missingPhase1Fields(): string[] {
     const missing: string[] = [];
-    if (!this.title.trim()) {
-      missing.push('Title');
-    }
+
+    console.log(
+      'dynamicFields = ',
+      JSON.stringify(this.dynamicFields, null, 2)
+    );
+
     if (!this.selectedCategory()) {
       missing.push('Category');
     } else {
       const attrs = this.selectedCategory().attributes || [];
+
       for (const attr of attrs) {
+        console.log('attr = ', attr.name);
+        console.log('value = ', this.dynamicFields[attr.name]);
+
         if (attr.required !== false) {
           const val = this.dynamicFields[attr.name];
+
           if (val === undefined || val === '') {
             missing.push(attr.name);
           }
         }
       }
     }
-    if (!this.imageSlots().some(s => s !== null)) {
-      missing.push('At least one photo');
-    }
+
     return missing;
   }
-
+  
   get phase1Valid(): boolean {
     return this.missingPhase1Fields.length === 0;
   }
@@ -121,7 +151,7 @@ export class CreateListing implements OnInit {
   }
 
   goToStep(n: number) {
-    
+
     if (n < this.currentStep()) {
       this.currentStep.set(n);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -152,7 +182,7 @@ export class CreateListing implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const files = Array.from(input.files);
-      
+
       // Limit check: maximum of 4 images total
       const currentFilledCount = this.imageSlots().filter(s => s !== null).length;
       if (files.length > 4 || files.length + currentFilledCount > 4) {
