@@ -39,13 +39,10 @@
         <table class="admin-data-table">
           <thead>
             <tr>
-              <th>Listing / Product</th>
-              <th>Seller</th>
+              <th>Listing / Product Details</th>
               <th>Category</th>
               <th>Price</th>
               <th>Status</th>
-              <th>Verification</th>
-              <th>Stats</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -59,21 +56,19 @@
                       <div class="skeleton-text-block">
                         <div class="skeleton-line title"></div>
                         <div class="skeleton-line sub"></div>
+                        <div class="skeleton-line sub-meta"></div>
                       </div>
                     </div>
                   </td>
-                  <td><div class="skeleton-line text"></div></td>
                   <td><div class="skeleton-badge"></div></td>
                   <td><div class="skeleton-line number"></div></td>
                   <td><div class="skeleton-badge"></div></td>
-                  <td><div class="skeleton-badge"></div></td>
-                  <td><div class="skeleton-line views"></div></td>
                   <td><div class="skeleton-actions"></div></td>
                 </tr>
               }
             } @else if (products().length === 0) {
               <tr>
-                <td colspan="8" class="empty-table-cell">
+                <td colspan="5" class="empty-table-cell">
                   <span>🏜️</span>
                   <p>No products match the selected filters.</p>
                 </td>
@@ -83,25 +78,29 @@
                 <tr>
                   <td>
                     <div class="product-profile-cell">
-                      <img [src]="product.images[0]" alt="Product thumbnail" class="product-thumbnail">
+                      <div class="product-thumbnail-container">
+                        <img [src]="product.images[0]" alt="Product thumbnail" class="product-thumbnail">
+                        <!-- Badges overlay -->
+                        <div class="product-badge-overlay" *ngIf="product.soldByNafa3ni || product.isVerified">
+                          <span *ngIf="product.soldByNafa3ni" class="badge-store-micro" title="Official Store Product">Official</span>
+                          <span *ngIf="product.isVerified" class="badge-verified-micro" title="Verified Product">Verified</span>
+                        </div>
+                      </div>
                       <div class="product-info-text">
                         <a [routerLink]="['/products', product.id]" class="product-link">
                           {{ product.title }}
                         </a>
                         <span class="product-sku">SKU: {{ product.sku }} | Posted {{ product.createdAt | date:'shortDate' }}</span>
+                        <span class="product-seller-meta">
+                          by <a *ngIf="product.seller; else anonSeller" [routerLink]="['/profile', product.seller.id]" class="seller-link-micro">
+                            {{ product.seller.firstName }} {{ product.seller.lastName }}
+                          </a>
+                          <ng-template #anonSeller><span class="system-tag">Anonymous</span></ng-template>
+                          <span *ngIf="product.seller.isVerified" class="seller-verified-check" title="Verified Seller">✓</span>
+                          <span class="meta-views-divider">|</span>
+                          <span class="views-micro">👁️ {{ product.viewCount }} views</span>
+                        </span>
                       </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="seller-profile-cell">
-                      @if (product.seller) {
-                        <a [routerLink]="['/profile', product.seller.id]" class="seller-link">
-                          {{ product.seller.firstName }} {{ product.seller.lastName }}
-                        </a>
-                        <span *ngIf="product.seller.isVerified" class="seller-verified-badge" title="Verified Seller">✓</span>
-                      } @else {
-                        <span class="system-tag">Anonymous</span>
-                      }
                     </div>
                   </td>
                   <td>
@@ -119,22 +118,6 @@
                     >
                       {{ product.status }}
                     </span>
-                  </td>
-                  <td>
-                    <div class="badges-row">
-                      @if (product.soldByNafa3ni) {
-                        <span class="official-store-tag">✓ Official</span>
-                      }
-                      @if (product.isVerified) {
-                        <span class="verified-prod-tag">✓ Verified</span>
-                      }
-                      @if (!product.soldByNafa3ni && !product.isVerified) {
-                        <span class="none-text">-</span>
-                      }
-                    </div>
-                  </td>
-                  <td class="views-cell">
-                    <span>👁️ {{ product.viewCount }}</span>
                   </td>
                   <td>
                     <div class="table-row-actions">

@@ -1,4 +1,9 @@
-<div class="dashboard-layout" *ngIf="user; else notLoggedIn">
+<div *ngIf="isLoadingProfile" class="profile-loader-container">
+  <div class="spinner"></div>
+  <p>Loading profile details...</p>
+</div>
+
+<div class="dashboard-layout" *ngIf="!isLoadingProfile && user">
   <!-- MAIN CONTENT -->
   <main class="dashboard-main">
     <div class="dashboard-container">
@@ -184,7 +189,7 @@
       </div>
 
       <!-- TABS SECTION -->
-      <div class="profile-tabs-wrap">
+      <div class="profile-tabs-wrap" #tabsSection>
         <div class="profile-tabs-container">
           <div class="profile-tabs">
             <!-- Products Tab -->
@@ -552,7 +557,7 @@
           <button class="orders-toggle-btn" [class.active]="orderView === 'sales'"
             (click)="orderView = 'sales'; orderStatusFilter = 'all'">
             MY SALES
-            <span class="orders-count-badge">{{ user.totalSales || 0 }}</span>
+            <span class="orders-count-badge">{{ getSales().length }}</span>
           </button>
         </div>
 
@@ -993,12 +998,10 @@
   </main>
 </div>
 
-<ng-template #notLoggedIn>
-  <div class="not-found">
-    <h2>NOT LOGGED IN</h2>
-    <a routerLink="/auth/login">Log in to view your profile</a>
-  </div>
-</ng-template>
+<div class="not-found" *ngIf="!isLoadingProfile && !user">
+  <h2>NOT LOGGED IN</h2>
+  <a routerLink="/auth/login">Log in to view your profile</a>
+</div>
 
 <!-- AUTH REQUIRED MODAL -->
 <div class="report-overlay" *ngIf="showAuthModal" (click)="closeAuthModal()">

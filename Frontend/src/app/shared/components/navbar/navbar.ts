@@ -83,7 +83,7 @@ export class Navbar {
     this.notificationService.markAsRead(notif.id);
     this.showNotifDropdown = false;
     if (notif.linkedRoute) {
-      this.router.navigate([notif.linkedRoute]);
+      this.router.navigateByUrl(notif.linkedRoute);
     }
   }
 
