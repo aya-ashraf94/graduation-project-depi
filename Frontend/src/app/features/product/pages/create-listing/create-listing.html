@@ -1,12 +1,5 @@
 <div class="wiz-page">
-  <input
-    type="file"
-    #fileInput
-    style="display: none"
-    accept="image/*"
-    multiple
-    (change)="onFileSelected($event)"
-  />
+  <input type="file" #fileInput style="display: none" accept="image/*" multiple (change)="onFileSelected($event)" />
 
   <!-- ══ STEP INDICATOR ═══════════════════════════════════════════════════ -->
   <div class="wiz-stepper">
@@ -141,7 +134,16 @@
             </div>
             }
 
-            @if (attr.type === 'text' || dynamicFields[attr.name] === 'Other') {
+            <!-- @if (attr.type === 'text' || dynamicFields[attr.name] === 'Other') {
+            <input class="wiz-input" type="text" [(ngModel)]="dynamicFields[attr.name + '_other']"
+              placeholder="Specify...">
+            } -->
+
+            @if (attr.type === 'text') {
+            <input class="wiz-input" type="text" [(ngModel)]="dynamicFields[attr.name]" placeholder="Enter value...">
+            }
+
+            @if (dynamicFields[attr.name] === 'Other') {
             <input class="wiz-input" type="text" [(ngModel)]="dynamicFields[attr.name + '_other']"
               placeholder="Specify...">
             }
@@ -174,12 +176,14 @@
             @for (slot of imageSlots(); track $index) {
             <div class="wiz-slot" [class.filled]="slot !== null">
               @if (slot !== null) {
-              <div class="wiz-slot-filled" [style.background-image]="'url(' + slot + ')'" style="background-size: cover; background-position: center; width: 100%; height: 100%; border-radius: 8px;">
+              <div class="wiz-slot-filled" [style.background-image]="'url(' + slot + ')'"
+                style="background-size: cover; background-position: center; width: 100%; height: 100%; border-radius: 8px;">
                 <button class="wiz-slot-remove" (click)="removeImage($index, $event)" type="button">✕</button>
               </div>
               } @else {
               <div class="wiz-slot-empty">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  style="opacity: 0.5;">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                   <circle cx="12" cy="13" r="4" />
                 </svg>
@@ -190,22 +194,31 @@
             }
           </div>
 
-          <div style="margin-top: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;">
-            <button class="wiz-browse-btn" type="button" (click)="triggerDropzoneInput()" style="width: 100%; height: 3.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.95rem;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 0.25rem;">
+          <div
+            style="margin-top: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;">
+            <button class="wiz-browse-btn" type="button" (click)="triggerDropzoneInput()"
+              style="width: 100%; height: 3.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.95rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                style="margin-right: 0.25rem;">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
               BROWSE FILES FROM DEVICE
             </button>
-            <span style="font-family: var(--font-secondary); font-size: 0.78rem; color: var(--gray-3); text-align: center;">You can select multiple photos at once</span>
+            <span
+              style="font-family: var(--font-secondary); font-size: 0.78rem; color: var(--gray-3); text-align: center;">You
+              can select multiple photos at once</span>
           </div>
 
           @if (missingPhase1Fields.length > 0) {
-          <div class="wiz-validation-errors" style="margin-top: 1.25rem; padding: 1rem; background: rgba(226, 59, 59, 0.05); border: 2px solid #e23b3b; border-radius: 8px; width: 100%;">
-            <span style="font-family: var(--font-primary); font-weight: 900; font-size: 0.8rem; color: #e23b3b; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">REQUIRED TO PROCEED:</span>
-            <ul style="margin: 0; padding-left: 1.25rem; font-family: var(--font-secondary); font-size: 0.85rem; color: var(--black); line-height: 1.5; text-align: left;">
+          <div class="wiz-validation-errors"
+            style="margin-top: 1.25rem; padding: 1rem; background: rgba(226, 59, 59, 0.05); border: 2px solid #e23b3b; border-radius: 8px; width: 100%;">
+            <span
+              style="font-family: var(--font-primary); font-weight: 900; font-size: 0.8rem; color: #e23b3b; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">REQUIRED
+              TO PROCEED:</span>
+            <ul
+              style="margin: 0; padding-left: 1.25rem; font-family: var(--font-secondary); font-size: 0.85rem; color: var(--black); line-height: 1.5; text-align: left;">
               @for (field of missingPhase1Fields; track field) {
               <li>{{ field }}</li>
               }
@@ -442,7 +455,8 @@
             </div>
             <div class="wiz-sum-row">
               <span class="wiz-sum-key">Photos</span>
-              <span class="wiz-sum-val">{{ imageSlots().filter(s => s !== null).length }} / {{ imageSlots().length }}</span>
+              <span class="wiz-sum-val">{{ imageSlots().filter(s => s !== null).length }} / {{ imageSlots().length
+                }}</span>
             </div>
             <div class="wiz-sum-row">
               <span class="wiz-sum-key">Price</span>
@@ -504,7 +518,7 @@
       } @else {
       <div class="wiz-nav-spacer"></div>
       }
-</div>
+  </div>
 
   <!-- Max Image Limit Warning Modal -->
   @if (showMaxImageWarning()) {
