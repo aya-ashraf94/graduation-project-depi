@@ -35,8 +35,8 @@ flowchart TD
     subgraph Backend [Express API Server]
         Server[server.js Engine]
         AuthMiddleware[authMiddleware.js JWT Gate]
-        Routes[API Routers: Auth, Products, Conversations, Orders, Reviews, Reports, Support]
-        Controllers[API Controllers: Auth, Products, Conversations, Orders, Reviews]
+        Routes[API Routers: Auth, Products, Conversations, Orders, Reviews, Reports, Support, Admin, Wishlist, Notification]
+        Controllers[API Controllers: Auth, Products, Conversations, Orders, Reviews, Admin, Wishlist, Notification]
 
         Server --> Routes
         Routes -.->|Requires Auth| AuthMiddleware
@@ -45,7 +45,7 @@ flowchart TD
     end
 
     subgraph Database [MongoDB Atlas]
-        DBModels[(Mongoose Models: User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter)]
+        DBModels[(Mongoose Models: User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter, Notification)]
     end
 
     Interceptors -->|HTTP Requests with JWT| Server
@@ -65,10 +65,10 @@ graduation-project-depi/
 │
 ├── Backend/                # Express.js REST API Server
 │   ├── config/             # DB settings
-│   ├── controllers/        # Request handlers & logic (Auth, Product, Chat, Order, Review)
+│   ├── controllers/        # Request handlers & logic (Auth, Product, Chat, Order, Review, Admin, Wishlist, Notification)
 │   ├── middleware/         # Security & JWT validators
-│   ├── models/             # Mongoose Schemas (User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter)
-│   ├── routes/             # Express routes defining API endpoints (8 routers)
+│   ├── models/             # Mongoose Schemas (User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter, Notification)
+│   ├── routes/             # Express routes defining API endpoints (10 routers)
 │   ├── server.js           # Server application startup & middleware setup
 │   ├── package.json        # Backend specific scripts & node modules
 │   └── README.md           # [Detailed Backend documentation]
@@ -145,6 +145,24 @@ To keep the database data (especially categories, products, and default users) i
   npm run db:official
   ```
   This script creates the official listings with detailed dynamic attributes and high-quality stock images, and automatically exports them into the shared data templates.
+
+---
+
+## 🔔 Wishlist & Real-Time Notification Engines
+
+Market.Arch features fully integrated, database-backed subsystems for wishlists and in-app notifications to drive campus engagement:
+
+### 1. Persistent Wishlists
+* **MongoDB Storage**: Custom product selections are saved directly to each User's schema array. Toggling items syncs to `/api/wishlist/toggle` instantly.
+* **Optimistic UI Rendering**: The Angular client updates state indicators reactively using `signal()` patterns, ensuring instantaneous toggle transitions while syncing with the server in the background.
+
+### 2. Event-Driven Notifications
+* **Automated Dispatch**: System triggers generate tailored notification entries inside MongoDB when specific events occur:
+  - **New Orders**: Informs the seller with direct navigation link to their "My Sales" tab.
+  - **Order Shipping/Delivery/Cancellations**: Automatically coordinates between counterparties to update order steps.
+  - **Reviews**: Notifies sellers when they receive a rating and review comments.
+  - **Chat Messages**: Sends in-app prompts when someone receives new direct messages.
+* **Smart Navigation Routing**: Clicking a notification reads its `linkedRoute` property and uses `router.navigateByUrl()` to transition the user directly to the target tab (and automatically scrolls to the sub-view section, such as **My Sales** or **My Purchases**).
 
 ---
 
