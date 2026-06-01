@@ -6,6 +6,13 @@ require('dotenv').config();
 const User = require('./models/User');
 const Category = require('./models/Category');
 const Product = require('./models/Product');
+const Conversation = require('./models/Conversation');
+const Message = require('./models/Message');
+const Order = require('./models/Order');
+const Review = require('./models/Review');
+const Report = require('./models/Report');
+const Notification = require('./models/Notification');
+const Newsletter = require('./models/Newsletter');
 
 async function upsertMany(Model, records) {
     if (!records || records.length === 0) return { added: 0, updated: 0 };
@@ -25,6 +32,25 @@ async function upsertMany(Model, records) {
     };
 }
 
+async function seedCollection(dataDir, Model, filename, preProcessor = null) {
+    const filepath = path.join(dataDir, filename);
+    if (fs.existsSync(filepath)) {
+        let records = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+        if (records && records.length > 0) {
+            if (preProcessor) {
+                records = await preProcessor(records);
+            }
+            console.log(`Importing/Updating ${records.length} documents for ${Model.modelName}...`);
+            const res = await upsertMany(Model, records);
+            console.log(`${Model.modelName}: Added ${res.added}, Updated ${res.updated}.`);
+        } else {
+            console.log(`No records found in ${filename}.`);
+        }
+    } else {
+        console.log(`Seed file ${filename} not found. Skipping ${Model.modelName} import.`);
+    }
+}
+
 async function seedData() {
     try {
         const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storeDB';
@@ -42,59 +68,37 @@ async function seedData() {
             process.exit(1);
         }
 
-        // Load categories
-        const categories = JSON.parse(fs.readFileSync(categoriesPath, 'utf8'));
-        if (categories && categories.length > 0) {
-            console.log(`Importing/Updating ${categories.length} categories...`);
-            const res = await upsertMany(Category, categories);
-            console.log(`Categories: Added ${res.added}, Updated ${res.updated}.`);
-        } else {
-            console.log('No categories found to import.');
-        }
+        // Seed categories (critical)
+        await seedCollection(dataDir, Category, 'categories.json');
 
-        // Load users (if file exists)
-        const usersPath = path.join(dataDir, 'users.json');
-        if (fs.existsSync(usersPath)) {
-            const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-            if (users && users.length > 0) {
-                console.log('Resetting all seeded user passwords to default: 123456');
-                const bcrypt = require('bcryptjs');
-                const salt = await bcrypt.genSalt(10);
-                const defaultHash = await bcrypt.hash('123456', salt);
+        // Seed users (with password hashing preprocessor)
+        const userPreprocessor = async (users) => {
+            console.log('Resetting all seeded user passwords to default: 123456');
+            const bcrypt = require('bcryptjs');
+            const salt = await bcrypt.genSalt(10);
+            const defaultHash = await bcrypt.hash('123456', salt);
+            users.forEach(user => {
+                user.password = defaultHash;
+            });
+            return users;
+        };
+        await seedCollection(dataDir, User, 'users.json', userPreprocessor);
 
-                users.forEach(user => {
-                    user.password = defaultHash;
-                });
-
-                console.log(`Importing/Updating ${users.length} users...`);
-                const res = await upsertMany(User, users);
-                console.log(`Users: Added ${res.added}, Updated ${res.updated}.`);
-            } else {
-                console.log('No users found in users.json.');
-            }
-        } else {
-            console.log('No users.json file found. Skipping user import.');
-        }
-
-        // Load products (if file exists)
-        const productsPath = path.join(dataDir, 'products.json');
-        if (fs.existsSync(productsPath)) {
-            const products = JSON.parse(fs.readFileSync(productsPath, 'utf8'));
-            if (products && products.length > 0) {
-                console.log(`Importing/Updating ${products.length} products...`);
-                const res = await upsertMany(Product, products);
-                console.log(`Products: Added ${res.added}, Updated ${res.updated}.`);
-            } else {
-                console.log('No products found in products.json.');
-            }
-        } else {
-            console.log('No products.json file found. Skipping product import.');
-        }
+        // Seed other collections
+        await seedCollection(dataDir, Product, 'products.json');
+        await seedCollection(dataDir, Conversation, 'conversations.json');
+        await seedCollection(dataDir, Message, 'messages.json');
+        await seedCollection(dataDir, Order, 'orders.json');
+        await seedCollection(dataDir, Review, 'reviews.json');
+        await seedCollection(dataDir, Report, 'reports.json');
+        await seedCollection(dataDir, Notification, 'notifications.json');
+        await seedCollection(dataDir, Newsletter, 'newsletters.json');
 
         console.log('Database seeding and import completed successfully!');
     } catch (error) {
         console.error('Error seeding/importing database data:', error);
     } finally {
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storeDB');
         await mongoose.disconnect();
         console.log('Disconnected from MongoDB.');
     }
