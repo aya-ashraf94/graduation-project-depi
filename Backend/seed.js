@@ -57,6 +57,15 @@ async function seedData() {
         if (fs.existsSync(usersPath)) {
             const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
             if (users && users.length > 0) {
+                console.log('Resetting all seeded user passwords to default: 123456');
+                const bcrypt = require('bcryptjs');
+                const salt = await bcrypt.genSalt(10);
+                const defaultHash = await bcrypt.hash('123456', salt);
+
+                users.forEach(user => {
+                    user.password = defaultHash;
+                });
+
                 console.log(`Importing/Updating ${users.length} users...`);
                 const res = await upsertMany(User, users);
                 console.log(`Users: Added ${res.added}, Updated ${res.updated}.`);

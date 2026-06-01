@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const { updateUserStats } = require("../utils/userStats");
 
 const formatOrder = (order, currentUserId) => {
@@ -83,6 +84,18 @@ const createOrder = async (req, res) => {
         
         await updateUserStats(buyerId);
         await updateUserStats(sellerId);
+
+        // Trigger notification to the seller
+        const buyerUser = await User.findById(buyerId);
+        const buyerName = buyerUser ? buyerUser.name : "A buyer";
+        await Notification.create({
+            userId: sellerId,
+            type: "order_update",
+            title: "New Order Placed",
+            body: `${buyerName} placed an order for "${product.title}".`,
+            linkedEntityId: order._id.toString(),
+            linkedRoute: "/profile/me?tab=orders&view=sales"
+        });
         
         const populatedOrder = await Order.findById(order._id)
             .populate("buyerId", "name email avatar rating isVerified")
@@ -180,6 +193,45 @@ const updateOrder = async (req, res) => {
         
         await updateUserStats(order.buyerId);
         await updateUserStats(order.sellerId);
+
+        // Trigger notifications for status transitions
+        try {
+            const product = await Product.findById(order.productId);
+            const productTitle = product ? product.title : "item";
+
+            if (status === "shipped") {
+                await Notification.create({
+                    userId: order.buyerId,
+                    type: "order_update",
+                    title: "Order Shipped",
+                    body: `Your order for "${productTitle}" has been shipped!`,
+                    linkedEntityId: order._id.toString(),
+                    linkedRoute: "/profile/me?tab=orders&view=purchases"
+                });
+            } else if (status === "delivered") {
+                await Notification.create({
+                    userId: order.sellerId,
+                    type: "order_update",
+                    title: "Order Delivered",
+                    body: `Your sale of "${productTitle}" has been delivered and confirmed by the buyer!`,
+                    linkedEntityId: order._id.toString(),
+                    linkedRoute: "/profile/me?tab=orders&view=sales"
+                });
+            } else if (status === "cancelled") {
+                const recipientId = isBuyer ? order.sellerId : order.buyerId;
+                const initiator = isBuyer ? "Buyer" : "Seller";
+                await Notification.create({
+                    userId: recipientId,
+                    type: "order_update",
+                    title: "Order Cancelled",
+                    body: `${initiator} cancelled the order for "${productTitle}".`,
+                    linkedEntityId: order._id.toString(),
+                    linkedRoute: isBuyer ? "/profile/me?tab=orders&view=sales" : "/profile/me?tab=orders&view=purchases"
+                });
+            }
+        } catch (notifErr) {
+            console.error("Error triggering order notification:", notifErr);
+        }
         
         const populatedOrder = await Order.findById(order._id)
             .populate("buyerId",  "name email avatar rating isVerified")
