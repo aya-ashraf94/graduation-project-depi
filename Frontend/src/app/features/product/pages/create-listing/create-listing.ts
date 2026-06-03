@@ -111,7 +111,9 @@ export class CreateListing implements OnInit {
         }
       }
     }
-
+        if (!this.imageSlots().some(s => s !== null)) {
+      missing.push('At least one photo');
+    }
     return missing;
   }
   
