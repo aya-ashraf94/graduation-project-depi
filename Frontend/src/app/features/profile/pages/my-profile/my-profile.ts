@@ -54,10 +54,10 @@ export class MyProfile implements OnInit, AfterViewInit {
   orderView: 'purchases' | 'sales' = 'purchases';
   orderStatusFilter: string = 'all';
 
-  
+
   showAllListings = false;
   showAuthModal = false;
-  
+
   // Edit profile modal state
   showEditModal = false;
   editActiveTab: 'profile' | 'account' | 'security' | 'seller' = 'profile';
@@ -385,12 +385,12 @@ export class MyProfile implements OnInit, AfterViewInit {
     if (!this.user) return;
     this.profileSuccess.set(null);
     this.profileError.set(null);
-    
+
     const tags = this.editForm.tagsString
       .split(',')
       .map(t => t.trim())
       .filter(t => t.length > 0);
-      
+
     const payload = {
       firstName: this.editForm.firstName,
       lastName: this.editForm.lastName,
@@ -400,7 +400,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       avatar: this.editForm.avatar,
       email: this.editForm.email
     };
-    
+
     this.userService.updateProfile(this.user.id, payload).subscribe({
       next: (updatedUser) => {
         this.user = updatedUser;
@@ -440,27 +440,27 @@ export class MyProfile implements OnInit, AfterViewInit {
       this.reviewError.set('Please provide review comments');
       return;
     }
-    
+
     this.reviewLoading = true;
     this.reviewError.set(null);
     this.reviewSuccess.set(null);
-    
+
     const payload = {
       orderId: this.selectedOrderForReview.id,
       rating: this.reviewForm.rating,
       comment: this.reviewForm.comment
     };
-    
+
     this.reviewService.createReview(payload).subscribe({
       next: (rev) => {
         this.reviewLoading = false;
         this.reviewSuccess.set('Review submitted successfully!');
-        
+
         // Mark order as reviewed in the local set so the button disappears immediately
         if (this.selectedOrderForReview) {
           this.reviewedOrderIds.add(this.selectedOrderForReview.id);
         }
-        
+
         // Refresh reviews displayed on profile
         if (this.user?.id) {
           this.reviewService.getReviewsForUser(this.user.id).subscribe(revs => {
@@ -468,7 +468,7 @@ export class MyProfile implements OnInit, AfterViewInit {
             this.cdr.detectChanges();
           });
         }
-        
+
         setTimeout(() => {
           this.closeReviewModal();
         }, 1500);
