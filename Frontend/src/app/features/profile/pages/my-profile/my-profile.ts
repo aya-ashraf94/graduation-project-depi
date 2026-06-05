@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed, HostListener } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth';
@@ -33,8 +33,8 @@ export class MyProfile implements OnInit, AfterViewInit {
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private location = inject(Location);
 
-  @ViewChild('profileSliderTrack') profileSliderTrack!: ElementRef;
   @ViewChild('tabsSection') tabsSection!: ElementRef;
 
   private shouldScrollToTabs = false;
@@ -54,8 +54,39 @@ export class MyProfile implements OnInit, AfterViewInit {
   orderView: 'purchases' | 'sales' = 'purchases';
   orderStatusFilter: string = 'all';
 
-  
-  showAllListings = false;
+  // Products Pagination state
+  currentPage = 1;
+  pageSize = 8;
+
+  get totalPages(): number {
+    return Math.ceil(this.myListings.length / this.pageSize);
+  }
+
+  get pagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  get paginatedListings(): ProductSummary[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.myListings.slice(start, start + this.pageSize);
+  }
+
+  // Mobile Products Swipe Slider state
+  showAllListingsMobile = false;
+
+  get isMobileDevice(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 768;
+  }
+
+  get displayedListings(): ProductSummary[] {
+    if (this.isMobileDevice && !this.showAllListingsMobile) {
+      // Mobile default preview: first 6 items in slider
+      return this.myListings.slice(0, 6);
+    }
+    // Desktop or expanded view: paginated list
+    return this.paginatedListings;
+  }
+
   showAuthModal = false;
   
   // Edit profile modal state
@@ -88,6 +119,11 @@ export class MyProfile implements OnInit, AfterViewInit {
   productIdToDelete: string | null = null;
 
   isAdmin = computed(() => this.authService.isAdmin());
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.cdr.detectChanges();
+  }
 
   goToAdminPanel() {
     this.router.navigate(['/admin']);
@@ -317,17 +353,6 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.authService.logout();
   }
 
-  slideLeft() {
-    if (this.profileSliderTrack) {
-      this.profileSliderTrack.nativeElement.scrollBy({ left: -320, behavior: 'smooth' });
-    }
-  }
-
-  slideRight() {
-    if (this.profileSliderTrack) {
-      this.profileSliderTrack.nativeElement.scrollBy({ left: 320, behavior: 'smooth' });
-    }
-  }
 
   toggleWishlist(productId: string, event: Event): void {
     event.stopPropagation();
@@ -509,19 +534,44 @@ export class MyProfile implements OnInit, AfterViewInit {
     return this.myOrders.filter((o: any) => o.sellerId === this.user?.id);
   }
 
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.scrollToTabsSectionDirectly();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.scrollToTabsSectionDirectly();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.scrollToTabsSectionDirectly();
+    }
+  }
+
   selectTab(tab: 'products' | 'wishlist' | 'reviews' | 'orders'): void {
     this.activeTab = tab;
-    this.isLocalTabClick = true;
-    const currentScroll = window.scrollY;
-    this.router.navigate([], {
+    this.currentPage = 1; // Reset products page on tab switch
+    this.showAllListingsMobile = false; // Reset slider expansion
+    const url = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: { tab },
       queryParamsHandling: 'merge'
-    }).then(() => {
-      setTimeout(() => {
-        window.scrollTo(0, currentScroll);
-      }, 0);
-    });
+    }).toString();
+    this.location.go(url);
+    this.scrollToTabsSectionDirectly();
+  }
+
+  scrollToTabsSectionDirectly(): void {
+    if (this.tabsSection) {
+      this.tabsSection.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   loadDismissedOrders(): void {
