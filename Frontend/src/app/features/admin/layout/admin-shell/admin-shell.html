@@ -71,6 +71,12 @@
       <a routerLink="/admin/reports" routerLinkActive="active" class="mobile-tab-item">
         <span>🚨 Reports</span>
       </a>
+      <a routerLink="/" class="mobile-tab-item mobile-back-btn">
+        <span>↩ Back to Site</span>
+      </a>
+      <button type="button" (click)="logout()" class="mobile-tab-item mobile-logout-btn">
+        <span>❌ Log Out</span>
+      </button>
     </nav>
 
     <!-- Main Content Area -->

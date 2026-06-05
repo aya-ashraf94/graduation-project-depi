@@ -304,11 +304,34 @@
     color: var(--black);
     box-shadow: 2px 2px 0 var(--black);
   }
+
+  button.mobile-tab-item {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+  }
+
+  .mobile-back-btn {
+    border-color: var(--black);
+    color: var(--black);
+  }
+
+  .mobile-logout-btn {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
+  }
+
+  .mobile-logout-btn:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #ef4444 !important;
+  }
   
   .admin-main-wrapper {
     padding: 2rem 1.5rem;
   }
-  
 }
 
 /* Sleek custom scrollbars for administrative tables */

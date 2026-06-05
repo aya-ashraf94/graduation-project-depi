@@ -315,23 +315,27 @@ const updateProduct = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to update this product" });
         }
 
-        // Save base64 images to disk files
-        const savedImages = (req.body.images || []).map(img => saveBase64Image(img)).filter(Boolean);
+        let savedImages = product.images || [];
 
-        // Delete physical files from disk if they were removed/replaced in this update
-        const deletedImages = (product.images || []).filter(img => !savedImages.includes(img));
-        deletedImages.forEach(img => {
-            if (img.startsWith("/uploads/")) {
-                const filePath = path.join(__dirname, "../public", img);
-                if (fs.existsSync(filePath)) {
-                    try {
-                        fs.unlinkSync(filePath);
-                    } catch (err) {
-                        console.error(`Failed to delete physical file: ${filePath}`, err);
+        if (req.body.images !== undefined) {
+            // Save base64 images to disk files
+            savedImages = (req.body.images || []).map(img => saveBase64Image(img)).filter(Boolean);
+
+            // Delete physical files from disk if they were removed/replaced in this update
+            const deletedImages = (product.images || []).filter(img => !savedImages.includes(img));
+            deletedImages.forEach(img => {
+                if (img.startsWith("/uploads/")) {
+                    const filePath = path.join(__dirname, "../public", img);
+                    if (fs.existsSync(filePath)) {
+                        try {
+                            fs.unlinkSync(filePath);
+                        } catch (err) {
+                            console.error(`Failed to delete physical file: ${filePath}`, err);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // 3. تحديد الحقول المسموح بتعديلها فقط (Security Best Practice)
         // هذا يمنع أي مستخدم من تغيير الـ userId أو بيانات النظام

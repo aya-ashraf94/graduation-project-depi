@@ -2,7 +2,9 @@
   <div class="page-header-actions">
     <div class="title-section">
       <h1>Marketplace Listings</h1>
-      <p>Moderate user items, toggle verification marks, verify official store stock, and purge spam.</p>
+      <p>
+        Moderate user items, toggle verification marks, verify official store stock, and purge spam.
+      </p>
     </div>
 
     <!-- Filters Panel -->
@@ -79,24 +81,56 @@
                   <td>
                     <div class="product-profile-cell">
                       <div class="product-thumbnail-container">
-                        <img [src]="product.images[0]" alt="Product thumbnail" class="product-thumbnail">
+                        <img
+                          [src]="product.images[0]"
+                          alt="Product thumbnail"
+                          class="product-thumbnail"
+                        />
                         <!-- Badges overlay -->
-                        <div class="product-badge-overlay" *ngIf="product.soldByNafa3ni || product.isVerified">
-                          <span *ngIf="product.soldByNafa3ni" class="badge-store-micro" title="Official Store Product">Official</span>
-                          <span *ngIf="product.isVerified" class="badge-verified-micro" title="Verified Product">Verified</span>
+                        <div
+                          class="product-badge-overlay"
+                          *ngIf="product.soldByNafa3ni || product.isVerified"
+                        >
+                          <span
+                            *ngIf="product.soldByNafa3ni"
+                            class="badge-store-micro"
+                            title="Official Store Product"
+                            >Official</span
+                          >
+                          <span
+                            *ngIf="product.isVerified"
+                            class="badge-verified-micro"
+                            title="Verified Product"
+                            >Verified</span
+                          >
                         </div>
                       </div>
                       <div class="product-info-text">
                         <a [routerLink]="['/products', product.id]" class="product-link">
                           {{ product.title }}
                         </a>
-                        <span class="product-sku">SKU: {{ product.sku }} | Posted {{ product.createdAt | date:'shortDate' }}</span>
+                        <span class="product-sku"
+                          >SKU: {{ product.sku }} | Posted
+                          {{ product.createdAt | date: 'shortDate' }}</span
+                        >
                         <span class="product-seller-meta">
-                          by <a *ngIf="product.seller; else anonSeller" [routerLink]="['/profile', product.seller.id]" class="seller-link-micro">
+                          by
+                          <a
+                            *ngIf="product.seller; else anonSeller"
+                            [routerLink]="['/profile', product.seller.id]"
+                            class="seller-link-micro"
+                          >
                             {{ product.seller.firstName }} {{ product.seller.lastName }}
                           </a>
-                          <ng-template #anonSeller><span class="system-tag">Anonymous</span></ng-template>
-                          <span *ngIf="product.seller.isVerified" class="seller-verified-check" title="Verified Seller">✓</span>
+                          <ng-template #anonSeller
+                            ><span class="system-tag">Anonymous</span></ng-template
+                          >
+                          <span
+                            *ngIf="product.seller.isVerified"
+                            class="seller-verified-check"
+                            title="Verified Seller"
+                            >✓</span
+                          >
                           <span class="meta-views-divider">|</span>
                           <span class="views-micro">👁️ {{ product.viewCount }} views</span>
                         </span>
@@ -107,10 +141,10 @@
                     <span class="category-pill">{{ product.categoryName || 'Other' }}</span>
                   </td>
                   <td class="price-cell">
-                    {{ product.price | currency:'EGP ':'code':'1.0-0' }}
+                    {{ product.price | currency: 'EGP ' : 'code' : '1.0-0' }}
                   </td>
                   <td>
-                    <span 
+                    <span
                       class="status-pill"
                       [class.status-available]="product.status === 'available'"
                       [class.status-sold]="product.status === 'sold'"
@@ -122,7 +156,7 @@
                   <td>
                     <div class="table-row-actions">
                       <!-- Edit Listing -->
-                      <a 
+                      <a
                         *ngIf="product.soldByNafa3ni"
                         [routerLink]="['/listings/edit', product.id]"
                         class="row-action-btn edit-btn"
@@ -132,8 +166,8 @@
                       </a>
 
                       <!-- Toggle Verify -->
-                      <button 
-                        (click)="toggleVerify(product)" 
+                      <button
+                        (click)="toggleVerify(product)"
                         class="row-action-btn verify-btn"
                         [class.active-verified]="product.isVerified"
                         [title]="product.isVerified ? 'Remove Verification' : 'Verify Listing'"
@@ -142,8 +176,8 @@
                       </button>
 
                       <!-- Delete Listing -->
-                      <button 
-                        (click)="deleteProduct(product)" 
+                      <button
+                        (click)="deleteProduct(product)"
                         class="row-action-btn delete-btn"
                         title="Delete Listing"
                       >
@@ -162,21 +196,30 @@
     <!-- Pagination -->
     @if (totalPages() > 1) {
       <div class="brutal-pagination">
-        <button 
-          [disabled]="currentPage() === 1 || isLoading()" 
-          (click)="prevPage()"
-          class="pag-btn prev-btn"
-        >
-          ← Previous
-        </button>
-        <span class="pag-info">Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalProducts() }} total listings)</span>
-        <button 
-          [disabled]="currentPage() === totalPages() || isLoading()" 
-          (click)="nextPage()"
-          class="pag-btn next-btn"
-        >
-          Next →
-        </button>
+        <div class="top">
+          <span class="pag-info"
+            >Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{
+              totalProducts()
+            }}
+            total listings)</span
+          >
+        </div>
+        <div class="bottom">
+          <button
+            [disabled]="currentPage() === 1 || isLoading()"
+            (click)="prevPage()"
+            class="pag-btn prev-btn"
+          >
+            ← Previous
+          </button>
+          <button
+            [disabled]="currentPage() === totalPages() || isLoading()"
+            (click)="nextPage()"
+            class="pag-btn next-btn"
+          >
+            Next →
+          </button>
+        </div>
       </div>
     }
   }

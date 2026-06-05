@@ -528,9 +528,17 @@ export class MyProfile implements OnInit, AfterViewInit {
     return this.myOrders.filter((o: any) => o.buyerId === this.user?.id);
   }
 
+  get activePurchasesCount(): number {
+    return this.getPurchases().filter(o => !this.dismissedOrderIds.has(o.id)).length;
+  }
+
   getSales(): OrderSummary[] {
     if (!this.user) return [];
     return this.myOrders.filter((o: any) => o.sellerId === this.user?.id);
+  }
+
+  get activeSalesCount(): number {
+    return this.getSales().filter(o => !this.dismissedOrderIds.has(o.id)).length;
   }
 
   goToPage(page: number): void {
