@@ -16,29 +16,29 @@
       </div>
 
       <!-- REDESIGNED PROFILE HERO SECTION (MATCHING IMAGE REFERENCE) -->
-      <div class="ref-profile-header">
+      <div class="profile-header">
         
         <!-- Left Side: Main Info Column -->
-        <div class="ref-header-left-col">
+        <div class="profile-header-left">
           <!-- Avatar Block -->
-          <div class="ref-avatar-container">
-            <div class="ref-avatar-frame">
+          <div class="avatar-container">
+            <div class="avatar-frame">
               <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" [alt]="user.firstName" appImageFallback />
               <ng-template #defaultAvatar>
-                <div class="ref-avatar-fallback">
+                <div class="avatar-fallback">
                   {{ user.firstName.substring(0, 1) | uppercase }}{{ user.lastName.substring(0, 1) | uppercase }}
                 </div>
               </ng-template>
             </div>
             <!-- pulsating green online indicator dot -->
-            <div class="ref-status-dot" title="Active Campus Member"></div>
+            <div class="status-dot" title="Active Campus Member"></div>
           </div>
 
           <!-- Info Details Block -->
-          <div class="ref-info-details">
-            <div class="ref-name-wrapper">
-              <h1 class="ref-profile-name">{{ user.firstName }} {{ user.lastName }}</h1>
-              <div class="ref-verify-badge" title="Verified Trader" *ngIf="user.isVerified">
+          <div class="profile-info">
+            <div class="name-wrapper">
+              <h1 class="profile-name">{{ user.firstName }} {{ user.lastName }}</h1>
+              <div class="verify-badge" title="Verified Trader" *ngIf="user.isVerified">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
                   <path d="M23 12l-2.4-2.7.3-3.6-3.5-.8-1.8-3.2-3.3 1.4-3.3-1.4-1.8 3.2-3.5.8.3 3.6-2.4 2.7 2.4 2.7-.3 3.6 3.5.8 1.8 3.2 3.3-1.4 3.3 1.4 1.8-3.2 3.5-.8-.3-3.6z" fill="#e8bd18"/>
                   <path d="M9.5 15.5L5.5 11.5L6.9 10.1L9.5 12.7L16.1 6.1L17.5 7.5L9.5 15.5Z" fill="#ffffff"/>
@@ -48,7 +48,7 @@
             </div>
 
             <!-- Subheader Location/Role info -->
-            <div class="ref-subheader-row">
+            <div class="profile-subheader">
               <!-- Store Partner Icon (Shopping Bag) -->
               <svg *ngIf="user.role === 'admin'" class="icon-store-partner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
@@ -60,38 +60,38 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
 
-              <span class="ref-role-text">{{ user.role === 'admin' ? 'Store Partner' : 'Seller' }}</span>
-              <span class="ref-dot-separator">•</span>
+              <span class="role-text">{{ user.role === 'admin' ? 'Store Partner' : 'Seller' }}</span>
+              <span class="dot-separator">•</span>
               <svg class="icon-map-pin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; display: inline-block; vertical-align: middle; margin-left: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span class="ref-location-text">{{ user.location || 'Cairo, Egypt' }}</span>
+              <span class="location-text">{{ user.location || 'Cairo, Egypt' }}</span>
             </div>
 
             <!-- Bio text (short, clean, 2 lines) -->
-            <p class="ref-bio-text">
+            <p class="bio-text">
               {{ user.bio || 'Frontend developer selling tech, gadgets, and collectibles. Fast replies & trusted transactions.' }}
             </p>
 
             <!-- Pill Badges row -->
-            <div class="ref-pills-row">
+            <div class="pills-row">
               <!-- Verified Seller Pill -->
-              <span class="ref-pill pill-yellow" *ngIf="user.isVerified">
+              <span class="pill pill-yellow" *ngIf="user.isVerified">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11 11 13 15 9"/></svg>
                 Verified Seller
               </span>
               <!-- Seller Pill -->
-              <span class="ref-pill pill-green">
+              <span class="pill pill-green">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 Seller
               </span>
               <!-- Fast Responder Pill -->
-              <span class="ref-pill pill-blue">
+              <span class="pill pill-blue">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
                 Fast Responder
               </span>
             </div>
 
             <!-- Member date strip -->
-            <div class="ref-footer-strip">
+            <div class="footer-strip">
               <span class="strip-item">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="strip-icon" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Member since <strong class="strip-bold">{{ user.joinedAt | date:'MMM yyyy' }}</strong>
@@ -101,17 +101,17 @@
         </div>
 
         <!-- Right Side: Vertical Stack Action Buttons Column -->
-        <div class="ref-header-right-col">
+        <div class="profile-header-right">
           <!-- If Own Profile -->
           <ng-container *ngIf="isOwnProfile">
-            <button *ngIf="isAdmin()" type="button" class="ref-action-btn btn-admin-panel" (click)="goToAdminPanel()">
+            <button *ngIf="isAdmin()" type="button" class="action-btn btn-admin-panel" (click)="goToAdminPanel()">
               🛡️ Open Admin Panel
             </button>
-            <button type="button" class="ref-action-btn btn-primary-yellow" (click)="openEditModal()">
+            <button type="button" class="action-btn btn-primary-yellow" (click)="openEditModal()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Edit Profile
             </button>
-            <button type="button" class="ref-action-btn btn-secondary-white" (click)="shareProfile()">
+            <button type="button" class="action-btn btn-secondary-white" (click)="shareProfile()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Share Profile
             </button>
@@ -119,15 +119,15 @@
 
           <!-- If Other User Profile -->
           <ng-container *ngIf="!isOwnProfile">
-            <button type="button" class="ref-action-btn btn-primary-yellow" [routerLink]="['/chat']" [queryParams]="{ recipientId: user.id }">
+            <button type="button" class="action-btn btn-primary-yellow" [routerLink]="['/chat']" [queryParams]="{ recipientId: user.id }">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               Message
             </button>
-            <button type="button" class="ref-action-btn btn-secondary-white" (click)="toggleFollowSeller()">
+            <button type="button" class="action-btn btn-secondary-white" (click)="toggleFollowSeller()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               {{ isFollowing ? 'Unfollow Seller' : 'Follow Seller' }}
             </button>
-            <button type="button" class="ref-action-btn btn-secondary-white" (click)="shareProfile()">
+            <button type="button" class="action-btn btn-secondary-white" (click)="shareProfile()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Share Profile
             </button>
@@ -135,54 +135,54 @@
         </div>
       </div>
       <!-- SELLER STATS STRIP -->
-      <div class="ref-stats-strip">
+      <div class="stats-strip">
         <!-- Products -->
-        <div class="ref-stats-col">
-          <div class="ref-stats-icon-wrap icon-products">
+        <div class="stats-col">
+          <div class="stats-icon-wrap icon-products">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </div>
-          <div class="ref-stats-text-stack">
-            <div class="ref-stats-val">{{ myListings.length }}</div>
-            <div class="ref-stats-lbl">Products</div>
+          <div class="stats-text-stack">
+            <div class="stats-val">{{ myListings.length }}</div>
+            <div class="stats-lbl">Products</div>
           </div>
         </div>
         
-        <div class="ref-stats-divider"></div>
+        <div class="stats-divider"></div>
         
         <!-- Rating -->
-        <div class="ref-stats-col" (click)="selectTab('reviews')" style="cursor: pointer;">
-          <div class="ref-stats-icon-wrap icon-rating">
+        <div class="stats-col" (click)="selectTab('reviews')" style="cursor: pointer;">
+          <div class="stats-icon-wrap icon-rating">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #e8bd18;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
-          <div class="ref-stats-text-stack">
-            <div class="ref-stats-val">{{ (user.rating || 4.9) | number:'1.1-1' }}</div>
-            <div class="ref-stats-lbl">Rating</div>
+          <div class="stats-text-stack">
+            <div class="stats-val">{{ (user.rating || 4.9) | number:'1.1-1' }}</div>
+            <div class="stats-lbl">Rating</div>
           </div>
         </div>
         
-        <div class="ref-stats-divider"></div>
+        <div class="stats-divider"></div>
         
         <!-- Sales -->
-        <div class="ref-stats-col">
-          <div class="ref-stats-icon-wrap icon-sales">
+        <div class="stats-col">
+          <div class="stats-icon-wrap icon-sales">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           </div>
-          <div class="ref-stats-text-stack">
-            <div class="ref-stats-val">{{ user.totalSales || 0 }}</div>
-            <div class="ref-stats-lbl">Sales</div>
+          <div class="stats-text-stack">
+            <div class="stats-val">{{ user.totalSales || 0 }}</div>
+            <div class="stats-lbl">Sales</div>
           </div>
         </div>
         
-        <div class="ref-stats-divider"></div>
+        <div class="stats-divider"></div>
         
         <!-- Success Rate -->
-        <div class="ref-stats-col">
-          <div class="ref-stats-icon-wrap icon-success">
+        <div class="stats-col">
+          <div class="stats-icon-wrap icon-success">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           </div>
-          <div class="ref-stats-text-stack">
-            <div class="ref-stats-val">{{ user.successRate || 100 }}%</div>
-            <div class="ref-stats-lbl">Success Rate</div>
+          <div class="stats-text-stack">
+            <div class="stats-val">{{ user.successRate || 100 }}%</div>
+            <div class="stats-lbl">Success Rate</div>
           </div>
         </div>
         
@@ -240,226 +240,130 @@
       <!-- TAB CONTENT: MY PRODUCTS -->
       <div class="tab-content" *ngIf="activeTab === 'products'">
         <div *ngIf="myListings.length > 0; else noListings">
-          <!-- Slider Mode -->
-          <div *ngIf="!showAllListings" class="profile-slider-container">
-            <button type="button" class="slider-arrow left" (click)="slideLeft()" *ngIf="myListings.length > 3">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-
-            <div class="profile-slider-track" #profileSliderTrack>
-              <!-- Card loop -->
-              <div class="product-card" *ngFor="let item of myListings">
-                <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
-                  <!-- Else: Show Wishlist Button -->
-                  <button
-                    *ngIf="!isOwnProfile"
-                    type="button"
-                    class="btn-wishlist"
-                    [class.wishlisted]="wishlistService.isWishlisted(item.id)"
-                    (click)="toggleWishlist(item.id, $event)"
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                      />
-                    </svg>
-                  </button>
-                  <img
-                    [src]="item.thumbnail"
-                    [alt]="item.title"
-                    appImageFallback
-                    class="product-img"
-                  />
-                  <div class="ref-card-condition-badge" [class]="getConditionClass(item.condition)">
-                    {{ getConditionLabel(item.condition) }}
-                  </div>
+          <div [ngClass]="(isMobileDevice && !showAllListingsMobile) ? 'product-slider-grid' : 'product-dashboard-grid'">
+            <div class="product-card" *ngFor="let item of displayedListings" [class.product-sold]="item.status === 'sold'">
+              <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
+                
+                <!-- Status Overlay (Sold / Reserved) -->
+                <div class="card-status-overlay" *ngIf="item.status === 'sold'">
+                  <span class="status-overlay-tag sold-tag">SOLD</span>
+                </div>
+                <div class="card-status-overlay" *ngIf="item.status === 'reserved'">
+                  <span class="status-overlay-tag reserved-tag">RESERVED</span>
                 </div>
 
-                <div class="product-info-ref">
-                  <div class="ref-card-title-price-row">
-                    <div class="ref-card-meta-left">
-                      <div class="ref-card-brand">{{ item.brand }}</div>
-                      <h3 class="ref-card-title" [routerLink]="['/products', item.id]">{{ item.title }}</h3>
-                    </div>
-                    <div class="ref-card-price">{{ item.price | currencyFormat }}</div>
-                  </div>
-                  <div class="ref-card-details-row">
-                    <span class="ref-card-loc">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {{ user.location || 'Cairo, Egypt' }}
-                    </span>
-                    <span class="ref-card-dot">•</span>
-                    <span class="ref-card-date">{{ item.createdAt | timeAgo }}</span>
-                  </div>
-                  <div class="ref-card-seller-row">
-                    <div class="ref-card-meta-left">
-                    <div class="ref-card-seller-avatar-wrap">
-                      <img *ngIf="user.avatar; else defaultCardAvatar" [src]="user.avatar" appImageFallback class="ref-card-seller-avatar" />
-                      <ng-template #defaultCardAvatar>
-                        <div class="ref-card-seller-avatar-fallback">
-                          {{ user.firstName.substring(0, 1) | uppercase }}
-                        </div>
-                      </ng-template>
-                    </div>
-                    <span class="ref-card-seller-rating">★ {{ (user.rating || 4.9) | number:'1.1-1' }}</span>
-                    </div>
-                    <!-- If Own Profile: Show Edit & Delete Quick Actions -->
-                  <div class="ref-card-quick-actions" *ngIf="isOwnProfile" (click)="$event.stopPropagation(); $event.preventDefault();">
-                    <button
-                      type="button"
-                      class="btn-quick-action btn-edit"
-                      (click)="editProduct(item.id)"
-                      title="Edit listing"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-quick-action btn-delete"
-                      (click)="confirmDeleteProduct(item.id)"
-                      title="Delete listing"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                    </button>
-                  </div>
-                  </div>
-                  
+                <!-- Else (If Other Profile): Show Wishlist Button -->
+                <button
+                  *ngIf="!isOwnProfile"
+                  type="button"
+                  class="btn-wishlist"
+                  [class.wishlisted]="wishlistService.isWishlisted(item.id)"
+                  (click)="toggleWishlist(item.id, $event)"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <path
+                      d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                    />
+                  </svg>
+                </button>
+                <img
+                  [src]="item.thumbnail"
+                  [alt]="item.title"
+                  appImageFallback
+                  class="product-img"
+                />
+                <div class="card-condition-badge" [class]="getConditionClass(item.condition)">
+                  {{ getConditionLabel(item.condition) }}
+                </div>
+              </div>
+
+              <div class="product-info">
+                <div class="card-brand" *ngIf="item.brand">{{ item.brand }}</div>
+                <div class="card-title-price-row">
+                  <h3 class="card-title" [routerLink]="['/products', item.id]">{{ item.title }}</h3>
+                  <div class="card-price">{{ item.price | currencyFormat }}</div>
+                </div>
+
+                <div class="card-tags-row" *ngIf="item.size || item.categoryName">
+                  <span class="card-tag" *ngIf="item.size">{{ item.size }}</span>
+                  <span class="card-tag" *ngIf="item.categoryName">{{ item.categoryName }}</span>
+                </div>
+
+                <div class="card-details-row">
+                  <span class="card-loc">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ user.location || 'Cairo, Egypt' }}
+                  </span>
+                  <span class="card-dot">•</span>
+                  <span class="card-date">{{ item.createdAt | timeAgo }}</span>
+                </div>
+
+                <!-- If Own Profile: Show Edit & Delete Actions at bottom of card -->
+                <div class="card-actions-row" *ngIf="isOwnProfile" (click)="$event.stopPropagation();">
+                  <button
+                    type="button"
+                    class="btn-card-action btn-edit"
+                    (click)="editProduct(item.id)"
+                    title="Edit listing"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-card-action btn-delete"
+                    (click)="confirmDeleteProduct(item.id)"
+                    title="Delete listing"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
+          </div>
 
-            <button type="button" class="slider-arrow right" (click)="slideRight()" *ngIf="myListings.length > 3">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+          <!-- "See All" button below the slider on mobile when not expanded -->
+          <div class="slider-see-all-container" *ngIf="isMobileDevice && !showAllListingsMobile && myListings.length > 2">
+            <button type="button" class="btn-see-all-mobile" (click)="showAllListingsMobile = true">
+              See All {{ myListings.length }} Products →
+            </button>
+          </div>
+
+          <!-- Pagination (only shown when expanded or on desktop) -->
+          <div class="pagination" *ngIf="(!isMobileDevice || showAllListingsMobile) && totalPages > 1">
+            <button class="pag-btn" type="button" [disabled]="currentPage === 1" (click)="prevPage()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <div class="pag-numbers">
+              <button
+                *ngFor="let p of pagesArray"
+                class="num-btn"
+                type="button"
+                [class.active]="currentPage === p"
+                (click)="goToPage(p)"
               >
+                {{ p }}
+              </button>
+            </div>
+            <button class="pag-btn" type="button" [disabled]="currentPage === totalPages" (click)="nextPage()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
           </div>
-
-          <!-- Grid Mode (expanded view) -->
-          <div *ngIf="showAllListings" class="profile-listings-scroll">
-            <div class="product-dashboard-grid">
-              <div class="product-card" *ngFor="let item of myListings">
-                <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
-                  <!-- If Own Profile: Show Edit & Delete Quick Actions -->
-                  <div class="ref-card-quick-actions" *ngIf="isOwnProfile" (click)="$event.stopPropagation(); $event.preventDefault();">
-                    <button
-                      type="button"
-                      class="btn-quick-action btn-edit"
-                      (click)="editProduct(item.id)"
-                      title="Edit listing"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-quick-action btn-delete"
-                      (click)="confirmDeleteProduct(item.id)"
-                      title="Delete listing"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                    </button>
-                  </div>
-                  <!-- Else: Show Wishlist Button -->
-                  <button
-                    *ngIf="!isOwnProfile"
-                    type="button"
-                    class="btn-wishlist"
-                    [class.wishlisted]="wishlistService.isWishlisted(item.id)"
-                    (click)="toggleWishlist(item.id, $event)"
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                      />
-                    </svg>
-                  </button>
-                  <img
-                    [src]="item.thumbnail"
-                    [alt]="item.title"
-                    appImageFallback
-                    class="product-img"
-                  />
-                  <div class="ref-card-condition-badge" [class]="getConditionClass(item.condition)">
-                    {{ getConditionLabel(item.condition) }}
-                  </div>
-                </div>
-
-                <div class="product-info-ref">
-                  <div class="ref-card-title-price-row">
-                    <div class="ref-card-meta-left">
-                      <div class="ref-card-brand">{{ item.brand }}</div>
-                      <h3 class="ref-card-title" [routerLink]="['/products', item.id]">{{ item.title }}</h3>
-                    </div>
-                    <div class="ref-card-price">{{ item.price | currencyFormat }}</div>
-                  </div>
-                  <div class="ref-card-details-row">
-                    <span class="ref-card-loc">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {{ user.location || 'Cairo, Egypt' }}
-                    </span>
-                    <span class="ref-card-dot">•</span>
-                    <span class="ref-card-date">{{ item.createdAt | timeAgo }}</span>
-                  </div>
-                  <div class="ref-card-seller-row">
-                    <div class="ref-card-seller-avatar-wrap">
-                      <img *ngIf="user.avatar; else defaultCardAvatarGrid" [src]="user.avatar" appImageFallback class="ref-card-seller-avatar" />
-                      <ng-template #defaultCardAvatarGrid>
-                        <div class="ref-card-seller-avatar-fallback">
-                          {{ user.firstName.substring(0, 1) | uppercase }}
-                        </div>
-                      </ng-template>
-                    </div>
-                    <span class="ref-card-seller-rating">★ {{ (user.rating || 4.9) | number:'1.1-1' }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Toggle grid view button -->
-          <div class="btn-view-all-container">
-            <button type="button" class="btn-view-all" (click)="showAllListings = !showAllListings">
-              {{ showAllListings ? 'Collapse Products' : 'View All Products' }}
-            </button>
-          </div>
         </div>
-      
       </div>
-
+      
       <!-- EMPTY STATE -->
       <ng-template #noListings>
         <div class="empty-state">
@@ -703,10 +607,10 @@
                 <div class="left-actions-placeholder"></div>
                 <div class="right-actions-wrap">
                   <span *ngIf="order.status === 'delivered' && reviewedOrderIds.has(order.id)" class="reviewed-badge">✓ REVIEWED</span>
-                  <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="ordr-btn ordr-btn-review" (click)="openReviewModal(order)">REVIEW PRODUCT</button>
-                  <button *ngIf="order.status === 'shipped'"  type="button" class="ordr-btn ordr-btn-confirm" (click)="updateOrderStatus(order.id, 'delivered')">✓ CONFIRM RECEIVED</button>
-                  <button *ngIf="order.status === 'pending'"  type="button" class="ordr-btn ordr-btn-cancel"  (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
-                  <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
+                  <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="btn-order btn-order-review" (click)="openReviewModal(order)">REVIEW PRODUCT</button>
+                  <button *ngIf="order.status === 'shipped'"  type="button" class="btn-order btn-order-confirm" (click)="updateOrderStatus(order.id, 'delivered')">✓ CONFIRM RECEIVED</button>
+                  <button *ngIf="order.status === 'pending'"  type="button" class="btn-order btn-order-cancel"  (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
+                  <button *ngIf="order.status === 'cancelled'" type="button" class="btn-order-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
                 </div>
               </div>
             </div>
@@ -841,11 +745,11 @@
               <div class="order-card-actions-footer">
                 <div class="left-actions-placeholder"></div>
                 <div class="right-actions-wrap">
-                  <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
-                  <button *ngIf="order.status === 'pending'" type="button" class="ordr-btn ordr-btn-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
+                  <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
+                  <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
                   <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745; display: inline-flex; align-items: center;"><span class="pulse-dot"></span>⏳ AWAITING BUYER RECEIPT</span>
                   <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">✓ DELIVERED</span>
-                  <button *ngIf="order.status === 'cancelled'" type="button" class="ordr-btn-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
+                  <button *ngIf="order.status === 'cancelled'" type="button" class="btn-order-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
                 </div>
               </div>
             </div>
@@ -856,90 +760,90 @@
 
       <!-- TAB CONTENT: REVIEWS -->
       <div class="tab-content" *ngIf="activeTab === 'reviews'">
-        <div class="ref-reviews-card" *ngIf="reviews.length > 0; else noReviews">
+        <div class="reviews-card" *ngIf="reviews.length > 0; else noReviews">
           <!-- Reviews Header Row -->
-          <div class="ref-reviews-card-header-row">
-            <h2 class="ref-reviews-card-title">
+          <div class="reviews-card-header">
+            <h2 class="reviews-title">
               Reviews
-              <span class="ref-reviews-title-star">★ {{ (user.rating || 5.0) | number:'1.1-1' }}</span>
-              <span class="ref-reviews-title-count">({{ reviews.length }} reviews)</span>
+              <span class="reviews-title-star">★ {{ (user.rating || 5.0) | number:'1.1-1' }}</span>
+              <span class="reviews-title-count">({{ reviews.length }} reviews)</span>
             </h2>
-            <button type="button" class="ref-view-all-reviews-btn">View All Reviews</button>
+            <button type="button" class="btn-view-all-reviews">View All Reviews</button>
           </div>
 
-          <div class="ref-reviews-layout">
+          <div class="reviews-layout">
             <!-- Left Column: Star Rating Stats -->
-            <div class="ref-reviews-stats-col">
-              <div class="ref-rating-bars-stack">
+            <div class="reviews-stats-col">
+              <div class="rating-bars-stack">
                 <!-- Star 5 -->
-                <div class="ref-rating-bar-row">
-                  <span class="ref-bar-stars">5 <span class="ref-bar-star-icon">★</span></span>
-                  <div class="ref-bar-track">
-                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(5)"></div>
+                <div class="rating-bar-row">
+                  <span class="bar-stars">5 <span class="bar-star-icon">★</span></span>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="getRatingPercentage(5)"></div>
                   </div>
-                  <span class="ref-bar-pct">{{ getRatingPercentage(5) }}%</span>
+                  <span class="bar-pct">{{ getRatingPercentage(5) }}%</span>
                 </div>
                 <!-- Star 4 -->
-                <div class="ref-rating-bar-row">
-                  <span class="ref-bar-stars">4 <span class="ref-bar-star-icon">★</span></span>
-                  <div class="ref-bar-track">
-                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(4)"></div>
+                <div class="rating-bar-row">
+                  <span class="bar-stars">4 <span class="bar-star-icon">★</span></span>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="getRatingPercentage(4)"></div>
                   </div>
-                  <span class="ref-bar-pct">{{ getRatingPercentage(4) }}%</span>
+                  <span class="bar-pct">{{ getRatingPercentage(4) }}%</span>
                 </div>
                 <!-- Star 3 -->
-                <div class="ref-rating-bar-row">
-                  <span class="ref-bar-stars">3 <span class="ref-bar-star-icon">★</span></span>
-                  <div class="ref-bar-track">
-                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(3)"></div>
+                <div class="rating-bar-row">
+                  <span class="bar-stars">3 <span class="bar-star-icon">★</span></span>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="getRatingPercentage(3)"></div>
                   </div>
-                  <span class="ref-bar-pct">{{ getRatingPercentage(3) }}%</span>
+                  <span class="bar-pct">{{ getRatingPercentage(3) }}%</span>
                 </div>
                 <!-- Star 2 -->
-                <div class="ref-rating-bar-row">
-                  <span class="ref-bar-stars">2 <span class="ref-bar-star-icon">★</span></span>
-                  <div class="ref-bar-track">
-                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(2)"></div>
+                <div class="rating-bar-row">
+                  <span class="bar-stars">2 <span class="bar-star-icon">★</span></span>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="getRatingPercentage(2)"></div>
                   </div>
-                  <span class="ref-bar-pct">{{ getRatingPercentage(2) }}%</span>
+                  <span class="bar-pct">{{ getRatingPercentage(2) }}%</span>
                 </div>
                 <!-- Star 1 -->
-                <div class="ref-rating-bar-row">
-                  <span class="ref-bar-stars">1 <span class="ref-bar-star-icon">★</span></span>
-                  <div class="ref-bar-track">
-                    <div class="ref-bar-fill" [style.width.%]="getRatingPercentage(1)"></div>
+                <div class="rating-bar-row">
+                  <span class="bar-stars">1 <span class="bar-star-icon">★</span></span>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="getRatingPercentage(1)"></div>
                   </div>
-                  <span class="ref-bar-pct">{{ getRatingPercentage(1) }}%</span>
+                  <span class="bar-pct">{{ getRatingPercentage(1) }}%</span>
                 </div>
               </div>
             </div>
             
             <!-- Right Column: Horizontal Cards -->
-            <div class="ref-reviews-list-col">
-              <div class="ref-review-card-modern" *ngFor="let review of reviews">
-                <div class="ref-rev-card-header">
-                  <div class="ref-rev-buyer-info">
-                    <div class="ref-rev-buyer-avatar">
+            <div class="reviews-list-col">
+              <div class="review-card-modern" *ngFor="let review of reviews">
+                <div class="rev-card-header">
+                  <div class="rev-buyer-info">
+                    <div class="rev-buyer-avatar">
                       <img *ngIf="getReviewerAvatar(review); else initialsAvatar" [src]="getReviewerAvatar(review)" appImageFallback />
                       <ng-template #initialsAvatar>
-                        <div class="ref-rev-buyer-avatar-fallback">
+                        <div class="rev-buyer-avatar-fallback">
                           {{ getReviewerName(review).substring(0, 1) | uppercase }}
                         </div>
                       </ng-template>
                     </div>
-                    <div class="ref-rev-buyer-meta">
-                      <div class="ref-rev-buyer-name">{{ getReviewerName(review) }}</div>
-                      <div class="ref-rev-stars-row" style="color: #e8bd18; font-weight: bold;">{{ getStars(review.rating) }}</div>
+                    <div class="rev-buyer-meta">
+                      <div class="rev-buyer-name">{{ getReviewerName(review) }}</div>
+                      <div class="rev-stars-row" style="color: #e8bd18; font-weight: bold;">{{ getStars(review.rating) }}</div>
                     </div>
                   </div>
-                  <div class="ref-rev-date">{{ review.createdAt | date:'mediumDate' }}</div>
+                  <div class="rev-date">{{ review.createdAt | date:'mediumDate' }}</div>
                 </div>
-                <div class="ref-rev-card-body">
-                  <p class="ref-rev-comment">"{{ review.comment }}"</p>
+                <div class="rev-card-body">
+                  <p class="rev-comment">"{{ review.comment }}"</p>
                   
-                  <div class="ref-seller-response-box" *ngIf="review.response">
-                    <div class="ref-response-label">Seller Response:</div>
-                    <div class="ref-response-text">{{ review.response }}</div>
+                  <div class="seller-response-box" *ngIf="review.response">
+                    <div class="response-label">Seller Response:</div>
+                    <div class="response-text">{{ review.response }}</div>
                   </div>
                 </div>
               </div>
@@ -956,41 +860,41 @@
 
 
       <!-- TRUST BADGES STRIP -->
-      <div class="ref-trust-strip">
-        <div class="ref-trust-item">
-          <div class="ref-trust-icon icon-green">
+      <div class="trust-strip">
+        <div class="trust-item">
+          <div class="trust-icon icon-green">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11 11 13 15 9"/></svg>
           </div>
-          <div class="ref-trust-info">
-            <h4 class="ref-trust-title">Trusted Seller</h4>
-            <p class="ref-trust-desc">Verified and reliable</p>
+          <div class="trust-info">
+            <h4 class="trust-title">Trusted Seller</h4>
+            <p class="trust-desc">Verified and reliable</p>
           </div>
         </div>
-        <div class="ref-trust-item">
-          <div class="ref-trust-icon icon-blue">
+        <div class="trust-item">
+          <div class="trust-icon icon-blue">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
-          <div class="ref-trust-info">
-            <h4 class="ref-trust-title">Campus Handover</h4>
-            <p class="ref-trust-desc">Direct trade on campus</p>
+          <div class="trust-info">
+            <h4 class="trust-title">Campus Handover</h4>
+            <p class="trust-desc">Direct trade on campus</p>
           </div>
         </div>
-        <div class="ref-trust-item">
-          <div class="ref-trust-icon icon-purple">
+        <div class="trust-item">
+          <div class="trust-icon icon-purple">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </div>
-          <div class="ref-trust-info">
-            <h4 class="ref-trust-title">Secure Payments</h4>
-            <p class="ref-trust-desc">Safe & protected</p>
+          <div class="trust-info">
+            <h4 class="trust-title">Secure Payments</h4>
+            <p class="trust-desc">Safe & protected</p>
           </div>
         </div>
-        <div class="ref-trust-item">
-          <div class="ref-trust-icon icon-yellow">
+        <div class="trust-item">
+          <div class="trust-icon icon-yellow">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#e8bd18" stroke="#000" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
-          <div class="ref-trust-info">
-            <h4 class="ref-trust-title">Top Rated</h4>
-            <p class="ref-trust-desc">4.9 average rating</p>
+          <div class="trust-info">
+            <h4 class="trust-title">Top Rated</h4>
+            <p class="trust-desc">4.9 average rating</p>
           </div>
         </div>
       </div>
