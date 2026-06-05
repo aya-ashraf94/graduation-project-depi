@@ -456,12 +456,12 @@
           <button class="orders-toggle-btn" [class.active]="orderView === 'purchases'"
             (click)="orderView = 'purchases'; orderStatusFilter = 'all'">
             MY PURCHASES
-            <span class="orders-count-badge">{{ getPurchases().length }}</span>
+            <span class="orders-count-badge">{{ activePurchasesCount }}</span>
           </button>
           <button class="orders-toggle-btn" [class.active]="orderView === 'sales'"
             (click)="orderView = 'sales'; orderStatusFilter = 'all'">
             MY SALES
-            <span class="orders-count-badge">{{ getSales().length }}</span>
+            <span class="orders-count-badge">{{ activeSalesCount }}</span>
           </button>
         </div>
 

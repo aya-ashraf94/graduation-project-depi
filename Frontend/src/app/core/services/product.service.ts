@@ -234,7 +234,7 @@ export class ProductService {
     } as any;
   }
 
-  private mapProductSummary(p: any): ProductSummary {
+  public mapProductSummary(p: any): ProductSummary {
     const mapped = this.mapProduct(p);
     return {
       id: mapped.id,

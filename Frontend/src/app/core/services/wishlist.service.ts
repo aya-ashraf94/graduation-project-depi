@@ -5,7 +5,9 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from './auth';
+import { ProductService } from './product.service';
 import { environment } from '../../../environments/environment';
 import { ProductSummary } from '../models/product.model';
 
@@ -13,6 +15,7 @@ import { ProductSummary } from '../models/product.model';
 export class WishlistService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private productService = inject(ProductService);
 
   /** Set of product IDs in the user's wishlist */
   private readonly _wishlistIds = signal<Set<string>>(new Set());
@@ -55,7 +58,9 @@ export class WishlistService {
 
   /** Fetch fully populated wishlisted products */
   getWishlistProducts(): Observable<ProductSummary[]> {
-    return this.http.get<ProductSummary[]>(`${environment.apiUrl}/wishlist`);
+    return this.http.get<any[]>(`${environment.apiUrl}/wishlist`).pipe(
+      map(products => products.map(p => this.productService.mapProductSummary(p)))
+    );
   }
 
   /**

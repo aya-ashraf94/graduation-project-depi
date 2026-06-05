@@ -2310,15 +2310,18 @@
 }
 
 /* ---------- RESPONSIVE LAYOUT & CONTAINER POLISH ---------- */
-@media (max-width: 991px) {
+@media (max-width: 768px) {
   .stats-strip {
-    flex-direction: column;
-    padding: 1rem 0;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem 1rem;
+    padding: 1.25rem;
   }
   .stats-divider {
-    width: 80%;
-    height: 2px;
+    display: none;
+  }
+  .stats-col {
+    justify-content: flex-start;
   }
 }
 
@@ -2427,6 +2430,42 @@
    RESPONSIVE LAYOUT ADDITIONS & POLISH
    ============================================================ */
 
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Optimize side-by-side layout for tablet viewports */
+  .profile-header {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .profile-header-left {
+    gap: 1.5rem;
+  }
+
+  .avatar-container {
+    width: 110px;
+    height: 110px;
+  }
+
+  .avatar-frame {
+    width: 110px;
+    height: 110px;
+    border-radius: 18px;
+  }
+
+  .avatar-fallback {
+    font-size: 2.2rem;
+  }
+
+  .profile-name {
+    font-size: 2rem;
+  }
+
+  .profile-header-right {
+    width: 210px;
+    gap: 0.65rem;
+  }
+}
+
 @media (max-width: 768px) {
   /* Profile Header Component Grid to Flex-Column */
   .profile-header {
@@ -2523,7 +2562,7 @@
     justify-content: center;
     min-width: 100px;
   }
-  }
+}
 
 @media (max-width: 575px) {
   /* Edit Profile Modal Enhancements */

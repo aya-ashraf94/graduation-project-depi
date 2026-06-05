@@ -945,9 +945,9 @@
 
   .related-slider {
     gap: 1.5rem;
-    padding-bottom: 2rem;
-    align-items: flex-start;
-    justify-content: flex-start;
+    padding: 1.5rem;
+    /* align-items: flex-start; */
+    justify-content: center;
   }
 
   .slider-card {
