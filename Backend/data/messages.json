@@ -1,132 +1,162 @@
 [
   {
-    "_id": "6a132c28c0cdb881a787bc7f",
-    "conversationId": "6a132c28c0cdb881a787bc7e",
-    "senderId": "6a13155675815f87f6a42883",
+    "_id": "6a1369779c781f0d7de19abe",
+    "conversationId": "6a1369779c781f0d7de19abd",
+    "senderId": "6a121f0acc81734ad4e705ae",
     "content": "Hello, I am interested in this item.",
-    "status": "read",
-    "createdAt": "2026-05-24T16:49:44.402Z",
-    "updatedAt": "2026-06-01T19:48:59.203Z",
+    "status": "sent",
+    "createdAt": "2026-05-24T21:11:19.981Z",
+    "updatedAt": "2026-05-24T21:11:19.981Z",
     "__v": 0
+  },
+  {
+    "_id": "6a14a6b1658e586c0e957ae9",
+    "conversationId": "6a14a6b1658e586c0e957ae8",
+    "senderId": "6a0f7e450862e2e4755f4505",
+    "content": "Hello, I am interested in this item.",
+    "status": "sent",
+    "createdAt": "2026-05-25T19:44:49.283Z",
+    "updatedAt": "2026-05-25T19:44:49.283Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a206133d77da8f7f0c8afbd",
+    "conversationId": "6a206133d77da8f7f0c8afbc",
+    "senderId": "6a0f7e450862e2e4755f4505",
+    "content": "Hello, I am interested in this item.",
+    "status": "sent",
+    "createdAt": "2026-06-03T17:15:31.306Z",
+    "updatedAt": "2026-06-03T17:15:31.306Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a132c28c0cdb881a787bc7f",
+    "__v": 0,
+    "content": "Hello, I am interested in this item.",
+    "conversationId": "6a132c28c0cdb881a787bc7e",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a13155675815f87f6a42883",
+    "status": "read",
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a132c35c0cdb881a787bcb6",
-    "conversationId": "6a132c35c0cdb881a787bcb5",
-    "senderId": "6a13155675815f87f6a42883",
+    "__v": 0,
     "content": "Hello, I am interested in this item.",
+    "conversationId": "6a132c35c0cdb881a787bcb5",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a13155675815f87f6a42883",
     "status": "read",
-    "createdAt": "2026-05-24T16:49:57.101Z",
-    "updatedAt": "2026-05-24T18:57:07.677Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a1342a81c6256546773c7e3",
-    "conversationId": "6a1342a81c6256546773c7e2",
-    "senderId": "6a10b0d1e24456cbac9b4ede",
+    "__v": 0,
     "content": "Hello, I am interested in this item.",
+    "conversationId": "6a1342a81c6256546773c7e2",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a10b0d1e24456cbac9b4ede",
     "status": "read",
-    "createdAt": "2026-05-24T18:25:44.847Z",
-    "updatedAt": "2026-05-31T16:41:20.030Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a1349cc270f32fde3755fc9",
-    "conversationId": "6a1349cc270f32fde3755fc8",
-    "senderId": "6a13155675815f87f6a42883",
+    "__v": 0,
     "content": "Hello, I am interested in this item.",
+    "conversationId": "6a1349cc270f32fde3755fc8",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a13155675815f87f6a42883",
     "status": "read",
-    "createdAt": "2026-05-24T18:56:12.096Z",
-    "updatedAt": "2026-05-24T18:56:46.785Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a1349fe270f32fde3755ff0",
-    "conversationId": "6a1349cc270f32fde3755fc8",
-    "senderId": "6a10b0d1e24456cbac9b4ede",
+    "__v": 0,
     "content": "okay ",
+    "conversationId": "6a1349cc270f32fde3755fc8",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a10b0d1e24456cbac9b4ede",
     "status": "read",
-    "createdAt": "2026-05-24T18:57:02.492Z",
-    "updatedAt": "2026-05-25T21:27:11.064Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a134a47270f32fde3755ff1",
-    "conversationId": "6a1349cc270f32fde3755fc8",
-    "senderId": "6a10b0d1e24456cbac9b4ede",
+    "__v": 0,
     "content": "but it too much for 850, what about 600",
+    "conversationId": "6a1349cc270f32fde3755fc8",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a10b0d1e24456cbac9b4ede",
     "status": "read",
-    "createdAt": "2026-05-24T18:58:15.484Z",
-    "updatedAt": "2026-05-25T21:27:11.064Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a134ab8270f32fde3755ff2",
-    "conversationId": "6a1349cc270f32fde3755fc8",
-    "senderId": "6a10b0d1e24456cbac9b4ede",
+    "__v": 0,
     "content": "i will go for 700",
+    "conversationId": "6a1349cc270f32fde3755fc8",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a10b0d1e24456cbac9b4ede",
     "status": "read",
-    "createdAt": "2026-05-24T19:00:08.074Z",
-    "updatedAt": "2026-05-25T21:27:11.064Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a1de2256a12d760a4f10d4d",
-    "conversationId": "6a1de2256a12d760a4f10d4c",
-    "senderId": "6a125329d2fe0926facbce4c",
+    "__v": 0,
     "content": "Hello, I am interested in this item.",
+    "conversationId": "6a1de2256a12d760a4f10d4c",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a125329d2fe0926facbce4c",
     "status": "read",
-    "createdAt": "2026-06-01T19:48:53.259Z",
-    "updatedAt": "2026-06-01T19:50:14.355Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a1de2516a12d760a4f10d4f",
-    "conversationId": "6a1de2256a12d760a4f10d4c",
-    "senderId": "6a125329d2fe0926facbce4c",
+    "__v": 0,
     "content": "still avalabile?",
+    "conversationId": "6a1de2256a12d760a4f10d4c",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a125329d2fe0926facbce4c",
     "status": "read",
-    "createdAt": "2026-06-01T19:49:37.930Z",
-    "updatedAt": "2026-06-01T19:50:14.355Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a1de27e6a12d760a4f10d7f",
-    "conversationId": "6a1de2256a12d760a4f10d4c",
-    "senderId": "6a10b0d1e24456cbac9b4ede",
+    "__v": 0,
     "content": "yes",
+    "conversationId": "6a1de2256a12d760a4f10d4c",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a10b0d1e24456cbac9b4ede",
     "status": "read",
-    "createdAt": "2026-06-01T19:50:22.784Z",
-    "updatedAt": "2026-06-03T16:05:47.559Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a2050f0030ac21dd3af61cd",
-    "conversationId": "6a1de2256a12d760a4f10d4c",
-    "senderId": "6a125329d2fe0926facbce4c",
+    "__v": 0,
     "content": "what about 700$?",
+    "conversationId": "6a1de2256a12d760a4f10d4c",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a125329d2fe0926facbce4c",
     "status": "read",
-    "createdAt": "2026-06-03T16:06:08.383Z",
-    "updatedAt": "2026-06-03T16:06:28.732Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a205181030ac21dd3af6271",
-    "conversationId": "6a1de2256a12d760a4f10d4c",
-    "senderId": "6a10b0d1e24456cbac9b4ede",
+    "__v": 0,
     "content": "i will go with 750$",
+    "conversationId": "6a1de2256a12d760a4f10d4c",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a10b0d1e24456cbac9b4ede",
     "status": "read",
-    "createdAt": "2026-06-03T16:08:33.615Z",
-    "updatedAt": "2026-06-03T16:10:15.514Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   },
   {
     "_id": "6a205208030ac21dd3af62a1",
-    "conversationId": "6a1de2256a12d760a4f10d4c",
-    "senderId": "6a125329d2fe0926facbce4c",
+    "__v": 0,
     "content": "okay",
+    "conversationId": "6a1de2256a12d760a4f10d4c",
+    "createdAt": "2026-06-03T17:26:07.294Z",
+    "senderId": "6a125329d2fe0926facbce4c",
     "status": "read",
-    "createdAt": "2026-06-03T16:10:48.766Z",
-    "updatedAt": "2026-06-03T16:11:08.488Z",
-    "__v": 0
+    "updatedAt": "2026-06-06T15:05:22.945Z"
   }
 ]

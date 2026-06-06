@@ -1,1032 +1,161 @@
 [
   {
-    "_id": "6a122968f278c7b4f7e43f80",
-    "title": "tv",
-    "description": "sssss",
-    "price": 500,
+    "_id": "6a107209f1cbcd0c2b2276ee",
+    "title": "iPhone 14 Pro Max",
+    "description": "Excellent condition, 256GB storage, battery health 92%.",
+    "price": 50000,
+    "images": [
+      "sofa_image_1.jpg"
+    ],
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "dynamicAttributes": {
+      "type": "Apple",
+      "storage": "256GB",
+      "color": "Gold",
+      "condition": "Used"
+    },
+    "location": "Cairo, Abasyia",
+    "phoneNumber": "01225687958",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "createdAt": "2026-05-22T15:11:05.741Z",
+    "updatedAt": "2026-06-03T17:15:20.166Z",
+    "__v": 0,
+    "viewCount": 8,
+    "isVerified": false,
+    "soldByNafa3ni": false,
+    "status": "active"
+  },
+  {
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 0,
+    "_id": "6a11ff9c9817f250d6020701",
+    "title": "Modern Grey Sofa",
+    "description": "Very comfortable 3-seater sofa, almost new.",
+    "price": 1000,
     "images": [
       "placeholder"
     ],
+    "categoryId": "6a104027bb9b8da209585cc9",
+    "dynamicAttributes": {
+      "type": "Sofa",
+      "material": "Fabric",
+      "color": "Grey",
+      "condition": "Used"
+    },
+    "location": "Port Said",
+    "phoneNumber": "01212351645",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "createdAt": "2026-05-23T19:27:24.767Z",
+    "updatedAt": "2026-05-23T19:27:24.767Z",
+    "__v": 0
+  },
+  {
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "_id": "6a121fafcc81734ad4e705cc",
+    "title": "Wooden Dining Table",
+    "description": "Solid wood dining table with 6 chairs, excellent condition.",
+    "price": 16500,
+    "images": [],
+    "categoryId": "6a104027bb9b8da209585cc9",
+    "dynamicAttributes": {
+      "Condition": "New"
+    },
+    "location": "Alexandria",
+    "phoneNumber": "01225388554",
+    "showContactInfo": true,
+    "userId": "6a121f0acc81734ad4e705ae",
+    "createdAt": "2026-05-23T21:44:15.906Z",
+    "updatedAt": "2026-05-24T21:21:10.806Z",
+    "__v": 0,
+    "viewCount": 13
+  },
+  {
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 0,
+    "_id": "6a122748cc81734ad4e705ea",
+    "title": "Samsung Galaxy S25 Ultra",
+    "description": "Like new condition, 512GB storage with original charger and box.",
+    "price": 52000,
+    "images": [
+      "samsung.jpg"
+    ],
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "dynamicAttributes": {
+      "type": "Samsung",
+      "storage": "512GB",
+      "color": "Blue",
+      "condition": "Used"
+    },
+    "location": "Port Said - Port Fouad",
+    "phoneNumber": "01198765432",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "createdAt": "2026-05-23T22:16:40.766Z",
+    "updatedAt": "2026-05-23T22:16:40.766Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a122968f278c7b4f7e43f80",
+    "__v": 0,
     "categoryId": "6a104b45bb9b8da209585ce0",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "sssss",
     "dynamicAttributes": {
       "type": "Other",
       "type_other": "Smart Tv",
       "brand": "LG",
       "condition": "Used"
     },
+    "images": [
+      "placeholder"
+    ],
+    "isVerified": false,
     "location": "sdsd",
     "phoneNumber": "01220255",
+    "price": 500,
     "showContactInfo": true,
-    "userId": "6a1224eaf278c7b4f7e43f62",
-    "createdAt": "2026-05-23T22:25:44.376Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "__v": 0,
-    "isVerified": false,
     "soldByNafa3ni": false,
-    "viewCount": 0,
-    "status": "active"
+    "title": "tv",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a1224eaf278c7b4f7e43f62",
+    "status": "active",
+    "viewCount": 0
   },
   {
     "_id": "6a1236519d93db6d6302cf44",
-    "title": "iphone 11",
-    "description": "jjsjs",
-    "price": 750,
-    "images": [],
+    "__v": 0,
     "categoryId": "6a1049d4bb9b8da209585ccf",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "jjsjs",
     "dynamicAttributes": {
       "Condition": "Used"
     },
+    "images": [],
+    "isVerified": false,
     "location": "cairo",
     "phoneNumber": "0109852466",
+    "price": 750,
     "showContactInfo": true,
-    "userId": "6a10b0d1e24456cbac9b4ede",
-    "createdAt": "2026-05-23T23:20:49.583Z",
-    "updatedAt": "2026-06-03T16:13:20.585Z",
-    "__v": 0,
-    "isVerified": false,
     "soldByNafa3ni": false,
-    "viewCount": 9,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce6a",
-    "title": "Neo-Brutalist Premium Study Desk",
-    "description": "A study desk designed for maximum utility. Heavy-duty construction with high contrast geometric edges, features cable routing, storage hooks, and a solid wood surface. Built to withstand late-night study sessions.",
-    "price": 1850,
-    "images": [
-      "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800"
-    ],
-    "categoryId": "6a104027bb9b8da209585cc9",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Desk",
-      "material": "Wood",
-      "color": "Brown",
-      "condition": "New"
-    },
-    "location": "Main Library Campus",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce6b",
-    "title": "Ergonomic High-Back Office Chair",
-    "description": "Professional-grade ergonomic mesh chair. Fully adjustable lumbar support, 3D armrests, and dynamic tilt mechanism. Perfect for study spaces and long hours of programming or designing.",
-    "price": 2400,
-    "images": [
-      "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=800"
-    ],
-    "categoryId": "6a104027bb9b8da209585cc9",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Office Furniture",
-      "material": "Metal",
-      "color": "Black",
-      "condition": "New"
-    },
-    "location": "Faculty of Engineering",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce6c",
-    "title": "Minimalist 5-Tier Wooden Bookshelf",
-    "description": "A space-saving vertical bookshelf made from high-quality solid pine. Easily fits textbook binders, files, and decor. Sturdy structure with premium varnish finish.",
-    "price": 950,
-    "images": [
-      "https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800"
-    ],
-    "categoryId": "6a104027bb9b8da209585cc9",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Bookshelf",
-      "material": "Wood",
-      "color": "White",
-      "condition": "New"
-    },
-    "location": "Main Library Campus",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce6d",
-    "title": "Cozy Charcoal Fabric Lounger Sofa",
-    "description": "Compact 2-seater sofa upholstered in ultra-durable, spill-resistant fabric. Ergonomic design perfect for dorm lounge areas or quiet reading corners.",
-    "price": 3200,
-    "images": [
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800"
-    ],
-    "categoryId": "6a104027bb9b8da209585cc9",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Sofa",
-      "material": "Fabric",
-      "color": "Grey",
-      "condition": "New"
-    },
-    "location": "Student Dorms Zone A",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
+    "title": "iphone 11",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a10b0d1e24456cbac9b4ede",
     "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce6e",
-    "title": "iPhone 15 Pro Max (Grade A Refurbished)",
-    "description": "Official Nafa3ni Certified iPhone 15 Pro Max. 256GB storage, Natural Titanium. Battery health is at 98%, tested and verified by our technical team. Comes with 1-year store warranty and original charging cable.",
-    "price": 42000,
-    "images": [
-      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800"
-    ],
-    "categoryId": "6a1049d4bb9b8da209585ccf",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 9,
-      "brand": "Apple",
-      "storage": "256GB",
-      "color": "Silver",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce6f",
-    "title": "Samsung Galaxy S24 Ultra (Sealed)",
-    "description": "Brand new, factory sealed Samsung Galaxy S24 Ultra 512GB in Titanium Gray. Official Egyptian warranty. Dynamic AMOLED 2X, Snapdragon 8 Gen 3, and integrated S-Pen.",
-    "price": 49500,
-    "images": [
-      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800"
-    ],
-    "categoryId": "6a1049d4bb9b8da209585ccf",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "Samsung",
-      "storage": "512GB",
-      "color": "Black",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce70",
-    "title": "Google Pixel 8 Pro 128GB",
-    "description": "Google Pixel 8 Pro in Porcelain white. Flawless condition, box opened only for verification. Outstanding camera capabilities and pure Android experience with Gemini integration.",
-    "price": 31000,
-    "images": [
-      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800"
-    ],
-    "categoryId": "6a1049d4bb9b8da209585ccf",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "Other",
-      "storage": "128GB",
-      "color": "White",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce71",
-    "title": "Xiaomi Redmi Note 13 Pro 256GB",
-    "description": "Great mid-range option for students. 256GB storage, 8GB RAM, Midnight Black. 200MP camera and ultra-fast 67W charging. Factory sealed.",
-    "price": 14500,
-    "images": [
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800"
-    ],
-    "categoryId": "6a1049d4bb9b8da209585ccf",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "Redmi",
-      "storage": "256GB",
-      "color": "Black",
-      "condition": "New"
-    },
-    "location": "Faculty of Computer Science",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.744Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce72",
-    "title": "MacBook Air M2 13-inch (Space Gray)",
-    "description": "Official stock Apple MacBook Air M2. 8GB Unified RAM, 256GB SSD. Lightweight, high battery life, perfect for lecture notes and software development. In original sealed retail packaging.",
-    "price": 46000,
-    "images": [
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800"
-    ],
-    "categoryId": "6a104ad9bb9b8da209585cd4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "Apple",
-      "ram": "8GB",
-      "storage": "256GB SSD",
-      "processor": "Apple M2",
-      "condition": "New"
-    },
-    "location": "Faculty of Engineering",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 11,
-    "status": "sold"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce73",
-    "title": "Dell XPS 13 Core i7 Premium Ultrabook",
-    "description": "Dell XPS 13 (9315) featuring Intel Core i7 12th Gen, 16GB LPDDR5 RAM, 512GB PCIe SSD. Gorgeous InfinityEdge display. Elite lightweight device for academic research and productivity.",
-    "price": 38500,
-    "images": [
-      "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800"
-    ],
-    "categoryId": "6a104ad9bb9b8da209585cd4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "Dell",
-      "ram": "16GB",
-      "storage": "512GB SSD",
-      "processor": "Intel Core i7",
-      "condition": "New"
-    },
-    "location": "Faculty of Science",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce74",
-    "title": "Lenovo ThinkPad E14 Gen 5 (Business Black)",
-    "description": "Legendary durability. Intel Core i5 13th Gen, 16GB RAM, 512GB SSD. Spill-resistant keyboard, military-grade construction. The best companion for computer science and business majors.",
-    "price": 29000,
-    "images": [
-      "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800"
-    ],
-    "categoryId": "6a104ad9bb9b8da209585cd4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "Lenovo",
-      "ram": "16GB",
-      "storage": "512GB SSD",
-      "processor": "Intel Core i5",
-      "condition": "New"
-    },
-    "location": "Faculty of Computer Science",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce75",
-    "title": "HP Victus 15 Gaming Laptop (RTX 4050)",
-    "description": "Affordable high-performance gaming and graphics machine. Intel Core i5, 16GB DDR5 RAM, 512GB SSD, and NVIDIA GeForce RTX 4050 graphics card. 144Hz high refresh rate screen.",
-    "price": 36000,
-    "images": [
-      "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800"
-    ],
-    "categoryId": "6a104ad9bb9b8da209585cd4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "brand": "HP",
-      "ram": "16GB",
-      "storage": "512GB SSD",
-      "processor": "Intel Core i5",
-      "condition": "New"
-    },
-    "location": "Faculty of Fine Arts",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce76",
-    "title": "Nafa3ni Official Oversized Hoodie",
-    "description": "High-quality university merchandise. Heavyweight 400GSM organic cotton fabric, features minimal front logo embroidery and soft fleece lining. Perfect comfort clothing for winter study sessions.",
-    "price": 850,
-    "images": [
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800"
-    ],
-    "categoryId": "6a104b26bb9b8da209585cda",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Hoodie",
-      "size": "XL",
-      "color": "Black",
-      "brand": "Nafa3ni Merch",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 10,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce77",
-    "title": "Classic Denim Vintage Jacket",
-    "description": "Timeless denim design. Made with 100% rigid cotton denim, standard trucker fit, featuring durable brass buttons. Stone washed for a vintage texture.",
-    "price": 720,
-    "images": [
-      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800"
-    ],
-    "categoryId": "6a104b26bb9b8da209585cda",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Jacket",
-      "size": "L",
-      "color": "Blue",
-      "brand": "Archive Classics",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce78",
-    "title": "Premium Multi-Pocket Cargo Pants",
-    "description": "Durable ripstop cotton cargo pants. 6 functional pockets, adjustable drawstring waist and ankles. Highly functional and stylish everyday campus wear.",
-    "price": 680,
-    "images": [
-      "https://images.unsplash.com/photo-1517423568366-8b83523034fd?w=800"
-    ],
-    "categoryId": "6a104b26bb9b8da209585cda",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Pants",
-      "size": "M",
-      "color": "Green",
-      "brand": "StreetArch",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce79",
-    "title": "University Athletics Premium Tee",
-    "description": "Athletic crewneck t-shirt made of 100% breathable combed cotton. Double-stitched seams, regular fit, minimal campus athletic print.",
-    "price": 350,
-    "images": [
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800"
-    ],
-    "categoryId": "6a104b26bb9b8da209585cda",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "T-shirt",
-      "size": "S",
-      "color": "Grey",
-      "brand": "Nafa3ni Merch",
-      "condition": "New"
-    },
-    "location": "Student Hub Center",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce7a",
-    "title": "Sony WH-1000XM4 Noise Canceling Headphones",
-    "description": "Industry-leading noise canceling over-ear headphones. Crystal clear audio, 30-hour battery life, touch controls, and multipoint Bluetooth connection. Ideal for blockout study sessions.",
-    "price": 11500,
-    "images": [
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"
-    ],
-    "categoryId": "6a104b45bb9b8da209585ce0",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Headphones",
-      "brand": "Sony",
-      "condition": "New"
-    },
-    "location": "Faculty of Computer Science",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 2,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce7b",
-    "title": "Logitech MX Master 3S Wireless Mouse",
-    "description": "The ultimate mouse for developers and creators. MagSpeed electromagnetic scroll wheel, 8K DPI tracking on any surface, silent clicks, and custom profiles for software tools.",
-    "price": 4200,
-    "images": [
-      "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800"
-    ],
-    "categoryId": "6a104b45bb9b8da209585ce0",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Other",
-      "brand": "Other",
-      "condition": "New"
-    },
-    "location": "Faculty of Computer Science",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce7c",
-    "title": "Anker Prime 24000mAh Power Bank (140W)",
-    "description": "Ultra-high capacity power bank with 140W multi-device fast charging. Features a smart digital display showing battery health, charging speed, and cycle counts. Can charge your laptop on the go.",
-    "price": 3800,
-    "images": [
-      "https://images.unsplash.com/photo-1609592424085-f5596041a87e?w=800"
-    ],
-    "categoryId": "6a104b45bb9b8da209585ce0",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Other",
-      "brand": "Other",
-      "condition": "New"
-    },
-    "location": "Faculty of Engineering",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce7d",
-    "title": "Sony Alpha 4K Action Sports Camera",
-    "description": "High-speed action camera capable of recording 4K ultra-smooth video. Built-in stabilization, waterproof casing, and long battery life. Perfect for campus events and field work.",
-    "price": 18000,
-    "images": [
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800"
-    ],
-    "categoryId": "6a104b45bb9b8da209585ce0",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Camera",
-      "brand": "Sony",
-      "condition": "New"
-    },
-    "location": "Faculty of Fine Arts",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce7e",
-    "title": "Retro Compact Mini Dorm Refrigerator",
-    "description": "A stylish 90L mini fridge with separate freezer compartment. Ultra-quiet operation technology, energy star certified, adjustable glass shelves. Ideal for keeping snacks and drinks cold in your dorm room.",
-    "price": 6500,
-    "images": [
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800"
-    ],
-    "categoryId": "6a104bf5bb9b8da209585ce4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Refrigerator",
-      "brand": "Samsung",
-      "condition": "New"
-    },
-    "location": "Student Dorms Zone B",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 1,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce7f",
-    "title": "Digital Touch Solo Microwave (20L)",
-    "description": "Compact 800W microwave oven with 6 preset cooking programs and child safety lock. Glass turntable, digital LED clock. Perfect for quick heating and cooking inside a student flat.",
-    "price": 3900,
-    "images": [
-      "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=800"
-    ],
-    "categoryId": "6a104bf5bb9b8da209585ce4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Microwave",
-      "brand": "Samsung",
-      "condition": "New"
-    },
-    "location": "Student Dorms Zone B",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce80",
-    "title": "DeLonghi Retro Espresso Coffee Maker",
-    "description": "Classic pump espresso and cappuccino maker with 15 bar pressure. Dual-option filter holder for ground coffee or pods. Steam wand froth system for barista-quality drinks in your kitchen.",
-    "price": 5200,
-    "images": [
-      "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800"
-    ],
-    "categoryId": "6a104bf5bb9b8da209585ce4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Other",
-      "brand": "Other",
-      "condition": "New"
-    },
-    "location": "Student Dorms Zone B",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce81",
-    "title": "Ultrasonic Cool Mist Humidifier (4L)",
-    "description": "Whisper-quiet humidifier with 4L water tank capacity. Adjustable mist output, automatic shut-off safety sensor, filterless design. Helps maintain healthy humidity levels in dry study spaces.",
-    "price": 1200,
-    "images": [
-      "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800"
-    ],
-    "categoryId": "6a104bf5bb9b8da209585ce4",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Other",
-      "brand": "Other",
-      "condition": "New"
-    },
-    "location": "Student Dorms Zone A",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce82",
-    "title": "Premium Adjustable Steel Dumbbells (Pair)",
-    "description": "Heavy duty selectorized dumbbells. Adjusts from 2kg to 24kg with a simple turn of a dial. Replaces 15 separate pairs of dumbbells, perfect space-saving gym gear for campus rooms.",
-    "price": 4900,
-    "images": [
-      "https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?w=800"
-    ],
-    "categoryId": "6a104c27bb9b8da209585ce8",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Dumbbells",
-      "brand": "Pro-Gym",
-      "condition": "New"
-    },
-    "location": "Student Gym Facility",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce83",
-    "title": "Foldable Magnetic Exercise Fitness Bike",
-    "description": "Compact space-saving design folding exercise bike. 8 levels of smooth magnetic resistance adjustments, clear LCD console tracking distance, speed, time, and calories burned.",
-    "price": 3600,
-    "images": [
-      "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800"
-    ],
-    "categoryId": "6a104c27bb9b8da209585ce8",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Exercise Bike",
-      "brand": "Pro-Gym",
-      "condition": "New"
-    },
-    "location": "Student Gym Facility",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce84",
-    "title": "High-Density Non-Slip 8mm Yoga Mat",
-    "description": "Premium eco-friendly TPE yoga mat. 8mm thick padding protects joints, dual-texture non-slip surface provides traction. Comes with a carrying strap for campus classes.",
-    "price": 450,
-    "images": [
-      "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?w=800"
-    ],
-    "categoryId": "6a104c27bb9b8da209585ce8",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Yoga Mat",
-      "brand": "Nafa3ni Active",
-      "condition": "New"
-    },
-    "location": "Student Gym Facility",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce85",
-    "title": "Urban Explorer Commuter Bicycle (21-Speed)",
-    "description": "Sturdy steel-framed urban road/trail bicycle. 21-speed twist shifters, front suspension fork, dual disc brakes. Perfect for fast commuting around the university campus and city streets.",
-    "price": 7800,
-    "images": [
-      "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800"
-    ],
-    "categoryId": "6a104c27bb9b8da209585ce8",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "type": "Bicycle",
-      "brand": "Pro-Gym",
-      "condition": "New"
-    },
-    "location": "Student Gym Facility",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce86",
-    "title": "Premium Hardcover Drawing Sketchbook (A4)",
-    "description": "Professional grade sketchpad. 120 sheets of 160GSM acid-free sketch paper, durable hardcover binding, flat opening layout. Designed for architecture and fine arts student drafting.",
-    "price": 280,
-    "images": [
-      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800"
-    ],
-    "categoryId": "6a104cb7bb9b8da209585cec",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "item_type": "Sketchbook",
-      "condition": "New"
-    },
-    "location": "Faculty of Fine Arts",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce87",
-    "title": "Dual-Tip Professional Art Markers (80 Colors)",
-    "description": "Broad chisel and fine point sketch markers. 80 vibrant permanent colors, fast drying ink, includes portable fabric zipper bag. Excellent for designs, illustrations, and drafting layouts.",
-    "price": 650,
-    "images": [
-      "https://images.unsplash.com/photo-1519750711847-8162bd50cf16?w=800"
-    ],
-    "categoryId": "6a104cb7bb9b8da209585cec",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "item_type": "Art Markers",
-      "condition": "New"
-    },
-    "location": "Faculty of Fine Arts",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "viewCount": 0,
-    "status": "active"
-  },
-  {
-    "_id": "6a125329d2fe0926facbce88",
-    "title": "Architectural Drawing Draft Board (A2)",
-    "description": "Portable architectural drawing board. Precision parallel motion rule, adjustable elevation angles, non-slip base grip. Perfect for drafting and engineering design students.",
-    "price": 1100,
-    "images": [
-      "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800"
-    ],
-    "categoryId": "6a104cb7bb9b8da209585cec",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "item_type": "Draft Board",
-      "condition": "New"
-    },
-    "location": "Faculty of Engineering",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a125329d2fe0926facbce89",
-    "title": "Ergonomic Aluminum Adjustable Laptop Stand",
-    "description": "Sleek geometric desktop stand for laptops up to 16\". Made of high-quality aluminum alloy, 6 adjustable heights, fully foldable with rubber grips. Enhances posture and laptop airflow.",
-    "price": 340,
-    "images": [
-      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800"
-    ],
-    "categoryId": "6a104cb7bb9b8da209585cec",
-    "dynamicAttributes": {
-      "badge": "SOLD BY NAFA3NI",
-      "Condition": "New",
-      "conditionScore": 10,
-      "item_type": "Laptop Stand",
-      "condition": "New"
-    },
-    "location": "Faculty of Computer Science",
-    "phoneNumber": "01012345678",
-    "showContactInfo": true,
-    "userId": "6a125329d2fe0926facbce4c",
-    "soldByNafa3ni": true,
-    "isVerified": true,
-    "__v": 0,
-    "createdAt": "2026-05-24T01:23:53.745Z",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
-    "status": "active",
-    "viewCount": 0
-  },
-  {
-    "_id": "6a135aba4327f84d5a5c3b5d",
-    "title": "camera",
-    "description": "vintaged ",
-    "price": 2450,
-    "images": [
-      "/uploads/img-1779653306204-nbsruz.png"
-    ],
-    "categoryId": "6a104b45bb9b8da209585ce0",
-    "dynamicAttributes": {
-      "type": "Camera",
-      "brand": "Sony",
-      "condition": "Used"
-    },
-    "location": "Damitta",
-    "phoneNumber": "010554654565",
-    "showContactInfo": true,
-    "userId": "6a13155675815f87f6a42883",
-    "soldByNafa3ni": true,
-    "isVerified": false,
-    "status": "sold",
-    "viewCount": 36,
-    "createdAt": "2026-05-24T20:08:26.208Z",
-    "updatedAt": "2026-06-01T20:16:22.636Z",
-    "__v": 0
+    "viewCount": 9
   },
   {
     "_id": "6a123e8a9d93db6d6302d4c8",
     "__v": 0,
     "categoryId": "6a1049d4bb9b8da209585ccf",
-    "createdAt": "2026-06-01T19:18:38.501Z",
+    "createdAt": "2026-05-24T19:32:42.528Z",
     "description": "dgfdfg",
     "dynamicAttributes": {
       "Condition": "Used"
@@ -1043,21 +172,1092 @@
     "price": 200,
     "showContactInfo": true,
     "soldByNafa3ni": false,
-    "status": "active",
     "title": "trrt",
-    "updatedAt": "2026-06-01T22:03:11.928Z",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
     "userId": "6a10b0d1e24456cbac9b4ede",
+    "status": "active",
     "viewCount": 0
   },
   {
-    "_id": "6a1dec10f6dd86ae73ee750e",
-    "title": "dell inspiron",
-    "description": "dgfgfdshfghshgdfhs",
-    "price": 5000,
+    "_id": "6a125329d2fe0926facbce6a",
+    "__v": 0,
+    "categoryId": "6a104027bb9b8da209585cc9",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "A study desk designed for maximum utility. Heavy-duty construction with high contrast geometric edges, features cable routing, storage hooks, and a solid wood surface. Built to withstand late-night study sessions.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Desk",
+      "material": "Wood",
+      "color": "Brown",
+      "condition": "New"
+    },
     "images": [
-      "/uploads/img-1780345872601-prdajy.png"
+      "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800"
+    ],
+    "isVerified": true,
+    "location": "Main Library Campus",
+    "phoneNumber": "01012345678",
+    "price": 1850,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Neo-Brutalist Premium Study Desk",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce6b",
+    "__v": 0,
+    "categoryId": "6a104027bb9b8da209585cc9",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Professional-grade ergonomic mesh chair. Fully adjustable lumbar support, 3D armrests, and dynamic tilt mechanism. Perfect for study spaces and long hours of programming or designing.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Office Furniture",
+      "material": "Metal",
+      "color": "Black",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Engineering",
+    "phoneNumber": "01012345678",
+    "price": 2400,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Ergonomic High-Back Office Chair",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce6c",
+    "__v": 0,
+    "categoryId": "6a104027bb9b8da209585cc9",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "A space-saving vertical bookshelf made from high-quality solid pine. Easily fits textbook binders, files, and decor. Sturdy structure with premium varnish finish.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Bookshelf",
+      "material": "Wood",
+      "color": "White",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800"
+    ],
+    "isVerified": true,
+    "location": "Main Library Campus",
+    "phoneNumber": "01012345678",
+    "price": 950,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Minimalist 5-Tier Wooden Bookshelf",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce6d",
+    "__v": 0,
+    "categoryId": "6a104027bb9b8da209585cc9",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Compact 2-seater sofa upholstered in ultra-durable, spill-resistant fabric. Ergonomic design perfect for dorm lounge areas or quiet reading corners.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Sofa",
+      "material": "Fabric",
+      "color": "Grey",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Dorms Zone A",
+    "phoneNumber": "01012345678",
+    "price": 3200,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Cozy Charcoal Fabric Lounger Sofa",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce6e",
+    "__v": 0,
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Official Nafa3ni Certified iPhone 15 Pro Max. 256GB storage, Natural Titanium. Battery health is at 98%, tested and verified by our technical team. Comes with 1-year store warranty and original charging cable.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 9,
+      "brand": "Apple",
+      "storage": "256GB",
+      "color": "Silver",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 42000,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "iPhone 15 Pro Max (Grade A Refurbished)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce6f",
+    "__v": 0,
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Brand new, factory sealed Samsung Galaxy S24 Ultra 512GB in Titanium Gray. Official Egyptian warranty. Dynamic AMOLED 2X, Snapdragon 8 Gen 3, and integrated S-Pen.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "Samsung",
+      "storage": "512GB",
+      "color": "Black",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 49500,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Samsung Galaxy S24 Ultra (Sealed)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce70",
+    "__v": 0,
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Google Pixel 8 Pro in Porcelain white. Flawless condition, box opened only for verification. Outstanding camera capabilities and pure Android experience with Gemini integration.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "Other",
+      "storage": "128GB",
+      "color": "White",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 31000,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Google Pixel 8 Pro 128GB",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce71",
+    "__v": 0,
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Great mid-range option for students. 256GB storage, 8GB RAM, Midnight Black. 200MP camera and ultra-fast 67W charging. Factory sealed.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "Redmi",
+      "storage": "256GB",
+      "color": "Black",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Computer Science",
+    "phoneNumber": "01012345678",
+    "price": 14500,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Xiaomi Redmi Note 13 Pro 256GB",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce72",
+    "__v": 0,
+    "categoryId": "6a104ad9bb9b8da209585cd4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Official stock Apple MacBook Air M2. 8GB Unified RAM, 256GB SSD. Lightweight, high battery life, perfect for lecture notes and software development. In original sealed retail packaging.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "Apple",
+      "ram": "8GB",
+      "storage": "256GB SSD",
+      "processor": "Apple M2",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Engineering",
+    "phoneNumber": "01012345678",
+    "price": 46000,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "MacBook Air M2 13-inch (Space Gray)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "sold",
+    "viewCount": 11
+  },
+  {
+    "_id": "6a125329d2fe0926facbce73",
+    "__v": 0,
+    "categoryId": "6a104ad9bb9b8da209585cd4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Dell XPS 13 (9315) featuring Intel Core i7 12th Gen, 16GB LPDDR5 RAM, 512GB PCIe SSD. Gorgeous InfinityEdge display. Elite lightweight device for academic research and productivity.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "Dell",
+      "ram": "16GB",
+      "storage": "512GB SSD",
+      "processor": "Intel Core i7",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Science",
+    "phoneNumber": "01012345678",
+    "price": 38500,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Dell XPS 13 Core i7 Premium Ultrabook",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce74",
+    "__v": 0,
+    "categoryId": "6a104ad9bb9b8da209585cd4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Legendary durability. Intel Core i5 13th Gen, 16GB RAM, 512GB SSD. Spill-resistant keyboard, military-grade construction. The best companion for computer science and business majors.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "Lenovo",
+      "ram": "16GB",
+      "storage": "512GB SSD",
+      "processor": "Intel Core i5",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Computer Science",
+    "phoneNumber": "01012345678",
+    "price": 29000,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Lenovo ThinkPad E14 Gen 5 (Business Black)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce75",
+    "__v": 0,
+    "categoryId": "6a104ad9bb9b8da209585cd4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Affordable high-performance gaming and graphics machine. Intel Core i5, 16GB DDR5 RAM, 512GB SSD, and NVIDIA GeForce RTX 4050 graphics card. 144Hz high refresh rate screen.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "brand": "HP",
+      "ram": "16GB",
+      "storage": "512GB SSD",
+      "processor": "Intel Core i5",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Fine Arts",
+    "phoneNumber": "01012345678",
+    "price": 36000,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "HP Victus 15 Gaming Laptop (RTX 4050)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce76",
+    "__v": 0,
+    "categoryId": "6a104b26bb9b8da209585cda",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "High-quality university merchandise. Heavyweight 400GSM organic cotton fabric, features minimal front logo embroidery and soft fleece lining. Perfect comfort clothing for winter study sessions.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Hoodie",
+      "size": "XL",
+      "color": "Black",
+      "brand": "Nafa3ni Merch",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 850,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Nafa3ni Official Oversized Hoodie",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 10
+  },
+  {
+    "_id": "6a125329d2fe0926facbce77",
+    "__v": 0,
+    "categoryId": "6a104b26bb9b8da209585cda",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Timeless denim design. Made with 100% rigid cotton denim, standard trucker fit, featuring durable brass buttons. Stone washed for a vintage texture.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Jacket",
+      "size": "L",
+      "color": "Blue",
+      "brand": "Archive Classics",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 720,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Classic Denim Vintage Jacket",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce78",
+    "__v": 0,
+    "categoryId": "6a104b26bb9b8da209585cda",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Durable ripstop cotton cargo pants. 6 functional pockets, adjustable drawstring waist and ankles. Highly functional and stylish everyday campus wear.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Pants",
+      "size": "M",
+      "color": "Green",
+      "brand": "StreetArch",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1517423568366-8b83523034fd?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 680,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Premium Multi-Pocket Cargo Pants",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce79",
+    "__v": 0,
+    "categoryId": "6a104b26bb9b8da209585cda",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Athletic crewneck t-shirt made of 100% breathable combed cotton. Double-stitched seams, regular fit, minimal campus athletic print.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "T-shirt",
+      "size": "S",
+      "color": "Grey",
+      "brand": "Nafa3ni Merch",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Hub Center",
+    "phoneNumber": "01012345678",
+    "price": 350,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "University Athletics Premium Tee",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce7a",
+    "__v": 0,
+    "categoryId": "6a104b45bb9b8da209585ce0",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Industry-leading noise canceling over-ear headphones. Crystal clear audio, 30-hour battery life, touch controls, and multipoint Bluetooth connection. Ideal for blockout study sessions.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Headphones",
+      "brand": "Sony",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Computer Science",
+    "phoneNumber": "01012345678",
+    "price": 11500,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Sony WH-1000XM4 Noise Canceling Headphones",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 2
+  },
+  {
+    "_id": "6a125329d2fe0926facbce7b",
+    "__v": 0,
+    "categoryId": "6a104b45bb9b8da209585ce0",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "The ultimate mouse for developers and creators. MagSpeed electromagnetic scroll wheel, 8K DPI tracking on any surface, silent clicks, and custom profiles for software tools.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Other",
+      "brand": "Other",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Computer Science",
+    "phoneNumber": "01012345678",
+    "price": 4200,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Logitech MX Master 3S Wireless Mouse",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce7c",
+    "__v": 0,
+    "categoryId": "6a104b45bb9b8da209585ce0",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Ultra-high capacity power bank with 140W multi-device fast charging. Features a smart digital display showing battery health, charging speed, and cycle counts. Can charge your laptop on the go.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Other",
+      "brand": "Other",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1609592424085-f5596041a87e?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Engineering",
+    "phoneNumber": "01012345678",
+    "price": 3800,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Anker Prime 24000mAh Power Bank (140W)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce7d",
+    "__v": 0,
+    "categoryId": "6a104b45bb9b8da209585ce0",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "High-speed action camera capable of recording 4K ultra-smooth video. Built-in stabilization, waterproof casing, and long battery life. Perfect for campus events and field work.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Camera",
+      "brand": "Sony",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Fine Arts",
+    "phoneNumber": "01012345678",
+    "price": 18000,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Sony Alpha 4K Action Sports Camera",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce7e",
+    "__v": 0,
+    "categoryId": "6a104bf5bb9b8da209585ce4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "A stylish 90L mini fridge with separate freezer compartment. Ultra-quiet operation technology, energy star certified, adjustable glass shelves. Ideal for keeping snacks and drinks cold in your dorm room.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Refrigerator",
+      "brand": "Samsung",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Dorms Zone B",
+    "phoneNumber": "01012345678",
+    "price": 6500,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Retro Compact Mini Dorm Refrigerator",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 1
+  },
+  {
+    "_id": "6a125329d2fe0926facbce7f",
+    "__v": 0,
+    "categoryId": "6a104bf5bb9b8da209585ce4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Compact 800W microwave oven with 6 preset cooking programs and child safety lock. Glass turntable, digital LED clock. Perfect for quick heating and cooking inside a student flat.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Microwave",
+      "brand": "Samsung",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Dorms Zone B",
+    "phoneNumber": "01012345678",
+    "price": 3900,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Digital Touch Solo Microwave (20L)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce80",
+    "__v": 0,
+    "categoryId": "6a104bf5bb9b8da209585ce4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Classic pump espresso and cappuccino maker with 15 bar pressure. Dual-option filter holder for ground coffee or pods. Steam wand froth system for barista-quality drinks in your kitchen.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Other",
+      "brand": "Other",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Dorms Zone B",
+    "phoneNumber": "01012345678",
+    "price": 5200,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "DeLonghi Retro Espresso Coffee Maker",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce81",
+    "__v": 0,
+    "categoryId": "6a104bf5bb9b8da209585ce4",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Whisper-quiet humidifier with 4L water tank capacity. Adjustable mist output, automatic shut-off safety sensor, filterless design. Helps maintain healthy humidity levels in dry study spaces.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Other",
+      "brand": "Other",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Dorms Zone A",
+    "phoneNumber": "01012345678",
+    "price": 1200,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Ultrasonic Cool Mist Humidifier (4L)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce82",
+    "__v": 0,
+    "categoryId": "6a104c27bb9b8da209585ce8",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Heavy duty selectorized dumbbells. Adjusts from 2kg to 24kg with a simple turn of a dial. Replaces 15 separate pairs of dumbbells, perfect space-saving gym gear for campus rooms.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Dumbbells",
+      "brand": "Pro-Gym",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Gym Facility",
+    "phoneNumber": "01012345678",
+    "price": 4900,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Premium Adjustable Steel Dumbbells (Pair)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce83",
+    "__v": 0,
+    "categoryId": "6a104c27bb9b8da209585ce8",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Compact space-saving design folding exercise bike. 8 levels of smooth magnetic resistance adjustments, clear LCD console tracking distance, speed, time, and calories burned.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Exercise Bike",
+      "brand": "Pro-Gym",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Gym Facility",
+    "phoneNumber": "01012345678",
+    "price": 3600,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Foldable Magnetic Exercise Fitness Bike",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce84",
+    "__v": 0,
+    "categoryId": "6a104c27bb9b8da209585ce8",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Premium eco-friendly TPE yoga mat. 8mm thick padding protects joints, dual-texture non-slip surface provides traction. Comes with a carrying strap for campus classes.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Yoga Mat",
+      "brand": "Nafa3ni Active",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Gym Facility",
+    "phoneNumber": "01012345678",
+    "price": 450,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "High-Density Non-Slip 8mm Yoga Mat",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce85",
+    "__v": 0,
+    "categoryId": "6a104c27bb9b8da209585ce8",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Sturdy steel-framed urban road/trail bicycle. 21-speed twist shifters, front suspension fork, dual disc brakes. Perfect for fast commuting around the university campus and city streets.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "type": "Bicycle",
+      "brand": "Pro-Gym",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800"
+    ],
+    "isVerified": true,
+    "location": "Student Gym Facility",
+    "phoneNumber": "01012345678",
+    "price": 7800,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Urban Explorer Commuter Bicycle (21-Speed)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce86",
+    "__v": 0,
+    "categoryId": "6a104cb7bb9b8da209585cec",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Professional grade sketchpad. 120 sheets of 160GSM acid-free sketch paper, durable hardcover binding, flat opening layout. Designed for architecture and fine arts student drafting.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "item_type": "Sketchbook",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Fine Arts",
+    "phoneNumber": "01012345678",
+    "price": 280,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Premium Hardcover Drawing Sketchbook (A4)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce87",
+    "__v": 0,
+    "categoryId": "6a104cb7bb9b8da209585cec",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Broad chisel and fine point sketch markers. 80 vibrant permanent colors, fast drying ink, includes portable fabric zipper bag. Excellent for designs, illustrations, and drafting layouts.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "item_type": "Art Markers",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1519750711847-8162bd50cf16?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Fine Arts",
+    "phoneNumber": "01012345678",
+    "price": 650,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Dual-Tip Professional Art Markers (80 Colors)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce88",
+    "__v": 0,
+    "categoryId": "6a104cb7bb9b8da209585cec",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Portable architectural drawing board. Precision parallel motion rule, adjustable elevation angles, non-slip base grip. Perfect for drafting and engineering design students.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "item_type": "Draft Board",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Engineering",
+    "phoneNumber": "01012345678",
+    "price": 1100,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Architectural Drawing Draft Board (A2)",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a125329d2fe0926facbce89",
+    "__v": 0,
+    "categoryId": "6a104cb7bb9b8da209585cec",
+    "createdAt": "2026-05-24T19:32:42.528Z",
+    "description": "Sleek geometric desktop stand for laptops up to 16\". Made of high-quality aluminum alloy, 6 adjustable heights, fully foldable with rubber grips. Enhances posture and laptop airflow.",
+    "dynamicAttributes": {
+      "badge": "SOLD BY NAFA3NI",
+      "Condition": "New",
+      "conditionScore": 10,
+      "item_type": "Laptop Stand",
+      "condition": "New"
+    },
+    "images": [
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800"
+    ],
+    "isVerified": true,
+    "location": "Faculty of Computer Science",
+    "phoneNumber": "01012345678",
+    "price": 340,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "title": "Ergonomic Aluminum Adjustable Laptop Stand",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a125329d2fe0926facbce4c",
+    "status": "active",
+    "viewCount": 0
+  },
+  {
+    "_id": "6a1358e0aeeae3e446eab73c",
+    "title": "Treadmill Pro X200",
+    "description": "Electric treadmill with multiple speed levels and heart rate monitor, lightly used.",
+    "price": 10500,
+    "images": [],
+    "categoryId": "6a104c27bb9b8da209585ce8",
+    "dynamicAttributes": {
+      "Condition": "New"
+    },
+    "location": "Cairo, Nasr City",
+    "phoneNumber": "01034567890",
+    "showContactInfo": true,
+    "userId": "6a121f0acc81734ad4e705ae",
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 19,
+    "createdAt": "2026-05-24T20:00:32.099Z",
+    "updatedAt": "2026-06-01T20:26:18.775Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a136d1e3f6cd3c793ab5bb8",
+    "title": "Dumbbell Set 20kg",
+    "description": "Adjustable dumbbell set with weights up to 20kg.",
+    "price": 2500,
+    "images": [],
+    "categoryId": "6a104c27bb9b8da209585ce8",
+    "dynamicAttributes": {
+      "Condition": "Used"
+    },
+    "location": "Cairo, New Cairo",
+    "phoneNumber": "01514896754",
+    "showContactInfo": true,
+    "userId": "6a121f0acc81734ad4e705ae",
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "sold",
+    "viewCount": 6,
+    "createdAt": "2026-05-24T21:26:54.406Z",
+    "updatedAt": "2026-05-31T11:53:51.374Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a1de7dd5f58f9bb0c329d4d",
+    "title": "Dell Inspiron 15 3520",
+    "description": "15.6-inch laptop with Intel Core i5 processor, 8GB RAM, and 512GB SSD.",
+    "price": 45500,
+    "images": [
+      "/uploads/img-1780344797252-5lomcw.webp",
+      "/uploads/img-1780344797257-4i31ad.webp"
     ],
     "categoryId": "6a104ad9bb9b8da209585cd4",
+    "dynamicAttributes": {
+      "brand": "Dell",
+      "ram": "8GB",
+      "storage": "512GB SSD",
+      "processor": "Intel core i5",
+      "condition": "New"
+    },
+    "location": "Port Said",
+    "phoneNumber": "01212351645",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 3,
+    "createdAt": "2026-06-01T20:13:17.261Z",
+    "updatedAt": "2026-06-01T20:26:14.587Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a1de89e5f58f9bb0c329e35",
+    "title": "Sony WH-1000XM5",
+    "description": "Sony WH-1000XM5",
+    "price": 11000,
+    "images": [
+      "/uploads/img-1780344990791-mg9763.webp"
+    ],
+    "categoryId": "6a104b45bb9b8da209585ce0",
+    "dynamicAttributes": {
+      "type": "Headphones",
+      "type_other": "",
+      "brand": "Sony",
+      "condition": "Used"
+    },
+    "location": "Alexandria",
+    "phoneNumber": "01225388554",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 2,
+    "createdAt": "2026-06-01T20:16:30.797Z",
+    "updatedAt": "2026-06-03T17:13:55.173Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a135aba4327f84d5a5c3b5d",
+    "__v": 0,
+    "categoryId": "6a104b45bb9b8da209585ce0",
+    "createdAt": "2026-06-03T17:26:07.267Z",
+    "description": "vintaged ",
+    "dynamicAttributes": {
+      "type": "Camera",
+      "brand": "Sony",
+      "condition": "Used"
+    },
+    "images": [
+      "/uploads/img-1779653306204-nbsruz.png"
+    ],
+    "isVerified": false,
+    "location": "Damitta",
+    "phoneNumber": "010554654565",
+    "price": 2450,
+    "showContactInfo": true,
+    "soldByNafa3ni": true,
+    "status": "sold",
+    "title": "camera",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a13155675815f87f6a42883",
+    "viewCount": 36
+  },
+  {
+    "_id": "6a1dec10f6dd86ae73ee750e",
+    "__v": 0,
+    "categoryId": "6a104ad9bb9b8da209585cd4",
+    "createdAt": "2026-06-03T17:26:07.267Z",
+    "description": "dgfgfdshfghshgdfhs",
     "dynamicAttributes": {
       "brand": "Dell",
       "ram": "32GB",
@@ -1065,16 +1265,19 @@
       "processor": "intel core i7 ",
       "condition": "Used"
     },
+    "images": [
+      "/uploads/img-1780345872601-prdajy.png"
+    ],
+    "isVerified": false,
     "location": "cairo",
     "phoneNumber": "01098201154",
+    "price": 5000,
     "showContactInfo": false,
-    "userId": "6a10b0d1e24456cbac9b4ede",
     "soldByNafa3ni": false,
-    "isVerified": false,
     "status": "active",
-    "viewCount": 0,
-    "createdAt": "2026-06-01T20:31:12.613Z",
-    "updatedAt": "2026-06-01T20:31:12.613Z",
-    "__v": 0
+    "title": "dell inspiron",
+    "updatedAt": "2026-06-06T15:05:22.892Z",
+    "userId": "6a10b0d1e24456cbac9b4ede",
+    "viewCount": 0
   }
 ]
