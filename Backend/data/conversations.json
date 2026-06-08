@@ -1,98 +1,62 @@
 [
   {
-    "_id": "6a1369779c781f0d7de19abd",
-    "participants": [
-      "6a121f0acc81734ad4e705ae",
-      "6a125329d2fe0926facbce4c"
-    ],
-    "productId": "6a125329d2fe0926facbce6e",
-    "createdAt": "2026-05-24T21:11:19.975Z",
-    "updatedAt": "2026-05-24T21:11:19.983Z",
-    "__v": 0,
-    "lastMessage": "6a1369779c781f0d7de19abe"
-  },
-  {
-    "_id": "6a14a6b1658e586c0e957ae8",
-    "participants": [
-      "6a0f7e450862e2e4755f4505",
-      "6a125329d2fe0926facbce4c"
-    ],
-    "productId": "6a125329d2fe0926facbce6a",
-    "createdAt": "2026-05-25T19:44:49.278Z",
-    "updatedAt": "2026-05-25T19:44:49.286Z",
-    "__v": 0,
-    "lastMessage": "6a14a6b1658e586c0e957ae9"
-  },
-  {
-    "_id": "6a206133d77da8f7f0c8afbc",
-    "participants": [
-      "6a0f7e450862e2e4755f4505",
-      "6a10b0d1e24456cbac9b4ede"
-    ],
-    "productId": "6a1236519d93db6d6302cf44",
-    "createdAt": "2026-06-03T17:15:31.302Z",
-    "updatedAt": "2026-06-03T17:15:31.310Z",
-    "__v": 0,
-    "lastMessage": "6a206133d77da8f7f0c8afbd"
-  },
-  {
     "_id": "6a132c28c0cdb881a787bc7e",
-    "__v": 0,
-    "createdAt": "2026-06-03T17:26:07.290Z",
-    "lastMessage": "6a132c28c0cdb881a787bc7f",
     "participants": [
       "6a13155675815f87f6a42883",
       "6a125329d2fe0926facbce4c"
     ],
     "productId": "6a125329d2fe0926facbce7a",
-    "updatedAt": "2026-06-06T15:05:22.942Z"
+    "createdAt": "2026-05-24T16:49:44.398Z",
+    "updatedAt": "2026-05-24T16:49:44.404Z",
+    "__v": 0,
+    "lastMessage": "6a132c28c0cdb881a787bc7f"
   },
   {
     "_id": "6a132c35c0cdb881a787bcb5",
-    "__v": 0,
-    "createdAt": "2026-06-03T17:26:07.290Z",
-    "lastMessage": "6a132c35c0cdb881a787bcb6",
     "participants": [
       "6a13155675815f87f6a42883",
       "6a125329d2fe0926facbce4c"
     ],
     "productId": "6a125329d2fe0926facbce76",
-    "updatedAt": "2026-06-06T15:05:22.942Z"
+    "createdAt": "2026-05-24T16:49:57.100Z",
+    "updatedAt": "2026-05-24T16:49:57.103Z",
+    "__v": 0,
+    "lastMessage": "6a132c35c0cdb881a787bcb6"
   },
   {
     "_id": "6a1342a81c6256546773c7e2",
-    "__v": 0,
-    "createdAt": "2026-06-03T17:26:07.290Z",
-    "lastMessage": "6a1342a81c6256546773c7e3",
     "participants": [
       "6a10b0d1e24456cbac9b4ede",
       "6a125329d2fe0926facbce4c"
     ],
     "productId": "6a125329d2fe0926facbce72",
-    "updatedAt": "2026-06-06T15:05:22.942Z"
+    "createdAt": "2026-05-24T18:25:44.846Z",
+    "updatedAt": "2026-05-24T18:25:44.848Z",
+    "__v": 0,
+    "lastMessage": "6a1342a81c6256546773c7e3"
   },
   {
     "_id": "6a1349cc270f32fde3755fc8",
-    "__v": 0,
-    "createdAt": "2026-06-03T17:26:07.290Z",
-    "lastMessage": "6a134ab8270f32fde3755ff2",
     "participants": [
       "6a13155675815f87f6a42883",
       "6a10b0d1e24456cbac9b4ede"
     ],
     "productId": "6a1236519d93db6d6302cf44",
-    "updatedAt": "2026-06-06T15:05:22.942Z"
+    "createdAt": "2026-05-24T18:56:12.093Z",
+    "updatedAt": "2026-05-24T19:00:08.076Z",
+    "__v": 0,
+    "lastMessage": "6a134ab8270f32fde3755ff2"
   },
   {
     "_id": "6a1de2256a12d760a4f10d4c",
-    "__v": 0,
-    "createdAt": "2026-06-03T17:26:07.290Z",
-    "lastMessage": "6a205208030ac21dd3af62a1",
     "participants": [
       "6a125329d2fe0926facbce4c",
       "6a10b0d1e24456cbac9b4ede"
     ],
     "productId": "6a1236519d93db6d6302cf44",
-    "updatedAt": "2026-06-06T15:05:22.942Z"
+    "createdAt": "2026-06-01T19:48:53.258Z",
+    "updatedAt": "2026-06-03T16:10:48.767Z",
+    "__v": 0,
+    "lastMessage": "6a205208030ac21dd3af62a1"
   }
 ]
