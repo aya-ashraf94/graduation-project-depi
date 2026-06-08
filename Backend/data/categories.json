@@ -283,7 +283,7 @@
         "name": "brand",
         "type": "text",
         "options": [],
-        "required": false,
+        "required": true,
         "hasOther": false,
         "_id": "6a104b26bb9b8da209585cde"
       },
