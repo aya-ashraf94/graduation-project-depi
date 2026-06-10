@@ -1,37 +1,54 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
-const fs = require("fs");
-const path = require("path");
+// const fs = require("fs");
+// const path = require("path");
+
+const cloudinary = require("../config/cloudinary");
 
 // Helper to save base64 image to disk and return URL path
-const saveBase64Image = (base64Str) => {
+// const saveBase64Image = (base64Str) => {
+//     if (!base64Str) return null;
+
+//     // If it's already a URL or path, keep it
+//     if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) {
+//         return base64Str;
+//     }
+
+//     // Match base64 pattern: data:image/jpeg;base64,...
+//     const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+//     if (!matches || matches.length !== 3) {
+//         return base64Str;
+//     }
+
+//     const type = matches[1];
+//     const extension = type.split("/")[1] || "png";
+//     const buffer = Buffer.from(matches[2], "base64");
+
+//     const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
+//     const uploadDir = path.join(__dirname, "../public/uploads");
+
+//     // Ensure directory exists
+//     if (!fs.existsSync(uploadDir)) {
+//         fs.mkdirSync(uploadDir, { recursive: true });
+//     }
+
+//     fs.writeFileSync(path.join(uploadDir, fileName), buffer);
+//     return `/uploads/${fileName}`;
+// };
+
+const uploadBase64ToCloudinary = async (base64Str) => {
     if (!base64Str) return null;
-    
-    // If it's already a URL or path, keep it
-    if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) {
+
+    // لو الصورة موجودة بالفعل على Cloudinary
+    if (base64Str.startsWith("http")) {
         return base64Str;
     }
-    
-    // Match base64 pattern: data:image/jpeg;base64,...
-    const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) {
-        return base64Str;
-    }
-    
-    const type = matches[1];
-    const extension = type.split("/")[1] || "png";
-    const buffer = Buffer.from(matches[2], "base64");
-    
-    const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
-    const uploadDir = path.join(__dirname, "../public/uploads");
-    
-    // Ensure directory exists
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(path.join(uploadDir, fileName), buffer);
-    return `/uploads/${fileName}`;
+
+    const result = await cloudinary.uploader.upload(base64Str, {
+        folder: "nafa3ni-products"
+    });
+
+    return result.secure_url;
 };
 
 //Get Product By ID
@@ -42,7 +59,7 @@ const getProductById = async (req, res) => {
             { $inc: { viewCount: 1 } },
             { new: true }
         ).populate('userId').populate('categoryId');
-        
+
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
@@ -249,7 +266,17 @@ const createProduct = async (req, res) => {
         }
 
         // Save base64 images to disk files
-        const savedImages = (images || []).map(img => saveBase64Image(img)).filter(Boolean);
+        // const savedImages = (images || []).map(img => saveBase64Image(img)).filter(Boolean);
+
+        const savedImages = [];
+
+        for (const img of (images || [])) {
+            const uploadedImage = await uploadBase64ToCloudinary(img);
+
+            if (uploadedImage) {
+                savedImages.push(uploadedImage);
+            }
+        }
 
         // إنشاء المنتج مع ربطه بـ req.user.id
         let product = await Product.create({
@@ -319,22 +346,38 @@ const updateProduct = async (req, res) => {
 
         if (req.body.images !== undefined) {
             // Save base64 images to disk files
-            savedImages = (req.body.images || []).map(img => saveBase64Image(img)).filter(Boolean);
+            // savedImages = (req.body.images || []).map(img => saveBase64Image(img)).filter(Boolean);
+            savedImages = [];
+
+            for (const img of (req.body.images || [])) {
+
+                // الصورة القديمة موجودة بالفعل
+                if (img.startsWith("http")) {
+                    savedImages.push(img);
+                    continue;
+                }
+
+                const uploadedImage = await uploadBase64ToCloudinary(img);
+
+                if (uploadedImage) {
+                    savedImages.push(uploadedImage);
+                }
+            }
 
             // Delete physical files from disk if they were removed/replaced in this update
-            const deletedImages = (product.images || []).filter(img => !savedImages.includes(img));
-            deletedImages.forEach(img => {
-                if (img.startsWith("/uploads/")) {
-                    const filePath = path.join(__dirname, "../public", img);
-                    if (fs.existsSync(filePath)) {
-                        try {
-                            fs.unlinkSync(filePath);
-                        } catch (err) {
-                            console.error(`Failed to delete physical file: ${filePath}`, err);
-                        }
-                    }
-                }
-            });
+            // const deletedImages = (product.images || []).filter(img => !savedImages.includes(img));
+            // deletedImages.forEach(img => {
+            //     if (img.startsWith("/uploads/")) {
+            //         const filePath = path.join(__dirname, "../public", img);
+            //         if (fs.existsSync(filePath)) {
+            //             try {
+            //                 fs.unlinkSync(filePath);
+            //             } catch (err) {
+            //                 console.error(`Failed to delete physical file: ${filePath}`, err);
+            //             }
+            //         }
+            //     }
+            // });
         }
 
         // 3. تحديد الحقول المسموح بتعديلها فقط (Security Best Practice)
@@ -392,20 +435,20 @@ const deleteProduct = async (req, res) => {
         }
 
         // Delete associated physical files from disk
-        if (product.images && product.images.length > 0) {
-            product.images.forEach(img => {
-                if (img.startsWith("/uploads/")) {
-                    const filePath = path.join(__dirname, "../public", img);
-                    if (fs.existsSync(filePath)) {
-                        try {
-                            fs.unlinkSync(filePath);
-                        } catch (err) {
-                            console.error(`Failed to delete physical file: ${filePath}`, err);
-                        }
-                    }
-                }
-            });
-        }
+        // if (product.images && product.images.length > 0) {
+        //     product.images.forEach(img => {
+        //         if (img.startsWith("/uploads/")) {
+        //             const filePath = path.join(__dirname, "../public", img);
+        //             if (fs.existsSync(filePath)) {
+        //                 try {
+        //                     fs.unlinkSync(filePath);
+        //                 } catch (err) {
+        //                     console.error(`Failed to delete physical file: ${filePath}`, err);
+        //                 }
+        //             }
+        //         }
+        //     });
+        // }
 
         await product.deleteOne(); // أو findByIdAndDelete
         res.json({ message: "Product Deleted Successfully" });
