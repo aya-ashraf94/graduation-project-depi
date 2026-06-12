@@ -259,6 +259,11 @@
   color: #1d4ed8;
 }
 
+.pill-gray {
+  background: #e5e7eb;
+  color: #374151;
+}
+
 .footer-strip {
   display: flex;
   align-items: center;

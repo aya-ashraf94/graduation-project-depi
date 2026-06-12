@@ -88,6 +88,7 @@
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="pill-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
                 Fast Responder
               </span>
+              <span class="pill pill-gray" *ngFor="let tag of user.tags">{{ tag }}</span>
             </div>
 
             <!-- Member date strip -->
@@ -977,12 +978,6 @@
         <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'account'" (click)="editActiveTab = 'account'">
           Account Info
         </button>
-        <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'seller'" (click)="editActiveTab = 'seller'">
-          Seller Settings
-        </button>
-        <button type="button" class="sidebar-tab-btn" [class.active]="editActiveTab === 'security'" (click)="editActiveTab = 'security'">
-          Security
-        </button>
       </aside>
 
       <!-- Right Form Area -->
@@ -1031,87 +1026,6 @@
             <div class="form-group">
               <label class="form-label">EMAIL ADDRESS</label>
               <input type="email" [(ngModel)]="editForm.email" name="email" required class="form-input" placeholder="e.g. email@test.com" />
-            </div>
-
-            <div class="form-group" style="margin-top: 1.25rem;">
-              <label class="form-label">PHONE NUMBER (MOCKED)</label>
-              <input type="text" name="phoneMock" class="form-input" placeholder="e.g. +20 123 456 7890" disabled />
-              <span class="field-hint" style="font-family: var(--font-secondary); font-size: 0.75rem; color: var(--gray-3); margin-top: 0.15rem;">Securely stored for transactions and support.</span>
-            </div>
-
-            <div class="form-group" style="margin-top: 1.25rem;">
-              <label class="form-label">SOCIAL LINKS (MOCKED)</label>
-              <div class="social-input-row" style="display: flex; gap: 0.5rem; flex-direction: column;">
-                <input type="text" name="instagramMock" class="form-input" placeholder="Instagram Username (e.g. @abdo_gamal)" disabled />
-                <input type="text" name="linkedinMock" class="form-input" placeholder="LinkedIn Profile Link" disabled />
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 3: SELLER SETTINGS -->
-          <div class="form-section-content" *ngIf="editActiveTab === 'seller'">
-            <div class="form-group">
-              <label class="form-label">RESPONSE AVAILABILITY (MOCKED)</label>
-              <select name="responseAvailabilityMock" class="form-input" disabled style="background: var(--white); cursor: not-allowed;">
-                <option value="10">Typically replies within 10 minutes</option>
-                <option value="60">Typically replies within an hour</option>
-                <option value="1440">Typically replies within 24 hours</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="margin-top: 1.25rem;">
-              <label class="form-label">SHIPPING PREFERENCES (MOCKED)</label>
-              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
-                  <input type="checkbox" name="shipOnCampusMock" checked disabled /> Handover on Campus
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
-                  <input type="checkbox" name="shipLocalMock" checked disabled /> Local Shipping / Delivery
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
-                  <input type="checkbox" name="shipInternationalMock" disabled /> Shipping Outside City
-                </label>
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1.25rem;">
-              <label class="form-label">ACCEPTED PAYMENT METHODS (MOCKED)</label>
-              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
-                  <input type="checkbox" name="payCashMock" checked disabled /> Cash on Delivery
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
-                  <input type="checkbox" name="payInstapayMock" checked disabled /> InstaPay / Wallet Transfer
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 600; cursor: not-allowed; opacity: 0.7;">
-                  <input type="checkbox" name="payBankMock" disabled /> Bank Transfer
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 4: SECURITY -->
-          <div class="form-section-content" *ngIf="editActiveTab === 'security'">
-            <div class="form-group">
-              <label class="form-label">CURRENT PASSWORD</label>
-              <input type="password" name="currentPasswordMock" class="form-input" placeholder="••••••••" disabled />
-            </div>
-
-            <div class="form-group" style="margin-top: 1.25rem;">
-              <label class="form-label">NEW PASSWORD</label>
-              <input type="password" name="newPasswordMock" class="form-input" placeholder="••••••••" disabled />
-            </div>
-
-            <div class="form-group" style="margin-top: 1.25rem;">
-              <label class="form-label">CONFIRM NEW PASSWORD</label>
-              <input type="password" name="confirmPasswordMock" class="form-input" placeholder="••••••••" disabled />
-            </div>
-            
-            <div class="form-group" style="margin-top: 1.5rem;">
-              <label class="form-label">TWO-FACTOR AUTHENTICATION (MOCKED)</label>
-              <button type="button" class="brutalist-btn" style="font-size: 0.9rem; padding: 0.5rem 1rem; width: fit-content; background: #e3f2fd; color: #0d47a1; pointer-events: none; border-color: var(--black);" disabled>
-                ENABLE 2FA
-              </button>
             </div>
           </div>
 

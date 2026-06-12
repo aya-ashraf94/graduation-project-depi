@@ -9,7 +9,7 @@
     "rating": 5,
     "revieweeId": "6a10b0d1e24456cbac9b4ede",
     "reviewerId": "6a13155675815f87f6a42883",
-    "updatedAt": "2026-06-08T19:58:39.382Z"
+    "updatedAt": "2026-06-12T21:57:43.663Z"
   },
   {
     "_id": "6a15801789064466d83ddeb3",
@@ -21,7 +21,7 @@
     "rating": 5,
     "revieweeId": "6a125329d2fe0926facbce4c",
     "reviewerId": "6a10b0d1e24456cbac9b4ede",
-    "updatedAt": "2026-06-08T19:58:39.382Z"
+    "updatedAt": "2026-06-12T21:57:43.663Z"
   },
   {
     "_id": "6a240404ebf7d3f7c4d933c5",
@@ -33,6 +33,6 @@
     "rating": 5,
     "revieweeId": "6a125329d2fe0926facbce4c",
     "reviewerId": "6a10b0d1e24456cbac9b4ede",
-    "updatedAt": "2026-06-08T19:58:39.382Z"
+    "updatedAt": "2026-06-12T21:57:43.663Z"
   }
 ]
