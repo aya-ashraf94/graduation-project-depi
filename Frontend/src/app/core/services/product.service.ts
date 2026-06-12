@@ -99,11 +99,29 @@ export class ProductService {
       dynamicAttributes.conditionScore = payload.conditionScore;
     }
 
+    // const backendPayload: any = {
+    //   title: payload.title,
+    //   description: payload.description,
+    //   price: payload.price,
+    //   images: payload.images,
+    // };
+
     const backendPayload: any = {
       title: payload.title,
       description: payload.description,
       price: payload.price,
+
       images: payload.images,
+      categoryId: (payload as any).categoryId,
+
+      location: payload.location,
+      phoneNumber: payload.phoneNumber,
+      showContactInfo: payload.showContactInfo,
+
+      status:
+        payload.status === 'available'
+          ? 'active'
+          : payload.status
     };
 
     if (Object.keys(dynamicAttributes).length > 0) {
@@ -234,7 +252,13 @@ export class ProductService {
       updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date(),
       categoryName: p.categoryId?.name || '',
       soldByNafa3ni: p.soldByNafa3ni || false,
-      isVerified: p.isVerified || false
+      isVerified: p.isVerified || false,
+
+      location: p.location || '',
+      phoneNumber: p.phoneNumber || '',
+      showContactInfo: p.showContactInfo ?? true,
+      categoryId: p.categoryId
+
     } as any;
   }
 
