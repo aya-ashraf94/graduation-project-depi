@@ -90,7 +90,7 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   // Edit profile modal state
   showEditModal = false;
-  editActiveTab: 'profile' | 'account' | 'security' | 'seller' = 'profile';
+  editActiveTab: 'profile' | 'account' = 'profile';
   profileSuccess = signal<string | null>(null);
   profileError = signal<string | null>(null);
   editForm = {
