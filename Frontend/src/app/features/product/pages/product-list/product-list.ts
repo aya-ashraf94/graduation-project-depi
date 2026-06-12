@@ -68,10 +68,10 @@ export class ProductList implements OnInit {
   selectedSort: SortOption = 'relevance';
 
   sortLabels: Record<SortOption, string> = {
-    relevance:  'RELEVANCE',
-    price_asc:  'PRICE: LOW TO HIGH',
+    relevance: 'RELEVANCE',
+    price_asc: 'PRICE: LOW TO HIGH',
     price_desc: 'PRICE: HIGH TO LOW',
-    newest:     'NEWEST ARRIVALS',
+    newest: 'NEWEST ARRIVALS',
   };
 
   sortKeys: SortOption[] = ['relevance', 'price_asc', 'price_desc', 'newest'];
@@ -115,19 +115,46 @@ export class ProductList implements OnInit {
     // 3. Fetch products dynamically
     this.productService.getProducts().subscribe({
       next: (apiProducts) => {
+        // const mapped = apiProducts.map(p => {
+        //   const conditionLabel = this.productService.conditionLabels[p.condition] || p.condition;
+        //   return {
+        //     id: p.id,
+        //     name: p.title,
+        //     brand: p.brand || 'ARCHIVE',
+        //     price: p.price,
+        //     desc: '',
+        //     image: p.thumbnail || 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
+        //     badge: p.badge || '',
+        //     size: (p as any).size || 'OS',
+        //     condition: conditionLabel,
+        //     conditionScore: p.conditionScore ? `${p.conditionScore}/10` : '8.0/10',
+        //     sku: p.id.substring(0, 8).toUpperCase(),
+        //     categoryName: (p as any).categoryName || '',
+        //     soldByNafa3ni: p.soldByNafa3ni
+        //   };
+        // });
+
         const mapped = apiProducts.map(p => {
-          const conditionLabel = this.productService.conditionLabels[p.condition] || p.condition;
+          const conditionLabel =
+            this.productService.conditionLabels[p.condition] || p.condition;
+
           return {
             id: p.id,
             name: p.title,
             brand: p.brand || 'ARCHIVE',
             price: p.price,
             desc: '',
-            image: p.thumbnail || 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
+
+            image:
+              p.thumbnail ||
+              'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
+
             badge: p.badge || '',
             size: (p as any).size || 'OS',
             condition: conditionLabel,
-            conditionScore: p.conditionScore ? `${p.conditionScore}/10` : '8.0/10',
+            conditionScore: p.conditionScore
+              ? `${p.conditionScore}/10`
+              : '8.0/10',
             sku: p.id.substring(0, 8).toUpperCase(),
             categoryName: (p as any).categoryName || '',
             soldByNafa3ni: p.soldByNafa3ni
@@ -232,10 +259,10 @@ export class ProductList implements OnInit {
 
     // Sort
     switch (this.selectedSort) {
-      case 'price_asc':  result.sort((a, b) => a.price - b.price); break;
+      case 'price_asc': result.sort((a, b) => a.price - b.price); break;
       case 'price_desc': result.sort((a, b) => b.price - a.price); break;
-      case 'newest':     result.sort((a, b) => b.id.localeCompare(a.id));       break;
-      default:           break; // relevance = original order
+      case 'newest': result.sort((a, b) => b.id.localeCompare(a.id)); break;
+      default: break; // relevance = original order
     }
 
     // Update pagination metadata
