@@ -94,6 +94,73 @@
   border-color: var(--black);
 }
 
+/* ---------- IMAGES ---------- */
+.current-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.image-card {
+  position: relative;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.image-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
+}
+
+.product-preview {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.delete-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, .7);
+  color: white;
+
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+
+  transition: .2s;
+}
+
+.delete-image-btn:hover {
+  background: #dc2626;
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+input[type="file"]:hover {
+  border-color: #2563eb;
+}
+
 /* ---------- FIELDS ---------- */
 .field-group {
   display: flex;
@@ -195,20 +262,25 @@
 .edit-form-card {
   padding: 1.5rem;
 }
+
 .field-row {
   grid-template-columns: 1fr;
 }
+
 .form-actions {
   flex-direction: column;
   gap: 1rem;
 }
+
 .actions-left {
   width: 100%;
 }
+
 .btn-danger {
   width: 100%;
   text-align: center;
 }
+
 .edit-title {
   font-size: 2rem;
 }
@@ -218,20 +290,25 @@
   .edit-form-card {
     padding: 2.5rem;
   }
+
   .field-row {
     grid-template-columns: 1fr 1fr;
   }
+
   .form-actions {
     flex-direction: row;
     gap: 0;
   }
+
   .actions-left {
     width: auto;
   }
+
   .btn-danger {
     width: auto;
     text-align: left;
   }
+
   .edit-title {
     font-size: 3rem;
   }
