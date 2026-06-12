@@ -46,6 +46,12 @@ export interface Product {
   soldByNafa3ni?: boolean;
   isVerified?: boolean;
   categoryName?: string;
+
+  location?: string;
+  phoneNumber?: string;
+  showContactInfo?: boolean;
+  categoryId?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -81,11 +87,25 @@ export interface CreateProductRequest {
   category: ProductCategory;
   size?: string;
   images: string[];
+
+  location?: string;
+  phoneNumber?: string;
+  showContactInfo?: boolean;
 }
 
 /** Payload to update an existing listing */
+// export interface UpdateProductRequest extends Partial<CreateProductRequest> {
+//   status?: ProductStatus;
+// }
+
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
   status?: ProductStatus;
+
+  location?: string;
+  phoneNumber?: string;
+  showContactInfo?: boolean;
+
+  categoryId?: string;
 }
 
 /** Filters for the product listing page */

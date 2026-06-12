@@ -99,11 +99,29 @@ export class ProductService {
       dynamicAttributes.conditionScore = payload.conditionScore;
     }
 
+    // const backendPayload: any = {
+    //   title: payload.title,
+    //   description: payload.description,
+    //   price: payload.price,
+    //   images: payload.images,
+    // };
+
     const backendPayload: any = {
       title: payload.title,
       description: payload.description,
       price: payload.price,
+
       images: payload.images,
+      categoryId: (payload as any).categoryId,
+
+      location: payload.location,
+      phoneNumber: payload.phoneNumber,
+      showContactInfo: payload.showContactInfo,
+
+      status:
+        payload.status === 'available'
+          ? 'active'
+          : payload.status
     };
 
     if (Object.keys(dynamicAttributes).length > 0) {
@@ -136,7 +154,7 @@ export class ProductService {
     if (!p) return p;
     const dynamic = p.dynamicAttributes || {};
     const baseUrl = environment.apiUrl.replace('/api', '');
-    
+
     // Parse condition
     let condition: ProductCondition = 'good';
     const condStr = (dynamic.Condition || dynamic.condition || '').toLowerCase().replace(/\s+/g, '_');
@@ -197,9 +215,10 @@ export class ProductService {
         id: u._id || u.id,
         firstName,
         lastName,
-        avatar: u.avatar && u.avatar.startsWith('/uploads')
-          ? `${baseUrl}${u.avatar}`
-          : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+        // avatar: u.avatar && u.avatar.startsWith('/uploads')
+        //   ? `${baseUrl}${u.avatar}`
+        //   : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+        avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
         rating: u.rating ?? 5.0,
         isVerified: u.isVerified ?? false
       };
@@ -218,8 +237,11 @@ export class ProductService {
       category,
       size,
       sku: p._id ? p._id.substring(0, 8).toUpperCase() : '',
-      images: p.images && p.images.length > 0 
-        ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
+      // images: p.images && p.images.length > 0 
+      //   ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
+      //   : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
+      images: p.images && p.images.length > 0
+        ? p.images
         : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       badge: dynamic.badge || '',
       status: (p.status === 'active' || p.status === 'available') ? 'available' : (p.status || 'available'),
@@ -230,7 +252,13 @@ export class ProductService {
       updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date(),
       categoryName: p.categoryId?.name || '',
       soldByNafa3ni: p.soldByNafa3ni || false,
-      isVerified: p.isVerified || false
+      isVerified: p.isVerified || false,
+
+      location: p.location || '',
+      phoneNumber: p.phoneNumber || '',
+      showContactInfo: p.showContactInfo ?? true,
+      categoryId: p.categoryId
+
     } as any;
   }
 

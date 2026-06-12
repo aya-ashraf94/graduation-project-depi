@@ -15,63 +15,107 @@
       <div class="status-bar">
         <label class="field-label">LISTING STATUS</label>
         <div class="status-options">
-          <button
-            *ngFor="let s of statuses"
-            class="status-btn"
-            [class.active]="status === s"
-            [class.status-available]="s === 'available'"
-            [class.status-reserved]="s === 'reserved'"
-            [class.status-sold]="s === 'sold'"
-            (click)="status = s"
-          >
+          <button *ngFor="let s of statuses" class="status-btn" [class.active]="status === s"
+            [class.status-available]="s === 'available'" [class.status-reserved]="s === 'reserved'"
+            [class.status-sold]="s === 'sold'" (click)="status = s">
             {{ s | uppercase }}
           </button>
         </div>
       </div>
 
+      <!--IMAGES-->
+      <div class="field-group">
+        <label class="field-label">IMAGES</label>
+        <div class="current-images" *ngIf="images.length">
+
+          <div class="image-card" *ngFor="let image of images; let i = index">
+
+            <img [src]="image" alt="Product Image" class="product-preview">
+
+            <button type="button" class="delete-image-btn" (click)="removeImage(i)">
+              ✕
+            </button>
+
+          </div>
+
+        </div>
+
+        <input type="file" multiple accept="image/*" (change)="onImagesSelected($event)" />
+
+      </div>
+
+
+
+      <!--LOCATION-->
+      <div class="field-group">
+        <label class="field-label">LOCATION</label>
+
+        <input class="field-input" [(ngModel)]="location" placeholder="Cairo" />
+      </div>
+
+      <!--PHONE NUMBER-->
+      <div class="field-group">
+        <label class="field-label">PHONE NUMBER</label>
+
+        <input class="field-input" [(ngModel)]="phoneNumber" />
+      </div>
+
+      <!--CONTACT INFO-->
+      <div class="field-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="showContactInfo" />
+          Show Contact Info
+        </label>
+      </div>
+
       <!-- TITLE -->
       <div class="field-group">
         <label class="field-label" for="edit-title">TITLE</label>
-        <input
-          id="edit-title"
-          class="field-input"
-          type="text"
-          [(ngModel)]="title"
-          placeholder="Item title"
-        />
+        <input id="edit-title" class="field-input" type="text" [(ngModel)]="title" placeholder="Item title" />
       </div>
 
       <!-- DESCRIPTION -->
       <div class="field-group">
         <label class="field-label" for="edit-desc">DESCRIPTION</label>
-        <textarea
-          id="edit-desc"
-          class="field-textarea"
-          [(ngModel)]="description"
-          placeholder="Describe your item in detail..."
-          rows="5"
-        ></textarea>
+        <textarea id="edit-desc" class="field-textarea" [(ngModel)]="description"
+          placeholder="Describe your item in detail..." rows="5"></textarea>
       </div>
 
       <!-- ROW: PRICE + CATEGORY -->
       <div class="field-row">
         <div class="field-group">
           <label class="field-label" for="edit-price">PRICE ($)</label>
-          <input
-            id="edit-price"
-            class="field-input"
-            type="number"
-            [(ngModel)]="price"
-            placeholder="0.00"
-            min="0"
-          />
+          <input id="edit-price" class="field-input" type="number" [(ngModel)]="price" placeholder="0.00" min="0" />
         </div>
 
         <div class="field-group">
           <label class="field-label" for="edit-category">CATEGORY</label>
-          <select id="edit-category" class="field-select" [(ngModel)]="category">
+          <!-- <select id="edit-category" class="field-select" [(ngModel)]="category">
             <option value="">Select a category</option>
             <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabels[cat] }}</option>
+          </select> -->
+
+          <!-- <select id="edit-category" class="field-select" [(ngModel)]="selectedCategoryId">
+
+            <option value="">Select a category</option>
+
+            <option *ngFor="let cat of categories" [value]="cat._id">
+
+              {{ cat.name }}
+
+            </option>
+
+          </select> -->
+          <select id="edit-category" class="field-select" [(ngModel)]="selectedCategoryId">
+
+            <option value="" [ngValue]="null" disabled>Select a category</option>
+
+            <option *ngFor="let cat of categories" [value]="cat._id">
+
+              {{ cat.name }}
+
+            </option>
+
           </select>
         </div>
       </div>
@@ -88,24 +132,14 @@
 
         <div class="field-group">
           <label class="field-label" for="edit-size">SIZE (optional)</label>
-          <input
-            id="edit-size"
-            class="field-input"
-            type="text"
-            [(ngModel)]="size"
-            placeholder="e.g. M, L, W32"
-          />
+          <input id="edit-size" class="field-input" type="text" [(ngModel)]="size" placeholder="e.g. M, L, W32" />
         </div>
       </div>
 
       <!-- ACTIONS -->
       <div class="form-actions">
         <div class="actions-left">
-          <button
-            class="btn btn-primary save-btn"
-            [disabled]="!formValid || saving()"
-            (click)="saveChanges()"
-          >
+          <button class="btn btn-primary save-btn" [disabled]="!formValid || saving()" (click)="saveChanges()">
             {{ saving() ? 'SAVING...' : 'SAVE CHANGES' }}
           </button>
           <button class="btn btn-outline cancel-btn" (click)="cancel()">CANCEL</button>
@@ -125,7 +159,8 @@
       <div class="skeleton-box" style="width: 22rem; height: 1rem;"></div>
     </div>
 
-    <div class="edit-form-card" style="padding: 2.5rem; border: var(--border-width) solid var(--border); border-radius: var(--radius-md);">
+    <div class="edit-form-card"
+      style="padding: 2.5rem; border: var(--border-width) solid var(--border); border-radius: var(--radius-md);">
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         <!-- status skeleton -->
         <div>
