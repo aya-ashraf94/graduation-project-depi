@@ -1,16 +1,20 @@
 [
   {
-    "_id": "6a2c87c6442bd4df660d53e4",
-    "title": "Legion 5",
-    "description": "تجربه 1",
-    "price": 900,
+    "_id": "6a2da563781deb1a895c7fba",
+    "title": "Dell Inspiron 15 3520",
+    "description": "gghhh",
+    "price": 25000,
     "images": [
-      "https://res.cloudinary.com/du25ycqxs/image/upload/v1781303343/nafa3ni-products/rtofqdtreyeafnvwb0fp.webp"
+      "https://res.cloudinary.com/du25ycqxs/image/upload/v1781376356/nafa3ni-products/swzcnwhboiw5nzujwgvg.webp",
+      "https://res.cloudinary.com/du25ycqxs/image/upload/v1781376356/nafa3ni-products/ijyh0aleydobvovhp59p.webp"
     ],
     "categoryId": "6a104ad9bb9b8da209585cd4",
     "dynamicAttributes": {
-      "Condition": "Used",
-      "size": "L"
+      "condition": "New",
+      "brand": "Dell",
+      "ram": "12GB",
+      "storage": "512GB SSD",
+      "processor": "Intel core i7"
     },
     "location": "Cairo, Nasr City",
     "phoneNumber": "01212351645",
@@ -19,9 +23,65 @@
     "soldByNafa3ni": false,
     "isVerified": false,
     "status": "active",
-    "viewCount": 9,
-    "createdAt": "2026-06-12T22:27:18.407Z",
-    "updatedAt": "2026-06-12T22:45:00.483Z",
+    "viewCount": 21,
+    "createdAt": "2026-06-13T18:45:55.620Z",
+    "updatedAt": "2026-06-13T20:53:14.549Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a2da7d2f22bfddb53fb2c8c",
+    "title": "Dress",
+    "description": "dress classic",
+    "price": 1050,
+    "images": [
+      "https://res.cloudinary.com/du25ycqxs/image/upload/v1781376978/nafa3ni-products/dtmn7irxcymszp0sgeib.png",
+      "https://res.cloudinary.com/du25ycqxs/image/upload/v1781376978/nafa3ni-products/qpdywts3rtitmhrx0uwp.webp"
+    ],
+    "categoryId": "6a104b26bb9b8da209585cda",
+    "dynamicAttributes": {
+      "type": "Dress",
+      "size": "M",
+      "color": "Red",
+      "brand": "LC WIKIKI",
+      "condition": "Used"
+    },
+    "location": "Cairo, New Cairo",
+    "phoneNumber": "01212351666",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 45,
+    "createdAt": "2026-06-13T18:56:18.358Z",
+    "updatedAt": "2026-06-13T20:52:23.611Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a2db539c7b0c39826a25921",
+    "title": "Samsung Galaxy S25 Ultraaaa",
+    "description": "hhfds001",
+    "price": 15525,
+    "images": [
+      "https://res.cloudinary.com/du25ycqxs/image/upload/v1781380409/nafa3ni-products/yse9hrxjoi0ux2rbxy1q.webp"
+    ],
+    "categoryId": "6a1049d4bb9b8da209585ccf",
+    "dynamicAttributes": {
+      "brand": "Samsung",
+      "storage": "128GB",
+      "color": "Blue",
+      "condition": "Used"
+    },
+    "location": "Port Fouad",
+    "phoneNumber": "012584185200",
+    "showContactInfo": true,
+    "userId": "6a0f7e450862e2e4755f4505",
+    "soldByNafa3ni": false,
+    "isVerified": false,
+    "status": "active",
+    "viewCount": 41,
+    "createdAt": "2026-06-13T19:53:29.318Z",
+    "updatedAt": "2026-06-13T20:38:18.546Z",
     "__v": 0
   }
 ]

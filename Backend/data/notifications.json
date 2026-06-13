@@ -9,7 +9,7 @@
     "linkedEntityId": "6a1ddfa35f58f9bb0c329aaa",
     "linkedRoute": "/profile/me?tab=orders&view=sales",
     "createdAt": "2026-06-01T19:38:11.920Z",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "__v": 0
   },
   {
@@ -22,7 +22,7 @@
     "linkedEntityId": "6a1ddfa35f58f9bb0c329aaa",
     "linkedRoute": "/profile/me?tab=orders&view=purchases",
     "createdAt": "2026-06-01T19:40:23.277Z",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "__v": 0
   },
   {
@@ -35,7 +35,7 @@
     "linkedEntityId": "6a206133d77da8f7f0c8afbc",
     "linkedRoute": "/chat",
     "createdAt": "2026-06-03T17:15:31.316Z",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "__v": 0
   },
   {
@@ -48,7 +48,7 @@
     "linkedRoute": "/profile/me?tab=orders",
     "title": "New Order Placed",
     "type": "order_update",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a13155675815f87f6a42883"
   },
   {
@@ -61,7 +61,7 @@
     "linkedRoute": "/chat",
     "title": "New Message",
     "type": "message",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a10b0d1e24456cbac9b4ede"
   },
   {
@@ -74,7 +74,7 @@
     "linkedRoute": "/chat",
     "title": "New Message",
     "type": "message",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a10b0d1e24456cbac9b4ede"
   },
   {
@@ -87,7 +87,7 @@
     "linkedRoute": "/chat",
     "title": "New Message",
     "type": "message",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a125329d2fe0926facbce4c"
   },
   {
@@ -100,7 +100,7 @@
     "linkedRoute": "/chat",
     "title": "New Message",
     "type": "message",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a10b0d1e24456cbac9b4ede"
   },
   {
@@ -113,7 +113,7 @@
     "linkedRoute": "/chat",
     "title": "New Message",
     "type": "message",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a125329d2fe0926facbce4c"
   },
   {
@@ -126,7 +126,7 @@
     "linkedRoute": "/chat",
     "title": "New Message",
     "type": "message",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a10b0d1e24456cbac9b4ede"
   },
   {
@@ -139,7 +139,7 @@
     "linkedRoute": "/profile/me?tab=orders&view=sales",
     "title": "New Order Placed",
     "type": "order_update",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a125329d2fe0926facbce4c"
   },
   {
@@ -152,7 +152,7 @@
     "linkedRoute": "/profile/me?tab=orders&view=purchases",
     "title": "Order Shipped",
     "type": "order_update",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a10b0d1e24456cbac9b4ede"
   },
   {
@@ -165,7 +165,7 @@
     "linkedRoute": "/profile/me?tab=orders&view=sales",
     "title": "Order Delivered",
     "type": "order_update",
-    "updatedAt": "2026-06-12T21:57:43.666Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a125329d2fe0926facbce4c"
   },
   {
@@ -178,7 +178,7 @@
     "linkedRoute": "/profile/me?tab=reviews",
     "title": "New Review Received",
     "type": "review",
-    "updatedAt": "2026-06-12T22:52:13.909Z",
+    "updatedAt": "2026-06-13T20:28:57.353Z",
     "userId": "6a125329d2fe0926facbce4c"
   }
 ]

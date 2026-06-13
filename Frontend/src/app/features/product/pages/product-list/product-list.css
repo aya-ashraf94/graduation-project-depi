@@ -410,6 +410,7 @@
   height: 20rem;
   background: var(--surface-2);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .product-img {
@@ -515,6 +516,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.75rem;
+  flex-grow: 1;
 }
 
 .brand-name {
@@ -550,11 +552,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .tag-row {
   display: flex;
   gap: 0.5rem;
+  min-height: 1.75rem;
+  align-items: center;
 }
 
 .tag-box {
@@ -575,6 +580,73 @@
   color: var(--white);
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
+}
+
+/* ---------- STATUS OVERLAY (SOLD / RESERVED) ---------- */
+.product-sold {
+  opacity: 0.85;
+}
+
+.card-status-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.status-overlay-tag {
+  padding: 0.5rem 1.5rem;
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 1.5rem;
+  border: 3px solid var(--black);
+  transform: rotate(-15deg);
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.sold-tag {
+  background: #ff4d4d;
+  color: var(--black);
+}
+
+.reserved-tag {
+  background: #ffd700;
+  color: var(--black);
+}
+
+/* ---------- PRODUCT FOOTER (Location + Date) ---------- */
+.product-footer {
+  padding: 0 1.5rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.card-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--gray-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+
+.card-date {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--gray-3);
+  white-space: nowrap;
 }
 
 /* ---------- 4. PAGINATION ---------- */
