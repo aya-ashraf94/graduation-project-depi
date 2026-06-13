@@ -2,9 +2,8 @@ import { Component, OnInit, signal, ViewChild, ElementRef, ChangeDetectorRef, in
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth';
-import { environment } from '../../../../../environments/environment';
+import { ProductService } from '../../../../core/services/product.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 export type PricingMode = 'fixed' | 'trade';
@@ -50,7 +49,7 @@ export class CreateListing implements OnInit {
   showContact = true;
 
   private router = inject(Router);
-  private http = inject(HttpClient);
+  private productService = inject(ProductService);
   public authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private toastService = inject(ToastService);
@@ -88,10 +87,9 @@ export class CreateListing implements OnInit {
   get missingPhase1Fields(): string[] {
     const missing: string[] = [];
 
-    console.log(
-      'dynamicFields = ',
-      JSON.stringify(this.dynamicFields, null, 2)
-    );
+    if (!this.title.trim()) {
+      missing.push('Title');
+    }
 
     if (!this.selectedCategory()) {
       missing.push('Category');
@@ -242,9 +240,9 @@ export class CreateListing implements OnInit {
 
   // ── API Actions ────────────────────────────────────────────────────────
   fetchCategories() {
-    this.http.get<any[]>(`${environment.apiUrl}/categories`).subscribe({
-      next: (data) => this.allCategories.set(data),
-      error: (err) => console.error('Error fetching categories:', err)
+    this.productService.getCategories().subscribe({
+      next: (data: any[]) => this.allCategories.set(data),
+      error: (err: any) => console.error('Error fetching categories:', err)
     });
   }
 
@@ -259,27 +257,33 @@ export class CreateListing implements OnInit {
       return;
     }
 
-    const finalPayload = {
+    const condition = this.dynamicFields['condition']?.toLowerCase().replace(/\s+/g, '_') || this.dynamicFields['Condition']?.toLowerCase().replace(/\s+/g, '_') || 'good';
+    const conditionScore = parseFloat(this.dynamicFields['conditionScore'] || this.dynamicFields['score'] || '8');
+
+    const payload: any = {
       title: this.title,
       description: this.description,
+      brand: this.dynamicFields['Brand'] || this.dynamicFields['brand'] || 'ARCHIVE',
       price: this.pricingMode === 'trade' ? 0 : this.price,
       categoryId: this.selectedCategory()?._id,
-      dynamicAttributes: this.dynamicFields, // شامل كل الخصائص (الحالة، النوع، إلخ)
+      condition: ['new_with_tags', 'excellent', 'good', 'fair', 'distressed'].includes(condition)
+        ? condition : condition === 'new' ? 'new_with_tags' : 'good',
+      conditionScore: conditionScore,
+      size: this.dynamicFields['Size'] || this.dynamicFields['size'] || '',
       images: this.imageSlots().filter(img => img !== null),
       location: this.city,
       phoneNumber: this.phone,
       showContactInfo: this.showContact,
-      userId: currentUser.id
     };
 
-    this.http.post(`${environment.apiUrl}/products`, finalPayload).subscribe({
+    this.productService.createProduct(payload).subscribe({
       next: () => {
         this.toastService.success('Listing published successfully!');
         this.router.navigate(['/products']);
       },
       error: (err) => {
         console.error('Error publishing:', err);
-        this.toastService.error('Failed to publish product listing.');
+        this.toastService.error(err?.error?.message || 'Failed to publish product listing.');
       }
     });
   }

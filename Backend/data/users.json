@@ -22,12 +22,7 @@
     "totalPurchases": 1,
     "totalSales": 0,
     "isSuspended": false,
-    "wishlist": [
-      "6a1358e0aeeae3e446eab73c",
-      "6a1de7dd5f58f9bb0c329d4d",
-      "6a1de89e5f58f9bb0c329e35",
-      "6a125329d2fe0926facbce6d"
-    ]
+    "wishlist": []
   },
   {
     "_id": "6a121f0acc81734ad4e705ae",
@@ -115,9 +110,7 @@
     "totalPurchases": 2,
     "totalSales": 1,
     "isSuspended": false,
-    "wishlist": [
-      "6a125329d2fe0926facbce73"
-    ]
+    "wishlist": []
   },
   {
     "_id": "6a1224eaf278c7b4f7e43f62",
@@ -161,11 +154,7 @@
     "totalPurchases": 0,
     "totalSales": 2,
     "isSuspended": false,
-    "wishlist": [
-      "6a1dec10f6dd86ae73ee750e",
-      "6a125329d2fe0926facbce81",
-      "6a2718915e4863c34bc184d7"
-    ]
+    "wishlist": []
   },
   {
     "_id": "6a13155675815f87f6a42883",

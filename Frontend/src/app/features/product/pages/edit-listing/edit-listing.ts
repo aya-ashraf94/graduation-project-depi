@@ -1,74 +1,84 @@
 import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import {
   Product,
-  ProductCondition,
-  ProductCategory,
   ProductStatus,
-  CONDITION_LABELS,
-  CATEGORY_LABELS,
 } from '../../../../core/models/product.model';
 
 @Component({
   selector: 'app-edit-listing',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './edit-listing.html',
   styleUrl: './edit-listing.css',
 })
 export class EditListing implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
   private productService = inject(ProductService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private confirmService = inject(ConfirmService);
-
-  location = '';
-  phoneNumber = '';
-  showContactInfo = true;
-
-  selectedCategoryId = '';
-
-  images: string[] = [];
+  private toastService = inject(ToastService);
 
   product: Product | null = null;
   isOwner = false;
   saving = signal(false);
   isLoading = true;
+  formError = signal<string | null>(null);
 
-  // Editable fields
-  title = '';
-  description = '';
-  price: number | null = null;
-  category: ProductCategory | '' = '';
-  condition: ProductCondition | '' = '';
-  size = '';
-  status: ProductStatus = 'available';
+  images: string[] = [];
 
-  // Lookup data
-  readonly categoryLabels = CATEGORY_LABELS;
-  readonly conditionLabels = CONDITION_LABELS;
-  // readonly categories = Object.keys(CATEGORY_LABELS) as ProductCategory[];
   categories: any[] = [];
-  readonly conditions = Object.keys(CONDITION_LABELS) as ProductCondition[];
-  readonly statuses = ['available', 'reserved', 'sold'] as const;
+  readonly statuses: ProductStatus[] = ['available', 'reserved', 'sold'];
+
+  form: FormGroup;
+
+  selectedCategory = signal<any>(null);
+  dynamicFields: any = {};
+
+  constructor() {
+    this.form = this.fb.group({
+      title: ['', [Validators.required, Validators.minLength(2)]],
+      description: ['', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      categoryId: ['', Validators.required],
+      status: ['available', Validators.required],
+      location: [''],
+      phoneNumber: [''],
+      showContactInfo: [true],
+    });
+  }
+
+  get f() { return this.form.controls; }
+
+  fieldError(fieldName: string): string | null {
+    const control = this.form.get(fieldName);
+    if (!control || !control.invalid) return null;
+    if (control.errors?.['required']) return 'This field is required';
+    if (control.errors?.['minlength']) return `Minimum ${control.errors?.['minlength'].requiredLength} characters`;
+    if (control.errors?.['min']) return `Must be at least ${control.errors?.['min'].min}`;
+    if (control.errors?.['max']) return `Must be at most ${control.errors?.['max'].max}`;
+    return 'Invalid value';
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.router.navigate(['/products']);
-      return;
-    }
+    if (!id) { this.router.navigate(['/products']); return; }
 
     this.productService.getCategories().subscribe({
       next: (res) => {
         this.categories = res;
+        this.trySelectCategory();
+        this.cdr.detectChanges();
       }
     });
 
@@ -77,43 +87,34 @@ export class EditListing implements OnInit {
 
     this.productService.getProductById(id).subscribe({
       next: (product) => {
-        if (!product) {
-          this.router.navigate(['/products']);
-          return;
-        }
+        if (!product) { this.router.navigate(['/products']); return; }
 
         const elapsed = Date.now() - startTime;
         const delayTime = Math.max(0, 400 - elapsed);
 
         setTimeout(() => {
           this.product = product;
-          // this.selectedCategoryId =
-          //   (product as any).categoryId?._id || '';
-          // this.selectedCategoryId = product.categoryId || '';
-          this.selectedCategoryId = (product.categoryId as any)?._id || product.categoryId || '';
+
+          const catId = (product.categoryId as any)?._id || product.categoryId || '';
 
           const currentUser = this.authService.currentUser();
           this.isOwner = currentUser?.id === product.seller.id;
+          if (!this.isOwner) { this.router.navigate(['/products', id]); return; }
 
-          if (!this.isOwner) {
-            this.router.navigate(['/products', id]);
-            return;
-          }
-
-          this.title = product.title;
-          this.description = product.description;
-          this.price = product.price;
-          this.category = product.category;
-          this.condition = product.condition;
-          this.size = product.size || '';
           this.images = [...product.images];
 
-          this.location = (product as any).location || '';
-          this.phoneNumber = (product as any).phoneNumber || '';
-          this.showContactInfo =
-            (product as any).showContactInfo ?? true;
+          this.form.patchValue({
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            categoryId: catId,
+            status: product.status,
+            location: product.location || '',
+            phoneNumber: product.phoneNumber || '',
+            showContactInfo: product.showContactInfo ?? true,
+          });
 
-          this.status = product.status;
+          this.trySelectCategory();
           this.isLoading = false;
           this.cdr.detectChanges();
         }, delayTime);
@@ -130,42 +131,55 @@ export class EditListing implements OnInit {
     });
   }
 
-  get formValid(): boolean {
-    return (
-      this.title.trim().length > 0 &&
-      this.description.trim().length > 0 &&
-      this.price !== null &&
-      this.price > 0 &&
-      // this.category !== '' &&
-      this.selectedCategoryId !== '' &&
-      this.condition !== ''
-    );
+  private trySelectCategory(): void {
+    const catId = this.form.get('categoryId')?.value;
+    if (!catId || !this.categories.length) return;
+    const cat = this.categories.find((c: any) => c._id === catId);
+    if (!cat) return;
+    this.selectedCategory.set(cat);
+    this.populateDynamicFields();
   }
 
-  // onImagesSelected(event: Event): void {
-  //   const input = event.target as HTMLInputElement;
+  private populateDynamicFields(): void {
+    const cat = this.selectedCategory();
+    if (!cat || !this.product) return;
+    const raw = this.product.rawDynamicAttributes || {};
 
-  //   if (!input.files) return;
+    const rawByLower: Record<string, string> = {};
+    for (const key of Object.keys(raw)) {
+      rawByLower[key.toLowerCase()] = key;
+    }
 
-  //   const files = Array.from(input.files);
+    for (const attr of cat.attributes || []) {
+      const name = attr.name;
+      const originalKey = rawByLower[name.toLowerCase()];
+      if (originalKey) {
+        this.dynamicFields[name] = raw[originalKey];
+      }
+    }
+  }
 
-  //   console.log(files);
-  // }
+  syncDynamicField(name: string, value: any): void {
+    this.dynamicFields[name] = value;
+  }
+
+  onCategoryChange(event: Event): void {
+    const id = (event.target as HTMLSelectElement).value;
+    this.form.patchValue({ categoryId: id });
+    const cat = this.categories.find(c => c._id === id);
+    this.selectedCategory.set(cat || null);
+    this.dynamicFields = {};
+    if (this.product && cat) {
+      this.populateDynamicFields();
+    }
+  }
 
   onImagesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-
     if (!input.files) return;
-
-    // this.images = [];
-
     Array.from(input.files).forEach(file => {
       const reader = new FileReader();
-
-      reader.onload = () => {
-        this.images.push(reader.result as string);
-      };
-
+      reader.onload = () => { this.images.push(reader.result as string); };
       reader.readAsDataURL(file);
     });
   }
@@ -175,38 +189,44 @@ export class EditListing implements OnInit {
   }
 
   saveChanges(): void {
-    if (!this.formValid || !this.product) return;
+    this.formError.set(null);
+    this.form.markAllAsTouched();
+
+    if (this.form.invalid || !this.product) return;
+    if (this.images.length === 0) { this.formError.set('At least one image is required'); return; }
 
     this.saving.set(true);
+    const v = this.form.value;
+
+    const dynamicAttributes: any = {};
+    for (const key of Object.keys(this.dynamicFields)) {
+      if (!key.endsWith('_other') && this.dynamicFields[key] !== undefined && this.dynamicFields[key] !== null && this.dynamicFields[key] !== '') {
+        dynamicAttributes[key] = this.dynamicFields[key];
+      }
+    }
 
     this.productService.updateProduct(this.product.id, {
-      title: this.title,
-      description: this.description,
-      price: this.price!,
-
-      // category: this.category as ProductCategory,
-      categoryId: this.selectedCategoryId,
-      condition: this.condition as ProductCondition,
-
-      size: this.size || undefined,
-
-      status: this.status,
-
+      title: v.title,
+      description: v.description,
+      price: v.price,
+      categoryId: v.categoryId,
+      dynamicAttributes,
+      status: v.status as ProductStatus,
       images: this.images,
-
-      location: this.location,
-
-      phoneNumber: this.phoneNumber,
-
-      showContactInfo: this.showContactInfo
+      location: v.location,
+      phoneNumber: v.phoneNumber,
+      showContactInfo: v.showContactInfo,
     }).subscribe({
       next: () => {
         this.saving.set(false);
+        this.toastService.success('Listing updated successfully!');
         this.router.navigate(['/products', this.product!.id]);
       },
       error: (err) => {
         this.saving.set(false);
-        console.error('Error updating:', err);
+        const msg = err?.error?.message || err?.message || 'Failed to update listing. Please try again.';
+        this.formError.set(msg);
+        this.toastService.error(msg);
       }
     });
   }
@@ -217,18 +237,21 @@ export class EditListing implements OnInit {
       title: 'Delete Listing',
       message: 'Are you sure you want to delete this listing? This cannot be undone.',
       onConfirm: () => {
-        this.productService.deleteProduct(this.product!.id).subscribe(() => {
-          this.router.navigate(['/profile/me']);
+        this.productService.deleteProduct(this.product!.id).subscribe({
+          next: () => {
+            this.toastService.success('Listing deleted');
+            this.router.navigate(['/profile/me']);
+          },
+          error: (err) => {
+            this.toastService.error(err?.error?.message || 'Failed to delete listing');
+          }
         });
       }
     });
   }
 
   cancel(): void {
-    if (this.product) {
-      this.router.navigate(['/products', this.product.id]);
-    } else {
-      this.router.navigate(['/products']);
-    }
+    if (this.product) this.router.navigate(['/products', this.product.id]);
+    else this.router.navigate(['/products']);
   }
 }

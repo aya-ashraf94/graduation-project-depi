@@ -61,7 +61,7 @@ export class ProductService {
   /** Create new product */
   createProduct(payload: CreateProductRequest): Observable<Product> {
     const dynamicAttributes = {
-      Condition: payload.condition === 'new_with_tags' ? 'New' : 'Used',
+      condition: payload.condition === 'new_with_tags' ? 'New' : 'Used',
       conditionScore: payload.conditionScore,
       brand: payload.brand,
       size: payload.size
@@ -85,27 +85,6 @@ export class ProductService {
 
   /** Update existing product */
   updateProduct(id: string, payload: UpdateProductRequest): Observable<Product> {
-    const dynamicAttributes: any = {};
-    if (payload.condition) {
-      dynamicAttributes.Condition = payload.condition === 'new_with_tags' ? 'New' : 'Used';
-    }
-    if (payload.size) {
-      dynamicAttributes.size = payload.size;
-    }
-    if (payload.brand) {
-      dynamicAttributes.brand = payload.brand;
-    }
-    if (payload.conditionScore !== undefined) {
-      dynamicAttributes.conditionScore = payload.conditionScore;
-    }
-
-    // const backendPayload: any = {
-    //   title: payload.title,
-    //   description: payload.description,
-    //   price: payload.price,
-    //   images: payload.images,
-    // };
-
     const backendPayload: any = {
       title: payload.title,
       description: payload.description,
@@ -124,8 +103,31 @@ export class ProductService {
           : payload.status
     };
 
-    if (Object.keys(dynamicAttributes).length > 0) {
-      backendPayload.dynamicAttributes = dynamicAttributes;
+    if (payload.dynamicAttributes) {
+      backendPayload.dynamicAttributes = payload.dynamicAttributes;
+    } else {
+      const dynamicAttributes: any = {};
+      if (payload.condition) {
+        dynamicAttributes.condition = payload.condition === 'new_with_tags' ? 'New' : 'Used';
+      }
+      if (payload.size) {
+        dynamicAttributes.size = payload.size;
+      }
+      if (payload.brand) {
+        dynamicAttributes.brand = payload.brand;
+      }
+      if (payload.conditionScore !== undefined) {
+        dynamicAttributes.conditionScore = payload.conditionScore;
+      }
+      if (payload.size) {
+        backendPayload.size = payload.size;
+      }
+      if (payload.brand) {
+        backendPayload.brand = payload.brand;
+      }
+      if (Object.keys(dynamicAttributes).length > 0) {
+        backendPayload.dynamicAttributes = dynamicAttributes;
+      }
     }
 
     return this.http.put<any>(`${this.apiUrl}/${id}`, backendPayload).pipe(
@@ -157,7 +159,7 @@ export class ProductService {
 
     // Parse condition
     let condition: ProductCondition = 'good';
-    const condStr = (dynamic.Condition || dynamic.condition || '').toLowerCase().replace(/\s+/g, '_');
+    const condStr = (dynamic.condition || dynamic.Condition || '').toLowerCase().replace(/\s+/g, '_');
     if (['new_with_tags', 'excellent', 'good', 'fair', 'distressed'].includes(condStr)) {
       condition = condStr as ProductCondition;
     } else if (condStr === 'new') {
@@ -173,7 +175,7 @@ export class ProductService {
     }
 
     // brand
-    const brand = dynamic.brand || p.brand || 'ARCHIVE';
+    const brand = dynamic.brand || p.brand || '';
 
     // size
     const size = dynamic.size || p.size || undefined;
@@ -257,7 +259,8 @@ export class ProductService {
       location: p.location || '',
       phoneNumber: p.phoneNumber || '',
       showContactInfo: p.showContactInfo ?? true,
-      categoryId: p.categoryId
+      categoryId: p.categoryId,
+      rawDynamicAttributes: dynamic
 
     } as any;
   }
@@ -279,7 +282,9 @@ export class ProductService {
       createdAt: mapped.createdAt,
       categoryName: p.categoryId?.name || '',
       soldByNafa3ni: mapped.soldByNafa3ni,
-      isVerified: mapped.isVerified
+      isVerified: mapped.isVerified,
+      size: mapped.size,
+      location: p.location || ''
     } as any;
   }
 

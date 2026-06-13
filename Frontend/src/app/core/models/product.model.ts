@@ -52,6 +52,9 @@ export interface Product {
   showContactInfo?: boolean;
   categoryId?: string;
 
+  /** Raw dynamicAttributes from the backend (preserved for edit forms) */
+  rawDynamicAttributes?: Record<string, any>;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,6 +77,7 @@ export interface ProductSummary {
   categoryName?: string;
   soldByNafa3ni?: boolean;
   isVerified?: boolean;
+  location?: string;
 }
 
 /** Payload to create a new listing */
@@ -106,6 +110,9 @@ export interface UpdateProductRequest extends Partial<CreateProductRequest> {
   showContactInfo?: boolean;
 
   categoryId?: string;
+
+  /** Raw dynamicAttributes to send as-is (bypasses typed field mapping) */
+  dynamicAttributes?: Record<string, any>;
 }
 
 /** Filters for the product listing page */

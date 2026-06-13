@@ -381,13 +381,14 @@
           </div>
           }
 
-          @if (dynamicFields['Condition']) {
-          <div class="wiz-badge">{{ dynamicFields['Condition'] }}</div>
+          @if (dynamicFields['condition'] || dynamicFields['Condition']) {
+          <div class="wiz-badge">{{ dynamicFields['condition'] || dynamicFields['Condition'] }}</div>
           }
         </div>
 
         <div class="wiz-preview-body">
           <div class="wiz-preview-cat">{{ selectedCategory()?.name || '—' }}</div>
+          <div class="wiz-preview-brand">{{ dynamicFields['Brand'] || dynamicFields['brand'] || 'BRAND' }}</div>
           <h3 class="wiz-preview-title">{{ title || 'Your Item Title' }}</h3>
 
           @if (pricingMode === 'fixed') {
@@ -446,12 +447,16 @@
               <span class="wiz-sum-val">{{ title || '—' }}</span>
             </div>
             <div class="wiz-sum-row">
+              <span class="wiz-sum-key">Brand</span>
+              <span class="wiz-sum-val">{{ dynamicFields['Brand'] || dynamicFields['brand'] || '—' }}</span>
+            </div>
+            <div class="wiz-sum-row">
               <span class="wiz-sum-key">Category</span>
               <span class="wiz-sum-val">{{ selectedCategory()?.name || '—' }}</span>
             </div>
             <div class="wiz-sum-row">
               <span class="wiz-sum-key">Condition</span>
-              <span class="wiz-sum-val">{{ dynamicFields['condition'] || '—' }}</span>
+              <span class="wiz-sum-val">{{ dynamicFields['condition'] || dynamicFields['Condition'] || '—' }}</span>
             </div>
             <div class="wiz-sum-row">
               <span class="wiz-sum-key">Photos</span>
