@@ -1,153 +1,161 @@
 <div class="edit-page fade-in" *ngIf="!isLoading && product; else checkLoading">
   <div class="container" *ngIf="isOwner; else notOwner">
 
-    <!-- HEADER -->
     <div class="edit-header">
       <div class="section-label">— EDIT LISTING</div>
       <h1 class="edit-title">Update Your Listing</h1>
       <p class="edit-subtitle">Modify the details below and save your changes.</p>
     </div>
 
-    <!-- FORM -->
-    <div class="edit-form-card">
+    <form [formGroup]="form" (ngSubmit)="saveChanges()" class="edit-form-card">
 
-      <!-- STATUS BAR -->
       <div class="status-bar">
         <label class="field-label">LISTING STATUS</label>
         <div class="status-options">
-          <button *ngFor="let s of statuses" class="status-btn" [class.active]="status === s"
-            [class.status-available]="s === 'available'" [class.status-reserved]="s === 'reserved'"
-            [class.status-sold]="s === 'sold'" (click)="status = s">
+          <button type="button" *ngFor="let s of statuses" class="status-btn"
+            [class.active]="f['status'].value === s"
+            [class.status-available]="s === 'available'"
+            [class.status-reserved]="s === 'reserved'"
+            [class.status-sold]="s === 'sold'"
+            (click)="f['status'].setValue(s); f['status'].markAsTouched()">
             {{ s | uppercase }}
           </button>
         </div>
       </div>
 
-      <!--IMAGES-->
+      <!-- IMAGES -->
       <div class="field-group">
-        <label class="field-label">IMAGES</label>
+        <label class="field-label">IMAGES <span class="required-star">*</span></label>
         <div class="current-images" *ngIf="images.length">
-
           <div class="image-card" *ngFor="let image of images; let i = index">
-
             <img [src]="image" alt="Product Image" class="product-preview">
-
-            <button type="button" class="delete-image-btn" (click)="removeImage(i)">
-              ✕
-            </button>
-
+            <button type="button" class="delete-image-btn" (click)="removeImage(i)">✕</button>
           </div>
-
         </div>
-
         <input type="file" multiple accept="image/*" (change)="onImagesSelected($event)" />
-
-      </div>
-
-
-
-      <!--LOCATION-->
-      <div class="field-group">
-        <label class="field-label">LOCATION</label>
-
-        <input class="field-input" [(ngModel)]="location" placeholder="Cairo" />
-      </div>
-
-      <!--PHONE NUMBER-->
-      <div class="field-group">
-        <label class="field-label">PHONE NUMBER</label>
-
-        <input class="field-input" [(ngModel)]="phoneNumber" />
-      </div>
-
-      <!--CONTACT INFO-->
-      <div class="field-group">
-        <label>
-          <input type="checkbox" [(ngModel)]="showContactInfo" />
-          Show Contact Info
-        </label>
+        <span class="field-hint" *ngIf="images.length === 0 && formError()" style="color:#e23b3b;">
+          {{ formError() }}
+        </span>
       </div>
 
       <!-- TITLE -->
       <div class="field-group">
-        <label class="field-label" for="edit-title">TITLE</label>
-        <input id="edit-title" class="field-input" type="text" [(ngModel)]="title" placeholder="Item title" />
+        <label class="field-label" for="edit-title">TITLE <span class="required-star">*</span></label>
+        <input id="edit-title" class="field-input" formControlName="title" placeholder="Item title" />
+        <span class="field-error" *ngIf="fieldError('title')">{{ fieldError('title') }}</span>
       </div>
 
       <!-- DESCRIPTION -->
       <div class="field-group">
-        <label class="field-label" for="edit-desc">DESCRIPTION</label>
-        <textarea id="edit-desc" class="field-textarea" [(ngModel)]="description"
+        <label class="field-label" for="edit-desc">DESCRIPTION <span class="required-star">*</span></label>
+        <textarea id="edit-desc" class="field-textarea" formControlName="description"
           placeholder="Describe your item in detail..." rows="5"></textarea>
+        <span class="field-error" *ngIf="fieldError('description')">{{ fieldError('description') }}</span>
       </div>
 
       <!-- ROW: PRICE + CATEGORY -->
       <div class="field-row">
         <div class="field-group">
-          <label class="field-label" for="edit-price">PRICE ($)</label>
-          <input id="edit-price" class="field-input" type="number" [(ngModel)]="price" placeholder="0.00" min="0" />
+          <label class="field-label" for="edit-price">PRICE ($) <span class="required-star">*</span></label>
+          <input id="edit-price" class="field-input" type="number" formControlName="price" placeholder="0.00" min="0" step="0.01" />
+          <span class="field-error" *ngIf="fieldError('price')">{{ fieldError('price') }}</span>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="edit-category">CATEGORY</label>
-          <!-- <select id="edit-category" class="field-select" [(ngModel)]="category">
-            <option value="">Select a category</option>
-            <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabels[cat] }}</option>
-          </select> -->
-
-          <!-- <select id="edit-category" class="field-select" [(ngModel)]="selectedCategoryId">
-
-            <option value="">Select a category</option>
-
-            <option *ngFor="let cat of categories" [value]="cat._id">
-
-              {{ cat.name }}
-
-            </option>
-
-          </select> -->
-          <select id="edit-category" class="field-select" [(ngModel)]="selectedCategoryId">
-
-            <option value="" [ngValue]="null" disabled>Select a category</option>
-
-            <option *ngFor="let cat of categories" [value]="cat._id">
-
-              {{ cat.name }}
-
-            </option>
-
+          <label class="field-label" for="edit-category">CATEGORY <span class="required-star">*</span></label>
+          <select id="edit-category" class="field-select" formControlName="categoryId" (change)="onCategoryChange($event)">
+            <option value="" disabled>Select a category</option>
+            <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
           </select>
+          <span class="field-error" *ngIf="fieldError('categoryId')">{{ fieldError('categoryId') }}</span>
         </div>
       </div>
 
-      <!-- ROW: CONDITION + SIZE -->
+      <!-- DYNAMIC ATTRIBUTES (based on selected category) -->
+      @if (selectedCategory(); as cat) {
+        @for (attr of cat.attributes; track attr.name) {
+          <div class="field-group">
+            <label class="field-label">{{ attr.name | uppercase }}</label>
+
+            @if (attr.type === 'select') {
+              <select class="field-select" [ngModel]="dynamicFields[attr.name]"
+                (ngModelChange)="syncDynamicField(attr.name, $event)" [ngModelOptions]="{standalone: true}">
+                @for (opt of attr.options; track opt) {
+                  @if (opt !== 'Other') {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                }
+                @if (attr.hasOther) {
+                  <option value="Other">Other</option>
+                }
+              </select>
+            }
+
+            @if (attr.type === 'radio') {
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                @for (opt of attr.options; track opt) {
+                  <button type="button"
+                    style="padding:0.5rem 1rem;border:2px solid var(--black);border-radius:var(--radius-sm);background:var(--surface);font-family:var(--font-secondary);font-weight:700;font-size:0.8rem;cursor:pointer;"
+                    [style.background]="dynamicFields[attr.name] === opt ? 'var(--yellow)' : 'var(--surface)'"
+                    (click)="syncDynamicField(attr.name, opt)">
+                    {{ opt }}
+                  </button>
+                }
+              </div>
+            }
+
+            @if (attr.type === 'text') {
+              <input class="field-input" type="text" [ngModel]="dynamicFields[attr.name]"
+                (ngModelChange)="syncDynamicField(attr.name, $event)" [ngModelOptions]="{standalone: true}"
+                placeholder="Enter value..." />
+            }
+
+            @if (dynamicFields[attr.name] === 'Other') {
+              <input class="field-input" type="text" [ngModel]="dynamicFields[attr.name + '_other']"
+                (ngModelChange)="dynamicFields[attr.name + '_other'] = $event" [ngModelOptions]="{standalone: true}"
+                placeholder="Specify..." style="margin-top:0.5rem;" />
+            }
+          </div>
+        }
+      }
+
+      <!-- ROW: LOCATION + PHONE -->
       <div class="field-row">
         <div class="field-group">
-          <label class="field-label" for="edit-condition">CONDITION</label>
-          <select id="edit-condition" class="field-select" [(ngModel)]="condition">
-            <option value="">Select condition</option>
-            <option *ngFor="let cond of conditions" [value]="cond">{{ conditionLabels[cond] }}</option>
-          </select>
+          <label class="field-label" for="edit-location">LOCATION</label>
+          <input id="edit-location" class="field-input" formControlName="location" placeholder="e.g. Cairo, Egypt" />
         </div>
-
         <div class="field-group">
-          <label class="field-label" for="edit-size">SIZE (optional)</label>
-          <input id="edit-size" class="field-input" type="text" [(ngModel)]="size" placeholder="e.g. M, L, W32" />
+          <label class="field-label" for="edit-phone">PHONE NUMBER</label>
+          <input id="edit-phone" class="field-input" formControlName="phoneNumber" placeholder="+20 1xx xxx xxxx" />
         </div>
+      </div>
+
+      <!-- CONTACT INFO TOGGLE -->
+      <div class="field-group check-field">
+        <label class="check-label">
+          <input type="checkbox" formControlName="showContactInfo" />
+          <span>Show contact info publicly on listing</span>
+        </label>
+      </div>
+
+      <!-- FORM ERROR BANNER -->
+      <div class="form-error-banner" *ngIf="formError()">
+        {{ formError() }}
       </div>
 
       <!-- ACTIONS -->
       <div class="form-actions">
         <div class="actions-left">
-          <button class="btn btn-primary save-btn" [disabled]="!formValid || saving()" (click)="saveChanges()">
+          <button type="submit" class="btn btn-primary save-btn" [disabled]="form.invalid || saving()">
             {{ saving() ? 'SAVING...' : 'SAVE CHANGES' }}
           </button>
-          <button class="btn btn-outline cancel-btn" (click)="cancel()">CANCEL</button>
+          <button type="button" class="btn btn-outline cancel-btn" (click)="cancel()">CANCEL</button>
         </div>
-        <button class="btn-danger" (click)="deleteListing()">DELETE LISTING</button>
+        <button type="button" class="btn-danger" (click)="deleteListing()">DELETE LISTING</button>
       </div>
 
-    </div>
+    </form>
   </div>
 </div>
 
@@ -158,45 +166,29 @@
       <div class="skeleton-box" style="width: 15rem; height: 2.2rem; margin-bottom: 0.5rem;"></div>
       <div class="skeleton-box" style="width: 22rem; height: 1rem;"></div>
     </div>
-
-    <div class="edit-form-card"
-      style="padding: 2.5rem; border: var(--border-width) solid var(--border); border-radius: var(--radius-md);">
+    <div class="edit-form-card" style="padding: 2.5rem; border: var(--border-width) solid var(--border); border-radius: var(--radius-md);">
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <!-- status skeleton -->
-        <div>
-          <div class="skeleton-box" style="width: 8rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
+        <div><div class="skeleton-box" style="width: 8rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
           <div style="display: flex; gap: 0.5rem;">
             <div class="skeleton-box" style="width: 6rem; height: 2.5rem;"></div>
             <div class="skeleton-box" style="width: 6rem; height: 2.5rem;"></div>
             <div class="skeleton-box" style="width: 6rem; height: 2.5rem;"></div>
           </div>
         </div>
-
-        <!-- title skeleton -->
-        <div>
-          <div class="skeleton-box" style="width: 6rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
+        <div><div class="skeleton-box" style="width: 6rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
           <div class="skeleton-box" style="width: 100%; height: 2.8rem;"></div>
         </div>
-
-        <!-- description skeleton -->
-        <div>
-          <div class="skeleton-box" style="width: 8rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
+        <div><div class="skeleton-box" style="width: 8rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
           <div class="skeleton-box" style="width: 100%; height: 7.5rem;"></div>
         </div>
-
-        <!-- row skeleton -->
         <div style="display: flex; gap: 1.5rem;">
-          <div style="flex: 1;">
-            <div class="skeleton-box" style="width: 5rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
+          <div style="flex: 1;"><div class="skeleton-box" style="width: 5rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
             <div class="skeleton-box" style="width: 100%; height: 2.8rem;"></div>
           </div>
-          <div style="flex: 1;">
-            <div class="skeleton-box" style="width: 5rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
+          <div style="flex: 1;"><div class="skeleton-box" style="width: 5rem; height: 0.8rem; margin-bottom: 0.5rem;"></div>
             <div class="skeleton-box" style="width: 100%; height: 2.8rem;"></div>
           </div>
         </div>
-
-        <!-- actions skeleton -->
         <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
           <div style="display: flex; gap: 1rem;">
             <div class="skeleton-box" style="width: 8rem; height: 3rem;"></div>
@@ -210,7 +202,8 @@
 </ng-template>
 
 <ng-template #notOwner>
-  <div class="container">
+  <div class="container not-owner-msg">
     <p>You are not authorized to edit this listing.</p>
+    <a routerLink="/products" class="btn btn-outline">BROWSE PRODUCTS</a>
   </div>
 </ng-template>

@@ -1,13 +1,17 @@
 <div class="product-detail-page fade-in" *ngIf="!isLoading && product; else checkLoading">
   <div class="product-layout">
     <main class="product-main">
-      
-      <!-- Top Header / Breadcrumb Area -->
+
       <header class="detail-header">
         <a routerLink="/products" class="btn-back">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           BACK TO ARCHIVE
         </a>
+        <div class="detail-breadcrumb">
+          <a routerLink="/products">Products</a>
+          <span class="breadcrumb-sep">/</span>
+          <span>{{ categoryLabel }}</span>
+        </div>
       </header>
 
       <div class="detail-grid">
@@ -15,7 +19,9 @@
         <div class="gallery-col">
           <div class="main-image-wrap">
             <div class="card-badges">
-              <span class="badge-tag">PREMIUM STOCK</span>
+              <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
+              <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
+              <span class="badge-sku">SKU: {{ product.sku || (product.id | slice:0:8 | uppercase) }}</span>
             </div>
             <img [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image" />
           </div>
@@ -36,9 +42,9 @@
           <div class="product-meta-top">
             <div class="brand-name-large">{{ product.brand }}</div>
             <div class="tag-row">
-              <span class="tag-box">{{ product.category }}</span>
+              <span class="tag-box">{{ categoryLabel }}</span>
               <span class="tag-box" [ngClass]="product.status === 'sold' ? 'sold-out' : 'highlight'">
-                {{ product.status === 'sold' ? 'SOLD OUT' : 'IN STOCK' }}
+                {{ product.status === 'sold' ? 'SOLD' : product.status === 'reserved' ? 'RESERVED' : 'AVAILABLE' }}
               </span>
             </div>
           </div>
@@ -51,39 +57,70 @@
 
           <p class="description-text">{{ product.description }}</p>
 
+          <!-- ── SPECS PANEL (buyer-relevant only) ── -->
+          @if (displayAttributes.length || product.conditionScore) {
           <div class="specs-panel">
-            <h3 class="specs-title">TECHNICAL SPECIFICATIONS</h3>
-            <ul class="specs-list">
-              <li><span class="spec-label">CONDITION</span> <span class="spec-val">{{ conditionLabels[product.condition] }} ({{ product.conditionScore }}/10)</span></li>
-              <li *ngIf="product.size"><span class="spec-label">SIZE</span> <span class="spec-val">{{ product.size }}</span></li>
-              <li><span class="spec-label">LISTED</span> <span class="spec-val">{{ product.createdAt | timeAgo | uppercase }}</span></li>
-            </ul>
+            <h3 class="specs-title">DETAILS &amp; SPECIFICATIONS</h3>
+            <div class="specs-grid">
+              @for (attr of displayAttributes; track attr.label) {
+              <div class="spec-item">
+                <span class="spec-label">{{ attr.label }}</span>
+                <span class="spec-val">{{ attr.value }}</span>
+              </div>
+              }
+              @if (product.conditionScore) {
+              <div class="spec-item">
+                <span class="spec-label">CONDITION SCORE</span>
+                <span class="spec-val">{{ product.conditionScore }}/10</span>
+              </div>
+              }
+              <div class="spec-item">
+                <span class="spec-label">CATEGORY</span>
+                <span class="spec-val">{{ categoryLabel }}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">LISTED</span>
+                <span class="spec-val">{{ product.createdAt | timeAgo | uppercase }}</span>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- ── LOCATION & CONTACT ── -->
+          <div class="contact-panel" *ngIf="product.showContactInfo && (product.location || product.phoneNumber)">
+            <h3 class="specs-title">LOCATION &amp; CONTACT</h3>
+            <div class="contact-info-list">
+              <div class="contact-item" *ngIf="product.location">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ product.location }}</span>
+              </div>
+              <div class="contact-item" *ngIf="product.phoneNumber">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>{{ product.phoneNumber }}</span>
+              </div>
+            </div>
           </div>
 
+          <!-- ── ACTION BUTTONS ── -->
           <div class="actions">
-            <!-- Owner: Edit Button -->
             <a *ngIf="isOwner" [routerLink]="['/listings/edit', product.id]" class="btn-neo-edit">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               EDIT LISTING
             </a>
-            <!-- Visitor: Chat Button -->
             <button *ngIf="!isOwner" class="btn-neo-primary" (click)="startChat()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              CHAT
+              CHAT WITH SELLER
             </button>
-            <!-- Visitor: Buy Now Button -->
-            <button *ngIf="!isOwner && product.status !== 'sold'" class="btn-neo-primary" (click)="openBuy()" style="background: var(--yellow); color: var(--black); font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <button *ngIf="!isOwner && product.status !== 'sold'" class="btn-neo-buy" [class.btn-disabled]="product.status === 'reserved'" [disabled]="product.status === 'reserved'" (click)="product.status === 'available' && openBuy()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-              BUY NOW
+              {{ product.status === 'reserved' ? 'RESERVED' : 'BUY NOW' }}
             </button>
-            <span *ngIf="!isOwner && product.status === 'sold'" style="display: inline-block; padding: 10px 20px; background: #ff4d4d; border: 2px solid var(--black); border-radius: var(--radius-sm); font-weight: 800; font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); color: var(--black); text-transform: uppercase; line-height: 1;">
+            <span *ngIf="!isOwner && product.status === 'sold'" class="status-sold-badge">
               SOLD OUT
             </span>
-            <!-- Wishlist (wired) -->
-            <button class="btn-wishlist-large" [class.wishlisted]="wishlistService.isWishlisted(product.id)" (click)="toggleWishlist()">
+            <button class="btn-wishlist-large" [class.wishlisted]="wishlistService.isWishlisted(product.id)" (click)="toggleWishlist()" title="Add to wishlist">
               <svg width="24" height="24" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? '#e23b3b' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             </button>
-            <!-- Report -->
             <button *ngIf="!isOwner" class="btn-report" (click)="openReport()" title="Report listing">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
             </button>
@@ -93,10 +130,12 @@
           @if (product.soldByNafa3ni) {
             <div class="system-card official-store-card">
               <div class="seller-header">
-                <div class="official-logo-box">🏛️</div>
+                <div class="official-logo-box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
                 <div class="seller-name-row">
                   <span class="official-store-title">OFFICIAL NAFA3NI STORE</span>
-                  <div class="seller-stars">★★★★★ (100% TRUSTED PLATFORM)</div>
+                  <div class="seller-stars">★★★★★ (100% TRUSTED)</div>
                 </div>
               </div>
               <div class="official-desc-box">
@@ -114,7 +153,7 @@
               </div>
               <div class="official-store-footer">
                 <a [routerLink]="['/profile', product.seller.id]" class="btn-store-link">
-                  🛍️ View Official Store Listings →
+                  VIEW OFFICIAL STORE →
                 </a>
               </div>
             </div>
@@ -135,7 +174,6 @@
                   <div class="seller-stars">★★★★★ ({{ product.seller.rating }} REVIEWS)</div>
                 </div>
               </div>
-              
               <div class="seller-metrics">
                 <div class="metric-box">
                   <span class="metric-label">RESPONSE TIME</span>
@@ -152,14 +190,15 @@
         </div>
       </div>
 
-      <!-- BOTTOM: Related Items Slider -->
+      <!-- Related Items -->
       <section class="related-section">
-        <h2 class="inventory-title related-slider-title">MORE ITEMS YOU MIGHT LIKE</h2>
+        <h2 class="related-slider-title">MORE ITEMS YOU MIGHT LIKE</h2>
         
         <div class="related-slider">
           <div *ngFor="let item of relatedProducts" class="product-card slider-card">
             <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer;">
               <div class="card-badges">
+                <span *ngIf="item.soldByNafa3ni" class="badge-official" style="font-size:0.55rem;">✓ Official</span>
                 <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
               </div>
               <button class="btn-wishlist" [class.wishlisted]="wishlistService.isWishlisted(item.id)" (click)="toggleWishlistCard(item.id, $event)">
@@ -168,24 +207,20 @@
                 </svg>
               </button>
               <img [src]="item.thumbnail" [alt]="item.title" appImageFallback class="product-img" />
-              <div class="card-overlay">
-                <button class="btn-quick-look">QUICK VIEW</button>
-              </div>
             </div>
-
             <div class="product-info">
               <div class="product-meta">
                 <div class="brand-name">{{ item.brand }}</div>
                 <h3 class="item-name">{{ item.title }}</h3>
               </div>
-              <div class="price-box">${{ item.price | number }}</div>
+              <div class="price-box">{{ item.price | currencyFormat }}</div>
             </div>
-
             <div class="product-tags">
               <div class="tag-row">
-                <span class="tag-box">{{ item.category | uppercase }}</span>
+                <span *ngIf="item.size" class="tag-box">{{ item.size }}</span>
                 <span class="tag-box">{{ conditionLabels[item.condition] | uppercase }}</span>
               </div>
+              <span class="score-tag">SCORE: {{ item.conditionScore }}/10</span>
             </div>
           </div>
         </div>

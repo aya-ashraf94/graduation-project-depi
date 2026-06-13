@@ -5,34 +5,20 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
-
-export interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  price: number;
-  desc: string;
-  image: string;
-  badge: string;
-  size: string;
-  condition: string;
-  conditionScore: string;
-  sku: string;
-  categoryName?: string;
-  soldByNafa3ni?: boolean;
-}
+import { ProductSummary } from '../../../../core/models/product.model';
+import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, CurrencyFormatPipe],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
 export class ProductList implements OnInit {
-  private productService = inject(ProductService);
+  protected productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   protected authService = inject(AuthService);
@@ -41,10 +27,10 @@ export class ProductList implements OnInit {
   showAuthModal = false;
 
   // ── Raw data ───────────────────────────────────────────────────────────
-  private allProducts: Product[] = [];
+  private allProducts: ProductSummary[] = [];
 
   // ── Displayed (after filters + sort) ──────────────────────────────────
-  products: Product[] = [];
+  products: ProductSummary[] = [];
   isLoading = true;
 
   // ── Pagination state ───────────────────────────────────────────────────
@@ -134,32 +120,10 @@ export class ProductList implements OnInit {
         //   };
         // });
 
-        const mapped = apiProducts.map(p => {
-          const conditionLabel =
-            this.productService.conditionLabels[p.condition] || p.condition;
-
-          return {
-            id: p.id,
-            name: p.title,
-            brand: p.brand || 'ARCHIVE',
-            price: p.price,
-            desc: '',
-
-            image:
-              p.thumbnail ||
-              'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
-
-            badge: p.badge || '',
-            size: (p as any).size || 'OS',
-            condition: conditionLabel,
-            conditionScore: p.conditionScore
-              ? `${p.conditionScore}/10`
-              : '8.0/10',
-            sku: p.id.substring(0, 8).toUpperCase(),
-            categoryName: (p as any).categoryName || '',
-            soldByNafa3ni: p.soldByNafa3ni
-          };
-        });
+        const mapped = apiProducts.map(p => ({
+          ...p,
+          thumbnail: p.thumbnail || 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
+        }));
 
         const elapsed = Date.now() - startTime;
         const delayTime = Math.max(0, 400 - elapsed);
@@ -249,9 +213,12 @@ export class ProductList implements OnInit {
       result = result.filter(p => allowedCategories.has(p.categoryName || ''));
     }
 
-    // Filter by condition
+    // Filter by condition (match against condition label)
     if (this.selectedConditions.size > 0) {
-      result = result.filter(p => this.selectedConditions.has(p.condition));
+      result = result.filter(p => {
+        const label = this.productService.conditionLabels[p.condition] || p.condition;
+        return this.selectedConditions.has(label);
+      });
     }
 
     // Filter by price
@@ -261,7 +228,7 @@ export class ProductList implements OnInit {
     switch (this.selectedSort) {
       case 'price_asc': result.sort((a, b) => a.price - b.price); break;
       case 'price_desc': result.sort((a, b) => b.price - a.price); break;
-      case 'newest': result.sort((a, b) => b.id.localeCompare(a.id)); break;
+      case 'newest': result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
       default: break; // relevance = original order
     }
 

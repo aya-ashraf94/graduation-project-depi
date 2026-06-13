@@ -391,7 +391,8 @@ const updateProduct = async (req, res) => {
             images: savedImages,
             location: req.body.location,
             phoneNumber: req.body.phoneNumber,
-            showContactInfo: req.body.showContactInfo
+            showContactInfo: req.body.showContactInfo,
+            status: req.body.status
         };
 
         // تحديث المنتج بالبيانات الجديدة فقط

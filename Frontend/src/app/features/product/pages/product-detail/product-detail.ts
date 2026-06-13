@@ -7,7 +7,7 @@ import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { OrderService } from '../../../../core/services/order.service';
 import { PaymentMethod } from '../../../../core/models/order.model';
-import { Product, ProductSummary, CONDITION_LABELS } from '../../../../core/models/product.model';
+import { Product, ProductSummary, CONDITION_LABELS, CATEGORY_LABELS } from '../../../../core/models/product.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
@@ -38,8 +38,21 @@ export class ProductDetail implements OnInit {
   reportReason = '';
   reportSubmitted = false;
   isLoading = true;
+  categoryLabel = '';
 
   // Buy Flow state variables
+  get displayAttributes(): { label: string; value: string }[] {
+    if (!this.product?.rawDynamicAttributes) return [];
+    const skip = new Set(['conditionscore', 'score']);
+    const result: { label: string; value: string }[] = [];
+    for (const [key, val] of Object.entries(this.product.rawDynamicAttributes)) {
+      if (skip.has(key.toLowerCase())) continue;
+      if (val === undefined || val === null || val === '') continue;
+      result.push({ label: key.charAt(0).toUpperCase() + key.slice(1), value: String(val) });
+    }
+    return result;
+  }
+
   showBuyModal = false;
   paymentMethod: PaymentMethod = 'cash_on_delivery';
   shippingAddress = '';
@@ -56,7 +69,6 @@ export class ProductDetail implements OnInit {
       
       const startTime = Date.now();
 
-      // 1. جلب المنتج بـ subscribe
       this.productService.getProductById(id).subscribe({
         next: (product) => {
           const elapsed = Date.now() - startTime;
@@ -66,12 +78,11 @@ export class ProductDetail implements OnInit {
             this.product = product;
             this.activeImage = 0;
             this.isLoading = false;
+            this.categoryLabel = product.categoryName || CATEGORY_LABELS[product.category] || product.category;
 
-            // 2. التحقق من الملكية داخل الـ next
             const currentUser = this.authService.currentUser();
             this.isOwner = currentUser?.id === product.seller.id;
 
-            // 3. جلب المنتجات ذات الصلة بعد نجاح جلب المنتج (نفس القسم ومخلوطين عشوائياً)
             this.productService.getProducts().subscribe(allProducts => {
               const matched = allProducts.filter(p => p.id !== id && p.category === product.category);
               const shuffled = matched.sort(() => 0.5 - Math.random());
@@ -130,7 +141,12 @@ export class ProductDetail implements OnInit {
   toggleWishlist(): void {
     this.executeAuthorizedAction(() => {
       if (this.product) {
+        const wasWishlisted = this.wishlistService.isWishlisted(this.product.id);
         this.wishlistService.toggle(this.product.id);
+        this.product = {
+          ...this.product,
+          favoriteCount: this.product!.favoriteCount + (wasWishlisted ? -1 : 1),
+        };
       }
     });
   }

@@ -178,7 +178,7 @@
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
               </button>
-              <img [src]="product.image" [alt]="product.name" class="product-img" />
+              <img [src]="product.thumbnail" [alt]="product.title" class="product-img" />
               <div class="card-overlay">
                 <button class="btn-quick-look">QUICK VIEW</button>
               </div>
@@ -187,23 +187,21 @@
             <div class="product-info">
               <div class="product-meta">
                 <div class="brand-name">{{ product.brand }}</div>
-                <h3 class="item-name">{{ product.name }}</h3>
+                <h3 class="item-name">{{ product.title }}</h3>
               </div>
-              <div class="price-box">${{ product.price | number }}</div>
+              <div class="price-box">{{ product.price | currencyFormat }}</div>
             </div>
 
             <div class="product-tags">
               <div class="tag-row">
-                <span class="tag-box">{{ product.size }}</span>
-                <span class="tag-box">{{ product.condition }}</span>
+                <span *ngIf="product.size" class="tag-box">{{ product.size }}</span>
+                <span class="tag-box">{{ productService.conditionLabels[product.condition] || product.condition }}</span>
               </div>
-              <span class="score-tag">SCORE: {{ product.conditionScore }}</span>
+              <span class="score-tag">SCORE: {{ product.conditionScore }}/10</span>
             </div>
 
             <div class="product-card-admin-actions" *ngIf="authService.isAdmin() && product.soldByNafa3ni" (click)="$event.stopPropagation();">
-              <a [routerLink]="['/listings/edit', product.id]" class="btn-edit-card">
-                ✏️ Edit Listing
-              </a>
+              <a [routerLink]="['/listings/edit', product.id]" class="btn-edit-card">EDIT LISTING</a>
             </div>
           </div>
         </div>
