@@ -7,7 +7,7 @@
     ],
     "productId": "6a125329d2fe0926facbce6e",
     "createdAt": "2026-05-24T21:11:19.975Z",
-    "updatedAt": "2026-06-12T21:57:43.651Z",
+    "updatedAt": "2026-06-13T20:28:57.336Z",
     "__v": 0,
     "lastMessage": "6a1369779c781f0d7de19abe"
   },
@@ -19,7 +19,7 @@
     ],
     "productId": "6a125329d2fe0926facbce6a",
     "createdAt": "2026-05-25T19:44:49.278Z",
-    "updatedAt": "2026-06-12T21:57:43.651Z",
+    "updatedAt": "2026-06-13T20:28:57.336Z",
     "__v": 0,
     "lastMessage": "6a14a6b1658e586c0e957ae9"
   },
@@ -31,7 +31,7 @@
     ],
     "productId": "6a1236519d93db6d6302cf44",
     "createdAt": "2026-06-03T17:15:31.302Z",
-    "updatedAt": "2026-06-12T21:57:43.651Z",
+    "updatedAt": "2026-06-13T20:28:57.336Z",
     "__v": 0,
     "lastMessage": "6a206133d77da8f7f0c8afbd"
   },
@@ -45,7 +45,7 @@
       "6a125329d2fe0926facbce4c"
     ],
     "productId": "6a125329d2fe0926facbce7a",
-    "updatedAt": "2026-06-12T21:57:43.651Z"
+    "updatedAt": "2026-06-13T20:28:57.336Z"
   },
   {
     "_id": "6a132c35c0cdb881a787bcb5",
@@ -57,7 +57,7 @@
       "6a125329d2fe0926facbce4c"
     ],
     "productId": "6a125329d2fe0926facbce76",
-    "updatedAt": "2026-06-12T21:57:43.651Z"
+    "updatedAt": "2026-06-13T20:28:57.336Z"
   },
   {
     "_id": "6a1342a81c6256546773c7e2",
@@ -69,7 +69,7 @@
       "6a125329d2fe0926facbce4c"
     ],
     "productId": "6a125329d2fe0926facbce72",
-    "updatedAt": "2026-06-12T21:57:43.651Z"
+    "updatedAt": "2026-06-13T20:28:57.336Z"
   },
   {
     "_id": "6a1349cc270f32fde3755fc8",
@@ -81,7 +81,7 @@
       "6a10b0d1e24456cbac9b4ede"
     ],
     "productId": "6a1236519d93db6d6302cf44",
-    "updatedAt": "2026-06-12T21:57:43.651Z"
+    "updatedAt": "2026-06-13T20:28:57.336Z"
   },
   {
     "_id": "6a1de2256a12d760a4f10d4c",
@@ -93,6 +93,6 @@
       "6a10b0d1e24456cbac9b4ede"
     ],
     "productId": "6a1236519d93db6d6302cf44",
-    "updatedAt": "2026-06-12T21:57:43.651Z"
+    "updatedAt": "2026-06-13T20:28:57.336Z"
   }
 ]

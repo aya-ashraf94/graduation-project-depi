@@ -167,8 +167,16 @@
             <button class="btn-apply-filters" (click)="resetFilters()">CLEAR FILTERS</button>
           </div>
 
-          <div *ngFor="let product of products" class="product-card fade-in">
+          <div *ngFor="let product of products" class="product-card fade-in" [class.product-sold]="product.status === 'sold'">
             <div class="product-img-wrap" [routerLink]="['/products', product.id]" style="cursor: pointer;">
+              <!-- Status Overlay -->
+              <div class="card-status-overlay" *ngIf="product.status === 'sold'">
+                <span class="status-overlay-tag sold-tag">SOLD</span>
+              </div>
+              <div class="card-status-overlay" *ngIf="product.status === 'reserved'">
+                <span class="status-overlay-tag reserved-tag">RESERVED</span>
+              </div>
+
               <div class="card-badges">
                 <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
                 <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
@@ -186,7 +194,7 @@
 
             <div class="product-info">
               <div class="product-meta">
-                <div class="brand-name">{{ product.brand }}</div>
+                <div class="brand-name" *ngIf="product.brand">{{ product.brand }}</div>
                 <h3 class="item-name">{{ product.title }}</h3>
               </div>
               <div class="price-box">{{ product.price | currencyFormat }}</div>
@@ -195,9 +203,18 @@
             <div class="product-tags">
               <div class="tag-row">
                 <span *ngIf="product.size" class="tag-box">{{ product.size }}</span>
+                <span *ngIf="product.categoryName" class="tag-box">{{ product.categoryName }}</span>
                 <span class="tag-box">{{ productService.conditionLabels[product.condition] || product.condition }}</span>
               </div>
               <span class="score-tag">SCORE: {{ product.conditionScore }}/10</span>
+            </div>
+
+            <div class="product-footer">
+              <div class="card-loc" *ngIf="product.location">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ product.location }}
+              </div>
+              <span class="card-date">{{ product.createdAt | timeAgo }}</span>
             </div>
 
             <div class="product-card-admin-actions" *ngIf="authService.isAdmin() && product.soldByNafa3ni" (click)="$event.stopPropagation();">

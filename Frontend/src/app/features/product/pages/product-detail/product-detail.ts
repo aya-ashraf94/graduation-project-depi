@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, ChangeDetectorRef, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../../core/services/product.service';
@@ -22,6 +22,7 @@ import { ImageFallbackDirective } from '../../../../shared/directives/image-fall
 export class ProductDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   private productService = inject(ProductService);
   private authService = inject(AuthService);
   private orderService = inject(OrderService);
@@ -136,6 +137,10 @@ export class ProductDetail implements OnInit {
         });
       }
     });
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   toggleWishlist(): void {

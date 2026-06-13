@@ -10,7 +10,7 @@
     "shippingAddress": "Port Fouad - Port Said",
     "notes": "",
     "createdAt": "2026-05-31T11:53:51.371Z",
-    "updatedAt": "2026-06-12T21:57:43.657Z",
+    "updatedAt": "2026-06-13T20:28:57.345Z",
     "__v": 0
   },
   {
@@ -24,7 +24,7 @@
     "shippingAddress": "Cairo - Al abaseyia",
     "notes": "",
     "createdAt": "2026-06-01T19:38:11.902Z",
-    "updatedAt": "2026-06-12T21:57:43.657Z",
+    "updatedAt": "2026-06-13T20:28:57.345Z",
     "__v": 0
   },
   {
@@ -39,7 +39,7 @@
     "sellerId": "6a125329d2fe0926facbce4c",
     "shippingAddress": "cairo",
     "status": "cancelled",
-    "updatedAt": "2026-06-12T21:57:43.657Z"
+    "updatedAt": "2026-06-13T20:28:57.345Z"
   },
   {
     "_id": "6a13505f74d2de53f4378625",
@@ -53,7 +53,7 @@
     "sellerId": "6a125329d2fe0926facbce4c",
     "shippingAddress": "cairo",
     "status": "cancelled",
-    "updatedAt": "2026-06-12T21:57:43.657Z"
+    "updatedAt": "2026-06-13T20:28:57.345Z"
   },
   {
     "_id": "6a1351dc74d2de53f4378758",
@@ -67,7 +67,7 @@
     "sellerId": "6a10b0d1e24456cbac9b4ede",
     "shippingAddress": "helwan",
     "status": "delivered",
-    "updatedAt": "2026-06-12T21:57:43.657Z"
+    "updatedAt": "2026-06-13T20:28:57.345Z"
   },
   {
     "_id": "6a14da3b69fb4469c7837618",
@@ -81,7 +81,7 @@
     "sellerId": "6a125329d2fe0926facbce4c",
     "shippingAddress": "giza",
     "status": "delivered",
-    "updatedAt": "2026-06-12T21:57:43.657Z"
+    "updatedAt": "2026-06-13T20:28:57.345Z"
   },
   {
     "_id": "6a1dd8390792aa0a9425cac3",
@@ -95,7 +95,7 @@
     "sellerId": "6a13155675815f87f6a42883",
     "shippingAddress": "cairo",
     "status": "pending",
-    "updatedAt": "2026-06-12T21:57:43.657Z"
+    "updatedAt": "2026-06-13T20:28:57.345Z"
   },
   {
     "_id": "6a2403a0ebf7d3f7c4d9328e",
@@ -109,6 +109,6 @@
     "sellerId": "6a125329d2fe0926facbce4c",
     "shippingAddress": "cairo",
     "status": "delivered",
-    "updatedAt": "2026-06-12T21:57:43.657Z"
+    "updatedAt": "2026-06-13T20:28:57.345Z"
   }
 ]

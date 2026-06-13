@@ -7,13 +7,14 @@ import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ProductSummary } from '../../../../core/models/product.model';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
+import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CurrencyFormatPipe],
+  imports: [CommonModule, FormsModule, RouterLink, CurrencyFormatPipe, TimeAgoPipe],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
@@ -43,7 +44,7 @@ export class ProductList implements OnInit {
   categories: string[] = [];
   selectedCategories: Set<string> = new Set();
 
-  conditionOptions = ['New w/ Tags', 'Excellent', 'Good', 'Tarnished', 'Distressed'];
+  conditionOptions = ['New w/ Tags', 'Excellent', 'Good', 'Fair', 'Distressed'];
   selectedConditions: Set<string> = new Set();
 
   minPrice = 0;
@@ -120,10 +121,7 @@ export class ProductList implements OnInit {
         //   };
         // });
 
-        const mapped = apiProducts.map(p => ({
-          ...p,
-          thumbnail: p.thumbnail || 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=800&auto=format&fit=crop',
-        }));
+        const mapped = apiProducts;
 
         const elapsed = Date.now() - startTime;
         const delayTime = Math.max(0, 400 - elapsed);
