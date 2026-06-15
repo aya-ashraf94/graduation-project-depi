@@ -43,6 +43,7 @@
             <tr>
               <th>Listing / Product Details</th>
               <th>Category</th>
+              <th>Condition</th>
               <th>Price</th>
               <th>Status</th>
               <th>Actions</th>
@@ -63,6 +64,7 @@
                     </div>
                   </td>
                   <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
                   <td><div class="skeleton-line number"></div></td>
                   <td><div class="skeleton-badge"></div></td>
                   <td><div class="skeleton-actions"></div></td>
@@ -70,7 +72,7 @@
               }
             } @else if (products().length === 0) {
               <tr>
-                <td colspan="5" class="empty-table-cell">
+                <td colspan="6" class="empty-table-cell">
                   <span>🏜️</span>
                   <p>No products match the selected filters.</p>
                 </td>
@@ -140,6 +142,11 @@
                   <td>
                     <span class="category-pill">{{ product.categoryName || 'Other' }}</span>
                   </td>
+                  <td>
+                    <span class="condition-pill" [class]="getConditionClass(product.condition)">
+                      {{ getConditionLabel(product.condition) }}
+                    </span>
+                  </td>
                   <td class="price-cell">
                     {{ product.price | currency: 'EGP ' : 'code' : '1.0-0' }}
                   </td>
@@ -147,10 +154,11 @@
                     <span
                       class="status-pill"
                       [class.status-available]="product.status === 'available'"
+                      [class.status-reserved]="product.status === 'reserved'"
                       [class.status-sold]="product.status === 'sold'"
                       [class.status-draft]="product.status === 'draft'"
                     >
-                      {{ product.status }}
+                      {{ getStatusLabel(product.status) }}
                     </span>
                   </td>
                   <td>

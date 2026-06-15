@@ -449,6 +449,14 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 0.25rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.ref-stats-col:hover {
+  opacity: 0.7;
 }
 
 .ref-stats-icon-wrap {

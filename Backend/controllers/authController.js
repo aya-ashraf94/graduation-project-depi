@@ -1,8 +1,21 @@
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const cloudinary = require("../config/cloudinary");
 const { updateUserStats } = require("../utils/userStats");
+
+const uploadBase64ToCloudinary = async (base64Str) => {
+    if (!base64Str) return null;
+    if (base64Str.startsWith("http")) {
+        return base64Str;
+    }
+    const result = await cloudinary.uploader.upload(base64Str, {
+        folder: "nafa3ni-avatars"
+    });
+    return result.secure_url;
+};
 
 // REGISTER
 const registerUser = async (req, res) => {
@@ -55,6 +68,20 @@ const registerUser = async (req, res) => {
 
         const userObj = user.toObject();
         delete userObj.password;
+
+        // Send welcome notification to complete profile
+        try {
+            await Notification.create({
+                userId: user._id,
+                type: "system",
+                title: "Welcome to Nafa3ni! 🎉",
+                body: "Complete your profile to start buying and selling on campus",
+                linkedRoute: "/profile/me?edit=true",
+                isRead: false,
+            });
+        } catch (notifError) {
+            console.error("Failed to create welcome notification:", notifError);
+        }
 
         res.status(201).json({
             message: "User Registered Successfully",
@@ -163,7 +190,7 @@ const updateProfile = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to update this profile" });
         }
         
-        const { firstName, lastName, email, avatar, bio, location, tags } = req.body;
+        const { firstName, lastName, email, avatar, bio, location, tags, phoneNumber } = req.body;
         
         const updateData = {};
         if (firstName !== undefined || lastName !== undefined) {
@@ -177,10 +204,13 @@ const updateProfile = async (req, res) => {
             updateData.name = `${newFirst} ${newLast}`.trim();
         }
         if (email !== undefined) updateData.email = email;
-        if (avatar !== undefined) updateData.avatar = avatar;
+        if (avatar !== undefined) {
+            updateData.avatar = await uploadBase64ToCloudinary(avatar);
+        }
         if (bio !== undefined) updateData.bio = bio;
         if (location !== undefined) updateData.location = location;
         if (tags !== undefined) updateData.tags = tags;
+        if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
         
         const updatedUser = await User.findByIdAndUpdate(
             userId,

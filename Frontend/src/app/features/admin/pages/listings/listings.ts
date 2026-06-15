@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AdminService } from '../../../../core/services/admin.service';
+import { ProductService } from '../../../../core/services/product.service';
 import { Product } from '../../../../core/models/product.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
@@ -16,6 +17,7 @@ import { ConfirmService } from '../../../../core/services/confirm.service';
 })
 export class Listings implements OnInit {
   private adminService = inject(AdminService);
+  private productService = inject(ProductService);
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
@@ -30,24 +32,12 @@ export class Listings implements OnInit {
 
   filterForm!: FormGroup;
 
-  // Available categories in the system
-  categoriesList = [
-    { value: '', label: 'All Categories' },
-    { value: 'outerwear', label: 'Outerwear' },
-    { value: 'tops', label: 'Tops & Apparel' },
-    { value: 'bottoms', label: 'Bottoms' },
-    { value: 'footwear', label: 'Footwear' },
-    { value: 'accessories', label: 'Accessories' },
-    { value: 'electronics', label: 'Electronics' },
-    { value: 'furniture', label: 'Furniture & Appliance' },
-    { value: 'books', label: 'Books' },
-    { value: 'sports', label: 'Sports' },
-    { value: 'other', label: 'Other' }
-  ];
+  categoriesList: { value: string; label: string }[] = [{ value: '', label: 'All Categories' }];
 
   statusList = [
     { value: '', label: 'All Statuses' },
-    { value: 'active', label: 'Active / Available' },
+    { value: 'active', label: 'Available' },
+    { value: 'reserved', label: 'Reserved' },
     { value: 'sold', label: 'Sold' },
     { value: 'draft', label: 'Draft' }
   ];
@@ -61,6 +51,18 @@ export class Listings implements OnInit {
     this.filterForm.valueChanges.subscribe(() => {
       this.currentPage.set(1);
       this.loadListings();
+    });
+
+    this.productService.getCategories().subscribe({
+      next: (cats) => {
+        this.categoriesList = [
+          { value: '', label: 'All Categories' },
+          ...cats.map((c: any) => ({ value: c.name, label: c.name }))
+        ];
+      },
+      error: () => {
+        this.categoriesList = [{ value: '', label: 'All Categories' }];
+      }
     });
 
     this.loadListings();
@@ -102,6 +104,38 @@ export class Listings implements OnInit {
       this.currentPage.update(p => p - 1);
       this.loadListings();
     }
+  }
+
+  getConditionLabel(condition: string): string {
+    const labels: Record<string, string> = {
+      new_with_tags: 'New',
+      excellent: 'New',
+      good: 'Used',
+      fair: 'Used',
+      distressed: 'Used'
+    };
+    return labels[condition] || 'Used';
+  }
+
+  getConditionClass(condition: string): string {
+    const classes: Record<string, string> = {
+      new_with_tags: 'cond-new',
+      excellent: 'cond-new',
+      good: 'cond-used',
+      fair: 'cond-used',
+      distressed: 'cond-used'
+    };
+    return classes[condition] || 'cond-used';
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      available: 'Available',
+      reserved: 'Reserved',
+      sold: 'Sold',
+      draft: 'Draft'
+    };
+    return labels[status] || status;
   }
 
   toggleVerify(product: Product): void {

@@ -81,6 +81,7 @@ const getWishlistProducts = async (req, res) => {
                 brand: p.dynamicAttributes instanceof Map ? p.dynamicAttributes.get("brand") || '' : p.dynamicAttributes?.brand || '',
                 condition: p.dynamicAttributes instanceof Map ? p.dynamicAttributes.get("condition") || '' : p.dynamicAttributes?.condition || '',
                 status: p.status,
+                location: p.location || '',
                 seller: p.userId ? {
                     id: p.userId._id,
                     name: p.userId.name,

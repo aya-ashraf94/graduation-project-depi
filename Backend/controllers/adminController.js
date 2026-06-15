@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const Report = require("../models/Report");
 const Order = require("../models/Order");
+const Category = require("../models/Category");
 
 // GET /api/admin/stats
 const getStats = async (req, res) => {
@@ -10,15 +11,13 @@ const getStats = async (req, res) => {
         const totalProducts = await Product.countDocuments();
         const openReports = await Report.countDocuments();
         
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        const ordersToday = await Order.countDocuments({ createdAt: { $gte: startOfDay } });
+        const totalOrders = await Order.countDocuments();
 
         res.json({
             totalUsers,
             totalProducts,
             openReports,
-            ordersToday
+            totalOrders
         });
     } catch (error) {
         console.error("Error fetching admin stats:", error);
@@ -119,12 +118,19 @@ const getAllProducts = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const status = req.query.status;
-        const categoryId = req.query.category;
+        const categoryName = req.query.category;
         const skip = (page - 1) * limit;
 
         const query = {};
         if (status) query.status = status;
-        if (categoryId) query.categoryId = categoryId;
+
+        if (categoryName) {
+            const matchingCategories = await Category.find({ name: new RegExp(categoryName, 'i') });
+            const catIds = matchingCategories.map(c => c._id);
+            if (catIds.length > 0) {
+                query.categoryId = { $in: catIds };
+            }
+        }
 
         const total = await Product.countDocuments(query);
         const products = await Product.find(query)
@@ -214,6 +220,38 @@ const getReports = async (req, res) => {
     }
 };
 
+// GET /api/admin/orders
+const getAllOrders = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const status = req.query.status;
+        const skip = (page - 1) * limit;
+
+        const query = {};
+        if (status) query.status = status;
+
+        const total = await Order.countDocuments(query);
+        const orders = await Order.find(query)
+            .populate("productId", "title thumbnail price")
+            .populate("buyerId", "name email")
+            .populate("sellerId", "name email")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({
+            orders,
+            total,
+            page,
+            pages: Math.ceil(total / limit)
+        });
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
+
 // DELETE /api/admin/reports/:id
 const deleteReport = async (req, res) => {
     try {
@@ -240,5 +278,6 @@ module.exports = {
     patchProduct,
     deleteAnyProduct,
     getReports,
-    deleteReport
+    deleteReport,
+    getAllOrders
 };

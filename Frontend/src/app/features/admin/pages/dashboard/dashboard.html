@@ -12,46 +12,46 @@
 
   <div class="ref-stats-strip">
     <!-- Users -->
-    <div class="ref-stats-col">
+    <a routerLink="/admin/users" class="ref-stats-col">
       <div class="ref-stats-icon-wrap icon-users">👥</div>
       <div class="ref-stats-text-stack">
         <div class="ref-stats-val">{{ stats()?.totalUsers || 0 }}</div>
         <div class="ref-stats-lbl">Total Users</div>
       </div>
-    </div>
+    </a>
     
     <div class="ref-stats-divider"></div>
     
     <!-- Listings -->
-    <div class="ref-stats-col">
+    <a routerLink="/admin/listings" class="ref-stats-col">
       <div class="ref-stats-icon-wrap icon-listings">📦</div>
       <div class="ref-stats-text-stack">
         <div class="ref-stats-val">{{ stats()?.totalProducts || 0 }}</div>
         <div class="ref-stats-lbl">Total Listings</div>
       </div>
-    </div>
+    </a>
     
     <div class="ref-stats-divider"></div>
     
     <!-- Reports -->
-    <div class="ref-stats-col">
+    <a routerLink="/admin/reports" class="ref-stats-col">
       <div class="ref-stats-icon-wrap icon-reports">🚨</div>
       <div class="ref-stats-text-stack">
         <div class="ref-stats-val">{{ stats()?.openReports || 0 }}</div>
         <div class="ref-stats-lbl">Open Reports</div>
       </div>
-    </div>
+    </a>
     
     <div class="ref-stats-divider"></div>
     
-    <!-- Orders Today -->
-    <div class="ref-stats-col">
+    <!-- Total Orders -->
+    <a routerLink="/admin/orders" class="ref-stats-col">
       <div class="ref-stats-icon-wrap icon-orders">🛒</div>
       <div class="ref-stats-text-stack">
-        <div class="ref-stats-val">{{ stats()?.ordersToday || 0 }}</div>
-        <div class="ref-stats-lbl">Orders Today</div>
+        <div class="ref-stats-val">{{ stats()?.totalOrders || 0 }}</div>
+        <div class="ref-stats-lbl">Total Orders</div>
       </div>
-    </div>
+    </a>
   </div>
 
   @if (isLoading() && !stats()) {

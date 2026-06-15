@@ -134,6 +134,7 @@ export class AuthService {
         ? `${baseUrl}${u.avatar}`
         : u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,
       bio: u.bio || '',
+      phoneNumber: u.phoneNumber || '',
       location: u.location || '',
       tags: u.tags || [],
     };

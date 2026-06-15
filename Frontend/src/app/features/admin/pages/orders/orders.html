@@ -1,0 +1,110 @@
+<div class="orders-page-container">
+  <div class="page-header-actions">
+    <div class="title-section">
+      <h1>Orders</h1>
+      <p>View and manage all orders placed on the platform.</p>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Filter by status:</label>
+      <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()" class="filter-select">
+        <option value="">All Orders</option>
+        <option value="pending">Pending</option>
+        <option value="shipped">Shipped</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-panel">
+      <h3>⚠️ Error</h3>
+      <p>{{ errorMessage() }}</p>
+      <button (click)="loadOrders()" class="btn btn-primary">Retry</button>
+    </div>
+  } @else {
+    <div class="admin-table-card">
+      <div class="table-container">
+        <table class="admin-data-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Buyer</th>
+              <th>Seller</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (isLoading()) {
+              @for (item of [1, 2, 3, 4, 5]; track item) {
+                <tr class="table-row-skeleton">
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-badge"></div></td>
+                  <td><div class="skeleton-line text"></div></td>
+                  <td><div class="skeleton-line text"></div></td>
+                </tr>
+              }
+            } @else if (orders().length === 0) {
+              <tr>
+                <td colspan="7" class="empty-table-cell">
+                  <span>📭</span>
+                  <p>No orders found.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (order of orders(); track order._id) {
+                <tr>
+                  <td>
+                    <div class="order-product-cell">
+                      <div class="order-product-thumb" *ngIf="order.productId?.thumbnail; else noThumb">
+                        <img [src]="order.productId.thumbnail" [alt]="order.productId.title" />
+                      </div>
+                      <ng-template #noThumb>
+                        <div class="order-product-thumb placeholder">📦</div>
+                      </ng-template>
+                      <span class="order-product-title">{{ order.productId?.title || 'Unknown' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="order-party">
+                      <span class="order-party-name">{{ order.buyerId?.name || 'Deleted User' }}</span>
+                      <span class="order-party-email">{{ order.buyerId?.email || '' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="order-party">
+                      <span class="order-party-name">{{ order.sellerId?.name || 'Deleted User' }}</span>
+                      <span class="order-party-email">{{ order.sellerId?.email || '' }}</span>
+                    </div>
+                  </td>
+                  <td class="order-price-cell">{{ order.price | currency:'EGP ' }}</td>
+                  <td>
+                    <span class="order-status-pill" [class]="getStatusClass(order.status)">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </td>
+                  <td class="order-payment-cell">{{ getPaymentLabel(order.paymentMethod) }}</td>
+                  <td class="order-date-cell">{{ order.createdAt | date:'mediumDate' }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="brutal-pagination">
+        <button [disabled]="currentPage() === 1 || isLoading()" (click)="prevPage()" class="pag-btn prev-btn">← Previous</button>
+        <span class="pag-info">Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalOrders() }} total orders)</span>
+        <button [disabled]="currentPage() === totalPages() || isLoading()" (click)="nextPage()" class="pag-btn next-btn">Next →</button>
+      </div>
+    }
+  }
+</div>
