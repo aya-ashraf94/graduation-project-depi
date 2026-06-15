@@ -44,6 +44,7 @@ export class UserService {
       totalPurchases: u.totalPurchases ?? 0,
       joinedAt: u.createdAt ? new Date(u.createdAt) : new Date(),
       isVerified: u.isVerified ?? false,
+      phoneNumber: u.phoneNumber || '',
       location: u.location || 'Cairo',
       bio: u.bio || '',
       tags: u.tags || []

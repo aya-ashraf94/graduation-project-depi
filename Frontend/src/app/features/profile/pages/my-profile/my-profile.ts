@@ -90,18 +90,21 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   // Edit profile modal state
   showEditModal = false;
-  editActiveTab: 'profile' | 'account' = 'profile';
   profileSuccess = signal<string | null>(null);
   profileError = signal<string | null>(null);
+  savingProfile = false;
+  editTags: string[] = [];
+  tagInputValue = '';
   editForm = {
     firstName: '',
     lastName: '',
     bio: '',
     location: '',
-    tagsString: '',
+    phoneNumber: '',
     avatar: '',
     email: ''
   };
+  private pendingAvatarBase64: string | null = null;
 
   // Review modal state
   showReviewModal = false;
@@ -255,6 +258,16 @@ export class MyProfile implements OnInit, AfterViewInit {
       if (view === 'purchases' || view === 'sales') {
         this.orderView = view;
       }
+      // Auto-open edit modal when ?edit=true (from welcome notification)
+      if (params['edit'] === 'true' && this.user && this.isOwnProfile) {
+        this.openEditModal();
+        const url = this.router.createUrlTree([], {
+          relativeTo: this.route,
+          queryParams: { edit: undefined },
+          queryParamsHandling: 'merge'
+        }).toString();
+        this.location.go(url);
+      }
       this.cdr.detectChanges();
     });
   }
@@ -330,9 +343,9 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   getConditionLabel(condition: string): string {
     switch (condition) {
-      case 'new_with_tags': return 'Like New';
-      case 'excellent': return 'Fresh';
-      case 'good': return 'Good';
+      case 'new_with_tags': return 'New';
+      case 'excellent': return 'New';
+      case 'good': return 'Used';
       case 'fair': case 'distressed': return 'Used';
       default: return 'Used';
     }
@@ -340,9 +353,9 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   getConditionClass(condition: string): string {
     switch (condition) {
-      case 'new_with_tags': return 'cond-like-new';
-      case 'excellent': return 'cond-fresh';
-      case 'good': return 'cond-good';
+      case 'new_with_tags': return 'cond-new';
+      case 'excellent': return 'cond-new';
+      case 'good': return 'cond-used';
       case 'fair': case 'distressed': return 'cond-used';
       default: return 'cond-used';
     }
@@ -371,13 +384,16 @@ export class MyProfile implements OnInit, AfterViewInit {
     if (!this.user) return;
     this.profileSuccess.set(null);
     this.profileError.set(null);
-    this.editActiveTab = 'profile';
+    this.savingProfile = false;
+    this.pendingAvatarBase64 = null;
+    this.editTags = [...(this.user.tags || [])];
+    this.tagInputValue = '';
     this.editForm = {
       firstName: this.user.firstName || '',
       lastName: this.user.lastName || '',
       bio: this.user.bio || '',
       location: this.user.location || '',
-      tagsString: (this.user.tags || []).join(', '),
+      phoneNumber: this.user.phoneNumber || '',
       avatar: this.user.avatar || '',
       email: this.user.email || ''
     };
@@ -409,38 +425,79 @@ export class MyProfile implements OnInit, AfterViewInit {
     if (!this.user) return;
     this.profileSuccess.set(null);
     this.profileError.set(null);
+    this.savingProfile = true;
 
-    const tags = this.editForm.tagsString
-      .split(',')
-      .map(t => t.trim())
-      .filter(t => t.length > 0);
+    const tags = this.editTags;
+    const avatar = this.pendingAvatarBase64 || this.editForm.avatar;
+    this.pendingAvatarBase64 = null;
 
     const payload = {
       firstName: this.editForm.firstName,
       lastName: this.editForm.lastName,
       bio: this.editForm.bio,
       location: this.editForm.location,
+      phoneNumber: this.editForm.phoneNumber,
       tags,
-      avatar: this.editForm.avatar,
+      avatar,
       email: this.editForm.email
     };
 
     this.userService.updateProfile(this.user.id, payload).subscribe({
       next: (updatedUser) => {
+        this.savingProfile = false;
         this.user = updatedUser;
         this.authService.updateLocalUser(updatedUser);
         this.profileSuccess.set('Profile updated successfully!');
-        setTimeout(() => {
-          this.closeEditModal();
-        }, 1500);
+        this.closeEditModal();
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.savingProfile = false;
         console.error('Error updating profile:', err);
         this.profileError.set(err?.error?.message || 'Failed to update profile. Please try again.');
         this.cdr.detectChanges();
       }
     });
+  }
+
+  addTag(event: Event) {
+    event.preventDefault();
+    const val = this.tagInputValue.trim();
+    if (val && !this.editTags.includes(val)) {
+      this.editTags.push(val);
+    }
+    this.tagInputValue = '';
+  }
+
+  addTagFromInput(input: HTMLInputElement) {
+    const val = input.value.trim();
+    if (val && !this.editTags.includes(val)) {
+      this.editTags.push(val);
+    }
+    input.value = '';
+    this.tagInputValue = '';
+  }
+
+  removeTag(index: number) {
+    this.editTags.splice(index, 1);
+  }
+
+  onAvatarSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Show preview instantly using object URL (synchronous, no delay)
+    this.editForm.avatar = URL.createObjectURL(file);
+    this.cdr.detectChanges();
+
+    // Read as base64 in background for saving to backend
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.pendingAvatarBase64 = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
   }
 
   openReviewModal(order: OrderSummary) {

@@ -11,7 +11,7 @@ export interface AdminStats {
   totalUsers: number;
   totalProducts: number;
   openReports: number;
-  ordersToday: number;
+  totalOrders: number;
 }
 
 export interface PaginatedUsers {
@@ -23,6 +23,13 @@ export interface PaginatedUsers {
 
 export interface PaginatedProducts {
   products: Product[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
+export interface PaginatedOrders {
+  orders: any[];
   total: number;
   page: number;
   pages: number;
@@ -132,6 +139,23 @@ export class AdminService {
     return this.http.delete<any>(`${this.apiUrl}/reports/${id}`);
   }
 
+  getAllOrders(page: number, limit: number, status?: string): Observable<PaginatedOrders> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    if (status) {
+      params = params.set('status', status);
+    }
+    return this.http.get<any>(`${this.apiUrl}/orders`, { params }).pipe(
+      map(res => ({
+        orders: res.orders || [],
+        total: res.total,
+        page: res.page,
+        pages: res.pages
+      }))
+    );
+  }
+
   private mapUser(u: any): User {
     if (!u) return u;
     const nameParts = (u.name || '').trim().split(/\s+/);
@@ -153,6 +177,7 @@ export class AdminService {
       joinedAt: u.createdAt ? new Date(u.createdAt) : new Date(),
       isVerified: u.isVerified ?? false,
       isSuspended: u.isSuspended ?? false,
+      phoneNumber: u.phoneNumber || '',
       location: u.location || 'Cairo',
       bio: u.bio || '',
       tags: u.tags || []

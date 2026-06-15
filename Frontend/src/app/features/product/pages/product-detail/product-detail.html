@@ -17,14 +17,14 @@
       <div class="detail-grid">
         <!-- LEFT: Image Gallery -->
         <div class="gallery-col">
-          <div class="main-image-wrap">
-            <div class="card-badges">
-              <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
-              <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
-              <span class="badge-sku">SKU: {{ product.sku || (product.id | slice:0:8 | uppercase) }}</span>
+            <div class="main-image-wrap">
+              <div class="card-badges">
+                <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
+                <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
+              </div>
+              <span class="image-counter" *ngIf="product.images.length > 1">{{ activeImage + 1 }} / {{ product.images.length }}</span>
+              <img [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image" />
             </div>
-            <img [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image" />
-          </div>
           
           @if (product.images.length > 0) {
             <div class="thumbnails">
@@ -197,6 +197,12 @@
         <div class="related-slider">
           <div *ngFor="let item of relatedProducts" class="product-card slider-card">
             <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer;">
+              <div class="card-status-overlay" *ngIf="item.status === 'sold'">
+                <span class="status-overlay-tag sold-tag">SOLD</span>
+              </div>
+              <div class="card-status-overlay" *ngIf="item.status === 'reserved'">
+                <span class="status-overlay-tag reserved-tag">RESERVED</span>
+              </div>
               <div class="card-badges">
                 <span *ngIf="item.soldByNafa3ni" class="badge-official" style="font-size:0.55rem;">✓ Official</span>
                 <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
@@ -218,9 +224,17 @@
             <div class="product-tags">
               <div class="tag-row">
                 <span *ngIf="item.size" class="tag-box">{{ item.size }}</span>
+                <span *ngIf="item.categoryName" class="tag-box">{{ item.categoryName }}</span>
                 <span class="tag-box">{{ conditionLabels[item.condition] | uppercase }}</span>
               </div>
               <span class="score-tag">SCORE: {{ item.conditionScore }}/10</span>
+            </div>
+            <div class="product-footer">
+              <div class="card-loc" *ngIf="item.location">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ item.location }}
+              </div>
+              <span class="card-date">{{ item.createdAt | timeAgo }}</span>
             </div>
           </div>
         </div>

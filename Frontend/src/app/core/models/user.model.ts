@@ -18,6 +18,7 @@ export interface User {
   joinedAt: Date;
   isVerified: boolean;
   isSuspended?: boolean;
+  phoneNumber?: string;
   location?: string;
   bio?: string;
   tags?: string[];

@@ -80,12 +80,33 @@
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  cursor: crosshair;
 }
 
 .main-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.main-image-wrap:hover .main-image {
+  transform: scale(1.08);
+}
+
+.image-counter {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--white);
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.75rem;
+  border-radius: var(--radius-xs);
+  z-index: 10;
+  backdrop-filter: blur(4px);
 }
 
 .thumbnails {
@@ -126,6 +147,7 @@
 .info-col {
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
 }
 
 .product-meta-top {
@@ -337,6 +359,12 @@
   text-decoration: none;
 }
 
+.btn-neo-buy.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .status-sold-badge {
   display: inline-flex;
   align-items: center;
@@ -470,6 +498,68 @@
   font-size: 1.25rem;
   font-weight: 900;
   color: var(--black);
+}
+
+/* ---------- STATUS OVERLAY (SOLD / RESERVED) ---------- */
+.card-status-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.status-overlay-tag {
+  padding: 0.5rem 1.5rem;
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 1.5rem;
+  border: 3px solid var(--black);
+  transform: rotate(-15deg);
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.sold-tag {
+  background: #ff4d4d;
+  color: var(--black);
+}
+
+.reserved-tag {
+  background: #ffd700;
+  color: var(--black);
+}
+
+/* ---------- CARD FOOTER (Location + Date) ---------- */
+.product-footer {
+  padding: 0 1.5rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--gray-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+
+.card-date {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--gray-3);
+  white-space: nowrap;
 }
 
 /* ---------- 4. RELATED ITEMS SLIDER ---------- */
@@ -1082,11 +1172,11 @@
     width: auto;
   }
 
-.btn-neo-buy.btn-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
+  .btn-neo-buy.btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 
 .status-sold-badge {
     flex: 1 1 auto;
