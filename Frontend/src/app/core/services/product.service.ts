@@ -222,7 +222,9 @@ export class ProductService {
         //   : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
         avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
         rating: u.rating ?? 5.0,
-        isVerified: u.isVerified ?? false
+        isVerified: u.isVerified ?? false,
+        successRate: u.successRate ?? 100,
+        totalSales: u.totalSales ?? 0
       };
     } else if (p.userId && typeof p.userId === 'string') {
       seller.id = p.userId;

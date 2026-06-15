@@ -135,7 +135,7 @@
                 </div>
                 <div class="seller-name-row">
                   <span class="official-store-title">OFFICIAL NAFA3NI STORE</span>
-                  <div class="seller-stars">★★★★★ (100% TRUSTED)</div>
+                  <div class="seller-stars">{{ getStars(product.seller.rating) }} ({{ product.seller.rating }}/5)</div>
                 </div>
               </div>
               <div class="official-desc-box">
@@ -171,7 +171,7 @@
                   <a [routerLink]="['/profile', product.seller.id]" class="seller-name">
                     {{ product.seller.firstName | uppercase }} {{ product.seller.lastName | uppercase }}
                   </a>
-                  <div class="seller-stars">★★★★★ ({{ product.seller.rating }} REVIEWS)</div>
+                  <div class="seller-stars">{{ getStars(product.seller.rating) }} ({{ product.seller.rating }}/5)</div>
                 </div>
               </div>
               <div class="seller-metrics">
@@ -181,7 +181,7 @@
                 </div>
                 <div class="metric-box">
                   <span class="metric-label">SUCCESS RATE</span>
-                  <span class="metric-value">99.8%</span>
+                  <span class="metric-value">{{ product.seller.successRate || 100 }}%</span>
                 </div>
               </div>
             </div>
