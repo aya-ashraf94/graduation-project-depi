@@ -114,6 +114,10 @@ export class ProductDetail implements OnInit {
     this.activeImage = index;
   }
 
+  getStars(rating: number): string {
+    return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+  }
+
   executeAuthorizedAction(action: () => void): void {
     if (this.authService.currentUser()) {
       action();

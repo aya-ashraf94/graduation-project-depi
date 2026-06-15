@@ -35,6 +35,8 @@ export interface UserSummary {
   avatar?: string;
   rating: number;
   isVerified: boolean;
+  successRate?: number;
+  totalSales?: number;
 }
 
 /** Payload sent when registering */

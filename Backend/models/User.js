@@ -74,6 +74,11 @@ const userSchema = mongoose.Schema(
             default: 0
         },
 
+        successRate: {
+            type: Number,
+            default: 100
+        },
+
         wishlist: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Product'
