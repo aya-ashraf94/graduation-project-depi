@@ -17,7 +17,7 @@
 
       <!-- REDESIGNED PROFILE HERO SECTION (MATCHING IMAGE REFERENCE) -->
       <div class="profile-header">
-        
+
         <!-- Left Side: Main Info Column -->
         <div class="profile-header-left">
           <!-- Avatar Block -->
@@ -147,9 +147,9 @@
             <div class="stats-lbl">Products</div>
           </div>
         </div>
-        
+
         <div class="stats-divider"></div>
-        
+
         <!-- Rating -->
         <div class="stats-col" (click)="selectTab('reviews')" style="cursor: pointer;">
           <div class="stats-icon-wrap icon-rating">
@@ -160,9 +160,9 @@
             <div class="stats-lbl">Rating</div>
           </div>
         </div>
-        
+
         <div class="stats-divider"></div>
-        
+
         <!-- Sales -->
         <div class="stats-col">
           <div class="stats-icon-wrap icon-sales">
@@ -173,9 +173,9 @@
             <div class="stats-lbl">Sales</div>
           </div>
         </div>
-        
+
         <div class="stats-divider"></div>
-        
+
         <!-- Success Rate -->
         <div class="stats-col">
           <div class="stats-icon-wrap icon-success">
@@ -186,7 +186,7 @@
             <div class="stats-lbl">Success Rate</div>
           </div>
         </div>
-        
+
       </div>
 
       <!-- TABS SECTION -->
@@ -202,7 +202,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               Products
             </button>
-            
+
             <!-- Reviews Tab -->
             <button
               class="tab-item"
@@ -223,7 +223,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               Wishlist
             </button>
-            
+
             <!-- Orders Tab -->
             <button
               *ngIf="isOwnProfile"
@@ -244,7 +244,7 @@
           <div [ngClass]="(isMobileDevice && !showAllListingsMobile) ? 'product-slider-grid' : 'product-dashboard-grid'">
             <div class="product-card" *ngFor="let item of displayedListings" [class.product-sold]="item.status === 'sold'">
               <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
-                
+
                 <!-- Status Overlay (Sold / Reserved) -->
                 <div class="card-status-overlay" *ngIf="item.status === 'sold'">
                   <span class="status-overlay-tag sold-tag">SOLD</span>
@@ -364,7 +364,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- EMPTY STATE -->
       <ng-template #noListings>
         <div class="empty-state">
@@ -445,7 +445,7 @@
               </svg>
             </div>
             <p>Your wishlist is empty. Browse the marketplace and save items you like!</p>
-            <a routerLink="/products" class="btn-view-all" style="text-decoration: none; display: inline-block;">BROWSE MARKETPLACE</a>
+            <a routerLink="/products" class="btn btn-primary">BROWSE MARKETPLACE</a>
           </div>
         </ng-template>
       </div><!-- /wishlist tab-content -->
@@ -770,7 +770,7 @@
               <span class="reviews-title-star">★ {{ (user.rating || 5.0) | number:'1.1-1' }}</span>
               <span class="reviews-title-count">({{ reviews.length }} reviews)</span>
             </h2>
-            <button type="button" class="btn-view-all-reviews">View All Reviews</button>
+            <button type="button" class="btn-view-all-reviews" (click)="viewAllReviews()">View All Reviews</button>
           </div>
 
           <div class="reviews-layout">
@@ -819,7 +819,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Right Column: Horizontal Cards -->
             <div class="reviews-list-col">
               <div class="review-card-modern" *ngFor="let review of reviews">
@@ -842,7 +842,7 @@
                 </div>
                 <div class="rev-card-body">
                   <p class="rev-comment">"{{ review.comment }}"</p>
-                  
+
                   <div class="seller-response-box" *ngIf="review.response">
                     <div class="response-label">Seller Response:</div>
                     <div class="response-text">{{ review.response }}</div>
@@ -953,7 +953,7 @@
       <h3 class="brutalist-modal-title">EDIT PROFILE</h3>
       <p class="modal-subtitle">Update your public campus trader details</p>
     </div>
-    
+
     <!-- Success Banner -->
     <div *ngIf="profileSuccess()" class="brutalist-banner brutalist-banner-success">
       <div class="banner-icon-wrap">
@@ -1110,7 +1110,7 @@
     <button class="modal-standard-close" (click)="closeReviewModal()">✕</button>
 
     <h3 class="modal-standard-title" style="margin-bottom: 1.5rem; text-align: center; font-family: var(--font-primary); font-weight: 900;">LEAVE A REVIEW</h3>
-    
+
     <div *ngIf="reviewSuccess()" class="banner banner-success" style="background: #d4edda; color: #155724; border: 2px solid #c3e6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
       {{ reviewSuccess() }}
     </div>

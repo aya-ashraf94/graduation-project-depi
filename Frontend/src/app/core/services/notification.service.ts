@@ -47,7 +47,7 @@ export class NotificationService {
 
   /** Get notifications (ignoring parameter, returns user's notifications sorted) */
   getNotifications(userId?: string): Notification[] {
-    return this._notifications()
+    return [...this._notifications()]
       .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
   }
 
@@ -79,15 +79,18 @@ export class NotificationService {
    * MARK ALL AS READ (Optimistic UI Update)
    */
   markAllAsRead(userId?: string): void {
-    // Optimistically mark all as read in local state
+    // Also mark locally right away for instant UI feedback
     this._notifications.update(list =>
       list.map(n => ({ ...n, isRead: true }))
     );
 
-    // Sync with backend API
+    // Sync with backend API, then re-fetch to guarantee consistency
     this.http.post<any>(`${environment.apiUrl}/notifications/read-all`, {}).subscribe({
+      next: () => this.fetchNotifications(),
       error: (err) => {
         console.error('Error marking all notifications as read on backend:', err);
+        // Re-fetch to revert optimistic state to real server state
+        this.fetchNotifications();
       }
     });
   }
