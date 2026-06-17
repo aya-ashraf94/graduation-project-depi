@@ -65,7 +65,7 @@
           <label class="field-label" for="edit-category">CATEGORY <span class="required-star">*</span></label>
           <select id="edit-category" class="field-select" formControlName="categoryId" (change)="onCategoryChange($event)">
             <option value="" disabled>Select a category</option>
-            <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
           </select>
           <span class="field-error" *ngIf="fieldError('categoryId')">{{ fieldError('categoryId') }}</span>
         </div>

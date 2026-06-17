@@ -78,8 +78,8 @@
             <label class="wiz-label" for="w-cat">CATEGORY *</label>
             <select id="w-cat" class="wiz-input" (change)="onCategoryChange($event)">
               <option value="">Select a category...</option>
-              @for (cat of allCategories(); track cat._id) {
-              <option [value]="cat._id">{{ cat.name }}</option>
+              @for (cat of allCategories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
               }
             </select>
           </div>

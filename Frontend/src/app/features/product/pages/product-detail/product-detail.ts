@@ -41,6 +41,14 @@ export class ProductDetail implements OnInit {
   isLoading = true;
   categoryLabel = '';
 
+  // Tab & Lightbox UI State
+  activeTab: 'description' | 'specifications' | 'seller' | 'safety' = 'description';
+  showLightbox = false;
+  lightboxIndex = 0;
+  showOfferModal = false;
+  offerAmount = 0;
+  offerSuccess = '';
+
   // Buy Flow state variables
   get displayAttributes(): { label: string; value: string }[] {
     if (!this.product?.rawDynamicAttributes) return [];
@@ -61,6 +69,56 @@ export class ProductDetail implements OnInit {
   buyLoading = false;
   buySuccess = signal<string | null>(null);
   buyError = signal<string | null>(null);
+
+  openLightbox(index: number) {
+    this.lightboxIndex = index;
+    this.showLightbox = true;
+  }
+
+  closeLightbox() {
+    this.showLightbox = false;
+  }
+
+  nextLightboxImage(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.product && this.product.images.length > 0) {
+      this.lightboxIndex = (this.lightboxIndex + 1) % this.product.images.length;
+    }
+  }
+
+  prevLightboxImage(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.product && this.product.images.length > 0) {
+      this.lightboxIndex = (this.lightboxIndex - 1 + this.product.images.length) % this.product.images.length;
+    }
+  }
+
+  setActiveTab(tab: 'description' | 'specifications' | 'seller' | 'safety') {
+    this.activeTab = tab;
+  }
+
+  openOfferModal() {
+    this.executeAuthorizedAction(() => {
+      this.showOfferModal = true;
+      this.offerAmount = this.product?.price ? Math.round(this.product.price * 0.9) : 0;
+      this.offerSuccess = '';
+    });
+  }
+
+  closeOfferModal() {
+    this.showOfferModal = false;
+  }
+
+  submitOffer() {
+    this.offerSuccess = `Offer of $${this.offerAmount} submitted to seller!`;
+    setTimeout(() => {
+      this.closeOfferModal();
+    }, 2000);
+  }
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -86,8 +144,7 @@ export class ProductDetail implements OnInit {
 
             this.productService.getProducts().subscribe(allProducts => {
               const matched = allProducts.filter(p => p.id !== id && p.category === product.category);
-              const shuffled = matched.sort(() => 0.5 - Math.random());
-              this.relatedProducts = shuffled.slice(0, 3);
+              this.relatedProducts = matched.sort(() => 0.5 - Math.random()).slice(0, 8);
               this.cdr.detectChanges();
             });
             this.cdr.detectChanges();

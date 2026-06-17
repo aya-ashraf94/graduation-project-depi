@@ -134,7 +134,7 @@ export class EditListing implements OnInit {
   private trySelectCategory(): void {
     const catId = this.form.get('categoryId')?.value;
     if (!catId || !this.categories.length) return;
-    const cat = this.categories.find((c: any) => c._id === catId);
+    const cat = this.categories.find((c: any) => c.id === catId);
     if (!cat) return;
     this.selectedCategory.set(cat);
     this.populateDynamicFields();
@@ -166,7 +166,7 @@ export class EditListing implements OnInit {
   onCategoryChange(event: Event): void {
     const id = (event.target as HTMLSelectElement).value;
     this.form.patchValue({ categoryId: id });
-    const cat = this.categories.find(c => c._id === id);
+    const cat = this.categories.find(c => c.id === id);
     this.selectedCategory.set(cat || null);
     this.dynamicFields = {};
     if (this.product && cat) {
