@@ -22,13 +22,13 @@
             (click)="selectConversation(conv)"
           >
             <div class="conv-avatar">
-              {{ conv.participants[1].firstName[0] }}
+              {{ getOtherParticipant(conv)?.firstName?.[0] || '?' }}
               <div class="online-indicator"></div>
             </div>
             <div class="conv-info">
               <div class="conv-name-row">
-                <span class="conv-name">{{ conv.participants[1].firstName }} {{ conv.participants[1].lastName }}</span>
-                <span class="conv-time">12:30 PM</span>
+                <span class="conv-name">{{ getOtherParticipant(conv)?.firstName }} {{ getOtherParticipant(conv)?.lastName }}</span>
+                <span class="conv-time">{{ conv.updatedAt | timeAgo }}</span>
               </div>
               @if (conv.productTitle) {
                 <div class="conv-product">{{ conv.productTitle }}</div>
@@ -50,24 +50,28 @@
       @if (activeConversation) {
         <div class="thread-header">
           <div class="thread-user-info">
-            <div class="thread-avatar">{{ activeConversation.participants[1].firstName[0] }}</div>
+            <div class="thread-avatar">{{ getOtherParticipant(activeConversation)?.firstName?.[0] || '?' }}</div>
             <div class="thread-user-details">
-              <div class="thread-username">{{ activeConversation.participants[1].firstName }} {{ activeConversation.participants[1].lastName }}</div>
+              <div class="thread-username">{{ getOtherParticipant(activeConversation)?.firstName }} {{ getOtherParticipant(activeConversation)?.lastName }}</div>
               <div class="thread-status"><span class="status-dot"></span> Online</div>
             </div>
           </div>
-          
+
           @if (activeConversation.productTitle) {
             <div class="thread-product-card">
-              <div class="product-thumb"></div>
+              <div class="product-thumb">
+                @if (activeConversation.productThumbnail) {
+                  <img [src]="activeConversation.productThumbnail" [alt]="activeConversation.productTitle" class="product-thumb-img" />
+                }
+              </div>
               <div class="product-meta">
                 <div class="product-title">{{ activeConversation.productTitle }}</div>
-                <div class="product-price">$850</div>
+                <div class="product-price">{{ activeConversation.productPrice | currencyFormat }}</div>
               </div>
               <button class="btn-view-listing" [routerLink]="['/products', activeConversation.productId]">VIEW LISTING</button>
             </div>
           }
-          
+
           <button class="btn-options">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
           </button>
@@ -89,21 +93,6 @@
                   </div>
                 </div>
               }
-
-              @if (isTyping) {
-                <div class="message">
-                  <div class="bubble-wrapper">
-                    <div class="bubble typing-bubble">
-                      <span class="dot"></span>
-                      <span class="dot"></span>
-                      <span class="dot"></span>
-                    </div>
-                    <div class="msg-meta">
-                      <span class="msg-time">{{ activeConversation.participants[1].firstName }} is typing...</span>
-                    </div>
-                  </div>
-                </div>
-              }
             </div>
           </div>
         </div>
@@ -116,7 +105,7 @@
             <input
               id="chat-input"
               type="text"
-              placeholder="Message {{ activeConversation.participants[1].firstName }}..."
+              placeholder="Message {{ getOtherParticipant(activeConversation)?.firstName }}..."
               [(ngModel)]="newMessage"
               (keydown.enter)="send()"
             />

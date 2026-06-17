@@ -1,38 +1,35 @@
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-const User = require('./models/User');
-const Category = require('./models/Category');
-const Product = require('./models/Product');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function run() {
     try {
-        const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storeDB';
-        console.log(`Connecting to MongoDB at: ${mongoUri}...`);
-        await mongoose.connect(mongoUri);
-        console.log('Connected to MongoDB successfully.');
+        console.log('Connecting to Neon PostgreSQL...');
+        await pool.connect();
+        console.log('Connected successfully.');
 
         // 1. Create or Find the Nafa3ni Store user
-        let storeUser = await User.findOne({ email: 'store@nafa3ni.com' });
+        const { rows: existingUsers } = await pool.query("SELECT * FROM users WHERE email = $1", ['store@nafa3ni.com']);
+        let storeUser = existingUsers[0];
         if (!storeUser) {
             console.log('Creating Nafa3ni Store Admin User...');
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash('nafa3nistoreadmin99', salt);
-            storeUser = await User.create({
-                name: 'Nafa3ni Store',
-                email: 'store@nafa3ni.com',
-                password: hashedPassword,
-                role: 'admin',
-                isVerified: true
-            });
+            const { rows: newUser } = await pool.query(
+                `INSERT INTO users (name, email, password, role, is_verified)
+                 VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+                ['Nafa3ni Store', 'store@nafa3ni.com', hashedPassword, 'admin', true]
+            );
+            storeUser = newUser[0];
             console.log('Nafa3ni Store Admin User created successfully.');
         } else {
             console.log('Nafa3ni Store Admin User already exists.');
         }
 
-        // 2. Fetch categories to link ObjectIds
-        const dbCategories = await Category.find({});
+        // 2. Fetch categories to link IDs
+        const { rows: dbCategories } = await pool.query('SELECT * FROM categories');
         if (dbCategories.length === 0) {
             console.error('Error: No categories found in the database. Please seed categories first.');
             process.exit(1);
@@ -41,12 +38,12 @@ async function run() {
         // Helper map to quickly find categoryId by name
         const categoryMap = {};
         dbCategories.forEach(cat => {
-            categoryMap[cat.name] = cat._id;
+            categoryMap[cat.name] = cat.id;
         });
 
         // 3. Clear existing official products (to avoid duplicates when running multiple times)
         console.log('Clearing old official products...');
-        await Product.deleteMany({ soldByNafa3ni: true });
+        await pool.query('DELETE FROM products WHERE sold_by_nafa3ni = true');
         console.log('Cleared old official products.');
 
         // 4. Define product templates (4 per category)
@@ -678,7 +675,7 @@ async function run() {
                 description: item.description,
                 price: item.price,
                 categoryId: catId,
-                userId: storeUser._id,
+                userId: storeUser.id,
                 images: item.images,
                 location: item.location,
                 phoneNumber: item.phoneNumber,
@@ -690,14 +687,28 @@ async function run() {
         }
 
         console.log(`Inserting ${productsToInsert.length} official products...`);
-        await Product.insertMany(productsToInsert);
+
+        for (const p of productsToInsert) {
+            await pool.query(
+                `INSERT INTO products
+                 (title, description, price, category_id, user_id, images, location, phone_number,
+                  show_contact_info, sold_by_nafa3ni, is_verified, dynamic_attributes)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+                [
+                    p.title, p.description || null, p.price, p.categoryId, p.userId,
+                    JSON.stringify(p.images || []), p.location, p.phoneNumber,
+                    p.showContactInfo, p.soldByNafa3ni, p.isVerified,
+                    JSON.stringify(p.dynamicAttributes || {})
+                ]
+            );
+        }
         console.log('Official products inserted successfully!');
 
     } catch (error) {
         console.error('Error generating official products:', error);
     } finally {
-        await mongoose.disconnect();
-        console.log('Disconnected from MongoDB.');
+        await pool.end();
+        console.log('Disconnected from database.');
     }
 }
 

@@ -9,6 +9,8 @@
         "export-db": "node export-db.js",
         "generate-official": "node generate-official-products.js",
         "seed": "node seed.js",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit push",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
@@ -20,13 +22,15 @@
         "cloudinary": "^1.41.3",
         "cors": "^2.8.6",
         "dotenv": "^17.4.2",
+        "drizzle-orm": "^0.45.2",
         "express": "^5.2.1",
         "express-rate-limit": "^8.5.2",
         "helmet": "^8.2.0",
         "jsonwebtoken": "^9.0.3",
-        "mongoose": "^9.6.3",
-        "multer": "^2.1.1",
-        "multer-storage-cloudinary": "^4.0.0",
-        "nodemon": "^3.1.14"
+        "nodemon": "^3.1.14",
+        "pg": "^8.21.0"
+    },
+    "devDependencies": {
+        "drizzle-kit": "^0.31.10"
     }
 }
