@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
@@ -10,9 +10,20 @@ import { RouterModule } from '@angular/router';
   styleUrl: './footer.css',
 })
 export class Footer {
+  private router = inject(Router);
+
   openDropdown = signal<string | null>(null);
 
   toggleDropdown(col: string): void {
     this.openDropdown.update(current => current === col ? null : col);
+  }
+
+  scrollTo(id: string): void {
+    if (this.router.url === '/') {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      this.router.navigate(['/'], { fragment: id });
+    }
   }
 }

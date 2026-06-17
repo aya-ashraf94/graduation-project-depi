@@ -632,6 +632,12 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.scrollToTabsSectionDirectly();
   }
 
+  viewAllReviews(): void {
+    if (this.user?.id) {
+      this.router.navigate(['/profile', this.user.id, 'reviews']);
+    }
+  }
+
   scrollToTabsSectionDirectly(): void {
     if (this.tabsSection) {
       this.tabsSection.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -1,47 +1,49 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
-// const fs = require("fs");
-// const path = require("path");
+const fs = require("fs");
+const path = require("path");
 
 const cloudinary = require("../config/cloudinary");
 
-// Helper to save base64 image to disk and return URL path
-// const saveBase64Image = (base64Str) => {
-//     if (!base64Str) return null;
+const isCloudinaryConfigured = () => {
+    return process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API_SECRET;
+};
 
-//     // If it's already a URL or path, keep it
-//     if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) {
-//         return base64Str;
-//     }
+const saveBase64ImageLocally = (base64Str) => {
+    if (!base64Str) return null;
 
-//     // Match base64 pattern: data:image/jpeg;base64,...
-//     const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-//     if (!matches || matches.length !== 3) {
-//         return base64Str;
-//     }
+    if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) {
+        return base64Str;
+    }
 
-//     const type = matches[1];
-//     const extension = type.split("/")[1] || "png";
-//     const buffer = Buffer.from(matches[2], "base64");
+    const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+        return base64Str;
+    }
 
-//     const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
-//     const uploadDir = path.join(__dirname, "../public/uploads");
+    const extension = matches[1].split("/")[1] || "png";
+    const buffer = Buffer.from(matches[2], "base64");
 
-//     // Ensure directory exists
-//     if (!fs.existsSync(uploadDir)) {
-//         fs.mkdirSync(uploadDir, { recursive: true });
-//     }
+    const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
+    const uploadDir = path.join(__dirname, "../public/uploads");
 
-//     fs.writeFileSync(path.join(uploadDir, fileName), buffer);
-//     return `/uploads/${fileName}`;
-// };
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    fs.writeFileSync(path.join(uploadDir, fileName), buffer);
+    return `/uploads/${fileName}`;
+};
 
 const uploadBase64ToCloudinary = async (base64Str) => {
     if (!base64Str) return null;
 
-    // لو الصورة موجودة بالفعل على Cloudinary
     if (base64Str.startsWith("http")) {
         return base64Str;
+    }
+
+    if (!isCloudinaryConfigured()) {
+        return saveBase64ImageLocally(base64Str);
     }
 
     const result = await cloudinary.uploader.upload(base64Str, {

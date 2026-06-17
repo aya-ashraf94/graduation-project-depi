@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -43,6 +44,9 @@ app.use(
         credentials: true,
     })
 );
+
+// Serve static files from the public directory (local image uploads)
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 // Body Parser
 app.use(express.json({ limit: "20mb" }));

@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth';
 import { ProductService } from '../../../../core/services/product.service';
 import { ProductSummary } from '../../../../core/models/product.model';
@@ -17,7 +17,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, AfterViewInit {
   newsletterEmail = '';
   newsletterSuccessMessage = '';
   newsletterErrorMessage = '';
@@ -101,6 +101,7 @@ export class Home implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     private productService: ProductService,
     private cdr: ChangeDetectorRef
@@ -191,6 +192,17 @@ export class Home implements OnInit {
       'Vintage & Collectibles': 'Other'
     };
     return map[name] || '';
+  }
+
+  ngAfterViewInit(): void {
+    this.route.fragment.subscribe(fragment => {
+      if (fragment) {
+        setTimeout(() => {
+          const el = document.getElementById(fragment);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 350);
+      }
+    });
   }
 
   scrollTo(id: string): void {

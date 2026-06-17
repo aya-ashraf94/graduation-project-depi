@@ -75,7 +75,8 @@ export class ProductService {
       images: payload.images,
       categoryId: (payload as any).categoryId,
       location: (payload as any).location || 'Cairo',
-      phoneNumber: (payload as any).phoneNumber || '0123456789'
+      phoneNumber: (payload as any).phoneNumber || '0123456789',
+      showContactInfo: (payload as any).showContactInfo ?? true
     };
 
     return this.http.post<any>(this.apiUrl, backendPayload).pipe(
@@ -245,7 +246,7 @@ export class ProductService {
       //   ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
       //   : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       images: p.images && p.images.length > 0
-        ? p.images
+        ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
         : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       badge: dynamic.badge || '',
       status: (p.status === 'active' || p.status === 'available') ? 'available' : (p.status || 'available'),

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
@@ -19,30 +19,44 @@ export class ChatPage implements OnInit {
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
-  conversations: Conversation[] = [];
+  conversations = signal<Conversation[]>([]);
   activeConversation: Conversation | null = null;
   messages: Message[] = [];
   newMessage = '';
   currentUserId = '';
   isTyping = false;
+  searchTerm = signal('');
+
+  filteredConversations = computed(() => {
+    const convs = this.conversations();
+    const term = this.searchTerm().toLowerCase().trim();
+    if (!term) return convs;
+    return convs.filter(c => {
+      const name = `${c.participants[1].firstName} ${c.participants[1].lastName}`.toLowerCase();
+      const product = (c.productTitle || '').toLowerCase();
+      return name.includes(term) || product.includes(term);
+    });
+  });
 
   ngOnInit() {
     const user = this.authService.currentUser();
     this.currentUserId = user?.id ?? '';
-    
+
+    this.loadConversations(false);
+
     this.route.queryParams.subscribe(params => {
       const recipientId = params['recipientId'];
       const productId = params['productId'];
-      
+
       if (recipientId && productId) {
         this.chatService.getConversations().subscribe({
           next: (convs) => {
-            this.conversations = convs;
-            const existing = convs.find(c => 
-              c.productId === productId && 
+            this.conversations.set(convs);
+            const existing = convs.find(c =>
+              c.productId === productId &&
               c.participants?.some(p => p.id === recipientId)
             );
-            
+
             if (existing) {
               this.selectConversation(existing);
             } else {
@@ -53,7 +67,7 @@ export class ChatPage implements OnInit {
               }).subscribe({
                 next: (res) => {
                   this.chatService.getConversations().subscribe(newConvs => {
-                    this.conversations = newConvs;
+                    this.conversations.set(newConvs);
                     const newConv = newConvs.find(c => c.id === res.conversationId);
                     if (newConv) {
                       this.selectConversation(newConv);
@@ -74,8 +88,6 @@ export class ChatPage implements OnInit {
             this.loadConversations(true);
           }
         });
-      } else {
-        this.loadConversations(true);
       }
     });
   }
@@ -83,8 +95,8 @@ export class ChatPage implements OnInit {
   loadConversations(selectFirst = false) {
     this.chatService.getConversations().subscribe({
       next: (convs) => {
-        this.conversations = convs;
-        if (selectFirst && convs.length > 0) {
+        this.conversations.set(convs);
+        if (selectFirst && convs.length > 0 && !this.activeConversation) {
           this.selectConversation(convs[0]);
         }
       },
@@ -109,12 +121,12 @@ export class ChatPage implements OnInit {
 
   send() {
     if (!this.newMessage.trim() || !this.activeConversation) return;
-    
+
     const payload = {
       conversationId: this.activeConversation.id,
       content: this.newMessage
     };
-    
+
     this.chatService.sendMessage(payload).subscribe({
       next: (msg) => {
         this.messages.push(msg);
