@@ -160,7 +160,7 @@ export class CreateListing implements OnInit {
 
   onCategoryChange(event: Event) {
     const id = (event.target as HTMLSelectElement).value;
-    const cat = this.allCategories().find(c => c._id === id);
+    const cat = this.allCategories().find(c => c.id === id);
     this.selectedCategory.set(cat);
     this.dynamicFields = {}; // Reset الـ fields عند تغيير الكاتيجوري
   }
@@ -265,7 +265,7 @@ export class CreateListing implements OnInit {
       description: this.description,
       brand: this.dynamicFields['Brand'] || this.dynamicFields['brand'] || 'ARCHIVE',
       price: this.pricingMode === 'trade' ? 0 : this.price,
-      categoryId: this.selectedCategory()?._id,
+      categoryId: this.selectedCategory()?.id,
       condition: ['new_with_tags', 'excellent', 'good', 'fair', 'distressed'].includes(condition)
         ? condition : condition === 'new' ? 'new_with_tags' : 'good',
       conditionScore: conditionScore,

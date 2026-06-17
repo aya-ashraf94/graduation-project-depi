@@ -1,246 +1,480 @@
 <div class="product-detail-page fade-in" *ngIf="!isLoading && product; else checkLoading">
-  <div class="product-layout">
-    <main class="product-main">
+  <div class="container">
+    
+    <!-- HEADER BREADCRUMB & BACK BUTTON -->
+    <header class="detail-header-v2">
+      <button type="button" class="btn-back-v2" (click)="goBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Back to listings</span>
+      </button>
+      <div class="detail-breadcrumb-v2">
+        <a routerLink="/products">Products</a>
+        <span class="breadcrumb-sep-v2">/</span>
+        <span class="active-category">{{ categoryLabel }}</span>
+      </div>
+    </header>
 
-      <header class="detail-header">
-        <button type="button" class="btn-back" (click)="goBack()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          BACK
-        </button>
-        <div class="detail-breadcrumb">
-          <a routerLink="/products">Products</a>
-          <span class="breadcrumb-sep">/</span>
-          <span>{{ categoryLabel }}</span>
+    <!-- SECTION 1: ABOVE THE FOLD GRID -->
+    <div class="detail-grid-v2">
+      
+      <!-- LEFT: Image Gallery Column -->
+      <div class="gallery-col-v2">
+        <div class="main-image-wrap-v2" (click)="openLightbox(activeImage)">
+          <div class="card-badges-v2">
+            <span *ngIf="product.soldByNafa3ni" class="badge-official-v2">✓ Official Store</span>
+            <span *ngIf="product.badge" class="badge-tag-v2">{{ product.badge }}</span>
+          </div>
+          <span class="image-counter-v2" *ngIf="product.images.length > 0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            {{ activeImage + 1 }} / {{ product.images.length }}
+          </span>
+          <img [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image-v2" />
+          <div class="zoom-overlay-hint">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            <span>Click to expand</span>
+          </div>
         </div>
-      </header>
-
-      <div class="detail-grid">
-        <!-- LEFT: Image Gallery -->
-        <div class="gallery-col">
-            <div class="main-image-wrap">
-              <div class="card-badges">
-                <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
-                <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
-              </div>
-              <span class="image-counter" *ngIf="product.images.length > 1">{{ activeImage + 1 }} / {{ product.images.length }}</span>
-              <img [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image" />
-            </div>
-          
-          @if (product.images.length > 0) {
-            <div class="thumbnails">
-              @for (img of product.images; track $index) {
-                <div class="thumb-wrap" [class.active]="activeImage === $index" (click)="setActiveImage($index)">
-                  <img [src]="img" [alt]="product.title + ' ' + $index" appImageFallback class="thumb" />
-                </div>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- RIGHT: Product Info -->
-        <div class="info-col">
-          <div class="product-meta-top">
-            <div class="brand-name-large">{{ product.brand }}</div>
-            <div class="tag-row">
-              <span class="tag-box">{{ categoryLabel }}</span>
-              <span class="tag-box" [ngClass]="product.status === 'sold' ? 'sold-out' : 'highlight'">
-                {{ product.status === 'sold' ? 'SOLD' : product.status === 'reserved' ? 'RESERVED' : 'AVAILABLE' }}
-              </span>
-            </div>
+        
+        <div class="thumbnails-v2" *ngIf="product.images.length > 0">
+          <div class="thumb-wrap-v2" 
+               *ngFor="let img of product.images; let i = index" 
+               [class.active]="activeImage === i" 
+               (click)="setActiveImage(i)">
+            <img [src]="img" [alt]="product.title + ' ' + i" appImageFallback class="thumb-img-v2" />
           </div>
-
-          <h1 class="item-title-large">{{ product.title }}</h1>
-          
-          <div class="price-box-large">
-            {{ product.price | currencyFormat }}
-          </div>
-
-          <p class="description-text">{{ product.description }}</p>
-
-          <!-- ── SPECS PANEL (buyer-relevant only) ── -->
-          @if (displayAttributes.length || product.conditionScore) {
-          <div class="specs-panel">
-            <h3 class="specs-title">DETAILS &amp; SPECIFICATIONS</h3>
-            <div class="specs-grid">
-              @for (attr of displayAttributes; track attr.label) {
-              <div class="spec-item">
-                <span class="spec-label">{{ attr.label }}</span>
-                <span class="spec-val">{{ attr.value }}</span>
-              </div>
-              }
-              @if (product.conditionScore) {
-              <div class="spec-item">
-                <span class="spec-label">CONDITION SCORE</span>
-                <span class="spec-val">{{ product.conditionScore }}/10</span>
-              </div>
-              }
-              <div class="spec-item">
-                <span class="spec-label">CATEGORY</span>
-                <span class="spec-val">{{ categoryLabel }}</span>
-              </div>
-              <div class="spec-item">
-                <span class="spec-label">LISTED</span>
-                <span class="spec-val">{{ product.createdAt | timeAgo | uppercase }}</span>
-              </div>
-            </div>
-          </div>
-          }
-
-          <!-- ── LOCATION & CONTACT ── -->
-          <div class="contact-panel" *ngIf="product.showContactInfo && (product.location || product.phoneNumber)">
-            <h3 class="specs-title">LOCATION &amp; CONTACT</h3>
-            <div class="contact-info-list">
-              <div class="contact-item" *ngIf="product.location">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>{{ product.location }}</span>
-              </div>
-              <div class="contact-item" *ngIf="product.phoneNumber">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <span>{{ product.phoneNumber }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── ACTION BUTTONS ── -->
-          <div class="actions">
-            <a *ngIf="isOwner" [routerLink]="['/listings/edit', product.id]" class="btn-neo-edit">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-              EDIT LISTING
-            </a>
-            <button *ngIf="!isOwner" class="btn-neo-primary" (click)="startChat()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              CHAT WITH SELLER
-            </button>
-            <button *ngIf="!isOwner && product.status !== 'sold'" class="btn-neo-buy" [class.btn-disabled]="product.status === 'reserved'" [disabled]="product.status === 'reserved'" (click)="product.status === 'available' && openBuy()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-              {{ product.status === 'reserved' ? 'RESERVED' : 'BUY NOW' }}
-            </button>
-            <span *ngIf="!isOwner && product.status === 'sold'" class="status-sold-badge">
-              SOLD OUT
-            </span>
-            <button class="btn-wishlist-large" [class.wishlisted]="wishlistService.isWishlisted(product.id)" (click)="toggleWishlist()" title="Add to wishlist">
-              <svg width="24" height="24" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? '#e23b3b' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            </button>
-            <button *ngIf="!isOwner" class="btn-report" (click)="openReport()" title="Report listing">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-            </button>
-          </div>
-
-          <!-- Seller Dashboard Card -->
-          @if (product.soldByNafa3ni) {
-            <div class="system-card official-store-card">
-              <div class="seller-header">
-                <div class="official-logo-box">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                </div>
-                <div class="seller-name-row">
-                  <span class="official-store-title">OFFICIAL NAFA3NI STORE</span>
-                  <div class="seller-stars">{{ getStars(product.seller.rating) }} ({{ product.seller.rating }}/5)</div>
-                </div>
-              </div>
-              <div class="official-desc-box">
-                <p>This item is shipped and sold by the official Nafa3ni Marketplace Team. Purchase with complete trust and security guarantee.</p>
-              </div>
-              <div class="seller-metrics">
-                <div class="metric-box">
-                  <span class="metric-label">SHIPPING TIME</span>
-                  <span class="metric-value">SAME DAY</span>
-                </div>
-                <div class="metric-box">
-                  <span class="metric-label">RETURN POLICY</span>
-                  <span class="metric-value">48H GUARANTEE</span>
-                </div>
-              </div>
-              <div class="official-store-footer">
-                <a [routerLink]="['/profile', product.seller.id]" class="btn-store-link">
-                  VIEW OFFICIAL STORE →
-                </a>
-              </div>
-            </div>
-          } @else {
-            <div class="system-card seller-card">
-              <div class="seller-header">
-                <div class="seller-avatar">
-                  @if (product.seller.avatar) {
-                    <img [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
-                  } @else {
-                    <span>{{ product.seller.firstName[0] }}</span>
-                  }
-                </div>
-                <div class="seller-name-row">
-                  <a [routerLink]="['/profile', product.seller.id]" class="seller-name">
-                    {{ product.seller.firstName | uppercase }} {{ product.seller.lastName | uppercase }}
-                  </a>
-                  <div class="seller-stars">{{ getStars(product.seller.rating) }} ({{ product.seller.rating }}/5)</div>
-                </div>
-              </div>
-              <div class="seller-metrics">
-                <div class="metric-box">
-                  <span class="metric-label">RESPONSE TIME</span>
-                  <span class="metric-value">INSTANT</span>
-                </div>
-                <div class="metric-box">
-                  <span class="metric-label">SUCCESS RATE</span>
-                  <span class="metric-value">{{ product.seller.successRate || 100 }}%</span>
-                </div>
-              </div>
-            </div>
-          }
-
         </div>
       </div>
 
-      <!-- Related Items -->
-      <section class="related-section">
-        <h2 class="related-slider-title">MORE ITEMS YOU MIGHT LIKE</h2>
+      <!-- RIGHT: Product Info & Actions Column -->
+      <div class="info-col-v2">
         
-        <div class="related-slider">
-          <div *ngFor="let item of relatedProducts" class="product-card slider-card">
-            <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer;">
-              <div class="card-status-overlay" *ngIf="item.status === 'sold'">
-                <span class="status-overlay-tag sold-tag">SOLD</span>
+        <!-- Metadata Tags & Stats -->
+        <div class="meta-tags-v2">
+          <span class="tag-badge-v2 brand-badge">{{ product.brand || 'No Brand' }}</span>
+          <span class="tag-badge-v2 category-badge">{{ categoryLabel }}</span>
+          <span class="tag-badge-v2 condition-badge" [attr.data-condition]="product.condition">
+            {{ conditionLabels[product.condition] }}
+          </span>
+        </div>
+
+        <h1 class="product-title-v2">{{ product.title }}</h1>
+
+        <div class="price-container-v2">
+          <div class="price-label-v2">Price</div>
+          <div class="price-val-v2">{{ product.price | currencyFormat }}</div>
+        </div>
+
+        <!-- Meta Counters (Views & Saves) -->
+        <div class="views-saves-row">
+          <div class="meta-stat-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>{{ product.viewCount || 124 }} views</span>
+          </div>
+          <div class="meta-stat-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span>{{ product.favoriteCount || 8 }} saves</span>
+          </div>
+          <div class="meta-stat-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Posted {{ product.createdAt | timeAgo }}</span>
+          </div>
+        </div>
+
+        <!-- Sticky Seller Contact & Actions Card -->
+        <div class="seller-contact-card-v2">
+          
+          <div class="seller-card-header-v2">
+            <div class="seller-avatar-v2">
+              <img *ngIf="product.seller.avatar" [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
+              <span *ngIf="!product.seller.avatar">{{ product.seller.firstName[0] }}</span>
+            </div>
+            <div class="seller-details-v2">
+              <div class="seller-name-row-v2">
+                <a [routerLink]="['/profile', product.seller.id]" class="seller-name-v2">
+                  {{ product.seller.firstName }} {{ product.seller.lastName }}
+                </a>
+                <span class="verified-badge-v2" *ngIf="product.seller.isVerified || product.isVerified" title="Verified Seller">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffc72c" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  Verified
+                </span>
               </div>
-              <div class="card-status-overlay" *ngIf="item.status === 'reserved'">
-                <span class="status-overlay-tag reserved-tag">RESERVED</span>
+              <div class="seller-meta-row-v2">
+                <div class="seller-rating-v2">
+                  <span class="stars-v2">★ {{ product.seller.rating || '4.8' }}</span>
+                  <span class="reviews-count-v2">({{ product.seller.totalSales || '12' }} sales)</span>
+                </div>
+                <div class="seller-active-status-v2">
+                  <span class="status-dot-v2 online"></span>
+                  <span>Active today</span>
+                </div>
               </div>
-              <div class="card-badges">
-                <span *ngIf="item.soldByNafa3ni" class="badge-official" style="font-size:0.55rem;">✓ Official</span>
-                <span *ngIf="item.badge" class="badge-tag">{{ item.badge }}</span>
-              </div>
-              <button class="btn-wishlist" [class.wishlisted]="wishlistService.isWishlisted(item.id)" (click)="toggleWishlistCard(item.id, $event)">
-                <svg width="22" height="22" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
+            </div>
+          </div>
+
+          <!-- PRIMARY ACTION BUTTONS -->
+          <div class="actions-grid-v2">
+            <a *ngIf="isOwner" [routerLink]="['/listings/edit', product.id]" class="btn-action-v2 btn-edit-listing-v2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              Edit Listing
+            </a>
+
+            <ng-container *ngIf="!isOwner">
+              <!-- Chat with Seller (Primary CTA) -->
+              <button class="btn-action-v2 btn-chat-v2" (click)="startChat()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Chat Seller
               </button>
-              <img [src]="item.thumbnail" [alt]="item.title" appImageFallback class="product-img" />
+
+
+
+              <!-- Make Offer -->
+              <button class="btn-action-v2 btn-offer-v2" (click)="openOfferModal()" *ngIf="product.status !== 'sold'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><path d="M6 14h12"/></svg>
+                Make Offer
+              </button>
+
+              <!-- Buy Now -->
+              <button class="btn-action-v2 btn-buy-now-v2" 
+                      [disabled]="product.status === 'reserved'" 
+                      (click)="product.status === 'available' && openBuy()" 
+                      *ngIf="product.status !== 'sold'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                {{ product.status === 'reserved' ? 'Reserved' : 'Buy Now' }}
+              </button>
+            </ng-container>
+
+            <!-- Save & Report Toolbar -->
+            <div class="actions-toolbar-v2">
+              <button class="btn-toolbar-v2 btn-wishlist-v2" 
+                      [class.wishlisted]="wishlistService.isWishlisted(product.id)" 
+                      (click)="toggleWishlist()" 
+                      title="Save Listing">
+                <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? '#ff4d4d' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>{{ wishlistService.isWishlisted(product.id) ? 'Saved' : 'Save Listing' }}</span>
+              </button>
+              
+              <button class="btn-toolbar-v2 btn-report-v2" (click)="openReport()" title="Report Listing" *ngIf="!isOwner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                <span>Report</span>
+              </button>
             </div>
-            <div class="product-info">
-              <div class="product-meta">
-                <div class="brand-name">{{ item.brand }}</div>
-                <h3 class="item-name">{{ item.title }}</h3>
-              </div>
-              <div class="price-box">{{ item.price | currencyFormat }}</div>
+
+          </div>
+
+          <!-- Sold Status Notice -->
+          <div *ngIf="product.status === 'sold'" class="sold-banner-v2">
+            This item has been sold out.
+          </div>
+
+          <!-- Location details -->
+          <div class="seller-location-v2" *ngIf="product.location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>{{ product.location }}</span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 2: TABS CONTAINER -->
+    <section class="details-tabs-section-v2">
+      <div class="profile-tabs-wrap">
+        <div class="profile-tabs">
+          <button class="tab-item" [class.active]="activeTab === 'description'" (click)="setActiveTab('description')">Description</button>
+          <button class="tab-item" [class.active]="activeTab === 'specifications'" (click)="setActiveTab('specifications')">Specifications</button>
+          <button class="tab-item" [class.active]="activeTab === 'seller'" (click)="setActiveTab('seller')">Seller Information</button>
+          <button class="tab-item" [class.active]="activeTab === 'safety'" (click)="setActiveTab('safety')">Safety Tips</button>
+        </div>
+      </div>
+
+      <div class="details-tabs-content-card-v2">
+        <div class="tab-content-v2">
+          <!-- Tab 1: Description -->
+          <div class="tab-pane-v2" *ngIf="activeTab === 'description'">
+            <div class="description-card-v2">
+              <p class="description-text-v2">{{ product.description }}</p>
             </div>
-            <div class="product-tags">
-              <div class="tag-row">
-                <span *ngIf="item.size" class="tag-box">{{ item.size }}</span>
-                <span *ngIf="item.categoryName" class="tag-box">{{ item.categoryName }}</span>
-                <span class="tag-box">{{ conditionLabels[item.condition] | uppercase }}</span>
+          </div>
+
+          <!-- Tab 2: Specifications -->
+          <div class="tab-pane-v2" *ngIf="activeTab === 'specifications'">
+            <div class="specs-grid-v2">
+              <div class="spec-row-v2">
+                <span class="spec-label-v2">Brand</span>
+                <span class="spec-val-v2">{{ product.brand || 'Generic' }}</span>
               </div>
-              <span class="score-tag">SCORE: {{ item.conditionScore }}/10</span>
+              <div class="spec-row-v2" *ngIf="product.conditionScore">
+                <span class="spec-label-v2">Condition Score</span>
+                <span class="spec-val-v2">{{ product.conditionScore }} / 10</span>
+              </div>
+              <div class="spec-row-v2">
+                <span class="spec-label-v2">Category</span>
+                <span class="spec-val-v2">{{ categoryLabel }}</span>
+              </div>
+              <div class="spec-row-v2" *ngIf="product.size">
+                <span class="spec-label-v2">Size</span>
+                <span class="spec-val-v2">{{ product.size }}</span>
+              </div>
+              <div class="spec-row-v2">
+                <span class="spec-label-v2">Listed Date</span>
+                <span class="spec-val-v2">{{ product.createdAt | date:'longDate' }}</span>
+              </div>
+              <div class="spec-row-v2" *ngFor="let attr of displayAttributes">
+                <span class="spec-label-v2">{{ attr.label }}</span>
+                <span class="spec-val-v2">{{ attr.value }}</span>
+              </div>
             </div>
-            <div class="product-footer">
-              <div class="card-loc" *ngIf="item.location">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ item.location }}
+          </div>
+
+          <!-- Tab 3: Seller Info -->
+          <div class="tab-pane-v2" *ngIf="activeTab === 'seller'">
+            <div class="seller-info-tab-v2">
+              <div class="seller-grid-v2">
+                <div class="seller-stat-v2">
+                  <span class="seller-stat-label-v2">Response Rate</span>
+                  <span class="seller-stat-val-v2">{{ product.seller.successRate || 100 }}%</span>
+                </div>
+                <div class="seller-stat-v2">
+                  <span class="seller-stat-label-v2">Total Sales</span>
+                  <span class="seller-stat-val-v2">{{ product.seller.totalSales || 0 }} items</span>
+                </div>
+                <div class="seller-stat-v2">
+                  <span class="seller-stat-label-v2">Rating Score</span>
+                  <span class="seller-stat-val-v2">{{ product.seller.rating || 5 }}.0 / 5.0</span>
+                </div>
+                <div class="seller-stat-v2">
+                  <span class="seller-stat-label-v2">Account Type</span>
+                  <span class="seller-stat-val-v2">{{ product.seller.isVerified ? 'Verified Dealer' : 'Standard Member' }}</span>
+                </div>
               </div>
-              <span class="card-date">{{ item.createdAt | timeAgo }}</span>
+            </div>
+          </div>
+
+          <!-- Tab 4: Safety Tips -->
+          <div class="tab-pane-v2" *ngIf="activeTab === 'safety'">
+            <div class="safety-tips-v2">
+              <h4 class="safety-title-v2">Buying Safely on Nafa3ni</h4>
+              <ul class="safety-list-v2">
+                <li>
+                  <span class="safety-icon-v2">✓</span>
+                  <span><strong>Meet in public:</strong> Meet sellers in a crowded public space like campus plazas or coffee shops.</span>
+                </li>
+                <li>
+                  <span class="safety-icon-v2">✓</span>
+                  <span><strong>Check the item:</strong> Thoroughly inspect the product condition, size, and authenticity before paying.</span>
+                </li>
+                <li>
+                  <span class="safety-icon-v2">✓</span>
+                  <span><strong>No advance payment:</strong> Avoid wire transfers, deposits, or digital wallet transactions before seeing the product.</span>
+                </li>
+                <li>
+                  <span class="safety-icon-v2">✓</span>
+                  <span><strong>Use Nafa3ni Chat:</strong> Keep all conversations within our secure chat channel to preserve safety logs.</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-    </main>
+    <!-- SECTION 3: SELLER PROFILE CARD -->
+    <section class="seller-profile-section-v2">
+      <div class="seller-profile-card-v2">
+        <div class="profile-main-v2">
+          <div class="profile-avatar-v2">
+            <img *ngIf="product.seller.avatar" [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
+            <span *ngIf="!product.seller.avatar">{{ product.seller.firstName[0] }}</span>
+          </div>
+          <div class="profile-info-v2">
+            <div class="profile-name-row-v2">
+              <h3>{{ product.seller.firstName }} {{ product.seller.lastName }}</h3>
+              <span class="badge-verified-v2" *ngIf="product.seller.isVerified || product.isVerified">Verified</span>
+            </div>
+            <p class="profile-sub-v2">Marketplace Member</p>
+            <div class="profile-stars-v2">
+              <span class="star-rating-v2">★ {{ product.seller.rating || '4.8' }}</span>
+              <span class="rating-text-v2">Seller Rating</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-stats-grid-v2">
+          <div class="profile-stat-box-v2">
+            <span class="stat-num-v2">{{ product.seller.successRate || 100 }}%</span>
+            <span class="stat-label-v2">Response Rate</span>
+          </div>
+          <div class="profile-stat-box-v2">
+            <span class="stat-num-v2">Instant</span>
+            <span class="stat-label-v2">Response Time</span>
+          </div>
+          <div class="profile-stat-box-v2">
+            <span class="stat-num-v2">{{ product.seller.totalSales || '8' }}</span>
+            <span class="stat-label-v2">Total Sales</span>
+          </div>
+          <div class="profile-stat-box-v2">
+            <span class="stat-num-v2">Active</span>
+            <span class="stat-label-v2">Listing Status</span>
+          </div>
+        </div>
+
+        <div class="profile-footer-v2">
+          <a [routerLink]="['/profile', product.seller.id]" class="btn-view-store-v2">
+            <span>View Seller Profile</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: RELATED PRODUCTS CAROUSEL -->
+    <section class="related-section-v2">
+      <div class="related-header-v2">
+        <h2 class="related-title-v2">Similar Listings You Might Like</h2>
+        <a routerLink="/products" class="carousel-hint-v2">View all →</a>
+      </div>
+
+      <div class="related-carousel-container-v2">
+        <div class="related-carousel-track-v2">
+          <div *ngFor="let item of relatedProducts" class="product-card-v2">
+            <div class="card-img-wrap-v2" [routerLink]="['/products', item.id]">
+              <div class="card-status-overlay-v2" *ngIf="item.status === 'sold'">
+                <span class="status-overlay-tag-v2 sold-tag-v2">SOLD</span>
+              </div>
+              <div class="card-status-overlay-v2" *ngIf="item.status === 'reserved'">
+                <span class="status-overlay-tag-v2 reserved-tag-v2">RESERVED</span>
+              </div>
+              <div class="card-badges-v2">
+                <span *ngIf="item.soldByNafa3ni" class="badge-official-v2" style="font-size: 0.65rem;">✓ Official</span>
+                <span *ngIf="item.badge" class="badge-tag-v2">{{ item.badge }}</span>
+              </div>
+              
+              <!-- Quick Wishlist Button -->
+              <button class="btn-wishlist-v2-card" 
+                      [class.wishlisted]="wishlistService.isWishlisted(item.id)" 
+                      (click)="toggleWishlistCard(item.id, $event)">
+                <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(item.id) ? '#ff4d4d' : 'none'" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+              </button>
+
+              <img [src]="item.thumbnail" [alt]="item.title" appImageFallback class="card-img-v2" />
+              
+              <!-- Quick View Trigger Overlay -->
+              <div class="card-quick-view-overlay-v2">
+                <span class="btn-quick-view-v2">Quick View</span>
+              </div>
+            </div>
+            
+            <div class="card-info-v2" [routerLink]="['/products', item.id]">
+              <div class="card-meta-row-v2">
+                <span class="card-brand-v2">{{ item.brand }}</span>
+                <span class="card-condition-score-v2">Score: {{ item.conditionScore }}/10</span>
+              </div>
+              <h3 class="card-title-v2">{{ item.title }}</h3>
+              <div class="card-price-v2">{{ item.price | currencyFormat }}</div>
+              
+              <div class="card-footer-v2">
+                <span class="card-loc-v2" *ngIf="item.location">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {{ item.location }}
+                </span>
+                <span class="card-date-v2">{{ item.createdAt | timeAgo }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- STICKY BOTTOM ACTIONS FOR MOBILE -->
+<div class="sticky-mobile-bar-v2" *ngIf="product && !isLoading">
+  <div class="mobile-price-box-v2">
+    <span class="mobile-price-val-v2">{{ product.price | currencyFormat }}</span>
+  </div>
+  <div class="mobile-actions-v2" *ngIf="!isOwner">
+    <button class="btn-mobile-action-v2 btn-mobile-chat-v2" (click)="startChat()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span>Chat</span>
+    </button>
+
+    <button class="btn-mobile-action-v2 btn-mobile-buy-v2" [disabled]="product.status === 'reserved'" (click)="product.status === 'available' && openBuy()" *ngIf="product.status !== 'sold'">
+      <span>Buy Now</span>
+    </button>
+  </div>
+  <div class="mobile-actions-v2" *ngIf="isOwner">
+    <a [routerLink]="['/listings/edit', product.id]" class="btn-mobile-action-v2 btn-mobile-buy-v2">
+      <span>Edit Listing</span>
+    </a>
+  </div>
+</div>
+
+<!-- FULLSCREEN IMAGE LIGHTBOX MODAL -->
+<div class="lightbox-overlay-v2" *ngIf="showLightbox" (click)="closeLightbox()">
+  <button class="lightbox-close-v2" (click)="closeLightbox()">✕</button>
+  
+  <button class="lightbox-nav-v2 lightbox-prev-v2" (click)="prevLightboxImage($event)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  
+  <div class="lightbox-content-v2" (click)="$event.stopPropagation()">
+    <img [src]="product?.images?.[lightboxIndex]" [alt]="product?.title" class="lightbox-image-v2" />
+  </div>
+
+  <button class="lightbox-nav-v2 lightbox-next-v2" (click)="nextLightboxImage($event)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+
+  <div class="lightbox-counter-v2">
+    {{ lightboxIndex + 1 }} / {{ product?.images?.length }}
+  </div>
+</div>
+
+<!-- MAKE OFFER MODAL -->
+<div class="report-overlay" *ngIf="showOfferModal" (click)="closeOfferModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 440px;">
+    <button class="modal-standard-close" (click)="closeOfferModal()">✕</button>
+    <div class="modal-standard-header" style="text-align: center;">
+      <h3 class="modal-standard-title">Make an Offer</h3>
+      <p class="modal-standard-desc">Suggest a reasonable offer price to the seller.</p>
+    </div>
+    
+    <div class="modal-standard-body" *ngIf="!offerSuccess">
+      <div style="text-align: center; margin: 1rem 0;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Asking Price</span>
+        <span style="font-size: 1.5rem; font-weight: 800; color: #111827; text-decoration: line-through;">{{ product?.price | currencyFormat }}</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: #374151;">YOUR OFFER AMOUNT</label>
+        <div style="position: relative; display: flex; align-items: center;">
+          <span style="position: absolute; left: 16px; font-weight: 800; font-size: 1.5rem; color: #111827;">$</span>
+          <input type="number" 
+                 [(ngModel)]="offerAmount" 
+                 name="offerAmount" 
+                 style="width: 100%; padding: 12px 12px 12px 32px; border: 2px solid #111827; border-radius: 8px; font-size: 1.5rem; font-weight: 800; text-align: left; outline: none; box-shadow: 3px 3px 0 #000;" />
+        </div>
+        <span style="font-size: 0.75rem; color: #6B7280; margin-top: 4px;">Recommended offer: 10% - 15% discount.</span>
+      </div>
+
+      <div class="modal-standard-footer" style="margin-top: 1rem;">
+        <button class="modal-btn-primary" (click)="submitOffer()" style="background: var(--yellow); color: #000; border: 2px solid #000; font-weight: 900; box-shadow: 3px 3px 0 #000;">
+          Submit Offer
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-standard-success" *ngIf="offerSuccess">
+      <div class="success-icon-circle">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
+      </div>
+      <h4 class="success-title">Offer Sent!</h4>
+      <p class="success-desc">{{ offerSuccess }}</p>
+    </div>
   </div>
 </div>
 
@@ -260,7 +494,7 @@
         </label>
       </div>
       <div class="modal-standard-footer">
-        <button class="modal-btn-primary" [disabled]="!reportReason" (click)="submitReport()">Submit Report</button>
+        <button class="modal-btn-primary" [disabled]="!reportReason" (click)="submitReport()" style="background: #111827; color: #fff; border-radius: 8px;">Submit Report</button>
       </div>
     </div>
     <div class="modal-standard-success" *ngIf="reportSubmitted">
@@ -269,7 +503,7 @@
       </div>
       <h4 class="success-title">Report Submitted</h4>
       <p class="success-desc">Thank you for helping keep our community safe. Our moderation team will review this listing shortly.</p>
-      <button class="modal-btn-secondary" (click)="closeReport()" style="margin-top: 16px; width: 100%;">Done</button>
+      <button class="modal-btn-secondary" (click)="closeReport()" style="margin-top: 16px; width: 100%; border-radius: 8px;">Done</button>
     </div>
   </div>
 </div>
@@ -288,107 +522,41 @@
     </div>
 
     <div class="modal-standard-footer stacked">
-      <a routerLink="/auth/login" class="modal-btn-primary" (click)="closeAuthModal()">Sign In</a>
-      <a routerLink="/auth/register" class="modal-btn-secondary" (click)="closeAuthModal()">Create an Account</a>
+      <a routerLink="/auth/login" class="modal-btn-primary" (click)="closeAuthModal()" style="border-radius: 8px;">Sign In</a>
+      <a routerLink="/auth/register" class="modal-btn-secondary" (click)="closeAuthModal()" style="border-radius: 8px;">Create an Account</a>
     </div>
   </div>
 </div>
-
-<ng-template #checkLoading>
-  <!-- Loading state (Skeletons) -->
-  <div *ngIf="isLoading" class="product-detail-page" style="pointer-events: none; opacity: 0.85;">
-    <div class="product-layout">
-      <main class="product-main" style="padding-top: 1.5rem;">
-        <header class="detail-header" style="height: 3rem; margin-bottom: 2rem;">
-          <div class="skeleton-box" style="width: 10rem; height: 1.5rem;"></div>
-        </header>
-
-        <div class="detail-grid">
-          <!-- LEFT: Image Gallery Skeleton -->
-          <div class="gallery-col">
-            <div class="main-image-wrap" style="height: 30rem; background: var(--surface-2); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); overflow: hidden;">
-              <div class="skeleton-box" style="width: 100%; height: 100%; border: none; border-radius: 0;"></div>
-            </div>
-            <div class="thumbnails" style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-              <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-sm);"></div>
-              <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-sm);"></div>
-              <div class="skeleton-box" style="width: 5rem; height: 5rem; border-radius: var(--radius-sm);"></div>
-            </div>
-          </div>
-
-          <!-- RIGHT: Product Info Skeleton -->
-          <div class="info-col" style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <div class="product-meta-top">
-              <div class="skeleton-box" style="width: 6rem; height: 1rem; margin-bottom: 0.5rem;"></div>
-              <div style="display: flex; gap: 0.5rem;">
-                <div class="skeleton-box" style="width: 4rem; height: 1.2rem;"></div>
-                <div class="skeleton-box" style="width: 5rem; height: 1.2rem;"></div>
-              </div>
-            </div>
-
-            <div class="skeleton-box" style="width: 90%; height: 2.5rem; margin: 0.5rem 0;"></div>
-            
-            <div class="skeleton-box" style="width: 8rem; height: 3.5rem; border-radius: var(--radius-sm);"></div>
-
-            <div class="skeleton-box" style="width: 100%; height: 5rem;"></div>
-
-            <div class="specs-panel" style="padding: 1.5rem; border: var(--border-width) solid var(--border); border-radius: var(--radius-md);">
-              <div class="skeleton-box" style="width: 12rem; height: 1rem; margin-bottom: 1rem;"></div>
-              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <div style="display: flex; justify-content: space-between;"><div class="skeleton-box" style="width: 6rem; height: 0.8rem;"></div><div class="skeleton-box" style="width: 8rem; height: 0.8rem;"></div></div>
-                <div style="display: flex; justify-content: space-between;"><div class="skeleton-box" style="width: 4rem; height: 0.8rem;"></div><div class="skeleton-box" style="width: 5rem; height: 0.8rem;"></div></div>
-                <div style="display: flex; justify-content: space-between;"><div class="skeleton-box" style="width: 3rem; height: 0.8rem;"></div><div class="skeleton-box" style="width: 6rem; height: 0.8rem;"></div></div>
-              </div>
-            </div>
-
-            <div class="actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
-              <div class="skeleton-box" style="flex: 1; height: 3.2rem; border-radius: var(--radius-sm);"></div>
-              <div class="skeleton-box" style="width: 3.2rem; height: 3.2rem; border-radius: 50%;"></div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  </div>
-
-  <!-- Not Found state -->
-  <div *ngIf="!isLoading && !product" class="product-list-page">
-    <div class="empty-state">
-      <h2>LISTING NOT FOUND</h2>
-      <button class="btn-apply-filters" routerLink="/products">RETURN TO ARCHIVE</button>
-    </div>
-  </div>
-</ng-template>
 
 <!-- BUY NOW MODAL -->
 <div class="report-overlay" *ngIf="showBuyModal" (click)="closeBuy()">
   <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 480px; padding: 2rem;">
     <button class="modal-standard-close" (click)="closeBuy()">✕</button>
 
-    <h3 class="modal-standard-title" style="margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); font-weight: 900;">CHECKOUT</h3>
-    <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); text-align: center; margin-bottom: 1.5rem;">
+    <h3 class="modal-standard-title" style="margin-bottom: 1rem; text-align: center; font-weight: 800;">Checkout Order</h3>
+    <p style="font-size: 0.9rem; color: #6B7280; text-align: center; margin-bottom: 1.5rem;">
       You are purchasing <strong>{{ product?.title }}</strong> for <strong>{{ product?.price | currencyFormat }}</strong>.
     </p>
 
     <!-- Success / Error Banners -->
-    <div *ngIf="buySuccess()" style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem; text-align: center;">
+    <div *ngIf="buySuccess()" style="background: #ecfdf5; color: #065f46; border: 1.5px solid #a7f3d0; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center;">
       {{ buySuccess() }}
     </div>
 
-    <div *ngIf="buyError()" style="background: #ff4d4d; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem; text-align: center;">
+    <div *ngIf="buyError()" style="background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center;">
       {{ buyError() }}
     </div>
 
     <form (ngSubmit)="submitOrder()" *ngIf="!buySuccess()" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%; text-align: left;">
       <!-- Payment Method -->
       <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-secondary); letter-spacing: 0.05em;">PAYMENT METHOD</label>
+        <label style="font-weight: 700; font-size: 0.85rem; color: #374151;">PAYMENT METHOD</label>
         <div style="display: flex; gap: 1.5rem;">
-          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-family: var(--font-secondary); font-weight: 600; font-size: 0.9rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
             <input type="radio" name="payMethod" value="cash_on_delivery" [(ngModel)]="paymentMethod" style="accent-color: var(--yellow-dark);" />
             <span>Cash on Delivery</span>
           </label>
-          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-family: var(--font-secondary); font-weight: 600; font-size: 0.9rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
             <input type="radio" name="payMethod" value="online" [(ngModel)]="paymentMethod" style="accent-color: var(--yellow-dark);" />
             <span>Bank Transfer</span>
           </label>
@@ -397,36 +565,68 @@
 
       <!-- Shipping Address -->
       <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-secondary); letter-spacing: 0.05em;">SHIPPING ADDRESS</label>
+        <label style="font-weight: 700; font-size: 0.85rem; color: #374151;">SHIPPING ADDRESS</label>
         <textarea 
           [(ngModel)]="shippingAddress" 
           name="shippingAddress" 
           required 
           rows="3" 
           placeholder="Enter your address (e.g. Cairo, Tagamoa, Building 14)" 
-          style="padding: 10px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none; resize: vertical;"
+          style="padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9rem; outline: none; resize: vertical;"
         ></textarea>
       </div>
 
       <!-- Notes -->
       <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-secondary); letter-spacing: 0.05em;">ORDER NOTES (OPTIONAL)</label>
+        <label style="font-weight: 700; font-size: 0.85rem; color: #374151;">ORDER NOTES (OPTIONAL)</label>
         <input 
           type="text" 
           [(ngModel)]="orderNotes" 
           name="orderNotes" 
           placeholder="e.g. Call before delivery" 
-          style="padding: 10px 12px; border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); box-shadow: 2px 2px 0 var(--black); outline: none;" 
+          style="padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 0.9rem; outline: none;" 
         />
       </div>
 
       <!-- Buttons -->
       <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end;">
-        <button type="button" class="modal-btn-secondary" (click)="closeBuy()" [disabled]="buyLoading" style="margin: 0; padding: 10px 20px; cursor: pointer; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); font-weight: 700;">Cancel</button>
-        <button type="submit" class="modal-btn-primary" [disabled]="buyLoading || !shippingAddress" style="margin: 0; padding: 10px 20px; background: var(--yellow); color: var(--black); font-weight: 700; border: 2px solid var(--black); box-shadow: 3px 3px 0 var(--black); cursor: pointer;">
-          {{ buyLoading ? 'PLACING ORDER...' : 'PLACE ORDER' }}
+        <button type="button" class="modal-btn-secondary" (click)="closeBuy()" [disabled]="buyLoading" style="margin: 0; padding: 10px 20px; border-radius: 8px; font-weight: 600;">Cancel</button>
+        <button type="submit" class="modal-btn-primary" [disabled]="buyLoading || !shippingAddress" style="margin: 0; padding: 10px 20px; background: var(--yellow); color: #000; border: 2px solid #000; box-shadow: 3px 3px 0 #000; border-radius: 8px; font-weight: 900;">
+          {{ buyLoading ? 'Placing Order...' : 'Place Order' }}
         </button>
       </div>
     </form>
   </div>
 </div>
+
+<ng-template #checkLoading>
+  <!-- SKELETON LOADING STATE -->
+  <div *ngIf="isLoading" class="product-detail-page" style="pointer-events: none; opacity: 0.85;">
+    <div class="container" style="padding-top: 2rem;">
+      <div class="detail-grid-v2">
+        <div class="gallery-col-v2">
+          <div class="skeleton-box" style="width: 100%; height: 400px; border-radius: 12px;"></div>
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <div class="skeleton-box" style="width: 70px; height: 70px; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="width: 70px; height: 70px; border-radius: 8px;"></div>
+            <div class="skeleton-box" style="width: 70px; height: 70px; border-radius: 8px;"></div>
+          </div>
+        </div>
+        <div class="info-col-v2" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="skeleton-box" style="width: 120px; height: 24px; border-radius: 6px;"></div>
+          <div class="skeleton-box" style="width: 80%; height: 40px; border-radius: 8px;"></div>
+          <div class="skeleton-box" style="width: 200px; height: 50px; border-radius: 8px;"></div>
+          <div class="skeleton-box" style="width: 100%; height: 180px; border-radius: 12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR / EMPTY STATE -->
+  <div *ngIf="!isLoading && !product" class="product-list-page" style="padding: 100px 0; text-align: center;">
+    <div class="empty-state">
+      <h2 style="font-weight: 800; font-size: 2rem; margin-bottom: 1rem;">LISTING NOT FOUND</h2>
+      <button class="btn-action-v2" routerLink="/products" style="display: inline-flex; width: auto; background: var(--yellow); color: #000; border: 2px solid #000; box-shadow: 4px 4px 0 #000; border-radius: 8px; font-weight: 900; padding: 12px 24px;">RETURN TO ARCHIVE</button>
+    </div>
+  </div>
+</ng-template>
