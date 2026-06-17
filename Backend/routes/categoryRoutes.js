@@ -1,40 +1,62 @@
 const express = require('express');
 const router = express.Router();
-const Category = require('../models/Category'); // تأكدي من مسار الموديل
+const db = require("../db");
+const { categories, categoryAttributes } = require("../db/schema");
+const { eq } = require("drizzle-orm");
+const authMiddleware = require('../middleware/authMiddleware');
+const adminMiddleware = require('../middleware/adminMiddleware');
 
-// 1. الحصول على كل الأقسام (عشان تعرضيهم في الـ Navbar أو الـ Select)
 router.get('/', async (req, res) => {
-    try {
-        const categories = await Category.find();
-        res.json(categories);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+  try {
+    const result = await db.select().from(categories);
+    const catsWithAttrs = await Promise.all(result.map(async (cat) => {
+      const attrs = await db.select()
+        .from(categoryAttributes)
+        .where(eq(categoryAttributes.categoryId, cat.id));
+      return { ...cat, attributes: attrs };
+    }));
+    res.json(catsWithAttrs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// 2. إضافة قسم جديد (مع الـ Attributes بتاعته)
-router.post('/', async (req, res) => {
-    const category = new Category({
-        name: req.body.name,
-        attributes: req.body.attributes // هنا بنبعت الـ Array اللي فيه الـ select والـ radio
-    });
+router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { name, attributes } = req.body;
+    const [cat] = await db.insert(categories).values({ name }).returning();
 
-    try {
-        const newCategory = await category.save();
-        res.status(201).json(newCategory);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
+    if (attributes && attributes.length > 0) {
+      await db.insert(categoryAttributes).values(
+        attributes.map(attr => ({
+          categoryId: cat.id,
+          name: attr.name,
+          type: attr.type,
+          options: attr.options || [],
+          required: attr.required !== undefined ? attr.required : true,
+          hasOther: attr.hasOther || false,
+        }))
+      );
     }
+
+    const attrs = await db.select()
+      .from(categoryAttributes)
+      .where(eq(categoryAttributes.categoryId, cat.id));
+
+    res.status(201).json({ ...cat, attributes: attrs });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
-// 3. مسح قسم معين (لو حبيتي تنظفي الداتا بيز)
-router.delete('/:id', async (req, res) => {
-    try {
-        await Category.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Category deleted' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    await db.delete(categoryAttributes).where(eq(categoryAttributes.categoryId, req.params.id));
+    await db.delete(categories).where(eq(categories.id, req.params.id));
+    res.json({ message: 'Category deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;

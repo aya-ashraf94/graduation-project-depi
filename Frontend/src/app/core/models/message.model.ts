@@ -22,6 +22,8 @@ export interface Conversation {
   participants: [UserSummary, UserSummary]; // [buyer, seller]
   productId?: string;       // The listing being discussed (optional)
   productTitle?: string;
+  productThumbnail?: string;
+  productPrice?: number;
   lastMessage?: Message;
   unreadCount: number;
   updatedAt: Date;

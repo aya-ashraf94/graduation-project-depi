@@ -1,107 +1,164 @@
 const fs = require('fs');
 const path = require('path');
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 require('dotenv').config();
+const bcrypt = require('bcryptjs');
 
-const User = require('./models/User');
-const Category = require('./models/Category');
-const Product = require('./models/Product');
-const Conversation = require('./models/Conversation');
-const Message = require('./models/Message');
-const Order = require('./models/Order');
-const Review = require('./models/Review');
-const Report = require('./models/Report');
-const Notification = require('./models/Notification');
-const Newsletter = require('./models/Newsletter');
+const {
+  users, categories, categoryAttributes, products,
+  conversations, conversationParticipants, messages,
+  orders, reviews, reports, notifications, newsletters, userWishlist
+} = require('./db/schema');
 
-async function upsertMany(Model, records) {
-    if (!records || records.length === 0) return { added: 0, updated: 0 };
+async function seedCollection(pool, table, filename, transformFn = null) {
+  const filepath = path.join(__dirname, 'data', filename);
+  if (!fs.existsSync(filepath)) {
+    console.log(`Seed file ${filename} not found. Skipping.`);
+    return;
+  }
 
-    const operations = records.map(record => ({
-        updateOne: {
-            filter: { _id: record._id },
-            update: { $set: record },
-            upsert: true
-        }
-    }));
+  let records = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+  if (!records || records.length === 0) {
+    console.log(`No records found in ${filename}.`);
+    return;
+  }
 
-    const result = await Model.bulkWrite(operations);
-    return {
-        added: result.upsertedCount,
-        updated: result.modifiedCount
-    };
-}
+  if (transformFn) {
+    records = await transformFn(records);
+  }
 
-async function seedCollection(dataDir, Model, filename, preProcessor = null) {
-    const filepath = path.join(dataDir, filename);
-    if (fs.existsSync(filepath)) {
-        let records = JSON.parse(fs.readFileSync(filepath, 'utf8'));
-        if (records && records.length > 0) {
-            if (preProcessor) {
-                records = await preProcessor(records);
-            }
-            console.log(`Importing/Updating ${records.length} documents for ${Model.modelName}...`);
-            const res = await upsertMany(Model, records);
-            console.log(`${Model.modelName}: Added ${res.added}, Updated ${res.updated}.`);
+  console.log(`Importing ${records.length} records for ${filename}...`);
+
+  const keys = Object.keys(table);
+  const columns = keys.filter(k => k !== 'config' && k !== 'name');
+  const colNames = table._.columns;
+
+  for (const record of records) {
+    const values = {};
+    for (const [colName, col] of Object.entries(colNames)) {
+      const mongoKey = colName === 'id' ? '_id' :
+        colName === 'userId' ? 'userId' :
+        colName === 'categoryId' ? 'categoryId' :
+        colName === 'productId' ? 'productId' :
+        colName === 'buyerId' ? 'buyerId' :
+        colName === 'sellerId' ? 'sellerId' :
+        colName === 'conversationId' ? 'conversationId' :
+        colName === 'senderId' ? 'senderId' :
+        colName === 'reviewerId' ? 'reviewerId' :
+        colName === 'revieweeId' ? 'revieweeId' :
+        colName === 'reporterId' ? 'reporterId' :
+        colName === 'orderId' ? 'orderId' :
+        colName === 'linkedEntityId' ? 'linkedEntityId' :
+        colName === 'linkedRoute' ? 'linkedRoute' :
+        colName === 'resetPasswordToken' ? 'resetPasswordToken' :
+        colName === 'resetPasswordExpires' ? 'resetPasswordExpires' :
+        colName === 'paymentMethod' ? 'paymentMethod' :
+        colName === 'shippingAddress' ? 'shippingAddress' :
+        colName === 'trackingNumber' ? 'trackingNumber' :
+        colName === 'phoneNumber' ? 'phoneNumber' :
+        colName === 'showContactInfo' ? 'showContactInfo' :
+        colName === 'soldByNafa3ni' ? 'soldByNafa3ni' :
+        colName === 'isVerified' ? 'isVerified' :
+        colName === 'isSuspended' ? 'isSuspended' :
+        colName === 'viewCount' ? 'viewCount' :
+        colName === 'totalSales' ? 'totalSales' :
+        colName === 'totalPurchases' ? 'totalPurchases' :
+        colName === 'successRate' ? 'successRate' :
+        colName === 'dynamicAttributes' ? 'dynamicAttributes' :
+        colName === 'hasOther' ? 'hasOther' :
+        colName === 'createdAt' ? 'createdAt' :
+        colName === 'updatedAt' ? 'updatedAt' : colName;
+
+      if (record[mongoKey] !== undefined) {
+        if (colName === 'id' || colName === '_id') {
+          values.id = record._id || record.id;
+        } else if (colName === 'tags' && Array.isArray(record[mongoKey])) {
+          values.tags = record[mongoKey];
+        } else if (colName === 'images' && Array.isArray(record[mongoKey])) {
+          values.images = record[mongoKey];
+        } else if (colName === 'options' && Array.isArray(record[mongoKey])) {
+          values.options = record[mongoKey];
+        } else if (colName === 'dynamicAttributes') {
+          values.dynamicAttributes = record[mongoKey] || {};
+        } else if (colName === 'createdAt' || colName === 'updatedAt' || colName === 'resetPasswordExpires') {
+          const v = record[mongoKey];
+          values[colName] = v ? new Date(v) : null;
         } else {
-            console.log(`No records found in ${filename}.`);
+          values[colName] = record[mongoKey];
         }
-    } else {
-        console.log(`Seed file ${filename} not found. Skipping ${Model.modelName} import.`);
+      }
     }
+
+    if (Object.keys(values).length > 0) {
+      try {
+        const colList = Object.keys(values).map(c => `"${c.replace(/([A-Z])/g, '_$1').toLowerCase()}"`);
+        const paramList = Object.keys(values).map((_, i) => `$${i + 1}`);
+        const placeholders = {};
+        Object.keys(values).forEach((key, i) => {
+          placeholders[`$${i + 1}`] = values[key];
+        });
+
+        const pgKey = (str) => str.replace(/([A-Z])/g, '_$1').toLowerCase();
+        const cols = Object.keys(values).map(c => `"${pgKey(c)}"`).join(', ');
+        const params = Object.keys(values).map((_, i) => `$${i + 1}`).join(', ');
+
+        const query = `INSERT INTO "${pgKey(table._.name)}" (${cols}) VALUES (${params}) ON CONFLICT (id) DO NOTHING`;
+
+        const paramValues = Object.values(values).map(v => {
+          if (v instanceof Date) return v.toISOString();
+          if (typeof v === 'object' && v !== null) return JSON.stringify(v);
+          return v;
+        });
+
+        await pool.query(query, paramValues);
+      } catch (err) {
+        console.error(`Error seeding record in ${filename}:`, err.message);
+      }
+    }
+  }
+
+  console.log(`${filename}: ${records.length} records processed.`);
 }
 
 async function seedData() {
-    try {
-        const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storeDB';
-        console.log(`Connecting to MongoDB at: ${mongoUri}...`);
-        await mongoose.connect(mongoUri);
-        console.log('Connected to MongoDB successfully.');
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
 
-        const dataDir = path.join(__dirname, 'data');
+  try {
+    console.log('Connecting to Neon PostgreSQL...');
+    await pool.connect();
+    console.log('Connected successfully.');
 
-        // Check if categories.json exists, since categories are critical
-        const categoriesPath = path.join(dataDir, 'categories.json');
-        if (!fs.existsSync(categoriesPath)) {
-            console.error(`Error: Seed data file categories.json not found at ${categoriesPath}.`);
-            console.error('Please run the export script first to generate this file.');
-            process.exit(1);
-        }
+    const dataDir = path.join(__dirname, 'data');
 
-        // Seed categories (critical)
-        await seedCollection(dataDir, Category, 'categories.json');
+    await seedCollection(pool, categories, 'categories.json');
 
-        // Seed users (with password hashing preprocessor)
-        const userPreprocessor = async (users) => {
-            console.log('Resetting all seeded user passwords to default: 123456');
-            const bcrypt = require('bcryptjs');
-            const salt = await bcrypt.genSalt(10);
-            const defaultHash = await bcrypt.hash('123456', salt);
-            users.forEach(user => {
-                user.password = defaultHash;
-            });
-            return users;
-        };
-        await seedCollection(dataDir, User, 'users.json', userPreprocessor);
+    const userTransform = async (records) => {
+      console.log('Resetting all seeded user passwords to default: 123456');
+      const salt = await bcrypt.genSalt(10);
+      const defaultHash = await bcrypt.hash('123456', salt);
+      records.forEach(user => { user.password = defaultHash; });
+      return records;
+    };
+    await seedCollection(pool, users, 'users.json', userTransform);
 
-        // Seed other collections
-        await seedCollection(dataDir, Product, 'products.json');
-        await seedCollection(dataDir, Conversation, 'conversations.json');
-        await seedCollection(dataDir, Message, 'messages.json');
-        await seedCollection(dataDir, Order, 'orders.json');
-        await seedCollection(dataDir, Review, 'reviews.json');
-        await seedCollection(dataDir, Report, 'reports.json');
-        await seedCollection(dataDir, Notification, 'notifications.json');
-        await seedCollection(dataDir, Newsletter, 'newsletters.json');
+    await seedCollection(pool, products, 'products.json');
+    await seedCollection(pool, conversations, 'conversations.json');
+    await seedCollection(pool, messages, 'messages.json');
+    await seedCollection(pool, orders, 'orders.json');
+    await seedCollection(pool, reviews, 'reviews.json');
+    await seedCollection(pool, reports, 'reports.json');
+    await seedCollection(pool, notifications, 'notifications.json');
+    await seedCollection(pool, newsletters, 'newsletters.json');
 
-        console.log('Database seeding and import completed successfully!');
-    } catch (error) {
-        console.error('Error seeding/importing database data:', error);
-    } finally {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storeDB');
-        await mongoose.disconnect();
-        console.log('Disconnected from MongoDB.');
-    }
+    console.log('Database seeding completed successfully!');
+  } catch (error) {
+    console.error('Error seeding database:', error);
+  } finally {
+    await pool.end();
+    console.log('Disconnected from database.');
+  }
 }
 
 seedData();

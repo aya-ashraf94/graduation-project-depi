@@ -129,6 +129,10 @@
   display: inline-block;
 }
 
+.footer-col a {
+  cursor: pointer;
+}
+
 .footer-col a:hover {
   color: var(--yellow);
   transform: translateX(0.25rem);
@@ -195,7 +199,6 @@
     margin-bottom: 1.25rem;
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.35);
-    cursor: default;
     user-select: auto;
   }
 

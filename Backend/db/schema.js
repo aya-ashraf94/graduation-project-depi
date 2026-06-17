@@ -1,0 +1,201 @@
+const { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, primaryKey, index } = require('drizzle-orm/pg-core');
+
+const users = pgTable('users', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  password: text('password').notNull(),
+  role: text('role', { enum: ['user', 'admin'] }).default('user').notNull(),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  isSuspended: boolean('is_suspended').default(false).notNull(),
+  avatar: text('avatar').default('').notNull(),
+  bio: text('bio').default('').notNull(),
+  phoneNumber: text('phone_number').default('').notNull(),
+  location: text('location').default('').notNull(),
+  tags: text('tags').array().default([]).notNull(),
+  rating: doublePrecision('rating').default(5.0).notNull(),
+  totalSales: integer('total_sales').default(0).notNull(),
+  totalPurchases: integer('total_purchases').default(0).notNull(),
+  successRate: doublePrecision('success_rate').default(100).notNull(),
+  resetPasswordToken: text('reset_password_token'),
+  resetPasswordExpires: timestamp('reset_password_expires', { mode: 'date' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+const categories = pgTable('categories', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull().unique(),
+});
+
+const categoryAttributes = pgTable('category_attributes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  categoryId: uuid('category_id').notNull().references(() => categories.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  type: text('type', { enum: ['select', 'radio', 'text'] }).notNull(),
+  options: text('options').array(),
+  required: boolean('required').default(true).notNull(),
+  hasOther: boolean('has_other').default(false).notNull(),
+}, (table) => ({
+  catAttrIdx: index('cat_attr_category_idx').on(table.categoryId),
+}));
+
+const products = pgTable('products', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  price: doublePrecision('price').notNull(),
+  images: text('images').array().default([]).notNull(),
+  categoryId: uuid('category_id').notNull().references(() => categories.id, { onDelete: 'restrict' }),
+  dynamicAttributes: jsonb('dynamic_attributes').default({}).notNull(),
+  location: text('location').notNull(),
+  phoneNumber: text('phone_number').notNull(),
+  showContactInfo: boolean('show_contact_info').default(true).notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  soldByNafa3ni: boolean('sold_by_nafa3ni').default(false).notNull(),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  status: text('status', { enum: ['active', 'reserved', 'sold', 'draft'] }).default('active').notNull(),
+  viewCount: integer('view_count').default(0).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  categoryIdx: index('product_category_idx').on(table.categoryId),
+  userIdx: index('product_user_idx').on(table.userId),
+  createdAtIdx: index('product_created_at_idx').on(table.createdAt),
+}));
+
+const orders = pgTable('orders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'restrict' }),
+  buyerId: uuid('buyer_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+  sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+  price: doublePrecision('price').notNull(),
+  status: text('status', { enum: ['pending', 'shipped', 'delivered', 'cancelled'] }).default('pending').notNull(),
+  paymentMethod: text('payment_method').notNull(),
+  shippingAddress: text('shipping_address').notNull(),
+  notes: text('notes'),
+  trackingNumber: text('tracking_number'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  orderProductIdx: index('order_product_idx').on(table.productId),
+  orderBuyerIdx: index('order_buyer_idx').on(table.buyerId),
+  orderSellerIdx: index('order_seller_idx').on(table.sellerId),
+}));
+
+const reviews = pgTable('reviews', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  reviewerId: uuid('reviewer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  revieweeId: uuid('reviewee_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  rating: integer('rating').notNull(),
+  comment: text('comment').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  reviewOrderIdx: index('review_order_idx').on(table.orderId),
+  reviewReviewerIdx: index('review_reviewer_idx').on(table.reviewerId),
+  reviewRevieweeIdx: index('review_reviewee_idx').on(table.revieweeId),
+  reviewProductIdx: index('review_product_idx').on(table.productId),
+}));
+
+const conversations = pgTable('conversations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  productId: uuid('product_id').references(() => products.id, { onDelete: 'set null' }),
+  lastMessageId: uuid('last_message_id'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  convProductIdx: index('conv_product_idx').on(table.productId),
+}));
+
+const conversationParticipants = pgTable('conversation_participants', {
+  conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.conversationId, table.userId] }),
+  participantUserIdx: index('participant_user_idx').on(table.userId),
+}));
+
+const messages = pgTable('messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
+  senderId: uuid('sender_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  status: text('status', { enum: ['sent', 'delivered', 'read'] }).default('sent').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  msgConvIdx: index('msg_conversation_idx').on(table.conversationId),
+  msgSenderIdx: index('msg_sender_idx').on(table.senderId),
+}));
+
+const notifications = pgTable('notifications', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text('type', { enum: ['order_update', 'review', 'message', 'system'] }).notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  isRead: boolean('is_read').default(false).notNull(),
+  linkedEntityId: text('linked_entity_id').default('').notNull(),
+  linkedRoute: text('linked_route').default('').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  userNotifIdx: index('notif_user_idx').on(table.userId, table.createdAt),
+}));
+
+const reports = pgTable('reports', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  reporterId: uuid('reporter_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reason: text('reason').notNull(),
+  details: text('details'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  reportProductIdx: index('report_product_idx').on(table.productId),
+  reportReporterIdx: index('report_reporter_idx').on(table.reporterId),
+}));
+
+const contacts = pgTable('contacts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  message: text('message').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+const newsletters = pgTable('newsletters', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: text('email').notNull().unique(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+const userWishlist = pgTable('user_wishlist', {
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.productId] }),
+  wishlistProductIdx: index('wishlist_product_idx').on(table.productId),
+}));
+
+module.exports = {
+  users,
+  categories,
+  categoryAttributes,
+  products,
+  orders,
+  reviews,
+  conversations,
+  conversationParticipants,
+  messages,
+  notifications,
+  reports,
+  contacts,
+  newsletters,
+  userWishlist,
+};
