@@ -6,11 +6,12 @@ import { ChatService } from '../../../../core/services/chat.service';
 import { AuthService } from '../../../../core/services/auth';
 import { Conversation, Message } from '../../../../core/models/message.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
+import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-chat-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimeAgoPipe, RouterLink],
+  imports: [CommonModule, FormsModule, TimeAgoPipe, RouterLink, CurrencyFormatPipe],
   templateUrl: './chat-page.html',
   styleUrl: './chat-page.css',
 })
@@ -24,7 +25,6 @@ export class ChatPage implements OnInit {
   messages: Message[] = [];
   newMessage = '';
   currentUserId = '';
-  isTyping = false;
   searchTerm = signal('');
 
   filteredConversations = computed(() => {
@@ -32,7 +32,8 @@ export class ChatPage implements OnInit {
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) return convs;
     return convs.filter(c => {
-      const name = `${c.participants[1].firstName} ${c.participants[1].lastName}`.toLowerCase();
+      const other = c.participants.find(p => p.id !== this.currentUserId);
+      const name = other ? `${other.firstName} ${other.lastName}`.toLowerCase() : '';
       const product = (c.productTitle || '').toLowerCase();
       return name.includes(term) || product.includes(term);
     });
@@ -135,5 +136,9 @@ export class ChatPage implements OnInit {
       },
       error: (err) => console.error('Error sending message:', err)
     });
+  }
+
+  getOtherParticipant(conv: Conversation) {
+    return conv.participants.find(p => p.id !== this.currentUserId) || null;
   }
 }

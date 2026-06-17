@@ -1,38 +1,42 @@
-const User = require("../models/User");
-const Order = require("../models/Order");
+const db = require("../db");
+const { users, orders } = require("../db/schema");
+const { eq, and, count } = require("drizzle-orm");
 
-/**
- * Dynamically counts orders to update a user's totalSales, totalPurchases, and successRate.
- * - totalSales: Count of 'delivered' orders where the user is the seller.
- * - totalPurchases: Count of 'delivered' orders where the user is the buyer.
- * - successRate: Ratio of delivered sales to total non-pending/non-shipped seller transactions.
- *                Formally: delivered / (delivered + cancelled) * 100.
- */
 const updateUserStats = async (userId) => {
-    try {
-        if (!userId) return;
+  try {
+    if (!userId) return;
 
-        // Count ONLY 'delivered' orders for successful stats
-        const totalSales = await Order.countDocuments({ sellerId: userId, status: "delivered" });
-        const totalPurchases = await Order.countDocuments({ buyerId: userId, status: "delivered" });
-        
-        // Count cancelled sales for success rate
-        const cancelledSales = await Order.countDocuments({ sellerId: userId, status: "cancelled" });
-        
-        let successRate = 100;
-        const totalSellerOrders = totalSales + cancelledSales;
-        if (totalSellerOrders > 0) {
-            successRate = Math.round((totalSales / totalSellerOrders) * 100);
-        }
+    const [salesResult] = await db.select({ value: count() })
+      .from(orders)
+      .where(and(eq(orders.sellerId, userId), eq(orders.status, "delivered")));
 
-        await User.findByIdAndUpdate(userId, { 
-            totalSales, 
-            totalPurchases, 
-            successRate 
-        });
-    } catch (error) {
-        console.error(`Error updating stats for user ${userId}:`, error);
+    const [purchasesResult] = await db.select({ value: count() })
+      .from(orders)
+      .where(and(eq(orders.buyerId, userId), eq(orders.status, "delivered")));
+
+    const [cancelledResult] = await db.select({ value: count() })
+      .from(orders)
+      .where(and(eq(orders.sellerId, userId), eq(orders.status, "cancelled")));
+
+    const totalSales = Number(salesResult.value);
+    const totalPurchases = Number(purchasesResult.value);
+    const cancelledSales = Number(cancelledResult.value);
+
+    let successRate = 100;
+    const totalSellerOrders = totalSales + cancelledSales;
+    if (totalSellerOrders > 0) {
+      successRate = Math.round((totalSales / totalSellerOrders) * 100);
     }
+
+    await db.update(users).set({
+      totalSales,
+      totalPurchases,
+      successRate,
+      updatedAt: new Date(),
+    }).where(eq(users.id, userId));
+  } catch (error) {
+    console.error(`Error updating stats for user ${userId}:`, error);
+  }
 };
 
 module.exports = { updateUserStats };
