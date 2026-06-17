@@ -85,6 +85,11 @@ export const routes: Routes = [
       import('./features/profile/pages/my-profile/my-profile').then((m) => m.MyProfile),
   },
   {
+    path: 'profile/:id/reviews',
+    loadComponent: () =>
+      import('./features/profile/pages/all-reviews/all-reviews').then((m) => m.AllReviews),
+  },
+  {
     path: 'profile/:id',
     loadComponent: () =>
       import('./features/profile/pages/my-profile/my-profile').then((m) => m.MyProfile),

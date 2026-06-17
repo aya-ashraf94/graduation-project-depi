@@ -1,4 +1,4 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +27,13 @@ export class Navbar {
   // Expose auth state directly to the template
   readonly isLoggedIn = this.authService.isLoggedIn;
   readonly currentUser = this.authService.currentUser;
+
+  /** Reactive notifications (top 5, sorted) */
+  readonly notifications = computed(() => {
+    const user = this.currentUser();
+    if (!user) return [];
+    return this.notificationService.getNotifications(user.id).slice(0, 5);
+  });
 
   @HostListener('window:scroll')
   onScroll(): void {
@@ -67,11 +74,6 @@ export class Navbar {
 
   toggleNotifications(): void {
     this.showNotifDropdown = !this.showNotifDropdown;
-  }
-
-  getNotifications() {
-    const user = this.currentUser();
-    return user ? this.notificationService.getNotifications(user.id).slice(0, 5) : [];
   }
 
   markAllRead(): void {
