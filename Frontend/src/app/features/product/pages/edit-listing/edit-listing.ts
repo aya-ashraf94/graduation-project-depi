@@ -38,7 +38,7 @@ export class EditListing implements OnInit {
   images: string[] = [];
 
   categories: any[] = [];
-  readonly statuses: ProductStatus[] = ['available', 'reserved', 'sold'];
+  readonly statuses: ProductStatus[] = ['available', 'reserved', 'sold', 'draft'];
 
   form: FormGroup;
 
@@ -179,7 +179,36 @@ export class EditListing implements OnInit {
     if (!input.files) return;
     Array.from(input.files).forEach(file => {
       const reader = new FileReader();
-      reader.onload = () => { this.images.push(reader.result as string); };
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max_size = 1000;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > max_size) {
+              height *= max_size / width;
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width *= max_size / height;
+              height = max_size;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.7);
+            this.images.push(compressed);
+            this.cdr.detectChanges();
+          }
+        };
+      };
       reader.readAsDataURL(file);
     });
   }

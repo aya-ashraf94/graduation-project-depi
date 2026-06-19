@@ -278,14 +278,22 @@ const sendMessage = async (req, res) => {
       console.error("Error triggering message notification:", notifErr);
     }
 
-    res.status(201).json({
+    const formattedMsg = {
       id: msg.id,
       conversationId: msg.conversationId,
       senderId: msg.senderId,
       content: msg.content,
       status: msg.status,
       sentAt: msg.createdAt,
-    });
+    };
+
+    // Emit live message event through Socket.io to conversation room
+    const io = req.app.get("io");
+    if (io) {
+      io.to(conversationId).emit("new_message", formattedMsg);
+    }
+
+    res.status(201).json(formattedMsg);
   } catch (error) {
     console.error("Error sending message:", error);
     res.status(500).json({ message: "Server Error" });

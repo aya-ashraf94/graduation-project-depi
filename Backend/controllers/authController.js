@@ -29,8 +29,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    // Password complexity check: min 8 characters, at least 1 number, 1 special character
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()[\]{}|\\;:'",.<>/?~`\-_=+])[a-zA-Z0-9!@#$%^&*()[\]{}|\\;:'",.<>/?~`\-_=+]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long, contain at least 1 number, and 1 special character" });
     }
 
     const existingUsers = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -49,6 +51,19 @@ const registerUser = async (req, res) => {
 
     const { password: _, ...userObj } = user;
 
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("nafa3ni_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     try {
       await db.insert(notifications).values({
         userId: user.id,
@@ -65,6 +80,7 @@ const registerUser = async (req, res) => {
     res.status(201).json({
       message: "User Registered Successfully",
       user: userObj,
+      token,
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -105,6 +121,13 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+
+    res.cookie("nafa3ni_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
     const { password: _, ...userObj } = user;
 
@@ -237,19 +260,23 @@ const forgotPassword = async (req, res) => {
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
     await db.update(users).set({
-      resetPasswordToken: resetToken,
+      resetPasswordToken: hashedToken,
       resetPasswordExpires: new Date(Date.now() + 3600000),
       updatedAt: new Date(),
     }).where(eq(users.id, user.id));
 
-    console.log(`\n======================================================`);
-    console.log(`📬 [DEV EMAIL SANDBOX]`);
-    console.log(`TO: ${email}`);
-    console.log(`SUBJECT: Reset Password Request`);
-    console.log(`SECURE RESET LINK: http://localhost:4200/auth/login?token=${resetToken}`);
-    console.log(`RESET TOKEN: ${resetToken}`);
-    console.log(`======================================================\n`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`\n======================================================`);
+      console.log(`📬 [DEV EMAIL SANDBOX]`);
+      console.log(`TO: ${email}`);
+      console.log(`SUBJECT: Reset Password Request`);
+      console.log(`SECURE RESET LINK: http://localhost:4200/auth/login?token=${resetToken}`);
+      console.log(`RESET TOKEN: ${resetToken}`);
+      console.log(`======================================================\n`);
+    }
 
     res.json(successResponse);
   } catch (error) {
@@ -265,13 +292,16 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "Please provide token and new password" });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()[\]{}|\\;:'",.<>/?~`\-_=+])[a-zA-Z0-9!@#$%^&*()[\]{}|\\;:'",.<>/?~`\-_=+]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long, contain at least 1 number, and 1 special character" });
     }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const [user] = await db.select().from(users).where(
       and(
-        eq(users.resetPasswordToken, token),
+        eq(users.resetPasswordToken, hashedToken),
         gt(users.resetPasswordExpires, new Date())
       )
     ).limit(1);
@@ -304,9 +334,11 @@ const validateResetToken = async (req, res) => {
       return res.status(400).json({ message: "Token is required" });
     }
 
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
     const [user] = await db.select().from(users).where(
       and(
-        eq(users.resetPasswordToken, token),
+        eq(users.resetPasswordToken, hashedToken),
         gt(users.resetPasswordExpires, new Date())
       )
     ).limit(1);

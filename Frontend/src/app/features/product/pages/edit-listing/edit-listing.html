@@ -17,6 +17,7 @@
             [class.status-available]="s === 'available'"
             [class.status-reserved]="s === 'reserved'"
             [class.status-sold]="s === 'sold'"
+            [class.status-draft]="s === 'draft'"
             (click)="f['status'].setValue(s); f['status'].markAsTouched()">
             {{ s | uppercase }}
           </button>

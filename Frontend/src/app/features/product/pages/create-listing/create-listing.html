@@ -486,10 +486,16 @@
             <span class="warn">⚠ Go back and complete missing fields.</span>
             }
           </p>
-          <button id="btn-save-draft" class="wiz-btn wiz-btn-draft" (click)="saveDraft()" type="button">SAVE AS
-            DRAFT</button>
+          <button id="btn-save-draft" class="wiz-btn wiz-btn-draft" (click)="saveDraft()" type="button"
+            [disabled]="isPublishing() || isSavingDraft()">
+            <span *ngIf="isSavingDraft()" class="btn-spinner"></span>
+            {{ isSavingDraft() ? 'SAVING DRAFT...' : 'SAVE AS DRAFT' }}
+          </button>
           <button id="btn-publish" class="wiz-btn wiz-btn-publish" (click)="publish()" type="button"
-            [disabled]="!allValid">PUBLISH LISTING →</button>
+            [disabled]="!allValid || isPublishing() || isSavingDraft()">
+            <span *ngIf="isPublishing()" class="btn-spinner"></span>
+            {{ isPublishing() ? 'PUBLISHING...' : 'PUBLISH LISTING →' }}
+          </button>
         </div>
       </div>
 

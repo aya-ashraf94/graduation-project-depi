@@ -25,6 +25,16 @@ export const routes: Routes = [
       import('./features/auth/pages/register-page/register').then((m) => m.Register),
   },
   {
+    path: 'auth/forgot-password',
+    loadComponent: () =>
+      import('./features/auth/pages/forgot-password/forgot-password').then((m) => m.ForgotPassword),
+  },
+  {
+    path: 'auth/reset-password',
+    loadComponent: () =>
+      import('./features/auth/pages/reset-password/reset-password').then((m) => m.ResetPassword),
+  },
+  {
     path: 'products',
     loadComponent: () =>
       import('./features/product/pages/product-list/product-list').then((m) => m.ProductList),

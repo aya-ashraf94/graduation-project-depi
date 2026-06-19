@@ -59,9 +59,9 @@
   },
   {
     "_id": "6a2db539c7b0c39826a25921",
-    "title": "Samsung Galaxy S25 Ultraaaa",
-    "description": "hhfds001",
-    "price": 15525,
+    "title": "Samsung Galaxy S25 Ultra",
+    "description": "This Samsung Galaxy S25 Ultra is in excellent condition, featuring 128GB storage and a sleek Blue finish. Includes the official S-Pen stylus. Certified authentic and fully functional.",
+    "price": 38500,
     "images": [
       "https://res.cloudinary.com/du25ycqxs/image/upload/v1781380409/nafa3ni-products/yse9hrxjoi0ux2rbxy1q.webp"
     ],
@@ -70,7 +70,8 @@
       "brand": "Samsung",
       "storage": "128GB",
       "color": "Blue",
-      "condition": "Used"
+      "condition": "Used",
+      "conditionScore": 10
     },
     "location": "Port Fouad",
     "phoneNumber": "012584185200",

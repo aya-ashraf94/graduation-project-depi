@@ -12,8 +12,8 @@ import { tap, switchMap } from 'rxjs/operators';
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 
-const TOKEN_KEY = 'arch_token';
-const USER_KEY = 'arch_user';
+const TOKEN_KEY = 'nafa3ni_token';
+const USER_KEY = 'nafa3ni_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

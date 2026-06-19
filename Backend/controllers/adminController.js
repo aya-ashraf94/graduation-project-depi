@@ -242,6 +242,7 @@ const getReports = async (req, res) => {
   try {
     const result = await db.select()
       .from(reports)
+      .where(eq(reports.status, 'pending'))
       .leftJoin(products, eq(reports.productId, products.id))
       .leftJoin(users.as("reporter"), eq(reports.reporterId, users.as("reporter").id))
       .leftJoin(users.as("productOwner"), eq(products.userId, users.as("productOwner").id))
@@ -307,7 +308,10 @@ const getAllOrders = async (req, res) => {
 const deleteReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const [report] = await db.delete(reports).where(eq(reports.id, id)).returning({ id: reports.id });
+    const [report] = await db.update(reports)
+      .set({ status: 'dismissed', updatedAt: new Date() })
+      .where(eq(reports.id, id))
+      .returning({ id: reports.id });
     if (!report) {
       return res.status(404).json({ message: "Report not found" });
     }

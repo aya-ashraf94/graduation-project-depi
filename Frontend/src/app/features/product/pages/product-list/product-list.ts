@@ -121,29 +121,17 @@ export class ProductList implements OnInit {
         //   };
         // });
 
-        const mapped = apiProducts;
-
-        const elapsed = Date.now() - startTime;
-        const delayTime = Math.max(0, 400 - elapsed);
-
-        setTimeout(() => {
-          this.isLoading = false;
-          this.allProducts = mapped;
-          this.applyFilters();
-          this.cdr.detectChanges();
-        }, delayTime);
+        this.isLoading = false;
+        this.allProducts = apiProducts;
+        this.applyFilters();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading products:', err);
-        const elapsed = Date.now() - startTime;
-        const delayTime = Math.max(0, 400 - elapsed);
-
-        setTimeout(() => {
-          this.isLoading = false;
-          this.allProducts = [];
-          this.applyFilters();
-          this.cdr.detectChanges();
-        }, delayTime);
+        this.isLoading = false;
+        this.allProducts = [];
+        this.applyFilters();
+        this.cdr.detectChanges();
       }
     });
   }

@@ -128,6 +128,12 @@
   border-color: var(--black);
 }
 
+.status-btn.active.status-draft {
+  background: #3b82f6;
+  color: var(--white);
+  border-color: #3b82f6;
+}
+
 /* ---------- IMAGES ---------- */
 .current-images {
   display: grid;

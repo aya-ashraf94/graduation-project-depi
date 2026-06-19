@@ -56,6 +56,7 @@ const products = pgTable('products', {
   isVerified: boolean('is_verified').default(false).notNull(),
   status: text('status', { enum: ['active', 'reserved', 'sold', 'draft'] }).default('active').notNull(),
   viewCount: integer('view_count').default(0).notNull(),
+  favoriteCount: integer('favorite_count').default(0).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -103,7 +104,7 @@ const reviews = pgTable('reviews', {
 const conversations = pgTable('conversations', {
   id: uuid('id').defaultRandom().primaryKey(),
   productId: uuid('product_id').references(() => products.id, { onDelete: 'set null' }),
-  lastMessageId: uuid('last_message_id'),
+  lastMessageId: uuid('last_message_id').references(() => messages.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -152,6 +153,7 @@ const reports = pgTable('reports', {
   reporterId: uuid('reporter_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   reason: text('reason').notNull(),
   details: text('details'),
+  status: text('status', { enum: ['pending', 'resolved', 'dismissed'] }).default('pending').notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -183,6 +185,30 @@ const userWishlist = pgTable('user_wishlist', {
   wishlistProductIdx: index('wishlist_product_idx').on(table.productId),
 }));
 
+const offers = pgTable('offers', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  buyerId: uuid('buyer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  amount: doublePrecision('amount').notNull(),
+  status: text('status', { enum: ['pending', 'accepted', 'rejected'] }).default('pending').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  offerProductIdx: index('offer_product_idx').on(table.productId),
+  offerBuyerIdx: index('offer_buyer_idx').on(table.buyerId),
+}));
+
+const follows = pgTable('follows', {
+  followerId: uuid('follower_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  followingId: uuid('following_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.followerId, table.followingId] }),
+  followerIdx: index('follower_idx').on(table.followerId),
+  followingIdx: index('following_idx').on(table.followingId),
+}));
+
 module.exports = {
   users,
   categories,
@@ -198,4 +224,6 @@ module.exports = {
   contacts,
   newsletters,
   userWishlist,
+  offers,
+  follows,
 };
