@@ -12,7 +12,8 @@ const getStats = async (req, res) => {
   try {
     const [userCount] = await db.select({ value: count() }).from(users);
     const [productCount] = await db.select({ value: count() }).from(products);
-    const [reportCount] = await db.select({ value: count() }).from(reports);
+    const [reportCount] = await db.select({ value: count() }).from(reports)
+      .where(eq(reports.status, 'pending'));
     const [orderCount] = await db.select({ value: count() }).from(orders);
 
     res.json({
@@ -230,12 +231,15 @@ const deleteAnyProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Mark associated reports as resolved before deleting the product
+    await db.update(reports)
+      .set({ status: 'resolved', updatedAt: new Date() })
+      .where(eq(reports.productId, id));
+
     const [product] = await db.delete(products).where(eq(products.id, id)).returning({ id: products.id });
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-
-    await db.delete(reports).where(eq(reports.productId, id));
 
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
@@ -328,6 +332,49 @@ const deleteReport = async (req, res) => {
   }
 };
 
+const resolveReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [report] = await db.update(reports)
+      .set({ status: 'resolved', updatedAt: new Date() })
+      .where(eq(reports.id, id))
+      .returning({ id: reports.id });
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+    res.json({ message: "Report resolved successfully" });
+  } catch (error) {
+    console.error("Error resolving report:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const validStatuses = ['pending', 'shipped', 'delivered', 'cancelled'];
+
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value. Must be one of: " + validStatuses.join(', ') });
+    }
+
+    const [order] = await db.update(orders)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(orders.id, id))
+      .returning();
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({ message: "Order status updated successfully", order });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getStats,
   getUsers,
@@ -337,6 +384,8 @@ module.exports = {
   patchProduct,
   deleteAnyProduct,
   getReports,
+  resolveReport,
   deleteReport,
   getAllOrders,
+  updateOrderStatus,
 };

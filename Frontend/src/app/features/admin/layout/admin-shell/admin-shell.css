@@ -337,6 +337,35 @@
 }
 
 /* Sleek custom scrollbars for administrative tables */
+/* Report count badge */
+.report-badge {
+  margin-left: auto;
+  background: #dc2626;
+  color: var(--white);
+  font-family: var(--font-primary);
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  min-width: 1.25rem;
+  text-align: center;
+  line-height: 1.2;
+  border: 1px solid var(--black);
+}
+
+.report-badge-mobile {
+  background: #dc2626;
+  color: var(--white);
+  font-family: var(--font-primary);
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  margin-left: 0.35rem;
+  border: 1px solid var(--black);
+  line-height: 1.2;
+}
+
 .table-container::-webkit-scrollbar {
   height: 5px;
   width: 5px;

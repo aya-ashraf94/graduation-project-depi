@@ -92,11 +92,11 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (report of recentReports(); track report._id) {
+                  @for (report of recentReports(); track report.id) {
                     <tr>
                       <td class="bold-text">
                         @if (report.productId) {
-                          <a [routerLink]="['/products', report.productId._id]" class="listing-link">
+                          <a [routerLink]="['/products', report.productId.id]" class="listing-link">
                             {{ report.productId.title }}
                           </a>
                         } @else {
@@ -116,11 +116,11 @@
                       <td>
                         <div class="table-actions">
                           @if (report.productId) {
-                            <a [routerLink]="['/products', report.productId._id]" class="action-btn view-btn" title="Inspect Listing">
+                            <a [routerLink]="['/products', report.productId.id]" class="action-btn view-btn" title="Inspect Listing">
                               👁️
                             </a>
                           }
-                          <button (click)="dismissReport(report._id)" class="action-btn dismiss-btn" title="Dismiss Flag">
+                          <button (click)="dismissReport(report.id)" class="action-btn dismiss-btn" title="Dismiss Flag">
                             ✓
                           </button>
                         </div>

@@ -21,6 +21,13 @@ export class Reports implements OnInit {
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
 
+  expandedDetails = signal<Set<string>>(new Set());
+
+  // Pagination
+  currentPage = signal(1);
+  pageSize = 10;
+  paginatedReports = signal<AdminReport[]>([]);
+
   ngOnInit(): void {
     this.loadReports();
   }
@@ -32,6 +39,8 @@ export class Reports implements OnInit {
     this.adminService.getReports().subscribe({
       next: (data) => {
         this.reports.set(data);
+        this.currentPage.set(1);
+        this.updatePaginated();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -42,6 +51,30 @@ export class Reports implements OnInit {
     });
   }
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.reports().length / this.pageSize));
+  }
+
+  updatePaginated(): void {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    this.paginatedReports.set(this.reports().slice(start, start + this.pageSize));
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage.set(page);
+    this.updatePaginated();
+  }
+
+  toggleDetails(id: string): void {
+    this.expandedDetails.update(s => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   dismissReport(id: string): void {
     this.confirmService.show({
       title: 'Dismiss Report',
@@ -49,7 +82,9 @@ export class Reports implements OnInit {
       onConfirm: () => {
         this.adminService.deleteReport(id).subscribe({
           next: () => {
-            this.reports.update(list => list.filter(r => r._id !== id));
+            this.reports.update(list => list.filter(r => r.id !== id));
+            this.updatePaginated();
+            this.adminService.refreshPendingCount();
             this.toastService.success('Report dismissed successfully.');
           },
           error: (err) => {
@@ -61,17 +96,39 @@ export class Reports implements OnInit {
     });
   }
 
-  deleteProduct(productId: string, reportId: string): void {
-    const msg = `⚠️ WARNING: This will permanently DELETE this product listing from the marketplace. All other reports for this listing will also be cleaned up. Continue?`;
+  resolveReport(id: string): void {
+    this.confirmService.show({
+      title: 'Resolve Report',
+      message: 'Mark this report as resolved? This indicates appropriate action has been taken.',
+      onConfirm: () => {
+        this.adminService.resolveReport(id).subscribe({
+          next: () => {
+            this.reports.update(list => list.filter(r => r.id !== id));
+            this.updatePaginated();
+            this.adminService.refreshPendingCount();
+            this.toastService.success('Report resolved successfully.');
+          },
+          error: (err) => {
+            console.error('Failed to resolve report:', err);
+            this.toastService.error('Failed to resolve report. Please try again.');
+          }
+        });
+      }
+    });
+  }
+
+  deleteProduct(productId: string): void {
+    const msg = `⚠️ WARNING: This will permanently DELETE this product listing from the marketplace. All reports for this listing will be auto-resolved. Continue?`;
     this.confirmService.show({
       title: 'Delete Flagged Product',
       message: msg,
       onConfirm: () => {
         this.adminService.deleteProduct(productId).subscribe({
           next: () => {
-            // Remove all reports pointing to this product from local state
-            this.reports.update(list => list.filter(r => r.productId?._id !== productId));
-            this.toastService.success('Flagged product deleted and reports dismissed.');
+            this.reports.update(list => list.filter(r => r.productId?.id !== productId));
+            this.updatePaginated();
+            this.adminService.refreshPendingCount();
+            this.toastService.success('Flagged product deleted and reports resolved.');
           },
           error: (err) => {
             console.error('Failed to delete reported product:', err);

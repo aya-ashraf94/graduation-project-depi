@@ -85,4 +85,17 @@ export class Orders implements OnInit {
     };
     return labels[method] || method;
   }
+
+  statusOptions = ['pending', 'shipped', 'delivered', 'cancelled'];
+
+  updateStatus(orderId: string, newStatus: string): void {
+    this.adminService.updateOrderStatus(orderId, newStatus).subscribe({
+      next: () => {
+        this.orders.update(list =>
+          list.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
+        );
+      },
+      error: (err) => console.error('Failed to update order status:', err)
+    });
+  }
 }

@@ -1,139 +1,111 @@
-<div class="reports-page-container">
-  <div class="page-header-actions">
-    <div class="title-section">
-      <h1>Moderation Reports Queue</h1>
-      <p>Investigate items reported by users, dismiss false reports, or purge problematic products.</p>
+<div class="reports-page">
+  <div class="page-head">
+    <div>
+      <h1>Moderation Queue</h1>
+      <p class="page-desc">Review reports, resolve issues, or remove problematic listings.</p>
     </div>
   </div>
 
   @if (errorMessage()) {
-    <div class="error-panel">
-      <h3>⚠️ Error</h3>
+    <div class="error-box">
       <p>{{ errorMessage() }}</p>
-      <button (click)="loadReports()" class="btn btn-primary">Retry</button>
+      <button (click)="loadReports()" class="retry-btn">Retry</button>
+    </div>
+  } @else if (isLoading()) {
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Loading reports...</p>
+    </div>
+  } @else if (reports().length === 0) {
+    <div class="empty-box">
+      <span class="empty-emoji">🕊️</span>
+      <p class="empty-title">All clean</p>
+      <p class="empty-sub">No pending moderation reports.</p>
     </div>
   } @else {
-    <div class="brutal-panel">
-      <div class="table-wrapper">
-        <table class="brutal-reports-table">
-          <thead>
-            <tr>
-              <th>Reported Item</th>
-              <th>Seller</th>
-              <th>Flagged By</th>
-              <th>Reason</th>
-              <th>Details & Context</th>
-              <th>Reported Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (isLoading()) {
-              <tr>
-                <td colspan="7" class="table-loading-cell">
-                  <div class="spinner"></div>
-                  <p>Loading reported items...</p>
-                </td>
-              </tr>
-            } @else if (reports().length === 0) {
-              <tr>
-                <td colspan="7" class="empty-table-cell">
-                  <span>🕊️</span>
-                  <p>All clean. No pending moderation reports!</p>
-                </td>
-              </tr>
-            } @else {
-              @for (report of reports(); track report._id) {
-                <tr>
-                  <td>
-                    @if (report.productId) {
-                      <div class="product-info-cell">
-                        <a [routerLink]="['/products', report.productId._id]" class="product-title-link">
-                          {{ report.productId.title }}
-                        </a>
-                      </div>
-                    } @else {
-                      <span class="deleted-tag">[Listing Already Deleted]</span>
-                    }
-                  </td>
-                  <td>
-                    @if (report.productId && report.productId.userId) {
-                      <a [routerLink]="['/profile', report.productId.userId._id]" class="user-link-micro">
-                        {{ report.productId.userId.name }}
-                      </a>
-                    } @else {
-                      <span class="none-text">-</span>
-                    }
-                  </td>
-                  <td>
-                    @if (report.reporterId) {
-                      <a [routerLink]="['/profile', report.reporterId._id]" class="user-link-micro">
-                        {{ report.reporterId.name }}
-                      </a>
-                    } @else {
-                      <span class="system-tag">Anonymous</span>
-                    }
-                  </td>
-                  <td>
-                    <span class="reason-pill">{{ report.reason }}</span>
-                  </td>
-                  <td class="details-cell">
-                    <p class="details-text" [title]="report.details || 'No details provided'">
-                      {{ report.details || 'No additional comments provided.' }}
-                    </p>
-                  </td>
-                  <td class="date-cell">
-                    {{ report.createdAt | date:'short' }}
-                  </td>
-                  <td>
-                    <div class="report-actions">
-                      <!-- Inspect Product -->
-                      @if (report.productId) {
-                        <a 
-                          [routerLink]="['/products', report.productId._id]" 
-                          class="op-action-btn view-btn"
-                          title="View Product Details"
-                        >
-                          <span class="btn-icon">👁️</span>
-                        </a>
-                      }
-
-                      <!-- Dismiss Flag -->
-                      <button 
-                        (click)="dismissReport(report._id)" 
-                        class="op-action-btn dismiss-btn"
-                        title="Dismiss Flag"
-                      >
-                        <span class="btn-icon">✓</span>
-                      </button>
-
-                      <!-- Delete Product -->
-                      @if (report.productId) {
-                        <button 
-                          (click)="deleteProduct(report.productId._id, report._id)" 
-                          class="op-action-btn delete-btn"
-                          title="Delete Flagged Product"
-                        >
-                          <span class="btn-icon">🗑️</span>
-                        </button>
-                      } @else {
-                        <!-- Clean up obsolete report -->
-                        <button 
-                          (click)="dismissReport(report._id)" 
-                          class="op-action-btn delete-btn"
-                          title="Remove Orphan Report"
-                        >
-                          <span class="btn-icon">🗑️</span>
-                        </button>
-                      }
-                    </div>
-                  </td>
-                </tr>
+    <div class="report-list">
+      @for (report of paginatedReports(); track report.id) {
+        <div class="report-card" [class.expanded]="expandedDetails().has(report.id)">
+          <!-- Top row: product title + reason badge -->
+          <div class="card-top">
+            <div class="listing-block">
+              @if (report.productId) {
+                <a [routerLink]="['/products', report.productId.id]" class="listing-title">
+                  {{ report.productId.title }}
+                </a>
+              } @else {
+                <span class="deleted-label">[Deleted]</span>
               }
+              <span class="reason-badge">{{ report.reason }}</span>
+            </div>
+          </div>
+
+          <!-- Meta row: seller, reporter, date -->
+          <div class="card-meta">
+            <div class="meta-item">
+              <span class="meta-label">Seller</span>
+              @let seller = report.productId?.userId;
+              @if (seller) {
+                <a [routerLink]="['/profile', seller.id]" class="meta-link">
+                  {{ seller.name }}
+                </a>
+              } @else {
+                <span class="meta-muted">—</span>
+              }
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Flagged by</span>
+              @let reporter = report.reporterId;
+              @if (reporter) {
+                <a [routerLink]="['/profile', reporter.id]" class="meta-link">
+                  {{ reporter.name }}
+                </a>
+              } @else {
+                <span class="meta-muted">Anonymous</span>
+              }
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Date</span>
+              <span class="meta-date">{{ report.createdAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <!-- Expandable details -->
+          @if (report.details) {
+            <div class="card-details-wrap" [class.expanded]="expandedDetails().has(report.id)">
+              <p class="card-details-text">{{ report.details }}</p>
+            </div>
+            @if (report.details.length > 60) {
+              <button class="toggle-details-btn" (click)="toggleDetails(report.id)">
+                {{ expandedDetails().has(report.id) ? 'Show less' : 'Show more' }}
+              </button>
             }
-          </tbody>
-        </table>
-      </div>
+          }
+
+          <!-- Action bar -->
+          <div class="card-actions">
+            @if (report.productId) {
+              <a [routerLink]="['/products', report.productId.id]" class="act-btn view-act" title="Inspect listing">👁️ Inspect</a>
+            }
+            <button (click)="resolveReport(report.id)" class="act-btn resolve-act" title="Mark resolved">✓ Resolve</button>
+            <button (click)="dismissReport(report.id)" class="act-btn dismiss-act" title="Dismiss flag">✕ Dismiss</button>
+            @if (report.productId) {
+              <button (click)="deleteProduct(report.productId.id)" class="act-btn delete-act" title="Delete product">🗑️ Delete</button>
+            } @else {
+              <button (click)="dismissReport(report.id)" class="act-btn delete-act" title="Remove orphan">🗑️ Remove</button>
+            }
+          </div>
+        </div>
+      }
     </div>
+
+    <!-- Pagination -->
+    @if (reports().length > pageSize) {
+      <div class="pag-bar">
+        <button class="pag-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">← Prev</button>
+        <span class="pag-info">Page {{ currentPage() }} / {{ totalPages }} <span class="pag-total">({{ reports().length }})</span></span>
+        <button class="pag-btn" [disabled]="currentPage() === totalPages" (click)="goToPage(currentPage() + 1)">Next →</button>
+      </div>
+    }
   }
 </div>

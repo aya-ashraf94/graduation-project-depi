@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -36,23 +36,24 @@ export interface PaginatedOrders {
 }
 
 export interface AdminReport {
-  _id: string;
+  id: string;
   productId: {
-    _id: string;
+    id: string;
     title: string;
     userId?: {
-      _id: string;
+      id: string;
       name: string;
       email: string;
     }
   } | null;
   reporterId: {
-    _id: string;
+    id: string;
     name: string;
     email: string;
   } | null;
   reason: string;
   details?: string;
+  status: 'pending' | 'resolved' | 'dismissed';
   createdAt: string | Date;
 }
 
@@ -61,6 +62,15 @@ export class AdminService {
   private http = inject(HttpClient);
   private productService = inject(ProductService);
   private apiUrl = `${environment.apiUrl}/admin`;
+
+  pendingReportCount = signal(0);
+
+  refreshPendingCount(): void {
+    this.getStats().subscribe({
+      next: (stats) => this.pendingReportCount.set(stats.openReports),
+      error: () => {}
+    });
+  }
 
   getStats(): Observable<AdminStats> {
     return this.http.get<AdminStats>(`${this.apiUrl}/stats`);
@@ -131,8 +141,16 @@ export class AdminService {
     return this.http.delete<any>(`${this.apiUrl}/products/${id}`);
   }
 
+  updateOrderStatus(id: string, status: string): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/orders/${id}/status`, { status });
+  }
+
   getReports(): Observable<AdminReport[]> {
     return this.http.get<AdminReport[]>(`${this.apiUrl}/reports`);
+  }
+
+  resolveReport(id: string): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/reports/${id}/resolve`, {});
   }
 
   deleteReport(id: string): Observable<any> {
@@ -169,7 +187,7 @@ export class AdminService {
       email: u.email || '',
       avatar: u.avatar && u.avatar.startsWith('/uploads')
         ? `${baseUrl}${u.avatar}`
-        : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+        : u.avatar || '',
       role: u.role || 'user',
       rating: u.rating ?? 5.0,
       totalSales: u.totalSales ?? 0,

@@ -347,6 +347,7 @@ h5 {
 /* ============================================================
    UNIVERSAL STANDARD CLEAN MODAL DESIGN (GLOBAL)
    ============================================================ */
+.brutal-overlay,
 .report-overlay {
   position: fixed;
   inset: 0;

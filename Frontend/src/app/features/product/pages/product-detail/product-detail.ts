@@ -37,7 +37,9 @@ export class ProductDetail implements OnInit {
   showReportModal = false;
   showAuthModal = false;
   reportReason = '';
+  reportDetails = '';
   reportSubmitted = false;
+  submittingReport = false;
   isLoading = true;
   categoryLabel = '';
 
@@ -257,27 +259,45 @@ export class ProductDetail implements OnInit {
     });
   }
 
+  reportError = '';
+
   openReport(): void {
     this.executeAuthorizedAction(() => {
       this.showReportModal = true;
       this.reportReason = '';
+      this.reportDetails = '';
       this.reportSubmitted = false;
+      this.submittingReport = false;
+      this.reportError = '';
     });
   }
 
-  closeReport(): void {
+  closeReport(force: boolean = false): void {
+    if (!force && (this.submittingReport || this.reportSubmitted)) return;
     this.showReportModal = false;
   }
 
   submitReport(): void {
+    if (this.submittingReport) return;
     if (this.reportReason.trim() && this.product) {
-      this.productService.reportProduct(this.product.id, this.reportReason).subscribe({
+      this.submittingReport = true;
+      this.reportError = '';
+      this.productService.reportProduct(this.product.id, this.reportReason, this.reportDetails || undefined).subscribe({
         next: () => {
           this.reportSubmitted = true;
-          setTimeout(() => this.closeReport(), 2000);
+          this.submittingReport = false;
+          setTimeout(() => this.closeReport(true), 2500);
         },
         error: (err) => {
-          console.error('Error submitting report:', err);
+          this.submittingReport = false;
+          if (err.status === 409) {
+            this.reportError = err.error?.message || 'You have already reported this listing.';
+          } else if (err.status === 400) {
+            this.reportError = err.error?.message || 'Invalid submission. Please check your input.';
+          } else {
+            this.reportError = 'Something went wrong. Please try again later.';
+          }
+          this.cdr.detectChanges();
         }
       });
     }
