@@ -58,4 +58,5 @@ Thumbs.db
 # Uploaded images
 Backend/public/uploads/
 
-/codebase-analysis.md
+# Documentation and Blueprints
+docs/

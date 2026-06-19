@@ -9,16 +9,15 @@
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Node.js-v18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
-  <img src="https://img.shields.io/badge/MongoDB-Mongoose-4ea94b?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/PostgreSQL-v15+-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Drizzle--ORM-v0.45-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black" alt="Drizzle ORM" />
   <img src="https://img.shields.io/badge/JWT-Protected-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
   <img src="https://img.shields.io/badge/Design-Neo--Brutalist-yellow?style=for-the-badge" alt="Neo-Brutalist" />
 </p>
 
----
-
 ## 🏛️ System Architecture
 
-The following diagram illustrates how the **Angular 21** frontend communicates with the **Node.js & Express** API endpoints, which are validated by **JWT authentication guards** and mapped to **MongoDB Mongoose** schemas.
+The following diagram illustrates how the **Angular 21** frontend communicates with the **Node.js & Express** API endpoints, which are validated by **JWT authentication guards** and mapped to **PostgreSQL** relational tables via **Drizzle ORM**.
 
 ```mermaid
 flowchart TD
@@ -44,8 +43,8 @@ flowchart TD
         Routes --> Controllers
     end
 
-    subgraph Database [MongoDB Atlas]
-        DBModels[(Mongoose Models: User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter, Notification)]
+    subgraph Database [Neon PostgreSQL]
+        DBModels[(Drizzle Schema Tables: users, products, orders, reviews, conversations, messages, notifications, reports, wishlist)]
     end
 
     Interceptors -->|HTTP Requests with JWT| Server
@@ -64,10 +63,10 @@ graduation-project-depi/
 │   └── README.md           # [Detailed Frontend documentation]
 │
 ├── Backend/                # Express.js REST API Server
-│   ├── config/             # DB settings
+│   ├── config/             # Connection settings (PostgreSQL pool, Cloudinary)
 │   ├── controllers/        # Request handlers & logic (Auth, Product, Chat, Order, Review, Admin, Wishlist, Notification)
+│   ├── db/                 # Drizzle Database initialization & relational schema (schema.js)
 │   ├── middleware/         # Security & JWT validators
-│   ├── models/             # Mongoose Schemas (User, Product, Category, Conversation, Message, Order, Review, Report, Newsletter, Notification)
 │   ├── routes/             # Express routes defining API endpoints (10 routers)
 │   ├── server.js           # Server application startup & middleware setup
 │   ├── package.json        # Backend specific scripts & node modules
@@ -94,7 +93,7 @@ Our frontend uses a curated **Neo-Brutalist Architectural Design System**:
 ### 1. Prerequisites
 Ensure you have the following installed on your machine:
 * **Node.js** (v18.x or higher)
-* **MongoDB** (Local instance or MongoDB Atlas Connection URI)
+* **PostgreSQL** (Local instance or remote Neon PostgreSQL Connection URL)
 
 ### 2. Workspace Setup
 Clone the repository and install dependencies for both components simultaneously from the root directory:
@@ -111,7 +110,7 @@ npm run install-all
 Create a `.env` file in the `Backend/` directory:
 ```env
 PORT=3000
-MONGO_URI=mongodb://127.0.0.1:27017/storeDB
+DATABASE_URL=postgresql://user:password@localhost:5432/storeDB
 JWT_SECRET=your_jwt_secret_key_here
 ```
 
@@ -128,18 +127,18 @@ npm run dev
 To keep the database data (especially categories, products, and default users) in sync across all team members' devices without cloud services:
 * **Workflow Best Practice**:
   - **Do NOT** run `npm run db:export` during regular development. This prevents overwriting the clean test templates in `Backend/data/` with your local testing history.
-  - Keep your local orders, test accounts, and reviews stored locally in your MongoDB instance, and only commit code to GitHub.
+  - Keep your local orders, test accounts, and reviews stored locally in your database instance, and only commit code to GitHub.
 * **To Export Data (Optional/Shared Defaults Update)**: If you have created new default categories, users, or products that the whole team needs as a starting template, run:
   ```bash
   npm run db:export
   ```
-  This exports your database collections into JSON backup files under `Backend/data/`. Commit and push these updated JSON files to GitHub.
-* **To Seed/Import Data (After pulling changes)**: When other team members pull the latest commits from GitHub, they can sync their local MongoDB database with the shared state by running:
+  This exports your database tables into JSON backup files under `Backend/data/`. Commit and push these updated JSON files to GitHub.
+* **To Seed/Import Data (After pulling changes)**: When other team members pull the latest commits from GitHub, they can sync their local PostgreSQL database with the shared state by running:
   ```bash
   npm run db:seed
   ```
   > [!NOTE]
-  > Running `db:seed` is now non-destructive! It uses a safe bulk-upsert process that inserts or updates standard categories, users, and products by their `_id` without deleting or affecting your other custom local data.
+  > Running `db:seed` is now non-destructive! It uses a safe SQL bulk-upsert process that inserts or updates standard categories, users, and products by their primary keys without affecting other custom local data.
 * **To Generate Official Store Data**: To generate the official Nafa3ni Store admin user and populate the database with 32 premium/official campus listings across all categories, run:
   ```bash
   npm run db:official
@@ -153,11 +152,11 @@ To keep the database data (especially categories, products, and default users) i
 Market.Arch features fully integrated, database-backed subsystems for wishlists and in-app notifications to drive campus engagement:
 
 ### 1. Persistent Wishlists
-* **MongoDB Storage**: Custom product selections are saved directly to each User's schema array. Toggling items syncs to `/api/wishlist/toggle` instantly.
+* **PostgreSQL Relational DB Storage**: Wishlist records are stored in a relational junction table (`wishlist` table) connecting users and products. Toggling items syncs to `/api/wishlist/toggle` instantly.
 * **Optimistic UI Rendering**: The Angular client updates state indicators reactively using `signal()` patterns, ensuring instantaneous toggle transitions while syncing with the server in the background.
 
 ### 2. Event-Driven Notifications
-* **Automated Dispatch**: System triggers generate tailored notification entries inside MongoDB when specific events occur:
+* **Automated Dispatch**: System triggers generate tailored notification entries inside PostgreSQL when specific events occur:
   - **New Orders**: Informs the seller with direct navigation link to their "My Sales" tab.
   - **Order Shipping/Delivery/Cancellations**: Automatically coordinates between counterparties to update order steps.
   - **Reviews**: Notifies sellers when they receive a rating and review comments.
