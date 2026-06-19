@@ -9,7 +9,7 @@
 
 import { HttpInterceptorFn } from '@angular/common/http';
 
-const TOKEN_KEY = 'arch_token';
+const TOKEN_KEY = 'nafa3ni_token';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem(TOKEN_KEY);

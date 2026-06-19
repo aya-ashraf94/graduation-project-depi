@@ -848,3 +848,87 @@
   box-shadow: 1px 1px 0 var(--black);
 }
 
+/* Skeleton Loading Shimmer Styling */
+.skeleton-card {
+  box-shadow: none !important;
+  border-color: #e2e8f0 !important;
+}
+
+.skeleton-img-wrap {
+  height: 20rem;
+  background: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.skeleton-shimmer {
+  background-color: #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xs);
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.6) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer-anim 1.5s infinite;
+}
+
+.skeleton-brand {
+  width: 4rem;
+  height: 0.8rem;
+}
+
+.skeleton-title {
+  width: 80%;
+  height: 1.2rem;
+  margin-top: 0.25rem;
+}
+
+.skeleton-price {
+  width: 3.5rem;
+  height: 2.2rem;
+  background-color: #e2e8f0;
+}
+
+.skeleton-tag {
+  width: 3rem;
+  height: 1.4rem;
+  background-color: #e2e8f0;
+}
+
+.skeleton-score {
+  width: 5.5rem;
+  height: 1.4rem;
+  background-color: #e2e8f0;
+}
+
+.skeleton-loc {
+  width: 5rem;
+  height: 0.8rem;
+}
+
+.skeleton-date {
+  width: 3rem;
+  height: 0.8rem;
+}
+
+@keyframes shimmer-anim {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
