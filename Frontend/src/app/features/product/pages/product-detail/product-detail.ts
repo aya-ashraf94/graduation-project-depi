@@ -52,7 +52,7 @@ export class ProductDetail implements OnInit {
   // Buy Flow state variables
   get displayAttributes(): { label: string; value: string }[] {
     if (!this.product?.rawDynamicAttributes) return [];
-    const skip = new Set(['conditionscore', 'score']);
+    const skip = new Set(['conditionscore', 'score', 'brand', 'color', 'storage', 'condition']);
     const result: { label: string; value: string }[] = [];
     for (const [key, val] of Object.entries(this.product.rawDynamicAttributes)) {
       if (skip.has(key.toLowerCase())) continue;
@@ -60,6 +60,30 @@ export class ProductDetail implements OnInit {
       result.push({ label: key.charAt(0).toUpperCase() + key.slice(1), value: String(val) });
     }
     return result;
+  }
+
+  get exteriorScore(): number {
+    return this.product?.conditionScore ? Math.min(100, this.product.conditionScore * 10 - 4) : 90;
+  }
+
+  get functionalityScore(): number {
+    return this.product?.conditionScore ? Math.min(100, this.product.conditionScore * 10) : 95;
+  }
+
+  get cosmeticScore(): number {
+    return this.product?.conditionScore ? Math.min(100, this.product.conditionScore * 10 - 2) : 92;
+  }
+
+  get marketAverage(): number {
+    return this.product?.price ? Math.round(this.product.price * 1.07) : 0;
+  }
+
+  get priceSavingsPercent(): number {
+    return 7;
+  }
+
+  get priceSavingsValue(): number {
+    return this.product?.price ? Math.round(this.product.price * 0.07) : 0;
   }
 
   showBuyModal = false;
@@ -130,36 +154,26 @@ export class ProductDetail implements OnInit {
 
       this.productService.getProductById(id).subscribe({
         next: (product) => {
-          const elapsed = Date.now() - startTime;
-          const delayTime = Math.max(0, 400 - elapsed);
+          this.product = product;
+          this.activeImage = 0;
+          this.isLoading = false;
+          this.categoryLabel = product.categoryName || CATEGORY_LABELS[product.category] || product.category;
 
-          setTimeout(() => {
-            this.product = product;
-            this.activeImage = 0;
-            this.isLoading = false;
-            this.categoryLabel = product.categoryName || CATEGORY_LABELS[product.category] || product.category;
+          const currentUser = this.authService.currentUser();
+          this.isOwner = currentUser?.id === product.seller.id;
 
-            const currentUser = this.authService.currentUser();
-            this.isOwner = currentUser?.id === product.seller.id;
-
-            this.productService.getProducts().subscribe(allProducts => {
-              const matched = allProducts.filter(p => p.id !== id && p.category === product.category);
-              this.relatedProducts = matched.sort(() => 0.5 - Math.random()).slice(0, 8);
-              this.cdr.detectChanges();
-            });
+          this.productService.getProducts().subscribe(allProducts => {
+            const matched = allProducts.filter(p => p.id !== id && p.category === product.category);
+            this.relatedProducts = matched.sort(() => 0.5 - Math.random()).slice(0, 8);
             this.cdr.detectChanges();
-          }, delayTime);
+          });
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error loading product:', err);
-          const elapsed = Date.now() - startTime;
-          const delayTime = Math.max(0, 400 - elapsed);
-
-          setTimeout(() => {
-            this.isLoading = false;
-            this.cdr.detectChanges();
-            this.router.navigate(['/products']);
-          }, delayTime);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          this.router.navigate(['/products']);
         }
       });
       
@@ -169,6 +183,24 @@ export class ProductDetail implements OnInit {
 
   setActiveImage(index: number) {
     this.activeImage = index;
+  }
+
+  nextImage(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.product && this.product.images.length > 0) {
+      this.activeImage = (this.activeImage + 1) % this.product.images.length;
+    }
+  }
+
+  prevImage(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.product && this.product.images.length > 0) {
+      this.activeImage = (this.activeImage - 1 + this.product.images.length) % this.product.images.length;
+    }
   }
 
   getStars(rating: number): string {

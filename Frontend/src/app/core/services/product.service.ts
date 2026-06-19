@@ -37,8 +37,15 @@ export class ProductService {
         }
       });
     }
-    return this.http.get<any[]>(this.apiUrl, { params }).pipe(
-      map(products => products.map(p => this.mapProductSummary(p)))
+    // Set a high limit by default for pages that expect full listing (since client-side pagination is still present)
+    if (!params.has('limit')) {
+      params = params.set('limit', '500');
+    }
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map(res => {
+        const arr = res && Array.isArray(res.products) ? res.products : (Array.isArray(res) ? res : []);
+        return arr.map((p: any) => this.mapProductSummary(p));
+      })
     );
   }
 
@@ -76,7 +83,8 @@ export class ProductService {
       categoryId: (payload as any).categoryId,
       location: (payload as any).location || 'Cairo',
       phoneNumber: (payload as any).phoneNumber || '0123456789',
-      showContactInfo: (payload as any).showContactInfo ?? true
+      showContactInfo: (payload as any).showContactInfo ?? true,
+      status: (payload as any).status === 'available' ? 'active' : ((payload as any).status || 'active')
     };
 
     return this.http.post<any>(this.apiUrl, backendPayload).pipe(
@@ -247,7 +255,7 @@ export class ProductService {
       //   : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       images: p.images && p.images.length > 0
         ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
-        : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
+        : [],
       badge: dynamic.badge || '',
       status: (p.status === 'active' || p.status === 'available') ? 'available' : (p.status || 'available'),
       seller,

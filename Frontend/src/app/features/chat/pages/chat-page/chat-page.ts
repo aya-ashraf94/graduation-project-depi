@@ -4,9 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../../../core/services/chat.service';
 import { AuthService } from '../../../../core/services/auth';
+import { environment } from '../../../../../environments/environment';
 import { Conversation, Message } from '../../../../core/models/message.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
+
+import { io, Socket } from 'socket.io-client';
 
 @Component({
   selector: 'app-chat-page',
@@ -19,6 +22,8 @@ export class ChatPage implements OnInit {
   private chatService = inject(ChatService);
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
+
+  private socket: Socket | null = null;
 
   conversations = signal<Conversation[]>([]);
   activeConversation: Conversation | null = null;
@@ -42,6 +47,20 @@ export class ChatPage implements OnInit {
   ngOnInit() {
     const user = this.authService.currentUser();
     this.currentUserId = user?.id ?? '';
+
+    // Initialize Socket connection
+    const backendUrl = environment.apiUrl.replace('/api', '');
+    this.socket = io(backendUrl);
+
+    this.socket.on("new_message", (msg: Message) => {
+      if (this.activeConversation && msg.conversationId === this.activeConversation.id) {
+        if (!this.messages.some(m => m.id === msg.id)) {
+          this.messages.push(msg);
+          this.chatService.markAsRead(this.activeConversation.id).subscribe();
+        }
+      }
+      this.loadConversations(false);
+    });
 
     this.loadConversations(false);
 
@@ -107,6 +126,11 @@ export class ChatPage implements OnInit {
 
   selectConversation(conv: Conversation) {
     this.activeConversation = conv;
+    
+    if (this.socket) {
+      this.socket.emit("join_conversation", conv.id);
+    }
+
     this.chatService.getMessages(conv.id).subscribe({
       next: (msgs) => {
         this.messages = msgs;
@@ -130,7 +154,9 @@ export class ChatPage implements OnInit {
 
     this.chatService.sendMessage(payload).subscribe({
       next: (msg) => {
-        this.messages.push(msg);
+        if (!this.messages.some(m => m.id === msg.id)) {
+          this.messages.push(msg);
+        }
         this.newMessage = '';
         this.loadConversations(false);
       },
