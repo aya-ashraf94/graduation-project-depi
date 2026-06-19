@@ -1,7 +1,11 @@
 const db = require("../db");
 const { orders, products, users, notifications } = require("../db/schema");
 const { eq, or, and, desc } = require("drizzle-orm");
+const { alias } = require("drizzle-orm/pg-core");
 const { updateUserStats } = require("../utils/userStats");
+
+const buyer = alias(users, "buyer");
+const seller = alias(users, "seller");
 
 const formatOrder = (row, currentUserId) => {
   const o = row.orders;
@@ -105,8 +109,8 @@ const createOrder = async (req, res) => {
       .from(orders)
       .where(eq(orders.id, order.id))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users.as("buyer"), eq(orders.buyerId, users.as("buyer").id))
-      .leftJoin(users.as("seller"), eq(orders.sellerId, users.as("seller").id))
+      .leftJoin(buyer, eq(orders.buyerId, buyer.id))
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
       .limit(1);
 
     res.status(201).json(formatOrder(populated[0], buyerId));
@@ -123,8 +127,8 @@ const getOrdersByUser = async (req, res) => {
       .from(orders)
       .where(or(eq(orders.buyerId, userId), eq(orders.sellerId, userId)))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users.as("buyer"), eq(orders.buyerId, users.as("buyer").id))
-      .leftJoin(users.as("seller"), eq(orders.sellerId, users.as("seller").id))
+      .leftJoin(buyer, eq(orders.buyerId, buyer.id))
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
       .orderBy(desc(orders.createdAt));
 
     res.json(result.map(o => formatOrder(o, userId)));
@@ -141,8 +145,8 @@ const getOrderById = async (req, res) => {
       .from(orders)
       .where(eq(orders.id, req.params.id))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users.as("buyer"), eq(orders.buyerId, users.as("buyer").id))
-      .leftJoin(users.as("seller"), eq(orders.sellerId, users.as("seller").id))
+      .leftJoin(buyer, eq(orders.buyerId, buyer.id))
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
       .limit(1);
 
     if (result.length === 0) {
@@ -247,8 +251,8 @@ const updateOrder = async (req, res) => {
       .from(orders)
       .where(eq(orders.id, order.id))
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users.as("buyer"), eq(orders.buyerId, users.as("buyer").id))
-      .leftJoin(users.as("seller"), eq(orders.sellerId, users.as("seller").id))
+      .leftJoin(buyer, eq(orders.buyerId, buyer.id))
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
       .limit(1);
 
     res.json(formatOrder(populated[0], userId));
