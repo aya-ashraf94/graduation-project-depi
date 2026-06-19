@@ -64,7 +64,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
                 <input type="checkbox" class="auth-checkbox" [disabled]="isLoading()">
                 <span>Remember me</span>
               </label>
-              <a class="forgot-link" (click)="openForgotModal()" style="cursor: pointer;">Forgot Password?</a>
+              <a class="forgot-link" routerLink="/auth/forgot-password">Forgot Password?</a>
             </div>
 
             <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">

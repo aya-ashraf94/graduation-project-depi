@@ -34,6 +34,7 @@ export class CreateListing implements OnInit {
   description = '';
   imageSlots = signal<(string | null)[]>([null, null, null, null]);
   showMaxImageWarning = signal(false);
+  isSubmitting = signal(false);
 
   // ── Dynamic & Category Data ──────────────────────────────────────────────
   allCategories = signal<any[]>([]);
@@ -205,23 +206,47 @@ export class CreateListing implements OnInit {
         const file = files[fileIndex];
         const reader = new FileReader();
         reader.onload = () => {
-          const base64String = reader.result as string;
+          const img = new Image();
+          img.src = reader.result as string;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const max_size = 1000;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > max_size) {
+                height *= max_size / width;
+                width = max_size;
+              }
+            } else {
+              if (height > max_size) {
+                width *= max_size / height;
+                height = max_size;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedString = canvas.toDataURL('image/jpeg', 0.7);
 
-          // Find next empty slot if we're dealing with multiple files
-          while (slotIndex < this.imageSlots().length && this.imageSlots()[slotIndex] !== null && fileIndex > 0) {
-            slotIndex++;
-          }
+              // Find next empty slot if we're dealing with multiple files
+              while (slotIndex < this.imageSlots().length && this.imageSlots()[slotIndex] !== null && fileIndex > 0) {
+                slotIndex++;
+              }
 
-          if (slotIndex < this.imageSlots().length) {
-            const currentSlots = [...this.imageSlots()];
-            currentSlots[slotIndex] = base64String;
-            this.imageSlots.set(currentSlots);
-            slotIndex++;
-            this.cdr.detectChanges();
-          }
-
-          fileIndex++;
-          readNextFile();
+              if (slotIndex < this.imageSlots().length) {
+                const currentSlots = [...this.imageSlots()];
+                currentSlots[slotIndex] = compressedString;
+                this.imageSlots.set(currentSlots);
+                slotIndex++;
+                this.cdr.detectChanges();
+              }
+            }
+            fileIndex++;
+            readNextFile();
+          };
         };
         reader.readAsDataURL(file);
       };
@@ -247,7 +272,7 @@ export class CreateListing implements OnInit {
   }
 
   publish() {
-    if (!this.allValid) return;
+    if (!this.allValid || this.isSubmitting()) return;
 
     // جلب المستخدم الحالي من السيرفيس
     const currentUser = this.authService.currentUser();
@@ -256,6 +281,8 @@ export class CreateListing implements OnInit {
       this.toastService.error('Please login to publish a listing.');
       return;
     }
+
+    this.isSubmitting.set(true);
 
     const condition = this.dynamicFields['condition']?.toLowerCase().replace(/\s+/g, '_') || this.dynamicFields['Condition']?.toLowerCase().replace(/\s+/g, '_') || 'good';
     const conditionScore = parseFloat(this.dynamicFields['conditionScore'] || this.dynamicFields['score'] || '8');
@@ -278,15 +305,69 @@ export class CreateListing implements OnInit {
 
     this.productService.createProduct(payload).subscribe({
       next: () => {
+        this.isSubmitting.set(false);
         this.toastService.success('Listing published successfully!');
         this.router.navigate(['/products']);
       },
       error: (err) => {
+        this.isSubmitting.set(false);
         console.error('Error publishing:', err);
         this.toastService.error(err?.error?.message || 'Failed to publish product listing.');
       }
     });
   }
 
-  saveDraft() { this.toastService.info('Draft saved successfully!'); }
+  saveDraft() {
+    if (this.isSubmitting()) return;
+
+    if (!this.title.trim()) {
+      this.toastService.error('Please enter a Title to save a draft.');
+      return;
+    }
+    if (!this.selectedCategory()) {
+      this.toastService.error('Please select a Category to save a draft.');
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      this.toastService.error('Please login to save a draft.');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+
+    const condition = this.dynamicFields['condition']?.toLowerCase().replace(/\s+/g, '_') || this.dynamicFields['Condition']?.toLowerCase().replace(/\s+/g, '_') || 'good';
+    const conditionScore = parseFloat(this.dynamicFields['conditionScore'] || this.dynamicFields['score'] || '8');
+
+    const payload: any = {
+      title: this.title,
+      description: this.description || 'Draft description',
+      brand: this.dynamicFields['Brand'] || this.dynamicFields['brand'] || 'ARCHIVE',
+      price: this.pricingMode === 'trade' ? 0 : (this.price || 0),
+      categoryId: this.selectedCategory()?.id,
+      condition: ['new_with_tags', 'excellent', 'good', 'fair', 'distressed'].includes(condition)
+        ? condition : condition === 'new' ? 'new_with_tags' : 'good',
+      conditionScore: conditionScore,
+      size: this.dynamicFields['Size'] || this.dynamicFields['size'] || '',
+      images: this.imageSlots().filter(img => img !== null),
+      location: this.city || 'Cairo',
+      phoneNumber: this.phone || '0000000000',
+      showContactInfo: this.showContact,
+      status: 'draft',
+    };
+
+    this.productService.createProduct(payload).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.toastService.success('Draft saved successfully!');
+        this.router.navigate(['/profile/me']);
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        console.error('Error saving draft:', err);
+        this.toastService.error(err?.error?.message || 'Failed to save draft.');
+      }
+    });
+  }
 }

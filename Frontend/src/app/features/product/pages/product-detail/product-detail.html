@@ -14,27 +14,39 @@
       </div>
     </header>
 
-    <!-- SECTION 1: ABOVE THE FOLD GRID -->
+    <!-- MAIN GRID: ABOVE THE FOLD -->
     <div class="detail-grid-v2">
       
-      <!-- LEFT: Image Gallery Column -->
+      <!-- LEFT: Image Gallery & Thumbnails -->
       <div class="gallery-col-v2">
         <div class="main-image-wrap-v2" (click)="openLightbox(activeImage)">
           <div class="card-badges-v2">
             <span *ngIf="product.soldByNafa3ni" class="badge-official-v2">✓ Official Store</span>
             <span *ngIf="product.badge" class="badge-tag-v2">{{ product.badge }}</span>
           </div>
-          <span class="image-counter-v2" *ngIf="product.images.length > 0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            {{ activeImage + 1 }} / {{ product.images.length }}
-          </span>
-          <img [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image-v2" />
-          <div class="zoom-overlay-hint">
+
+          <button type="button" class="gallery-nav-btn prev" *ngIf="product.images.length > 1" (click)="prevImage($event)" aria-label="Previous image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button type="button" class="gallery-nav-btn next" *ngIf="product.images.length > 1" (click)="nextImage($event)" aria-label="Next image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <img *ngIf="product.images && product.images.length > 0" [src]="product.images[activeImage]" [alt]="product.title" appImageFallback class="main-image-v2" />
+          <div *ngIf="!product.images || product.images.length === 0" class="main-image-v2 empty-image-placeholder" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </div>
+          <div class="zoom-overlay-hint" *ngIf="product.images && product.images.length > 0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             <span>Click to expand</span>
           </div>
         </div>
         
+        <!-- Thumbnails -->
         <div class="thumbnails-v2" *ngIf="product.images.length > 0">
           <div class="thumb-wrap-v2" 
                *ngFor="let img of product.images; let i = index" 
@@ -45,131 +57,100 @@
         </div>
       </div>
 
-      <!-- RIGHT: Product Info & Actions Column -->
+      <!-- RIGHT: Primary Checkout & Contact Sidebar Card -->
       <div class="info-col-v2">
         
-        <!-- Metadata Tags & Stats -->
-        <div class="meta-tags-v2">
-          <span class="tag-badge-v2 brand-badge">{{ product.brand || 'No Brand' }}</span>
-          <span class="tag-badge-v2 category-badge">{{ categoryLabel }}</span>
-          <span class="tag-badge-v2 condition-badge" [attr.data-condition]="product.condition">
-            {{ conditionLabels[product.condition] }}
-          </span>
-        </div>
-
-        <h1 class="product-title-v2">{{ product.title }}</h1>
-
-        <div class="price-container-v2">
-          <div class="price-label-v2">Price</div>
-          <div class="price-val-v2">{{ product.price | currencyFormat }}</div>
-        </div>
-
-        <!-- Meta Counters (Views & Saves) -->
-        <div class="views-saves-row">
-          <div class="meta-stat-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <span>{{ product.viewCount || 124 }} views</span>
-          </div>
-          <div class="meta-stat-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span>{{ product.favoriteCount || 8 }} saves</span>
-          </div>
-          <div class="meta-stat-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>Posted {{ product.createdAt | timeAgo }}</span>
-          </div>
-        </div>
-
-        <!-- Sticky Seller Contact & Actions Card -->
-        <div class="seller-contact-card-v2">
+        <!-- Main Listing Information Card -->
+        <div class="info-main-card-v3">
           
-          <div class="seller-card-header-v2">
-            <div class="seller-avatar-v2">
-              <img *ngIf="product.seller.avatar" [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
-              <span *ngIf="!product.seller.avatar">{{ product.seller.firstName[0] }}</span>
-            </div>
-            <div class="seller-details-v2">
-              <div class="seller-name-row-v2">
-                <a [routerLink]="['/profile', product.seller.id]" class="seller-name-v2">
-                  {{ product.seller.firstName }} {{ product.seller.lastName }}
-                </a>
-                <span class="verified-badge-v2" *ngIf="product.seller.isVerified || product.isVerified" title="Verified Seller">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffc72c" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                  Verified
-                </span>
-              </div>
-              <div class="seller-meta-row-v2">
-                <div class="seller-rating-v2">
-                  <span class="stars-v2">★ {{ product.seller.rating || '4.8' }}</span>
-                  <span class="reviews-count-v2">({{ product.seller.totalSales || '12' }} sales)</span>
-                </div>
-                <div class="seller-active-status-v2">
-                  <span class="status-dot-v2 online"></span>
-                  <span>Active today</span>
-                </div>
+          <!-- Product Header Block (Title, brand, condition tag) -->
+          <div class="product-header-block-v3">
+            <div class="header-left-v3">
+              <h1 class="product-title-v3">{{ product.title }}</h1>
+              <div class="product-brand-v3" *ngIf="product.brand">Brand: {{ product.brand }}</div>
+              <div class="product-quick-specs-v3">
+                <span>{{ categoryLabel }}</span>
+                <span class="qspec-dot">•</span>
+                <span>Listed {{ product.createdAt | timeAgo }}</span>
               </div>
             </div>
+            
+            <span class="tag-condition-badge-v3 inline-card-condition" [attr.data-condition]="product.condition">
+              ✦ {{ conditionLabels[product.condition] }}
+            </span>
           </div>
 
-          <!-- PRIMARY ACTION BUTTONS -->
-          <div class="actions-grid-v2">
+          <!-- Pricing Row V3 -->
+          <div class="pricing-row-v3">
+            <div class="price-display-v3">{{ product.price | currencyFormat }}</div>
+            <div class="price-crossed-v3" *ngIf="marketAverage > product.price">{{ marketAverage | currencyFormat }}</div>
+            <span class="price-discount-badge-v3" *ngIf="marketAverage > product.price">Save {{ priceSavingsPercent }}%</span>
+          </div>
+
+          <!-- Checkout Actions Grid -->
+          <div class="actions-stack-v3">
+            <!-- Edit button if listing belongs to current user -->
             <a *ngIf="isOwner" [routerLink]="['/listings/edit', product.id]" class="btn-action-v2 btn-edit-listing-v2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               Edit Listing
             </a>
 
             <ng-container *ngIf="!isOwner">
-              <!-- Chat with Seller (Primary CTA) -->
-              <button class="btn-action-v2 btn-chat-v2" (click)="startChat()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                Chat Seller
-              </button>
-
-
-
-              <!-- Make Offer -->
-              <button class="btn-action-v2 btn-offer-v2" (click)="openOfferModal()" *ngIf="product.status !== 'sold'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><path d="M6 14h12"/></svg>
-                Make Offer
-              </button>
-
-              <!-- Buy Now -->
-              <button class="btn-action-v2 btn-buy-now-v2" 
+              <!-- Buy Now (Primary CTA) -->
+              <button class="btn-action-v2 btn-buy-now-v3" 
                       [disabled]="product.status === 'reserved'" 
                       (click)="product.status === 'available' && openBuy()" 
                       *ngIf="product.status !== 'sold'">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                {{ product.status === 'reserved' ? 'Reserved' : 'Buy Now' }}
+                Buy Now
+              </button>
+
+              <!-- Chat (Secondary CTA) -->
+              <button class="btn-action-v2 btn-contact-seller-v3" (click)="startChat()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                Chat
               </button>
             </ng-container>
 
-            <!-- Save & Report Toolbar -->
-            <div class="actions-toolbar-v2">
-              <button class="btn-toolbar-v2 btn-wishlist-v2" 
-                      [class.wishlisted]="wishlistService.isWishlisted(product.id)" 
-                      (click)="toggleWishlist()" 
-                      title="Save Listing">
-                <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? '#ff4d4d' : 'none'" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                <span>{{ wishlistService.isWishlisted(product.id) ? 'Saved' : 'Save Listing' }}</span>
-              </button>
-              
-              <button class="btn-toolbar-v2 btn-report-v2" (click)="openReport()" title="Report Listing" *ngIf="!isOwner">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-                <span>Report</span>
-              </button>
+            <div *ngIf="product.status === 'sold'" class="sold-banner-v2">
+              Sold Out
             </div>
-
           </div>
 
-          <!-- Sold Status Notice -->
-          <div *ngIf="product.status === 'sold'" class="sold-banner-v2">
-            This item has been sold out.
+          <!-- Inline Seller Badge -->
+          <div class="inline-seller-card-v3">
+            <div class="inline-seller-avatar">
+              <img *ngIf="product.seller.avatar" [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
+              <span *ngIf="!product.seller.avatar">{{ product.seller.firstName[0] }}</span>
+            </div>
+            <div class="inline-seller-info">
+              <div class="seller-identity-v3">
+                <a [routerLink]="['/profile', product.seller.id]" class="seller-link-v3">
+                  {{ product.seller.firstName }} {{ product.seller.lastName }}
+                </a>
+                <span class="inline-verified" *ngIf="product.seller.isVerified || product.isVerified">
+                  <svg class="verified-svg-icon" viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-left: 2px;">
+                    <path fill="#1d9bf0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.941.1-1.357.277C14.774 2.525 13.43 1.5 11.9 1.5c-1.53 0-2.87 1.025-3.517 2.287-.416-.178-.877-.277-1.357-.277C4.918 3.51 3.2 5.29 3.2 7.5c0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .941-.1 1.357-.277.647 1.262 1.987 2.287 3.517 2.287 1.53 0 2.87-1.025 3.517-2.287.416.178.877.277 1.357.277 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.72 3.39l-3.39-3.39 1.42-1.42 1.97 1.97 4.79-4.79 1.42 1.42-6.21 6.21z"/>
+                  </svg>
+                </span>
+              </div>
+              <span class="seller-active-v3">Active today • Member since 2021</span>
+            </div>
+            <div class="inline-seller-rating">
+              <span class="rating-val-v3">★ {{ product.seller.rating || '5.0' }}</span>
+              <span class="rating-count-v3">{{ product.seller.totalSales || '12' }} Sales</span>
+            </div>
           </div>
 
-          <!-- Location details -->
-          <div class="seller-location-v2" *ngIf="product.location">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>{{ product.location }}</span>
+          <!-- Buyer Protection Block merged into Main Card -->
+          <div class="protection-block-v3">
+            <div class="protection-row">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Authentic Buyer Protection Included</span>
+            </div>
+            <div class="protection-row">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Authenticity Guaranteed or 100% Refund</span>
+            </div>
           </div>
 
         </div>
@@ -177,162 +158,156 @@
       </div>
     </div>
 
-    <!-- SECTION 2: TABS CONTAINER -->
-    <section class="details-tabs-section-v2">
-      <div class="profile-tabs-wrap">
-        <div class="profile-tabs">
-          <button class="tab-item" [class.active]="activeTab === 'description'" (click)="setActiveTab('description')">Description</button>
-          <button class="tab-item" [class.active]="activeTab === 'specifications'" (click)="setActiveTab('specifications')">Specifications</button>
-          <button class="tab-item" [class.active]="activeTab === 'seller'" (click)="setActiveTab('seller')">Seller Information</button>
-          <button class="tab-item" [class.active]="activeTab === 'safety'" (click)="setActiveTab('safety')">Safety Tips</button>
-        </div>
+    <!-- TRUST BADGES ROW -->
+    <section class="trust-strip-v3">
+      <div class="trust-item-v3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>Verified Listing</span>
       </div>
-
-      <div class="details-tabs-content-card-v2">
-        <div class="tab-content-v2">
-          <!-- Tab 1: Description -->
-          <div class="tab-pane-v2" *ngIf="activeTab === 'description'">
-            <div class="description-card-v2">
-              <p class="description-text-v2">{{ product.description }}</p>
-            </div>
-          </div>
-
-          <!-- Tab 2: Specifications -->
-          <div class="tab-pane-v2" *ngIf="activeTab === 'specifications'">
-            <div class="specs-grid-v2">
-              <div class="spec-row-v2">
-                <span class="spec-label-v2">Brand</span>
-                <span class="spec-val-v2">{{ product.brand || 'Generic' }}</span>
-              </div>
-              <div class="spec-row-v2" *ngIf="product.conditionScore">
-                <span class="spec-label-v2">Condition Score</span>
-                <span class="spec-val-v2">{{ product.conditionScore }} / 10</span>
-              </div>
-              <div class="spec-row-v2">
-                <span class="spec-label-v2">Category</span>
-                <span class="spec-val-v2">{{ categoryLabel }}</span>
-              </div>
-              <div class="spec-row-v2" *ngIf="product.size">
-                <span class="spec-label-v2">Size</span>
-                <span class="spec-val-v2">{{ product.size }}</span>
-              </div>
-              <div class="spec-row-v2">
-                <span class="spec-label-v2">Listed Date</span>
-                <span class="spec-val-v2">{{ product.createdAt | date:'longDate' }}</span>
-              </div>
-              <div class="spec-row-v2" *ngFor="let attr of displayAttributes">
-                <span class="spec-label-v2">{{ attr.label }}</span>
-                <span class="spec-val-v2">{{ attr.value }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab 3: Seller Info -->
-          <div class="tab-pane-v2" *ngIf="activeTab === 'seller'">
-            <div class="seller-info-tab-v2">
-              <div class="seller-grid-v2">
-                <div class="seller-stat-v2">
-                  <span class="seller-stat-label-v2">Response Rate</span>
-                  <span class="seller-stat-val-v2">{{ product.seller.successRate || 100 }}%</span>
-                </div>
-                <div class="seller-stat-v2">
-                  <span class="seller-stat-label-v2">Total Sales</span>
-                  <span class="seller-stat-val-v2">{{ product.seller.totalSales || 0 }} items</span>
-                </div>
-                <div class="seller-stat-v2">
-                  <span class="seller-stat-label-v2">Rating Score</span>
-                  <span class="seller-stat-val-v2">{{ product.seller.rating || 5 }}.0 / 5.0</span>
-                </div>
-                <div class="seller-stat-v2">
-                  <span class="seller-stat-label-v2">Account Type</span>
-                  <span class="seller-stat-val-v2">{{ product.seller.isVerified ? 'Verified Dealer' : 'Standard Member' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab 4: Safety Tips -->
-          <div class="tab-pane-v2" *ngIf="activeTab === 'safety'">
-            <div class="safety-tips-v2">
-              <h4 class="safety-title-v2">Buying Safely on Nafa3ni</h4>
-              <ul class="safety-list-v2">
-                <li>
-                  <span class="safety-icon-v2">✓</span>
-                  <span><strong>Meet in public:</strong> Meet sellers in a crowded public space like campus plazas or coffee shops.</span>
-                </li>
-                <li>
-                  <span class="safety-icon-v2">✓</span>
-                  <span><strong>Check the item:</strong> Thoroughly inspect the product condition, size, and authenticity before paying.</span>
-                </li>
-                <li>
-                  <span class="safety-icon-v2">✓</span>
-                  <span><strong>No advance payment:</strong> Avoid wire transfers, deposits, or digital wallet transactions before seeing the product.</span>
-                </li>
-                <li>
-                  <span class="safety-icon-v2">✓</span>
-                  <span><strong>Use Nafa3ni Chat:</strong> Keep all conversations within our secure chat channel to preserve safety logs.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      <div class="trust-item-v3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9.09 9 1.24 5.12 2.34-3.07 2.24 3.07 1.24-5.12"/></svg>
+        <span>Authentically Verified</span>
+      </div>
+      <div class="trust-item-v3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Secure Payment</span>
+      </div>
+      <div class="trust-item-v3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Buyer Protection</span>
+      </div>
+      <div class="trust-item-v3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Fraud Detection Passed</span>
       </div>
     </section>
 
-    <!-- SECTION 3: SELLER PROFILE CARD -->
-    <section class="seller-profile-section-v2">
-      <div class="seller-profile-card-v2">
-        <div class="profile-main-v2">
-          <div class="profile-avatar-v2">
-            <img *ngIf="product.seller.avatar" [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
-            <span *ngIf="!product.seller.avatar">{{ product.seller.firstName[0] }}</span>
-          </div>
-          <div class="profile-info-v2">
-            <div class="profile-name-row-v2">
-              <h3>{{ product.seller.firstName }} {{ product.seller.lastName }}</h3>
-              <span class="badge-verified-v2" *ngIf="product.seller.isVerified || product.isVerified">Verified</span>
+
+
+    <!-- DOUBLE COLUMN SECTION: SELLER NOTES & SPECIFICATIONS -->
+    <div class="notes-specs-grid-v3">
+      
+      <!-- Left: Notes & History -->
+      <div class="notes-col-v3">
+        <h3 class="section-title-v3">Seller Notes</h3>
+        <p class="seller-notes-text">{{ product.description }}</p>
+
+        <h3 class="section-title-v3" style="margin-top: 2rem;">Product History</h3>
+        <div class="history-timeline-v3">
+          <div class="timeline-item-v3">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">{{ product.createdAt | date:'MMM yyyy' }}</span>
+              <span class="timeline-title">Listed on Nefisant</span>
+              <p class="timeline-desc">Item registered in category {{ categoryLabel }} under score {{ product.conditionScore }}/10.</p>
             </div>
-            <p class="profile-sub-v2">Marketplace Member</p>
-            <div class="profile-stars-v2">
-              <span class="star-rating-v2">★ {{ product.seller.rating || '4.8' }}</span>
-              <span class="rating-text-v2">Seller Rating</span>
+          </div>
+          <div class="timeline-item-v3">
+            <div class="timeline-bullet"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">Original Purchase Date</span>
+              <span class="timeline-title">Purchased New</span>
+              <p class="timeline-desc">First-hand possession details certified by vendor.</p>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Right: Technical Specifications -->
+      <div class="specs-col-v3">
+        <h3 class="section-title-v3">Specifications</h3>
+        <div class="specs-table-v3">
+          <div class="spec-row-v3">
+            <span class="spec-lbl-v3">Category</span>
+            <span class="spec-val-v3">{{ categoryLabel }}</span>
+          </div>
+          <div class="spec-row-v3">
+            <span class="spec-lbl-v3">Condition Score</span>
+            <span class="spec-val-v3">{{ product.conditionScore }}/10</span>
+          </div>
+          <div class="spec-row-v3" *ngIf="product.brand">
+            <span class="spec-lbl-v3">Brand</span>
+            <span class="spec-val-v3">{{ product.brand }}</span>
+          </div>
+          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['storage']">
+            <span class="spec-lbl-v3">Storage</span>
+            <span class="spec-val-v3">{{ product.rawDynamicAttributes?.['storage'] }}</span>
+          </div>
+          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['color']">
+            <span class="spec-lbl-v3">Color</span>
+            <span class="spec-val-v3">{{ product.rawDynamicAttributes?.['color'] }}</span>
+          </div>
+          <div class="spec-row-v3" *ngIf="product.size">
+            <span class="spec-lbl-v3">Size</span>
+            <span class="spec-val-v3">{{ product.size }}</span>
+          </div>
+          <div class="spec-row-v3">
+            <span class="spec-lbl-v3">Listed Date</span>
+            <span class="spec-val-v3">{{ product.createdAt | date:'longDate' }}</span>
+          </div>
+          <div class="spec-row-v3" *ngFor="let attr of displayAttributes">
+            <span class="spec-lbl-v3">{{ attr.label }}</span>
+            <span class="spec-val-v3">{{ attr.value }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SHIPPING & LOGISTICS BANNER CARD -->
+    <section class="shipping-card-v3">
+      <div class="shipping-info-left">
+        <h3 class="shipping-card-title">Shipping &amp; Logistics</h3>
         
-        <div class="profile-stats-grid-v2">
-          <div class="profile-stat-box-v2">
-            <span class="stat-num-v2">{{ product.seller.successRate || 100 }}%</span>
-            <span class="stat-label-v2">Response Rate</span>
+        <div class="shipping-benefits-grid">
+          <div class="shipping-benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <div class="benefit-desc">
+              <strong>Insured Express</strong>
+              <span>Ships within 24 hours via DHL Express. Fully insured for the final sale value.</span>
+            </div>
           </div>
-          <div class="profile-stat-box-v2">
-            <span class="stat-num-v2">Instant</span>
-            <span class="stat-label-v2">Response Time</span>
-          </div>
-          <div class="profile-stat-box-v2">
-            <span class="stat-num-v2">{{ product.seller.totalSales || '8' }}</span>
-            <span class="stat-label-v2">Total Sales</span>
-          </div>
-          <div class="profile-stat-box-v2">
-            <span class="stat-num-v2">Active</span>
-            <span class="stat-label-v2">Listing Status</span>
+          <div class="shipping-benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <div class="benefit-desc">
+              <strong>14-Day Returns</strong>
+              <span>Hassle-free returns if the item doesn't match the description. Prepaid labels provided.</span>
+            </div>
           </div>
         </div>
 
-        <div class="profile-footer-v2">
-          <a [routerLink]="['/profile', product.seller.id]" class="btn-view-store-v2">
-            <span>View Seller Profile</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
+        <div class="shipping-loc-footer" *ngIf="product.location">
+          <span class="loc-lbl">CURRENT LOCATION</span>
+          <div class="loc-val-row">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>{{ product.location }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mock Visual Map/Image frame on the right -->
+      <div class="shipping-graphic-right">
+        <div class="mock-map-visual">
+          <div class="mock-pin"></div>
+          <!-- Mini Zoom Buttons -->
+          <div class="map-ui-controls">
+            <span class="zoom-btn">+</span>
+            <span class="zoom-btn">−</span>
+          </div>
+          <!-- Address overlay -->
+          <div class="map-address-overlay" *ngIf="product.location">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>{{ product.location }}</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- SECTION 4: RELATED PRODUCTS CAROUSEL -->
+    <!-- SIMILAR LISTINGS CAROUSEL -->
     <section class="related-section-v2">
       <div class="related-header-v2">
-        <h2 class="related-title-v2">Similar Listings You Might Like</h2>
-        <a routerLink="/products" class="carousel-hint-v2">View all →</a>
+        <h2 class="related-title-v2">Similar Listings</h2>
+        <span class="carousel-hint-v2">Explore All →</span>
       </div>
 
       <div class="related-carousel-container-v2">
@@ -401,7 +376,6 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       <span>Chat</span>
     </button>
-
     <button class="btn-mobile-action-v2 btn-mobile-buy-v2" [disabled]="product.status === 'reserved'" (click)="product.status === 'available' && openBuy()" *ngIf="product.status !== 'sold'">
       <span>Buy Now</span>
     </button>

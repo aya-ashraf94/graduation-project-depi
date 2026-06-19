@@ -12,9 +12,23 @@ const isCloudinaryConfigured = () => {
 const saveBase64ImageLocally = (base64Str) => {
   if (!base64Str) return null;
   if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) return base64Str;
+  
   const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  if (!matches || matches.length !== 3) return base64Str;
-  const extension = matches[1].split("/")[1] || "png";
+  if (!matches || matches.length !== 3) {
+    throw new Error("Invalid base64 image format");
+  }
+
+  const mimeType = matches[1].toLowerCase();
+  const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp", "image/svg+xml"];
+  if (!allowedMimeTypes.includes(mimeType)) {
+    throw new Error("Disallowed file type: " + mimeType);
+  }
+
+  let extension = mimeType.split("/")[1];
+  if (extension === "svg+xml") {
+    extension = "svg";
+  }
+
   const buffer = Buffer.from(matches[2], "base64");
   const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
   const uploadDir = path.join(__dirname, "../public/uploads");
@@ -69,35 +83,41 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const conditions = [ne(products.status, 'sold')];
+    const conditions = [ne(products.status, 'sold'), ne(products.status, 'draft')];
 
     if (req.query.category) {
-      const catQuery = req.query.category.toLowerCase();
-      let matchingIds = [];
-
-      if (['tops', 'electronics', 'furniture', 'sports', 'books'].includes(catQuery)) {
-        const regexMap = {
-          tops: /clothes|apparel/i,
-          electronics: /laptop|mobile|electronics/i,
-          furniture: /appliance|furniture/i,
-          sports: /sport/i,
-          books: /book/i,
-        };
-        const regex = regexMap[catQuery];
-        const allCats = await db.select().from(categories);
-        matchingIds = allCats.filter(c => regex.test(c.name)).map(c => c.id);
-      } else if (catQuery === 'other') {
-        const allCats = await db.select().from(categories);
-        const excluded = /clothes|apparel|laptop|mobile|electronics|appliance|furniture|sport|book/i;
-        matchingIds = allCats.filter(c => !excluded.test(c.name)).map(c => c.id);
+      const catQuery = req.query.category.trim();
+      const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+      if (uuidRegex.test(catQuery)) {
+        conditions.push(eq(products.categoryId, catQuery));
       } else {
-        const matchCats = await db.select().from(categories)
-          .where(ilike(categories.name, `%${req.query.category}%`));
-        matchingIds = matchCats.map(c => c.id);
-      }
+        const catLower = catQuery.toLowerCase();
+        let matchingIds = [];
 
-      if (matchingIds.length > 0) {
-        conditions.push(inArray(products.categoryId, matchingIds));
+        if (['tops', 'electronics', 'furniture', 'sports', 'books'].includes(catLower)) {
+          const regexMap = {
+            tops: /clothes|apparel/i,
+            electronics: /laptop|mobile|electronics/i,
+            furniture: /appliance|furniture/i,
+            sports: /sport/i,
+            books: /book/i,
+          };
+          const regex = regexMap[catLower];
+          const allCats = await db.select().from(categories);
+          matchingIds = allCats.filter(c => regex.test(c.name)).map(c => c.id);
+        } else if (catLower === 'other') {
+          const allCats = await db.select().from(categories);
+          const excluded = /clothes|apparel|laptop|mobile|electronics|appliance|furniture|sport|book/i;
+          matchingIds = allCats.filter(c => !excluded.test(c.name)).map(c => c.id);
+        } else {
+          const matchCats = await db.select().from(categories)
+            .where(ilike(categories.name, `%${catQuery}%`));
+          matchingIds = matchCats.map(c => c.id);
+        }
+
+        if (matchingIds.length > 0) {
+          conditions.push(inArray(products.categoryId, matchingIds));
+        }
       }
     }
 
@@ -159,26 +179,35 @@ const getProducts = async (req, res) => {
       if (sortMap[req.query.sortBy]) orderBy = sortMap[req.query.sortBy];
     }
 
-    const limit = parseInt(req.query.limit);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
 
-    let productQuery = db.select()
+    const [totalCountRow] = await db.select({ value: count() })
+      .from(products)
+      .where(and(...conditions));
+    
+    const total = Number(totalCountRow.value);
+
+    const result = await db.select()
       .from(products)
       .where(and(...conditions))
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .orderBy(orderBy);
-
-    if (!isNaN(limit) && limit > 0) {
-      productQuery = productQuery.limit(limit);
-    }
-
-    const result = await productQuery;
+      .orderBy(orderBy)
+      .offset(skip)
+      .limit(limit);
 
     const formatted = result.map(r => ({
       ...r.products,
       categoryId: r.categories,
     }));
 
-    res.json(formatted);
+    res.json({
+      products: formatted,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
   } catch (error) {
     console.error("Error in getProducts:", error);
     res.status(500).json({ message: "Server Error" });
@@ -233,11 +262,11 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ message: "Please provide all required fields" });
     }
 
-    const savedImages = [];
-    for (const img of (images || [])) {
-      const uploaded = await uploadBase64ToCloudinary(img);
-      if (uploaded) savedImages.push(uploaded);
-    }
+    const uploadPromises = (images || []).map(async (img) => {
+      return uploadBase64ToCloudinary(img);
+    });
+    const uploadedResults = await Promise.all(uploadPromises);
+    const savedImages = uploadedResults.filter(Boolean);
 
     const [product] = await db.insert(products).values({
       title,
@@ -251,6 +280,7 @@ const createProduct = async (req, res) => {
       showContactInfo: showContactInfo ?? true,
       userId: req.user.id,
       soldByNafa3ni: req.user.role === 'admin',
+      status: req.body.status || 'active',
     }).returning();
 
     const result = await db.select()
@@ -279,29 +309,35 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (existing.userId !== req.user.id) {
+    console.log(`[UpdateProduct] product owner: ${existing.userId}, request user: ${req.user.id}, role: ${req.user.role}`);
+    if (existing.userId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: "Not authorized to update this product" });
     }
 
     let savedImages = existing.images || [];
 
     if (req.body.images !== undefined) {
-      savedImages = [];
-      for (const img of (req.body.images || [])) {
+      const uploadPromises = (req.body.images || []).map(async (img) => {
         if (img.startsWith("http")) {
-          savedImages.push(img);
-          continue;
+          return img;
         }
-        const uploaded = await uploadBase64ToCloudinary(img);
-        if (uploaded) savedImages.push(uploaded);
-      }
+        return uploadBase64ToCloudinary(img);
+      });
+      const uploadedResults = await Promise.all(uploadPromises);
+      savedImages = uploadedResults.filter(Boolean);
     }
 
     const allowedUpdates = {};
     if (req.body.title !== undefined) allowedUpdates.title = req.body.title;
     if (req.body.description !== undefined) allowedUpdates.description = req.body.description;
     if (req.body.price !== undefined) allowedUpdates.price = req.body.price;
-    if (req.body.categoryId !== undefined) allowedUpdates.categoryId = req.body.categoryId;
+    if (req.body.categoryId !== undefined) {
+      let catIdVal = req.body.categoryId;
+      if (catIdVal && typeof catIdVal === 'object') {
+        catIdVal = catIdVal.id || catIdVal._id;
+      }
+      allowedUpdates.categoryId = catIdVal;
+    }
     if (req.body.dynamicAttributes !== undefined) allowedUpdates.dynamicAttributes = req.body.dynamicAttributes;
     allowedUpdates.images = savedImages;
     if (req.body.location !== undefined) allowedUpdates.location = req.body.location;
@@ -335,7 +371,8 @@ const deleteProduct = async (req, res) => {
     const [product] = await db.select().from(products).where(eq(products.id, req.params.id)).limit(1);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    if (product.userId !== req.user.id) {
+    console.log(`[DeleteProduct] product owner: ${product.userId}, request user: ${req.user.id}, role: ${req.user.role}`);
+    if (product.userId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: "Not authorized to delete this product" });
     }
 

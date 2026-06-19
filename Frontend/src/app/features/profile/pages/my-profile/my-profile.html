@@ -252,6 +252,9 @@
                 <div class="card-status-overlay" *ngIf="item.status === 'reserved'">
                   <span class="status-overlay-tag reserved-tag">RESERVED</span>
                 </div>
+                <div class="card-status-overlay" *ngIf="item.status === 'draft'">
+                  <span class="status-overlay-tag draft-tag">DRAFT</span>
+                </div>
 
                 <!-- Else (If Other Profile): Show Wishlist Button -->
                 <button
