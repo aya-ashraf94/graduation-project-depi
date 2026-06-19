@@ -647,7 +647,7 @@
 .inline-seller-rating {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 0.15rem;
   flex-shrink: 0;
 }

@@ -50,7 +50,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   reviewedOrderIds: Set<string> = new Set();
   dismissedOrderIds: Set<string> = new Set();
   expandedOrderIds: Set<string> = new Set();
-  activeTab: 'products' | 'wishlist' | 'reviews' | 'orders' = 'products';
+  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' = 'products';
   orderView: 'purchases' | 'sales' = 'purchases';
   orderStatusFilter: string = 'all';
 
@@ -58,8 +58,16 @@ export class MyProfile implements OnInit, AfterViewInit {
   currentPage = 1;
   pageSize = 8;
 
+  get filteredListingsByTab(): ProductSummary[] {
+    if (this.activeTab === 'drafts') {
+      return this.myListings.filter(item => item.status === 'draft');
+    }
+    // 'products' tab: only show active/sold/etc. (exclude drafts)
+    return this.myListings.filter(item => item.status !== 'draft');
+  }
+
   get totalPages(): number {
-    return Math.ceil(this.myListings.length / this.pageSize);
+    return Math.ceil(this.filteredListingsByTab.length / this.pageSize);
   }
 
   get pagesArray(): number[] {
@@ -68,7 +76,7 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   get paginatedListings(): ProductSummary[] {
     const start = (this.currentPage - 1) * this.pageSize;
-    return this.myListings.slice(start, start + this.pageSize);
+    return this.filteredListingsByTab.slice(start, start + this.pageSize);
   }
 
   // Mobile Products Swipe Slider state
@@ -81,7 +89,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   get displayedListings(): ProductSummary[] {
     if (this.isMobileDevice && !this.showAllListingsMobile) {
       // Mobile default preview: first 6 items in slider
-      return this.myListings.slice(0, 6);
+      return this.filteredListingsByTab.slice(0, 6);
     }
     // Desktop or expanded view: paginated list
     return this.paginatedListings;
@@ -246,7 +254,7 @@ export class MyProfile implements OnInit, AfterViewInit {
     // Handle Tabs (reading from query params)
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab === 'products' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders') {
+      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders') {
         this.activeTab = tab;
         if (!this.isLocalTabClick) {
           this.shouldScrollToTabs = true;
@@ -619,7 +627,7 @@ export class MyProfile implements OnInit, AfterViewInit {
     }
   }
 
-  selectTab(tab: 'products' | 'wishlist' | 'reviews' | 'orders'): void {
+  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders'): void {
     this.activeTab = tab;
     this.currentPage = 1; // Reset products page on tab switch
     this.showAllListingsMobile = false; // Reset slider expansion

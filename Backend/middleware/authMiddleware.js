@@ -29,7 +29,9 @@ const authMiddleware = async (req, res, next) => {
         token = req.cookies?.nafa3ni_token;
     }
 
-    if (!token) return res.status(401).json({ message: "No token, authorization denied" });
+    if (!token) {
+        return res.status(401).json({ message: "No token, authorization denied" });
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -47,6 +49,10 @@ const authMiddleware = async (req, res, next) => {
         req.user = user; // Store full user model on req.user so controllers don't have to fetch again
         next();
     } catch (err) {
+        console.error("JWT Verification Error:", err.message);
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: "Token has expired, please log in again", code: "TOKEN_EXPIRED" });
+        }
         res.status(401).json({ message: "Token is not valid" });
     }
 };
