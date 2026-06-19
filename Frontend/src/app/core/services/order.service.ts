@@ -18,7 +18,7 @@ export class OrderService {
   getOrders(): Observable<OrderSummary[]> {
     return this.http.get<any[]>(this.apiUrl).pipe(
       map(orders => {
-        const currentUser = JSON.parse(localStorage.getItem('arch_user') || '{}');
+        const currentUser = JSON.parse(localStorage.getItem('nafa3ni_user') || '{}');
         const currentUserId = currentUser.id || currentUser._id;
         
         return orders.map(o => {

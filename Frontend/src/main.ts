@@ -1,19 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-
 import { App } from './app/app';
-import { routes } from './app/app.routes';
-import { authInterceptor } from './app/core/interceptors/auth.interceptor';
+import { appConfig } from './app/app.config';
 
-bootstrapApplication(App, {
-  providers: [
-    provideRouter(
-      routes, 
-      withComponentInputBinding(),
-      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })
-    ),
-    provideHttpClient(withInterceptors([authInterceptor]))
-  ],
-}).catch((err) => console.error(err));
+bootstrapApplication(App, appConfig)
+  .catch((err) => console.error(err));
+
 
