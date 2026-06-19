@@ -1,6 +1,12 @@
 const db = require("../db");
 const { users, products, reports, orders, categories } = require("../db/schema");
 const { eq, or, ilike, and, desc, count, inArray, sql } = require("drizzle-orm");
+const { alias } = require("drizzle-orm/pg-core");
+
+const buyer = alias(users, "buyer");
+const seller = alias(users, "seller");
+const reporter = alias(users, "reporter");
+const productOwner = alias(users, "productOwner");
 
 const getStats = async (req, res) => {
   try {
@@ -244,8 +250,8 @@ const getReports = async (req, res) => {
       .from(reports)
       .where(eq(reports.status, 'pending'))
       .leftJoin(products, eq(reports.productId, products.id))
-      .leftJoin(users.as("reporter"), eq(reports.reporterId, users.as("reporter").id))
-      .leftJoin(users.as("productOwner"), eq(products.userId, users.as("productOwner").id))
+      .leftJoin(reporter, eq(reports.reporterId, reporter.id))
+      .leftJoin(productOwner, eq(products.userId, productOwner.id))
       .orderBy(desc(reports.createdAt));
 
     const formatted = result.map(r => ({
@@ -280,8 +286,8 @@ const getAllOrders = async (req, res) => {
       .from(orders)
       .where(whereClause)
       .leftJoin(products, eq(orders.productId, products.id))
-      .leftJoin(users.as("buyer"), eq(orders.buyerId, users.as("buyer").id))
-      .leftJoin(users.as("seller"), eq(orders.sellerId, users.as("seller").id))
+      .leftJoin(buyer, eq(orders.buyerId, buyer.id))
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
       .orderBy(desc(orders.createdAt))
       .offset(skip)
       .limit(limit);

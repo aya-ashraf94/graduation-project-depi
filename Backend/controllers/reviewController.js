@@ -1,6 +1,10 @@
 const db = require("../db");
 const { reviews, orders, users, notifications, products } = require("../db/schema");
 const { eq, and, desc, sql } = require("drizzle-orm");
+const { alias } = require("drizzle-orm/pg-core");
+
+const reviewer = alias(users, "reviewer");
+const reviewee = alias(users, "reviewee");
 
 const createReview = async (req, res) => {
   try {
@@ -87,7 +91,7 @@ const getReviewsForUser = async (req, res) => {
     const result = await db.select()
       .from(reviews)
       .where(eq(reviews.revieweeId, userId))
-      .leftJoin(users.as("reviewer"), eq(reviews.reviewerId, users.as("reviewer").id))
+      .leftJoin(reviewer, eq(reviews.reviewerId, reviewer.id))
       .leftJoin(products, eq(reviews.productId, products.id))
       .orderBy(desc(reviews.createdAt));
 
@@ -110,7 +114,7 @@ const getReviewsByUser = async (req, res) => {
     const result = await db.select()
       .from(reviews)
       .where(eq(reviews.reviewerId, userId))
-      .leftJoin(users.as("reviewee"), eq(reviews.revieweeId, users.as("reviewee").id))
+      .leftJoin(reviewee, eq(reviews.revieweeId, reviewee.id))
       .orderBy(desc(reviews.createdAt));
 
     const formatted = result.map(r => ({
