@@ -135,7 +135,7 @@ const messages = pgTable('messages', {
 const notifications = pgTable('notifications', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  type: text('type', { enum: ['order_update', 'review', 'message', 'system'] }).notNull(),
+  type: text('type', { enum: ['order_update', 'review', 'message', 'system', 'report'] }).notNull(),
   title: text('title').notNull(),
   body: text('body').notNull(),
   isRead: boolean('is_read').default(false).notNull(),

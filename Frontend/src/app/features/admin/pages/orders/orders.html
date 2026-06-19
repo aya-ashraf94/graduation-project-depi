@@ -58,7 +58,7 @@
                 </td>
               </tr>
             } @else {
-              @for (order of orders(); track order._id) {
+              @for (order of orders(); track order.id) {
                 <tr>
                   <td>
                     <div class="order-product-cell">
@@ -85,9 +85,18 @@
                   </td>
                   <td class="order-price-cell">{{ order.price | currency:'EGP ' }}</td>
                   <td>
-                    <span class="order-status-pill" [class]="getStatusClass(order.status)">
-                      {{ getStatusLabel(order.status) }}
-                    </span>
+                    <select
+                      class="order-status-select"
+                      [class]="getStatusClass(order.status)"
+                      [value]="order.status"
+                      (change)="updateStatus(order.id, $any($event.target).value)"
+                    >
+                      @for (opt of statusOptions; track opt) {
+                        <option [value]="opt" [selected]="order.status === opt">
+                          {{ getStatusLabel(opt) }}
+                        </option>
+                      }
+                    </select>
                   </td>
                   <td class="order-payment-cell">{{ getPaymentLabel(order.paymentMethod) }}</td>
                   <td class="order-date-cell">{{ order.createdAt | date:'mediumDate' }}</td>

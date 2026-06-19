@@ -1,6 +1,7 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AdminService, AdminStats, AdminReport } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
@@ -30,24 +31,17 @@ export class Dashboard implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.adminService.getStats().subscribe({
-      next: (statsData) => {
-        this.stats.set(statsData);
-        
-        // Load reports for the recent list (take top 5)
-        this.adminService.getReports().subscribe({
-          next: (reportsData) => {
-            this.recentReports.set(reportsData.slice(0, 5));
-            this.isLoading.set(false);
-          },
-          error: (err) => {
-            console.error('Error loading reports:', err);
-            this.isLoading.set(false);
-          }
-        });
+    forkJoin({
+      stats: this.adminService.getStats(),
+      reports: this.adminService.getReports()
+    }).subscribe({
+      next: ({ stats, reports }) => {
+        this.stats.set(stats);
+        this.recentReports.set(reports.slice(0, 5));
+        this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Error loading dashboard stats:', err);
+        console.error('Error loading dashboard data:', err);
         this.errorMessage.set('Failed to load dashboard metrics.');
         this.isLoading.set(false);
       }
@@ -61,8 +55,9 @@ export class Dashboard implements OnInit {
       onConfirm: () => {
         this.adminService.deleteReport(id).subscribe({
           next: () => {
-            this.recentReports.update(reports => reports.filter(r => r._id !== id));
+            this.recentReports.update(reports => reports.filter(r => r.id !== id));
             this.stats.update(s => s ? { ...s, openReports: Math.max(0, s.openReports - 1) } : null);
+            this.adminService.refreshPendingCount();
             this.toastService.success('Report dismissed successfully.');
           },
           error: (err) => {

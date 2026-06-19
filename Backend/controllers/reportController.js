@@ -1,5 +1,6 @@
 const db = require("../db");
-const { reports } = require("../db/schema");
+const { reports, products, notifications, users } = require("../db/schema");
+const { eq, and } = require("drizzle-orm");
 
 const createReport = async (req, res) => {
   try {
@@ -10,12 +11,43 @@ const createReport = async (req, res) => {
       return res.status(400).json({ message: "Product ID and reason are required" });
     }
 
+    // Duplicate check: prevent same user from reporting the same product twice while pending
+    const [existing] = await db.select({ id: reports.id })
+      .from(reports)
+      .where(and(
+        eq(reports.productId, productId),
+        eq(reports.reporterId, reporterId),
+        eq(reports.status, 'pending')
+      ))
+      .limit(1);
+
+    if (existing) {
+      return res.status(409).json({ message: "You have already reported this listing. Our team will review it shortly." });
+    }
+
     const [report] = await db.insert(reports).values({
       productId,
       reporterId,
       reason,
       details: details || null,
     }).returning();
+
+    // Notify the seller that their listing was reported
+    const [product] = await db.select({ userId: products.userId })
+      .from(products)
+      .where(eq(products.id, productId))
+      .limit(1);
+
+    if (product) {
+      await db.insert(notifications).values({
+        userId: product.userId,
+        type: 'system',
+        title: 'Listing Reported',
+        body: `Your listing has been reported for: ${reason}. Our moderation team will review it.`,
+        linkedEntityId: productId,
+        linkedRoute: `/products/${productId}`,
+      });
+    }
 
     res.status(201).json({ message: "Report submitted successfully", report });
   } catch (error) {

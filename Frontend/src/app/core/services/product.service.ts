@@ -229,7 +229,7 @@ export class ProductService {
         // avatar: u.avatar && u.avatar.startsWith('/uploads')
         //   ? `${baseUrl}${u.avatar}`
         //   : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
-        avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+        avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u.id || u._id}`,
         rating: u.rating ?? 5.0,
         isVerified: u.isVerified ?? false,
         successRate: u.successRate ?? 100,
@@ -240,7 +240,7 @@ export class ProductService {
     }
 
     return {
-      id: p._id || p.id,
+      id: p.id || p._id,
       title: p.title || '',
       brand,
       description: p.description || '',
@@ -249,7 +249,7 @@ export class ProductService {
       conditionScore,
       category,
       size,
-      sku: p._id ? p._id.substring(0, 8).toUpperCase() : '',
+      sku: (p.id || p._id || '').substring(0, 8).toUpperCase(),
       // images: p.images && p.images.length > 0 
       //   ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
       //   : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
@@ -300,8 +300,8 @@ export class ProductService {
   }
 
   /** Report a listing */
-  reportProduct(productId: string, reason: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/reports`, { productId, reason });
+  reportProduct(productId: string, reason: string, details?: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/reports`, { productId, reason, details });
   }
 
   /** Subscribe to newsletter */

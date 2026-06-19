@@ -12,7 +12,9 @@ const {
     deleteAnyProduct,
     getReports,
     deleteReport,
-    getAllOrders
+    resolveReport,
+    getAllOrders,
+    updateOrderStatus
 } = require("../controllers/adminController");
 
 // Apply auth and admin middleware to all routes below
@@ -30,8 +32,10 @@ router.patch("/products/:id", patchProduct);
 router.delete("/products/:id", deleteAnyProduct);
 
 router.get("/reports", getReports);
+router.patch("/reports/:id/resolve", resolveReport);
 router.delete("/reports/:id", deleteReport);
 
 router.get("/orders", getAllOrders);
+router.patch("/orders/:id/status", updateOrderStatus);
 
 module.exports = router;

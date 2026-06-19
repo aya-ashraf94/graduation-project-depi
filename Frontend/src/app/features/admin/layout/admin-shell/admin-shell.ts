@@ -13,12 +13,13 @@ import { AdminService } from '../../../../core/services/admin.service';
 })
 export class AdminShell implements OnInit {
   protected authService = inject(AuthService);
-  private adminService = inject(AdminService);
+  protected adminService = inject(AdminService);
   private router = inject(Router);
 
   isMobileMenuOpen = signal(false);
 
   ngOnInit(): void {
+    this.adminService.refreshPendingCount();
   }
 
   toggleMobileMenu(): void {
