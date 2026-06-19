@@ -34,9 +34,9 @@ export class CreateListing implements OnInit {
   description = '';
   imageSlots = signal<(string | null)[]>([null, null, null, null]);
   showMaxImageWarning = signal(false);
-  isSubmitting = signal(false);
+  isPublishing = signal(false);
+  isSavingDraft = signal(false);
 
-  // ── Dynamic & Category Data ──────────────────────────────────────────────
   allCategories = signal<any[]>([]);
   selectedCategory = signal<any>(null);
   dynamicFields: any = {};
@@ -272,7 +272,7 @@ export class CreateListing implements OnInit {
   }
 
   publish() {
-    if (!this.allValid || this.isSubmitting()) return;
+    if (!this.allValid || this.isPublishing() || this.isSavingDraft()) return;
 
     // جلب المستخدم الحالي من السيرفيس
     const currentUser = this.authService.currentUser();
@@ -282,7 +282,7 @@ export class CreateListing implements OnInit {
       return;
     }
 
-    this.isSubmitting.set(true);
+    this.isPublishing.set(true);
 
     const condition = this.dynamicFields['condition']?.toLowerCase().replace(/\s+/g, '_') || this.dynamicFields['Condition']?.toLowerCase().replace(/\s+/g, '_') || 'good';
     const conditionScore = parseFloat(this.dynamicFields['conditionScore'] || this.dynamicFields['score'] || '8');
@@ -305,12 +305,12 @@ export class CreateListing implements OnInit {
 
     this.productService.createProduct(payload).subscribe({
       next: () => {
-        this.isSubmitting.set(false);
+        this.isPublishing.set(false);
         this.toastService.success('Listing published successfully!');
         this.router.navigate(['/products']);
       },
       error: (err) => {
-        this.isSubmitting.set(false);
+        this.isPublishing.set(false);
         console.error('Error publishing:', err);
         this.toastService.error(err?.error?.message || 'Failed to publish product listing.');
       }
@@ -318,7 +318,7 @@ export class CreateListing implements OnInit {
   }
 
   saveDraft() {
-    if (this.isSubmitting()) return;
+    if (this.isPublishing() || this.isSavingDraft()) return;
 
     if (!this.title.trim()) {
       this.toastService.error('Please enter a Title to save a draft.');
@@ -335,7 +335,7 @@ export class CreateListing implements OnInit {
       return;
     }
 
-    this.isSubmitting.set(true);
+    this.isSavingDraft.set(true);
 
     const condition = this.dynamicFields['condition']?.toLowerCase().replace(/\s+/g, '_') || this.dynamicFields['Condition']?.toLowerCase().replace(/\s+/g, '_') || 'good';
     const conditionScore = parseFloat(this.dynamicFields['conditionScore'] || this.dynamicFields['score'] || '8');
@@ -359,12 +359,12 @@ export class CreateListing implements OnInit {
 
     this.productService.createProduct(payload).subscribe({
       next: () => {
-        this.isSubmitting.set(false);
+        this.isSavingDraft.set(false);
         this.toastService.success('Draft saved successfully!');
         this.router.navigate(['/profile/me']);
       },
       error: (err) => {
-        this.isSubmitting.set(false);
+        this.isSavingDraft.set(false);
         console.error('Error saving draft:', err);
         this.toastService.error(err?.error?.message || 'Failed to save draft.');
       }

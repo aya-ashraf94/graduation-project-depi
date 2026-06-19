@@ -4,6 +4,7 @@ const { eq, ilike, or, and, ne, gte, lte, inArray, desc, asc, sql, count } = req
 const fs = require("fs");
 const path = require("path");
 const cloudinary = require("../config/cloudinary");
+const jwt = require("jsonwebtoken");
 
 const isCloudinaryConfigured = () => {
   return process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API_SECRET;
@@ -236,9 +237,30 @@ const getMyProducts = async (req, res) => {
 
 const getUserProducts = async (req, res) => {
   try {
+    let isOwner = false;
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      token = req.cookies?.nafa3ni_token;
+    }
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded.id === req.params.userId) {
+          isOwner = true;
+        }
+      } catch (err) {
+        // Token invalid or expired, ignore
+      }
+    }
+
+    const conditions = [eq(products.userId, req.params.userId)];
+    if (!isOwner) {
+      conditions.push(ne(products.status, 'draft'));
+    }
+
     const result = await db.select()
       .from(products)
-      .where(eq(products.userId, req.params.userId))
+      .where(and(...conditions))
       .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id));
 
@@ -250,6 +272,7 @@ const getUserProducts = async (req, res) => {
 
     res.json(formatted);
   } catch (error) {
+    console.error("Error in getUserProducts:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };

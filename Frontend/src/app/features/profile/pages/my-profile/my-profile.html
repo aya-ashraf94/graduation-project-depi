@@ -203,6 +203,17 @@
               Products
             </button>
 
+            <!-- Drafts Tab -->
+            <button
+              *ngIf="isOwnProfile"
+              class="tab-item"
+              [class.active]="activeTab === 'drafts'"
+              (click)="selectTab('drafts')"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Drafts
+            </button>
+
             <!-- Reviews Tab -->
             <button
               class="tab-item"
@@ -238,9 +249,9 @@
         </div>
       </div>
 
-      <!-- TAB CONTENT: MY PRODUCTS -->
-      <div class="tab-content" *ngIf="activeTab === 'products'">
-        <div *ngIf="myListings.length > 0; else noListings">
+      <!-- TAB CONTENT: MY PRODUCTS / DRAFTS -->
+      <div class="tab-content" *ngIf="activeTab === 'products' || activeTab === 'drafts'">
+        <div *ngIf="filteredListingsByTab.length > 0; else noListings">
           <div [ngClass]="(isMobileDevice && !showAllListingsMobile) ? 'product-slider-grid' : 'product-dashboard-grid'">
             <div class="product-card" *ngFor="let item of displayedListings" [class.product-sold]="item.status === 'sold'">
               <div class="product-img-wrap" [routerLink]="['/products', item.id]" style="cursor: pointer">
@@ -335,9 +346,9 @@
           </div>
 
           <!-- "See All" button below the slider on mobile when not expanded -->
-          <div class="slider-see-all-container" *ngIf="isMobileDevice && !showAllListingsMobile && myListings.length > 2">
+          <div class="slider-see-all-container" *ngIf="isMobileDevice && !showAllListingsMobile && filteredListingsByTab.length > 2">
             <button type="button" class="btn-see-all-mobile" (click)="showAllListingsMobile = true">
-              See All {{ myListings.length }} Products →
+              See All {{ filteredListingsByTab.length }} Products →
             </button>
           </div>
 
@@ -371,9 +382,10 @@
       <!-- EMPTY STATE -->
       <ng-template #noListings>
         <div class="empty-state">
-          <p *ngIf="isOwnProfile">You haven't listed anything yet.</p>
-          <p *ngIf="!isOwnProfile">This seller hasn't listed any items yet.</p>
-          <a *ngIf="isOwnProfile" routerLink="/listings/create" class="btn btn-primary"
+          <p *ngIf="activeTab === 'drafts'">You have no draft items.</p>
+          <p *ngIf="activeTab !== 'drafts' && isOwnProfile">You haven't listed anything yet.</p>
+          <p *ngIf="activeTab !== 'drafts' && !isOwnProfile">This seller hasn't listed any items yet.</p>
+          <a *ngIf="isOwnProfile && activeTab !== 'drafts'" routerLink="/listings/create" class="btn btn-primary"
             >POST YOUR FIRST ITEM</a
           >
         </div>

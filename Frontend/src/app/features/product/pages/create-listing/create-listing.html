@@ -487,11 +487,14 @@
             }
           </p>
           <button id="btn-save-draft" class="wiz-btn wiz-btn-draft" (click)="saveDraft()" type="button"
-            [disabled]="isSubmitting()">SAVE AS DRAFT</button>
+            [disabled]="isPublishing() || isSavingDraft()">
+            <span *ngIf="isSavingDraft()" class="btn-spinner"></span>
+            {{ isSavingDraft() ? 'SAVING DRAFT...' : 'SAVE AS DRAFT' }}
+          </button>
           <button id="btn-publish" class="wiz-btn wiz-btn-publish" (click)="publish()" type="button"
-            [disabled]="!allValid || isSubmitting()">
-            <span *ngIf="isSubmitting()" class="btn-spinner"></span>
-            {{ isSubmitting() ? 'PUBLISHING...' : 'PUBLISH LISTING →' }}
+            [disabled]="!allValid || isPublishing() || isSavingDraft()">
+            <span *ngIf="isPublishing()" class="btn-spinner"></span>
+            {{ isPublishing() ? 'PUBLISHING...' : 'PUBLISH LISTING →' }}
           </button>
         </div>
       </div>
