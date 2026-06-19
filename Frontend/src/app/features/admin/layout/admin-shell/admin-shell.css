@@ -233,6 +233,7 @@
   flex-direction: column;
   padding: 1.5rem 2rem;
   background-color: var(--surface);
+  min-width: 0;
 }
 
 .admin-main-content {
@@ -241,6 +242,7 @@
   gap: 2rem;
   max-width: 1200px;
   width: 100%;
+  min-width: 0;
 }
 
 /* ---------- MOBILE NAVIGATION TABS (Visible only on medium/small viewports) ---------- */
