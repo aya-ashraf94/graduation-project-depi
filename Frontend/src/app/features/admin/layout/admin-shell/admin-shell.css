@@ -101,7 +101,7 @@
   right: 0;
   width: 11px;
   height: 11px;
-  background: #22c55e;
+  background: var(--success);
   border: 1.5px solid var(--white);
   border-radius: 50%;
   box-shadow: 0 0 0 1px var(--black);
@@ -216,14 +216,14 @@
 }
 
 .btn-logout-brutal {
-  background: #fef2f2;
-  color: #ef4444;
-  border-color: #fca5a5;
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--white));
 }
 
 .btn-logout-brutal:hover {
-  background: #fee2e2;
-  border-color: #f87171;
+  background: color-mix(in srgb, var(--danger) 15%, var(--white));
+  border-color: color-mix(in srgb, var(--danger) 60%, var(--white));
 }
 
 /* ---------- MAIN CONTENT AREA ---------- */
@@ -320,15 +320,15 @@
   }
 
   .mobile-logout-btn {
-    background: #fef2f2;
-    color: #ef4444;
-    border-color: #fca5a5;
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 40%, var(--white));
   }
 
   .mobile-logout-btn:hover {
-    background: #fee2e2;
-    border-color: #f87171;
-    color: #ef4444 !important;
+    background: color-mix(in srgb, var(--danger) 15%, var(--white));
+    border-color: color-mix(in srgb, var(--danger) 60%, var(--white));
+    color: var(--danger) !important;
   }
   
   .admin-main-wrapper {
@@ -340,7 +340,7 @@
 /* Report count badge */
 .report-badge {
   margin-left: auto;
-  background: #dc2626;
+  background: var(--danger-dark);
   color: var(--white);
   font-family: var(--font-primary);
   font-size: 0.7rem;
@@ -354,7 +354,7 @@
 }
 
 .report-badge-mobile {
-  background: #dc2626;
+  background: var(--danger-dark);
   color: var(--white);
   font-family: var(--font-primary);
   font-size: 0.65rem;
@@ -376,7 +376,7 @@
 }
 
 .table-container::-webkit-scrollbar-thumb {
-  background: #dcd6cc;
+  background: var(--border);
   border-radius: 4px;
 }
 

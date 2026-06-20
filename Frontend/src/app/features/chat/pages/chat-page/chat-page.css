@@ -64,7 +64,7 @@
 .search-bar input:focus {
   outline: none;
   border-color: var(--black);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.1);
 }
 
 .conv-list-scroll {
@@ -370,7 +370,7 @@
   font-weight: 500;
   line-height: 1.5;
   color: var(--black);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(10, 10, 10, 0.04);
   border-radius: 16px;
   border-bottom-left-radius: 4px;
   position: relative;
@@ -380,7 +380,7 @@
   background: var(--yellow);
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 4px;
-  border-color: rgba(0,0,0,0.1);
+  border-color: rgba(10, 10, 10, 0.1);
   box-shadow: 0 4px 12px rgba(232,189,24,0.2);
 }
 

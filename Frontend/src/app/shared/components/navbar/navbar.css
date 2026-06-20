@@ -163,7 +163,7 @@
   position: absolute;
   top: -0.25rem;
   right: -0.25rem;
-  background: #e23b3b;
+  background: var(--danger);
   color: var(--white);
   font-family: var(--font-primary);
   font-size: 0.6rem;
@@ -292,7 +292,7 @@
   height: 36px;
   border-radius: 50%;
   border: 2px solid var(--yellow);
-  background: #222;
+  background: var(--dark-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -380,7 +380,7 @@
   display: block;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(10, 10, 10, 0.5);
   z-index: 999;
   opacity: 0;
   pointer-events: none;

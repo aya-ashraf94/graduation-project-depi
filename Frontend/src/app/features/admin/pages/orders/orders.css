@@ -199,7 +199,7 @@
 }
 
 .order-status-select.order-status-pending {
-  background-color: #fff3e0;
+  background-color: var(--warning-light);
   color: #e65100;
   border-color: #ffcc80;
 }
@@ -322,7 +322,7 @@
 
 .error-panel h3 {
   margin: 0 0 0.5rem;
-  color: #dc2626;
+  color: var(--danger-dark);
 }
 
 .error-panel p {

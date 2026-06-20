@@ -151,7 +151,7 @@
 }
 
 .user-suspended-row .avatar-frame {
-  border-color: #fca5a5;
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--white));
 }
 
 .avatar-frame img {
@@ -181,15 +181,15 @@
   height: 11px;
   border-radius: 50%;
   border: 2px solid var(--white);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(10, 10, 10, 0.1);
 }
 
 .user-status-dot.active {
-  background-color: #22c55e;
+  background-color: var(--success);
 }
 
 .user-status-dot.suspended {
-  background-color: #ef4444;
+  background-color: var(--danger);
 }
 
 .user-info-text {
@@ -222,7 +222,7 @@
 }
 
 .user-suspended-row .user-join-date {
-  color: #f87171;
+  color: color-mix(in srgb, var(--danger) 60%, var(--white));
 }
 
 .email-cell {
@@ -235,7 +235,7 @@
 }
 
 .user-suspended-row .email-cell {
-  color: #b91c1c;
+  color: var(--danger-dark);
 }
 
 /* Badges / Pills */
@@ -250,13 +250,13 @@
 }
 
 .status-active {
-  background-color: #e6fcf5;
-  color: #0ca678;
+  background-color: var(--success-light);
+  color: var(--success-dark);
 }
 
 .status-suspended {
-  background-color: #fff0f6;
-  color: #e64980;
+  background-color: var(--danger-light);
+  color: var(--danger);
 }
 
 .role-pill {
@@ -290,8 +290,8 @@
 }
 
 .verified-true {
-  background-color: #e7f5ff;
-  color: #1c7ed6;
+  background-color: var(--info-light);
+  color: var(--info);
 }
 
 .verified-false {
@@ -338,42 +338,42 @@
 }
 
 .verify-btn.active-verified {
-  background-color: #e6fcf5;
-  color: #0ca678;
+  background-color: var(--success-light);
+  color: var(--success-dark);
   border-color: #c3fae8;
 }
 
 .verify-btn.active-verified:hover {
-  background-color: #fff0f6;
-  color: #e64980;
-  border-color: #ffdeeb;
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger-light);
 }
 
 .suspend-btn {
   background-color: #fff5f5;
-  color: #fa5252;
+  color: var(--danger);
   border-color: #ffc9c9;
 }
 
 .suspend-btn:hover {
   background-color: #ffc9c9;
-  border-color: #fa5252;
+  border-color: var(--danger);
 }
 
 .suspend-btn.unsuspend {
-  background-color: #e6fcf5;
-  color: #0ca678;
+  background-color: var(--success-light);
+  color: var(--success-dark);
   border-color: #c3fae8;
 }
 
 .suspend-btn.unsuspend:hover {
   background-color: #c3fae8;
-  border-color: #0ca678;
+  border-color: var(--success-dark);
 }
 
 .role-btn:hover {
-  background-color: #e7f5ff;
-  border-color: #1c7ed6;
+  background-color: var(--info-light);
+  border-color: var(--info);
 }
 
 .delete-btn {
@@ -381,9 +381,9 @@
 }
 
 .delete-btn:hover {
-  background-color: #fa5252;
+  background-color: var(--danger);
   color: var(--white);
-  border-color: #fa5252;
+  border-color: var(--danger);
 }
 
 /* Skeletons */

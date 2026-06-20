@@ -139,18 +139,18 @@
 .deleted-label {
   font-size: 0.8rem;
   font-style: italic;
-  color: #dc2626;
+  color: var(--danger-dark);
 }
 
 .reason-badge {
   display: inline-block;
   padding: 0.1rem 0.45rem;
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--danger-light);
+  color: var(--danger-dark);
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  border: 1px solid #fca5a5;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--white));
   border-radius: var(--radius-xs);
   white-space: nowrap;
   flex-shrink: 0;
@@ -267,41 +267,41 @@
 
 .view-act:hover {
   background: #dbeafe;
-  border-color: #3b82f6;
+  border-color: var(--info);
 }
 
 .resolve-act {
-  background: #e6fcf5;
+  background: var(--success-light);
   border-color: #c3fae8;
-  color: #0ca678;
+  color: var(--success-dark);
 }
 
 .resolve-act:hover {
   background: #c3fae8;
-  border-color: #0ca678;
+  border-color: var(--success-dark);
 }
 
 .dismiss-act {
   background: #fff5f5;
   border-color: #ffc9c9;
-  color: #fa5252;
+  color: var(--danger);
 }
 
 .dismiss-act:hover {
   background: #ffc9c9;
-  border-color: #fa5252;
+  border-color: var(--danger);
 }
 
 .delete-act {
   background: #fff5f5;
   border-color: #ffc9c9;
-  color: #fa5252;
+  color: var(--danger);
 }
 
 .delete-act:hover {
-  background: #fa5252;
+  background: var(--danger);
   color: var(--white);
-  border-color: #fa5252;
+  border-color: var(--danger);
 }
 
 /* Pagination */

@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border: 1.5px solid color-mix(in srgb, var(--white) 15%, transparent);
   border-radius: 0.25rem;
   color: rgba(255, 255, 255, 0.6);
   transition: var(--transition);
@@ -166,7 +166,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
+  color: color-mix(in srgb, var(--white) 40%, transparent);
   transition: var(--transition);
 }
 
