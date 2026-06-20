@@ -155,7 +155,7 @@
   right: -4px;
   width: 1.25rem;
   height: 1.25rem;
-  background: #22c55e;
+  background: var(--success);
   border: 3px solid var(--white);
   border-radius: 50%;
   box-shadow: 0 0 0 2px var(--black);
@@ -250,8 +250,8 @@
 }
 
 .pill-green {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--success-light);
+  color: var(--success-dark);
 }
 
 .pill-blue {
@@ -377,11 +377,11 @@
 }
 
 .stats-icon-wrap.icon-sales {
-  background: #fee2e2;
+  background: var(--danger-light);
 }
 
 .stats-icon-wrap.icon-success {
-  background: #dcfce7;
+  background: var(--success-light);
 }
 
 
@@ -656,7 +656,7 @@
 }
 
 .btn-wishlist.wishlisted {
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
 .card-condition-badge {
@@ -677,7 +677,7 @@
 }
 
 .card-condition-badge.cond-new {
-  background: #bbf7d0;
+  background: var(--success-light);
   color: var(--black);
   border-color: var(--black);
 }
@@ -903,7 +903,7 @@
 }
 
 .status-overlay-tag.draft-tag {
-  background: #3b82f6;
+  background: var(--info);
   color: var(--white);
   box-shadow: 3px 3px 0 var(--black);
 }
@@ -1167,7 +1167,7 @@
 }
 
 .order-status-badge.pending {
-  background: #fef3c7;
+  background: var(--warning-light);
   color: #b45309;
 }
 
@@ -1324,7 +1324,7 @@
 }
 
 .timeline-step.current .step-bullet {
-  background: #3b82f6;
+  background: var(--info);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
 }
 
@@ -1506,7 +1506,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--info);
   display: inline-block;
   margin-right: 6px;
   animation: pulse 1.5s infinite;
@@ -2339,7 +2339,7 @@
 }
 
 .seller-response-box {
-  background: #f6f2eb;
+  background: var(--surface-2);
   border: 2px solid var(--black);
   border-radius: 8px;
   padding: 0.75rem 1rem;
@@ -2406,7 +2406,7 @@
 }
 
 .trust-icon.icon-green {
-  background: #dcfce7;
+  background: var(--success-light);
 }
 
 .trust-icon.icon-blue {

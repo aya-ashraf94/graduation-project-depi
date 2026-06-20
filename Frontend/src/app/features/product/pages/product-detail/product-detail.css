@@ -3,13 +3,13 @@
    ============================================================ */
 
 :root {
-  --yellow: #e8bd18;
-  --yellow-dark: #c79e10;
-  --black: #0a0a0a;
+  --yellow: var(--yellow);
+  --yellow-dark: var(--yellow-dark);
+  --black: var(--black);
   --gray-1: #f9fafb;
-  --gray-2: #d4d4d4;
-  --gray-3: #5d5d5d;
-  --white: #ffffff;
+  --gray-2: var(--gray-2);
+  --gray-3: var(--gray-3);
+  --white: var(--white);
   --border-radius-sm: 8px;
   --border-radius-md: 12px;
   --border-radius-lg: 24px;
@@ -114,7 +114,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1.22 / 1;
-  background: #ffffff;
+  background: var(--white);
   border: 3px solid var(--black);
   border-radius: 20px;
   overflow: hidden;
@@ -233,8 +233,8 @@
 }
 
 .badge-official-v2 {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--success-light);
+  color: var(--success-dark);
   font-family: var(--font-primary);
   font-size: 0.8rem;
   font-weight: 800;
@@ -358,16 +358,16 @@
   font-weight: 900;
   font-size: 0.75rem;
   text-transform: uppercase;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--success-light);
+  color: var(--success-dark);
   margin-bottom: 0.35rem;
 }
 
-.tag-condition-badge-v3[data-condition="new_with_tags"] { background: #dcfce7; color: #15803d; }
+.tag-condition-badge-v3[data-condition="new_with_tags"] { background: var(--success-light); color: var(--success-dark); }
 .tag-condition-badge-v3[data-condition="excellent"] { background: #dbeafe; color: #1d4ed8; }
 .tag-condition-badge-v3[data-condition="good"] { background: var(--yellow); color: var(--black); }
 .tag-condition-badge-v3[data-condition="fair"] { background: #ffedd5; color: #9a3412; }
-.tag-condition-badge-v3[data-condition="distressed"] { background: #fee2e2; color: #991b1b; }
+.tag-condition-badge-v3[data-condition="distressed"] { background: var(--danger-light); color: #991b1b; }
 
 .product-title-v3 {
   font-family: var(--font-primary);
@@ -400,7 +400,7 @@
 }
 
 .qspec-badge {
-  background: #f1efe9;
+  background: var(--gray);
   color: var(--black);
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
@@ -436,8 +436,8 @@
   font-size: 0.85rem;
   font-weight: 900;
   text-transform: uppercase;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--success-light);
+  color: var(--success-dark);
   padding: 0.15rem 0.5rem;
   border: 1.5px solid var(--black);
   border-radius: 4px;
@@ -806,7 +806,7 @@
 .progress-bar-wrap {
   width: 100%;
   height: 8px;
-  background: #f1efe9;
+  background: var(--gray);
   border: 2px solid var(--black);
   border-radius: 8px;
   overflow: hidden;
@@ -879,11 +879,11 @@
 }
 
 .text-green {
-  color: #16a34a;
+  color: var(--success-dark);
 }
 
 .price-banner-v3 {
-  background: #dcfce7;
+  background: var(--success-light);
   border: 2.5px solid var(--black);
   border-radius: 8px;
   padding: 0.85rem 1rem;
@@ -892,7 +892,7 @@
   font-family: var(--font-secondary);
   font-size: 0.9rem;
   font-weight: 750;
-  color: #15803d;
+  color: var(--success-dark);
 }
 
 .intel-footer-row {
@@ -1282,7 +1282,7 @@
 }
 
 .related-carousel-container-v2::-webkit-scrollbar-track {
-  background: #f1efe9;
+  background: var(--gray);
   border-radius: 4px;
 }
 
@@ -1534,7 +1534,7 @@
   transform: translateY(-50%);
   width: 54px;
   height: 54px;
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--white) 10%, transparent);
   border: 2px solid rgba(255, 255, 255, 0.35);
   border-radius: 50%;
   color: var(--white);
@@ -1620,8 +1620,8 @@
 
 /* Error state inside modal */
 .brutal-modal-error {
-  background: #fef2f2;
-  border: 2.5px solid #dc2626;
+  background: var(--danger-light);
+  border: 2.5px solid var(--danger-dark);
   border-radius: 10px;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
@@ -1647,7 +1647,7 @@
 
 .brutal-btn-dismiss-error {
   background: none;
-  border: 1.5px solid #fca5a5;
+  border: 1.5px solid color-mix(in srgb, var(--danger) 40%, var(--white));
   border-radius: 6px;
   padding: 0.25rem 0.6rem;
   font-family: var(--font-primary);
@@ -1660,8 +1660,8 @@
 }
 
 .brutal-btn-dismiss-error:hover {
-  background: #fee2e2;
-  border-color: #dc2626;
+  background: var(--danger-light);
+  border-color: var(--danger-dark);
 }
 
 .brutal-modal-card {
@@ -1790,14 +1790,14 @@
 
 .brutal-modal-option.active {
   border-color: var(--black);
-  background: #fef2f2;
+  background: var(--danger-light);
   box-shadow: 2px 2px 0 var(--black);
 }
 
 .brutal-modal-option input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: #dc2626;
+  accent-color: var(--danger-dark);
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -1906,7 +1906,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #dcfce7;
+  background: var(--success-light);
   border: 3px solid var(--black);
   box-shadow: 3px 3px 0 var(--black);
   display: flex;
@@ -2171,7 +2171,7 @@
 }
 
 .btn-report-listing-v3:hover {
-  color: #dc2626; /* Warning red color on hover */
+  color: var(--danger-dark); /* Warning red color on hover */
   transform: scale(1.03); /* Subtle interactive enlargement */
 }
 
@@ -2205,13 +2205,13 @@
 
 .modal-standard-option.active {
   border-color: var(--black);
-  background: #fef2f2;
+  background: var(--danger-light);
 }
 
 .modal-standard-option input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: #dc2626; /* Warning red color for radio selection */
+  accent-color: var(--danger-dark); /* Warning red color for radio selection */
   cursor: pointer;
 }
 
@@ -2259,7 +2259,7 @@
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: #fff;
+  border-top-color: var(--white);
   animation: spin 0.8s linear infinite;
   margin-right: 8px;
   display: inline-block;

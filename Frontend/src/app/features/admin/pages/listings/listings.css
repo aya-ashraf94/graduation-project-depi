@@ -169,11 +169,11 @@
   font-weight: 800;
   font-size: 0.55rem;
   text-transform: uppercase;
-  background-color: #e7f5ff;
-  color: #1c7ed6;
+  background-color: var(--info-light);
+  color: var(--info);
   padding: 0.05rem 0.25rem;
   border-radius: var(--radius-xs);
-  border: 1px solid #a5d8ff;
+  border: 1px solid color-mix(in srgb, var(--info) 40%, var(--white));
 }
 
 .product-info-text {
@@ -224,7 +224,7 @@
 }
 
 .seller-verified-check {
-  color: #16a34a;
+  color: var(--success-dark);
   font-weight: 950;
   font-size: 0.75rem;
 }
@@ -259,7 +259,7 @@
 }
 
 .seller-verified-badge {
-  color: #16a34a;
+  color: var(--success-dark);
   font-weight: 800;
   font-size: 0.85rem;
 }
@@ -302,8 +302,8 @@
 }
 
 .status-pill.status-available {
-  background-color: #e6fcf5;
-  color: #0ca678;
+  background-color: var(--success-light);
+  color: var(--success-dark);
 }
 
 .status-pill.status-sold {
@@ -318,7 +318,7 @@
 }
 
 .status-pill.status-reserved {
-  background-color: #fff3e0;
+  background-color: var(--warning-light);
   color: #e65100;
 }
 
@@ -336,15 +336,15 @@
 }
 
 .condition-pill.cond-new {
-  background: #d3f9d8;
-  border-color: #51cf66;
-  color: #2b8a3e;
+  background: var(--success-light);
+  border-color: var(--success);
+  color: var(--success-dark);
 }
 
 .condition-pill.cond-used {
   background: #fff3bf;
-  border-color: #fab005;
-  color: #e67700;
+  border-color: var(--warning);
+  color: var(--warning-dark);
 }
 
 .badges-row {
@@ -355,8 +355,8 @@
 
 .official-store-tag {
   display: inline-block;
-  background-color: #fff9db;
-  color: #f08c00;
+  background-color: var(--warning-light);
+  color: var(--warning-dark);
   border: 1px solid #ffe066;
   font-family: var(--font-primary);
   font-weight: 800;
@@ -369,9 +369,9 @@
 
 .verified-prod-tag {
   display: inline-block;
-  background-color: #e7f5ff;
-  color: #1c7ed6;
-  border: 1px solid #a5d8ff;
+  background-color: var(--info-light);
+  color: var(--info);
+  border: 1px solid color-mix(in srgb, var(--info) 40%, var(--white));
   font-family: var(--font-primary);
   font-weight: 800;
   font-size: 0.7rem;
@@ -426,8 +426,8 @@
 }
 
 .edit-btn:hover {
-  background-color: #e7f5ff;
-  border-color: #1c7ed6;
+  background-color: var(--info-light);
+  border-color: var(--info);
 }
 
 .verify-btn:hover {
@@ -435,15 +435,15 @@
 }
 
 .verify-btn.active-verified {
-  background-color: #e6fcf5;
-  color: #0ca678;
+  background-color: var(--success-light);
+  color: var(--success-dark);
   border-color: #c3fae8;
 }
 
 .verify-btn.active-verified:hover {
-  background-color: #fff0f6;
-  color: #e64980;
-  border-color: #ffdeeb;
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger-light);
 }
 
 .delete-btn {
@@ -451,9 +451,9 @@
 }
 
 .delete-btn:hover {
-  background-color: #fa5252;
+  background-color: var(--danger);
   color: var(--white);
-  border-color: #fa5252;
+  border-color: var(--danger);
 }
 
 /* Skeletons */

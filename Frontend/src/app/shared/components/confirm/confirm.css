@@ -101,7 +101,7 @@
 }
 
 .confirm-btn-yes:hover {
-  background: #ffdd00;
+  background: var(--yellow-dark);
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--black);
 }

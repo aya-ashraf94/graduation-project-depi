@@ -111,9 +111,9 @@
 }
 
 .status-btn.active.status-available {
-  background: #16a34a;
+  background: var(--success-dark);
   color: var(--white);
-  border-color: #16a34a;
+  border-color: var(--success-dark);
 }
 
 .status-btn.active.status-reserved {
@@ -129,9 +129,9 @@
 }
 
 .status-btn.active.status-draft {
-  background: #3b82f6;
+  background: var(--info);
   color: var(--white);
-  border-color: #3b82f6;
+  border-color: var(--info);
 }
 
 /* ---------- IMAGES ---------- */
@@ -147,7 +147,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: var(--white);
   transition: all 0.2s ease;
 }
 
@@ -180,7 +180,7 @@
 }
 
 .delete-image-btn:hover {
-  background: #dc2626;
+  background: var(--danger-dark);
 }
 
 input[type="file"] {

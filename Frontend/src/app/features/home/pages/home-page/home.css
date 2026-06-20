@@ -10,7 +10,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 12% 18%, rgba(245, 197, 24, 0.12), transparent 24%),
-    linear-gradient(180deg, #ffffff 0%, var(--surface) 100%);
+    linear-gradient(180deg, var(--white) 0%, var(--surface) 100%);
   position: relative;
   isolation: isolate;
   height: auto;
@@ -522,7 +522,7 @@
 }
 
 .section-label.light {
-  color: rgba(255, 255, 255, 0.4);
+  color: color-mix(in srgb, var(--white) 40%, transparent);
 }
 .section-label.light::before {
   background: var(--yellow);
@@ -606,18 +606,18 @@
 
 .home-cond-badge.cond-new {
   background: rgba(46, 189, 127, 0.85);
-  color: #fff;
+  color: var(--white);
 }
 .home-cond-badge.cond-used {
   background: rgba(160, 160, 160, 0.85);
-  color: #fff;
+  color: var(--white);
 }
 
 .home-brand {
   font-family: var(--font-primary);
   font-size: 0.65rem;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.4);
+  color: color-mix(in srgb, var(--white) 40%, transparent);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -638,7 +638,7 @@
 
 .home-tag {
   padding: 0.1rem 0.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid color-mix(in srgb, var(--white) 15%, transparent);
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.06);
   font-family: var(--font-primary);
@@ -654,7 +654,7 @@
   gap: 0.3rem;
   font-family: var(--font-secondary);
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: color-mix(in srgb, var(--white) 40%, transparent);
   font-weight: 600;
 }
 
@@ -824,7 +824,7 @@
 
 /* ===== 6. STEPS ===== */
 .steps {
-  background: linear-gradient(180deg, #ffffff 0%, var(--surface-2) 100%);
+  background: linear-gradient(180deg, var(--white) 0%, var(--surface-2) 100%);
   border-top: 2px solid var(--border);
 }
 
@@ -882,7 +882,7 @@
 }
 
 .step-featured .step-num {
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(10, 10, 10, 0.5);
 }
 
 .step-title {
@@ -912,7 +912,7 @@
 /* ===== 7. SELL CTA ===== */
 .sell-cta {
   padding: 2.5rem 1.5rem;
-  background: linear-gradient(135deg, #111111 0%, #1b1b1b 100%);
+  background: linear-gradient(135deg, var(--dark) 0%, #1b1b1b 100%);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -944,8 +944,8 @@
 }
 
 .sell-cta-eyebrow .badge {
-  background: #E8BD18;
-  color: #111;
+  background: var(--yellow);
+  color: var(--dark);
   font-weight: 800;
   text-transform: uppercase;
   padding: 0.25rem 0.75rem;
@@ -959,7 +959,7 @@
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--white);
   margin: 0;
 }
 
@@ -1001,7 +1001,7 @@
 
 .visual-square {
   position: absolute;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
   background: rgba(0, 0, 0, 0.2);
 }
 

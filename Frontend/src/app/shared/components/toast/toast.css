@@ -29,11 +29,11 @@
 }
 
 .toast-success {
-  background-color: #3fe27b; /* Bright Brutalist Mint */
+  background-color: var(--success); /* Bright Brutalist Mint */
 }
 
 .toast-error {
-  background-color: #ff5555; /* Neon Coral Red */
+  background-color: var(--danger); /* Neon Coral Red */
 }
 
 .toast-info {
