@@ -1,0 +1,160 @@
+<div class="coupons-page-container">
+  <header class="admin-topbar">
+    <div class="topbar-welcome">
+      <h2>🎫 Coupons Management</h2>
+      <p>Manage and create discount codes for store orders.</p>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-panel">
+      <h3>⚠️ Error</h3>
+      <p>{{ errorMessage() }}</p>
+      <button (click)="loadCoupons()" class="btn btn-primary">Retry</button>
+    </div>
+  } @else {
+    <div class="dashboard-panels">
+      <!-- Left Panel: Coupon Codes Table -->
+      <div class="dashboard-panel main-panel">
+        <div class="panel-header">
+          <h3>🚨 Active & Expired Coupons</h3>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrapper">
+            <table class="brutal-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Discount</th>
+                  <th>Status</th>
+                  <th>Expiry Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (isLoading()) {
+                  @for (item of [1, 2, 3]; track item) {
+                    <tr class="table-row-skeleton">
+                      <td><div class="skeleton-line text"></div></td>
+                      <td><div class="skeleton-line text"></div></td>
+                      <td><div class="skeleton-badge"></div></td>
+                      <td><div class="skeleton-line text"></div></td>
+                      <td><div class="skeleton-line text"></div></td>
+                    </tr>
+                  }
+                } @else if (couponsList().length === 0) {
+                  <tr>
+                    <td colspan="5" class="empty-state" style="padding: 3rem; text-align: center;">
+                      <span class="empty-icon" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🎫</span>
+                      <p style="font-weight: 700; color: var(--gray-3);">No coupons created yet.</p>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (coupon of couponsList(); track coupon.id) {
+                    <tr>
+                      <td class="bold-text">
+                        <span class="coupon-code-badge">{{ coupon.code }}</span>
+                      </td>
+                      <td>
+                        <strong>
+                          {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : '$' + coupon.discountValue }}
+                        </strong>
+                      </td>
+                      <td>
+                        <button (click)="toggleCoupon(coupon)" 
+                                [class]="coupon.isActive ? 'status-pill active-pill' : 'status-pill inactive-pill'">
+                          {{ coupon.isActive ? 'Active' : 'Disabled' }}
+                        </button>
+                      </td>
+                      <td>
+                        @if (coupon.expiryDate) {
+                          <span [class.expired-date]="isExpired(coupon.expiryDate)">
+                            {{ coupon.expiryDate | date:'mediumDate' }}
+                          </span>
+                        } @else {
+                          <span class="forever-tag">Never Expires</span>
+                        }
+                      </td>
+                      <td>
+                        <div class="table-actions">
+                          <button (click)="deleteCoupon(coupon)" class="action-btn delete-btn" title="Delete Coupon">
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Create Coupon Form -->
+      <div class="dashboard-panel side-panel">
+        <div class="panel-header">
+          <h3>➕ Create New Coupon</h3>
+        </div>
+        <div class="panel-body" style="padding: 1.5rem;">
+          <form (ngSubmit)="createCoupon()" #couponForm="ngForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <!-- Code -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">COUPON CODE</label>
+              <input type="text" 
+                     [(ngModel)]="newCode" 
+                     name="code" 
+                     placeholder="e.g. WELCOME20" 
+                     required
+                     style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; text-transform: uppercase; outline: none; box-shadow: 2px 2px 0 var(--black);" />
+            </div>
+
+            <!-- Discount Type -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">DISCOUNT TYPE</label>
+              <select [(ngModel)]="newDiscountType" 
+                      name="discountType"
+                      style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; outline: none; box-shadow: 2px 2px 0 var(--black); background: white;">
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount ($)</option>
+              </select>
+            </div>
+
+            <!-- Discount Value -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">DISCOUNT VALUE</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" 
+                       [(ngModel)]="newDiscountValue" 
+                       name="discountValue" 
+                       placeholder="e.g. 10" 
+                       required
+                       min="1"
+                       style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; outline: none; box-shadow: 2px 2px 0 var(--black);" />
+                <span style="position: absolute; right: 16px; font-weight: 800; font-size: 1.1rem; color: var(--dark);">
+                  {{ newDiscountType === 'percentage' ? '%' : '$' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Expiry Date -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">EXPIRY DATE (OPTIONAL)</label>
+              <input type="date" 
+                     [(ngModel)]="newExpiryDate" 
+                     name="expiryDate" 
+                     style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; outline: none; box-shadow: 2px 2px 0 var(--black); background: white;" />
+            </div>
+
+            <button type="submit" 
+                    [disabled]="isSubmitting"
+                    class="quick-op-btn op-yellow"
+                    style="margin: 0; padding: 12px; border: 2px solid var(--black); border-radius: 6px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 var(--black); width: 100%;">
+              {{ isSubmitting ? 'Creating...' : 'Create Coupon' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -14,7 +14,11 @@ const {
     deleteReport,
     resolveReport,
     getAllOrders,
-    updateOrderStatus
+    updateOrderStatus,
+    getCoupons,
+    createCoupon,
+    patchCoupon,
+    deleteCoupon
 } = require("../controllers/adminController");
 
 // Apply auth and admin middleware to all routes below
@@ -37,5 +41,10 @@ router.delete("/reports/:id", deleteReport);
 
 router.get("/orders", getAllOrders);
 router.patch("/orders/:id/status", updateOrderStatus);
+
+router.get("/coupons", getCoupons);
+router.post("/coupons", createCoupon);
+router.patch("/coupons/:id", patchCoupon);
+router.delete("/coupons/:id", deleteCoupon);
 
 module.exports = router;

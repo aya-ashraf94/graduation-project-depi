@@ -11,6 +11,7 @@ import { Product, ProductSummary, CONDITION_LABELS, CATEGORY_LABELS } from '../.
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
+import { SettingsService } from '../../../../core/services/settings.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -28,6 +29,9 @@ export class ProductDetail implements OnInit {
   private orderService = inject(OrderService);
   wishlistService = inject(WishlistService);
   private cdr = inject(ChangeDetectorRef);
+  private settingsService = inject(SettingsService);
+
+  discountPercent = 7;
 
   product: Product | undefined;
   relatedProducts: ProductSummary[] = [];
@@ -77,15 +81,15 @@ export class ProductDetail implements OnInit {
   }
 
   get marketAverage(): number {
-    return this.product?.price ? Math.round(this.product.price * 1.07) : 0;
+    return this.product?.price ? Math.round(this.product.price * (1 + this.discountPercent / 100)) : 0;
   }
 
   get priceSavingsPercent(): number {
-    return 7;
+    return this.discountPercent;
   }
 
   get priceSavingsValue(): number {
-    return this.product?.price ? Math.round(this.product.price * 0.07) : 0;
+    return this.product?.price ? Math.round(this.product.price * (this.discountPercent / 100)) : 0;
   }
 
   showBuyModal = false;
@@ -95,6 +99,13 @@ export class ProductDetail implements OnInit {
   buyLoading = false;
   buySuccess = signal<string | null>(null);
   buyError = signal<string | null>(null);
+
+  // Coupon State
+  couponCode = '';
+  appliedCoupon = false;
+  couponDiscount = 0;
+  couponValidationMessage = '';
+  isValidatingCoupon = false;
 
   openLightbox(index: number) {
     this.lightboxIndex = index;
@@ -147,6 +158,16 @@ export class ProductDetail implements OnInit {
   }
 
   ngOnInit() {
+    this.settingsService.getDiscount().subscribe({
+      next: (res) => {
+        this.discountPercent = res.discount;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load discount setting:', err);
+      }
+    });
+
     this.route.paramMap.subscribe(params => {
       const id = params.get('id') ?? '';
       this.isLoading = true;
@@ -312,11 +333,50 @@ export class ProductDetail implements OnInit {
       this.buyLoading = false;
       this.buySuccess.set(null);
       this.buyError.set(null);
+      
+      // Reset coupon state
+      this.couponCode = '';
+      this.appliedCoupon = false;
+      this.couponDiscount = 0;
+      this.couponValidationMessage = '';
+      this.isValidatingCoupon = false;
     });
   }
 
   closeBuy(): void {
     this.showBuyModal = false;
+  }
+
+  applyCoupon(): void {
+    if (!this.couponCode.trim() || !this.product) return;
+    this.isValidatingCoupon = true;
+    this.couponValidationMessage = '';
+    
+    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id).subscribe({
+      next: (res) => {
+        this.isValidatingCoupon = false;
+        if (res.valid) {
+          this.appliedCoupon = true;
+          this.couponDiscount = res.discountAmount;
+          this.couponValidationMessage = `Coupon applied! Saved $${res.discountAmount}`;
+        } else {
+          this.couponValidationMessage = 'Invalid coupon code';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isValidatingCoupon = false;
+        this.couponValidationMessage = err?.error?.message || 'Invalid coupon code';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  removeCoupon(): void {
+    this.couponCode = '';
+    this.appliedCoupon = false;
+    this.couponDiscount = 0;
+    this.couponValidationMessage = '';
   }
 
   submitOrder(): void {
@@ -333,7 +393,8 @@ export class ProductDetail implements OnInit {
       productId: this.product.id,
       paymentMethod: this.paymentMethod,
       shippingAddress: this.shippingAddress,
-      notes: this.orderNotes
+      notes: this.orderNotes,
+      couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined
     };
     
     this.orderService.createOrder(payload).subscribe({

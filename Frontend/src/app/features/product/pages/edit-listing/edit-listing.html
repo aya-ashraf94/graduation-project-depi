@@ -34,7 +34,7 @@
           </div>
         </div>
         <input type="file" multiple accept="image/*" (change)="onImagesSelected($event)" />
-        <span class="field-hint" *ngIf="images.length === 0 && formError()" style="color:#e23b3b;">
+        <span class="field-hint" *ngIf="images.length === 0 && formError()" style="color:var(--danger);">
           {{ formError() }}
         </span>
       </div>

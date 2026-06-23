@@ -230,7 +230,7 @@
 }
 .price-input-field:focus {
   border-color: var(--yellow-dark);
-  box-shadow: 0 0 0 2px rgba(232, 189, 24, 0.2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--yellow) 20%, transparent);
 }
 
 .range-dash {
@@ -268,7 +268,7 @@
 .inventory-header {
   padding: 1.5rem 0 20px;
   background:
-    radial-gradient(circle at 12% 18%, rgba(245, 197, 24, 0.05), transparent 30%),
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--yellow) 5%, transparent), transparent 30%),
     linear-gradient(180deg, var(--white) 0%, var(--surface) 100%);
   border-bottom: var(--border-width) solid var(--border);
   margin-bottom: 2rem;
@@ -445,7 +445,7 @@
 }
 
 .badge-sku {
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--white) 90%, transparent);
   padding: 0.125rem 0.5rem;
   font-family: var(--font-primary);
   font-weight: 800;
@@ -461,7 +461,7 @@
   right: 0.75rem;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--white) 90%, transparent);
   backdrop-filter: blur(4px);
   border: 1px solid var(--border);
   border-radius: 50%;
@@ -481,7 +481,7 @@
 .card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(10, 10, 10, 0.1);
+  background: color-mix(in srgb, var(--black) 10%, transparent);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -594,7 +594,7 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.35);
+  background: color-mix(in srgb, var(--black) 35%, transparent);
 }
 
 .status-overlay-tag {
@@ -608,12 +608,12 @@
 }
 
 .sold-tag {
-  background: #ff4d4d;
+  background: var(--danger);
   color: var(--black);
 }
 
 .reserved-tag {
-  background: #ffd700;
+  background: var(--yellow);
   color: var(--black);
 }
 
@@ -721,7 +721,7 @@
     padding: 1.5rem;
     border-right: var(--border-width) solid var(--border);
     border-bottom: none;
-    background: rgba(255, 255, 255, 0.92);
+    background: color-mix(in srgb, var(--white) 92%, transparent);
     height: calc(100vh - 4.25rem);
     position: sticky;
     top: 4.25rem;
@@ -851,19 +851,19 @@
 /* Skeleton Loading Shimmer Styling */
 .skeleton-card {
   box-shadow: none !important;
-  border-color: #e2e8f0 !important;
+  border-color: var(--border) !important;
 }
 
 .skeleton-img-wrap {
   height: 20rem;
-  background: #f1f5f9;
+  background: var(--gray);
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .skeleton-shimmer {
-  background-color: #e2e8f0;
+  background-color: var(--border);
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-xs);
@@ -879,10 +879,10 @@
   transform: translateX(-100%);
   background-image: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0) 0%,
+    color-mix(in srgb, var(--white) 0%, transparent) 0%,
     color-mix(in srgb, var(--white) 40%, transparent) 20%,
-    rgba(255, 255, 255, 0.6) 60%,
-    rgba(255, 255, 255, 0) 100%
+    color-mix(in srgb, var(--white) 60%, transparent) 60%,
+    color-mix(in srgb, var(--white) 0%, transparent) 100%
   );
   animation: shimmer-anim 1.5s infinite;
 }
@@ -901,19 +901,19 @@
 .skeleton-price {
   width: 3.5rem;
   height: 2.2rem;
-  background-color: #e2e8f0;
+  background-color: var(--border);
 }
 
 .skeleton-tag {
   width: 3rem;
   height: 1.4rem;
-  background-color: #e2e8f0;
+  background-color: var(--border);
 }
 
 .skeleton-score {
   width: 5.5rem;
   height: 1.4rem;
-  background-color: #e2e8f0;
+  background-color: var(--border);
 }
 
 .skeleton-loc {

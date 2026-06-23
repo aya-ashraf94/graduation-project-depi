@@ -215,7 +215,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
     }
 
     .auth-error-banner {
-      background: #ff4d4d;
+      background: var(--danger);
       color: var(--black);
       border: 3px solid var(--black);
       padding: 0.75rem 1rem;
@@ -270,7 +270,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
 
     .auth-input:focus {
       border-color: var(--yellow-dark);
-      box-shadow: 0 0 0 3px rgba(232, 189, 24, 0.15);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--yellow) 15%, transparent);
     }
 
     .auth-input::placeholder {
@@ -430,7 +430,7 @@ import { RegisterRequest } from '../../../../core/models/user.model';
       .dec-1 {
         top: 2.5rem;
         right: -40px;
-        box-shadow: inset -6px -6px 0 rgba(0,0,0,0.1);
+        box-shadow: inset -6px -6px 0 color-mix(in srgb, var(--black) 10%, transparent);
       }
 
       .dec-box {

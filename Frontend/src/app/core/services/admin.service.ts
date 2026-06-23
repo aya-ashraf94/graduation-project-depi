@@ -174,6 +174,22 @@ export class AdminService {
     );
   }
 
+  getCoupons(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/coupons`);
+  }
+
+  createCoupon(payload: { code: string; discountType: string; discountValue: number; expiryDate?: Date | string | null }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/coupons`, payload);
+  }
+
+  patchCoupon(id: string, payload: { discountType?: string; discountValue?: number; expiryDate?: Date | string | null; isActive?: boolean }): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/coupons/${id}`, payload);
+  }
+
+  deleteCoupon(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/coupons/${id}`);
+  }
+
   private mapUser(u: any): User {
     if (!u) return u;
     const nameParts = (u.name || '').trim().split(/\s+/);

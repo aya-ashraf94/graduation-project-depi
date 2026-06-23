@@ -76,6 +76,7 @@ const orders = pgTable('orders', {
   shippingAddress: text('shipping_address').notNull(),
   notes: text('notes'),
   trackingNumber: text('tracking_number'),
+  couponCode: text('coupon_code'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -209,6 +210,22 @@ const follows = pgTable('follows', {
   followingIdx: index('following_idx').on(table.followingId),
 }));
 
+const settings = pgTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+
+const coupons = pgTable('coupons', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  code: text('code').notNull().unique(),
+  discountType: text('discount_type', { enum: ['percentage', 'fixed'] }).default('percentage').notNull(),
+  discountValue: doublePrecision('discount_value').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  expiryDate: timestamp('expiry_date', { mode: 'date' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
 module.exports = {
   users,
   categories,
@@ -226,4 +243,6 @@ module.exports = {
   userWishlist,
   offers,
   follows,
+  settings,
+  coupons,
 };

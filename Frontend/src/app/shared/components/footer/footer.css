@@ -15,7 +15,7 @@
   grid-template-columns: 1fr;
   gap: 2.5rem;
   padding-bottom: 3rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
 }
 
 /* --- Brand --- */
@@ -38,7 +38,7 @@
 
 .footer-tagline {
   font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: color-mix(in srgb, var(--white) 45%, transparent);
   line-height: 1.6;
   margin-bottom: 1.5rem;
   max-width: 16.25rem;
@@ -58,7 +58,7 @@
   justify-content: center;
   border: 1.5px solid color-mix(in srgb, var(--white) 15%, transparent);
   border-radius: 0.25rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--white) 60%, transparent);
   transition: var(--transition);
 }
 
@@ -76,11 +76,11 @@
 }
 
 .footer-col {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
 }
 
 .footer-col:first-child {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
 }
 
 .footer-col-title {
@@ -124,7 +124,7 @@
 
 .footer-col a {
   font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: color-mix(in srgb, var(--white) 65%, transparent);
   transition: var(--transition);
   display: inline-block;
 }
@@ -151,7 +151,7 @@
 
 .footer-copy {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: color-mix(in srgb, var(--white) 35%, transparent);
 }
 
 .footer-bottom-links {
@@ -198,7 +198,7 @@
     padding: 0;
     margin-bottom: 1.25rem;
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.35);
+    color: color-mix(in srgb, var(--white) 35%, transparent);
     user-select: auto;
   }
 

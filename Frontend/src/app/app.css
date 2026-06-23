@@ -97,7 +97,7 @@
 .visual-square {
   position: absolute;
   border: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
-  box-shadow: 0 0.625rem 2.5rem rgba(10, 10, 10, 0.5);
+  box-shadow: 0 0.625rem 2.5rem color-mix(in srgb, var(--black) 50%, transparent);
 }
 .visual-sq-1 {
   width: 8.75rem;

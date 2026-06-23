@@ -23,6 +23,8 @@
   --color-gray-2: #d4d4d4;
   --color-gray-3: #5d5d5d;
   --color-border: #dcd6cc;
+  --color-purple: #8b5cf6;
+  --color-purple-light: #f3e8ff;
 
   /* Semantic State Colors */
   --color-success: #22c55e;
@@ -73,6 +75,8 @@
   --gray-2: #d4d4d4;
   --gray-3: #5d5d5d;
   --border: #dcd6cc;
+  --purple: #8b5cf6;
+  --purple-light: #f3e8ff;
 
   /* Semantic State Colors */
   --success: #22c55e;

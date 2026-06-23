@@ -121,7 +121,7 @@
 }
 
 .stat-card.success {
-  background-color: #fef08a; /* light yellow/gold */
+  background-color: var(--warning-light); /* light yellow/gold */
 }
 .stat-card.success .stat-value {
   color: var(--rust);
@@ -354,7 +354,7 @@
 
 .op-yellow:hover {
   background-color: var(--yellow-dark);
-  box-shadow: 0 4px 12px rgba(232, 189, 24, 0.15);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--yellow) 15%, transparent);
   transform: translateY(-2px);
   border-color: var(--black);
 }
@@ -371,7 +371,7 @@
 
 .op-dark:hover {
   background-color: var(--dark-2);
-  box-shadow: 0 4px 12px rgba(10, 10, 10, 0.15);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--black) 15%, transparent);
   transform: translateY(-2px);
   border-color: var(--black);
 }
@@ -477,7 +477,7 @@
 }
 
 .ref-stats-icon-wrap.icon-listings {
-  background: #f3e8ff;
+  background: var(--purple-light);
 }
 
 .ref-stats-icon-wrap.icon-reports {

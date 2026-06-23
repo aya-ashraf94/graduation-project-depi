@@ -1,15 +1,17 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AdminService, AdminStats, AdminReport } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { SettingsService } from '../../../../core/services/settings.service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -17,11 +19,15 @@ export class Dashboard implements OnInit {
   private adminService = inject(AdminService);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
+  private settingsService = inject(SettingsService);
 
   stats = signal<AdminStats | null>(null);
   recentReports = signal<AdminReport[]>([]);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+  
+  discountSetting = 7;
+  savingSettings = false;
 
   ngOnInit(): void {
     this.loadData();
@@ -33,11 +39,13 @@ export class Dashboard implements OnInit {
 
     forkJoin({
       stats: this.adminService.getStats(),
-      reports: this.adminService.getReports()
+      reports: this.adminService.getReports(),
+      settings: this.settingsService.getDiscount()
     }).subscribe({
-      next: ({ stats, reports }) => {
+      next: ({ stats, reports, settings }) => {
         this.stats.set(stats);
         this.recentReports.set(reports.slice(0, 5));
+        this.discountSetting = settings.discount;
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -65,6 +73,25 @@ export class Dashboard implements OnInit {
             this.toastService.error('Failed to dismiss report. Please try again.');
           }
         });
+      }
+    });
+  }
+
+  saveDiscountSetting(): void {
+    if (this.discountSetting === undefined || this.discountSetting === null || this.discountSetting < 0 || this.discountSetting > 100) {
+      this.toastService.error('Discount percentage must be between 0 and 100.');
+      return;
+    }
+    this.savingSettings = true;
+    this.settingsService.updateDiscount(this.discountSetting).subscribe({
+      next: () => {
+        this.savingSettings = false;
+        this.toastService.success('Discount percentage updated successfully.');
+      },
+      error: (err) => {
+        console.error('Failed to update discount setting:', err);
+        this.toastService.error(err?.error?.message || 'Failed to update discount percentage.');
+        this.savingSettings = false;
       }
     });
   }
