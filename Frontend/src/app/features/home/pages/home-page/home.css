@@ -9,7 +9,7 @@
   justify-content: center;
   overflow: hidden;
   background:
-    radial-gradient(circle at 12% 18%, rgba(245, 197, 24, 0.12), transparent 24%),
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--yellow) 12%, transparent), transparent 24%),
     linear-gradient(180deg, var(--white) 0%, var(--surface) 100%);
   position: relative;
   isolation: isolate;
@@ -31,7 +31,7 @@
   height: 20rem;
   top: -6.875rem;
   right: -7.5rem;
-  background: rgba(245, 197, 24, 0.08);
+  background: color-mix(in srgb, var(--yellow) 8%, transparent);
 }
 
 .hero::after {
@@ -39,7 +39,7 @@
   height: 11.25rem;
   left: -5rem;
   bottom: 4rem;
-  background: rgba(10, 10, 10, 0.04);
+  background: color-mix(in srgb, var(--black) 4%, transparent);
 }
 
 .hero-inner {
@@ -104,7 +104,7 @@
 
 .hero-desc {
   font-size: 1.05rem;
-  color: #505050;
+  color: var(--gray-3);
   line-height: 1.7;
   max-width: 28.75rem;
   margin: 0 auto 1.5rem;
@@ -215,7 +215,7 @@
   height: 2rem;
   border-radius: 50%;
   border: 2px solid var(--black);
-  background: #f0f0f0;
+  background: var(--gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,7 +328,7 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: #2ebd7f;
+  background: var(--success);
 }
 
 .stack-card.card-featured {
@@ -343,7 +343,7 @@
 }
 
 .sticker-verified {
-  background: #20c997;
+  background: var(--success);
   color: white;
   border: 3px solid var(--black);
   padding: 0.375rem 1.125rem;
@@ -362,7 +362,7 @@
 
 .v-check {
   background: white;
-  color: #20c997;
+  color: var(--success);
   border-radius: 50%;
   width: 1.25rem;
   height: 1.25rem;
@@ -446,7 +446,7 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
-  background: rgba(255, 255, 255, 0.82);
+  background: color-mix(in srgb, var(--white) 82%, transparent);
   box-shadow: 2px 2px 0 var(--black);
   text-align: center;
   animation: sectionRise 0.7s ease both;
@@ -469,7 +469,7 @@
 }
 
 .dept-card:hover {
-  background: linear-gradient(180deg, #f0cf51 0%, #e7bc18 100%);
+  background: linear-gradient(180deg, var(--warning-light) 0%, var(--yellow) 100%);
   transform: translate(-2px, -2px);
   box-shadow: 5px 5px 0 var(--black);
 }
@@ -480,7 +480,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f6f6f6;
+  background: var(--gray);
   border: var(--border-width) solid var(--black);
   border-radius: var(--radius-xs);
   transition: var(--transition);
@@ -509,7 +509,7 @@
 
 /* ===== 3. FEATURED GEAR ===== */
 .section-dark {
-  background: linear-gradient(180deg, var(--dark) 0%, #191919 100%);
+  background: linear-gradient(180deg, var(--dark) 0%, var(--dark-2) 100%);
 }
 
 .featured-head {
@@ -535,8 +535,8 @@
 }
 
 .product-card {
-  background: linear-gradient(180deg, #202020 0%, #181818 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, var(--dark-3) 0%, var(--dark-2) 100%);
+  border: 1.5px solid color-mix(in srgb, var(--white) 8%, transparent);
   border-radius: var(--radius-md);
   overflow: hidden;
   transition: var(--transition);
@@ -559,7 +559,7 @@
 .product-card:hover {
   transform: translateY(-4px);
   border-color: var(--yellow);
-  box-shadow: 0 12px 40px rgba(232, 189, 24, 0.16);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--yellow) 16%, transparent);
 }
 
 .product-img {
@@ -567,7 +567,7 @@
   width: 100%;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: #2a2a2a;
+  background: var(--dark-3);
 }
 
 .product-real-img {
@@ -593,7 +593,7 @@
   bottom: 8px;
   left: 8px;
   z-index: 5;
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border: 1.5px solid color-mix(in srgb, var(--white) 60%, transparent);
   border-radius: 4px;
   padding: 0.15rem 0.4rem;
   font-family: var(--font-primary);
@@ -605,11 +605,11 @@
 }
 
 .home-cond-badge.cond-new {
-  background: rgba(46, 189, 127, 0.85);
+  background: color-mix(in srgb, var(--success) 85%, transparent);
   color: var(--white);
 }
 .home-cond-badge.cond-used {
-  background: rgba(160, 160, 160, 0.85);
+  background: color-mix(in srgb, var(--gray-3) 85%, transparent);
   color: var(--white);
 }
 
@@ -640,11 +640,11 @@
   padding: 0.1rem 0.4rem;
   border: 1px solid color-mix(in srgb, var(--white) 15%, transparent);
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--white) 6%, transparent);
   font-family: var(--font-primary);
   font-weight: 700;
   font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: color-mix(in srgb, var(--white) 50%, transparent);
   text-transform: uppercase;
 }
 
@@ -659,7 +659,7 @@
 }
 
 .home-dot {
-  color: rgba(255, 255, 255, 0.2);
+  color: color-mix(in srgb, var(--white) 20%, transparent);
 }
 
 .home-price-row {
@@ -668,7 +668,7 @@
   justify-content: space-between;
   margin-top: 0.4rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
 }
 
 .home-price-tag {
@@ -688,7 +688,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: rgba(232, 189, 24, 0.8);
+  color: color-mix(in srgb, var(--yellow) 80%, transparent);
   transition: color 0.2s;
 }
 
@@ -712,10 +712,10 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.125rem;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: color-mix(in srgb, var(--white) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--black) 8%, transparent);
   border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(10, 10, 10, 0.04);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--black) 4%, transparent);
   transition: var(--transition);
   animation: sectionRise 0.7s ease both;
 }
@@ -734,7 +734,7 @@
 
 .feature-item:hover {
   transform: translateY(-3px);
-  box-shadow: 0 16px 30px rgba(10, 10, 10, 0.08);
+  box-shadow: 0 16px 30px color-mix(in srgb, var(--black) 8%, transparent);
 }
 
 .feature-icon {
@@ -761,7 +761,7 @@
 
 .feature-desc {
   font-size: 0.92rem;
-  color: #5f5f5f;
+  color: var(--gray-3);
   line-height: 1.6;
 }
 
@@ -782,8 +782,8 @@
   border-radius: var(--radius-md);
   text-align: center;
   transition: var(--transition);
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.9);
+  background: color-mix(in srgb, var(--white) 80%, transparent);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--black) 90%, transparent);
   animation: sectionRise 0.7s ease both;
 }
 
@@ -846,7 +846,7 @@
   box-shadow: 4px 4px 0 var(--black);
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.8);
+  background: color-mix(in srgb, var(--white) 80%, transparent);
   min-height: 16.875rem;
   padding-bottom: 5.375rem;
   animation: sectionRise 0.7s ease both;
@@ -866,9 +866,9 @@
 }
 
 .step-item.step-featured {
-  background: linear-gradient(180deg, #eed15a 0%, #e1be2d 100%);
+  background: linear-gradient(180deg, var(--warning-light) 0%, var(--yellow) 100%);
   transform: translateY(-6px);
-  box-shadow: 6px 6px 0 rgba(10, 10, 10, 1);
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--black) 100%, transparent);
 }
 
 .step-num {
@@ -882,7 +882,7 @@
 }
 
 .step-featured .step-num {
-  color: rgba(10, 10, 10, 0.5);
+  color: color-mix(in srgb, var(--black) 50%, transparent);
 }
 
 .step-title {
@@ -898,7 +898,7 @@
 }
 
 .step-featured .step-desc {
-  color: rgba(0, 0, 0, 0.6);
+  color: color-mix(in srgb, var(--black) 60%, transparent);
 }
 
 .step-icon {
@@ -912,7 +912,7 @@
 /* ===== 7. SELL CTA ===== */
 .sell-cta {
   padding: 2.5rem 1.5rem;
-  background: linear-gradient(135deg, var(--dark) 0%, #1b1b1b 100%);
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-2) 100%);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -968,7 +968,7 @@
   font-size: 1.1rem;
   line-height: 1.4;
   text-align: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--white) 60%, transparent);
   margin: 0;
 }
 
@@ -1002,7 +1002,7 @@
 .visual-square {
   position: absolute;
   border: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
-  background: rgba(0, 0, 0, 0.2);
+  background: color-mix(in srgb, var(--black) 20%, transparent);
 }
 
 .visual-sq-1 {
@@ -1011,8 +1011,8 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  border: 1px solid rgba(232, 189, 24, 0.2);
-  background: rgba(232, 189, 24, 0.05);
+  border: 1px solid color-mix(in srgb, var(--yellow) 20%, transparent);
+  background: color-mix(in srgb, var(--yellow) 5%, transparent);
 }
 
 .visual-sq-2 {

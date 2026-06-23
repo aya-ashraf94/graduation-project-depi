@@ -58,7 +58,7 @@ import { Review } from '../../../../core/models/review.model';
   styles: [`
     .all-reviews-page {
       min-height: calc(100vh - var(--navbar-height));
-      background: #F5F3EE;
+      background: var(--gray);
       padding: 2rem 1.5rem;
       display: flex;
       justify-content: center;
@@ -157,7 +157,7 @@ import { Review } from '../../../../core/models/review.model';
       font-size: 1rem;
     }
     .review-stars {
-      color: #e8bd18;
+      color: var(--yellow);
       font-weight: bold;
     }
     .review-date {
@@ -176,7 +176,7 @@ import { Review } from '../../../../core/models/review.model';
     .seller-response {
       margin-top: 0.75rem;
       padding: 0.75rem;
-      background: #fef9c3;
+      background: var(--warning-light);
       border: 2px solid var(--black);
       border-radius: 8px;
       font-family: var(--font-secondary);

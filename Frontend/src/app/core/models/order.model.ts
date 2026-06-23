@@ -25,6 +25,7 @@ export interface Order {
   shippingAddress?: string;
   trackingNumber?: string;
   notes?: string;
+  couponCode?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +46,7 @@ export interface OrderSummary {
   shippingAddress?: string;
   notes?: string;
   trackingNumber?: string;
+  couponCode?: string;
   updatedAt?: Date;
 }
 
@@ -54,6 +56,7 @@ export interface CreateOrderRequest {
   paymentMethod: PaymentMethod;
   shippingAddress?: string;
   notes?: string;
+  couponCode?: string;
 }
 
 /** Payload to update order status (seller ships, buyer confirms, etc.) */

@@ -13,7 +13,7 @@
   padding: 1.5rem 0;
   display: flex;
   justify-content: center;
-  background: #F5F3EE;
+  background: var(--gray);
   min-width: 0;
 }
 
@@ -60,21 +60,21 @@
 }
 
 .brutalist-banner-success {
-  background: #e8f5e9;
-  color: #1b5e20;
+  background: var(--success-light);
+  color: var(--success-dark);
 }
 
 .brutalist-banner-success .banner-icon-wrap {
-  background: #c8e6c9;
+  background: var(--success-light);
 }
 
 .brutalist-banner-error {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--danger-light);
+  color: var(--danger-dark);
 }
 
 .brutalist-banner-error .banner-icon-wrap {
-  background: #ffcdd2;
+  background: var(--danger-light);
 }
 
 .banner-message {
@@ -186,7 +186,7 @@
 }
 
 .verify-badge {
-  color: #1d9bf0;
+  color: var(--info);
   display: inline-flex;
   align-items: center;
 }
@@ -255,13 +255,13 @@
 }
 
 .pill-blue {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--info-light);
+  color: var(--info-dark);
 }
 
 .pill-gray {
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--border);
+  color: var(--gray-3);
 }
 
 .footer-strip {
@@ -369,11 +369,11 @@
 }
 
 .stats-icon-wrap.icon-products {
-  background: #f3e8ff;
+  background: var(--purple-light);
 }
 
 .stats-icon-wrap.icon-rating {
-  background: #fef9c3;
+  background: var(--warning-light);
 }
 
 .stats-icon-wrap.icon-sales {
@@ -412,7 +412,7 @@
 .stats-divider {
   width: 2px;
   height: 2.5rem;
-  background: #e2e8f0;
+  background: var(--border);
 }
 
 .tab-content {
@@ -509,7 +509,7 @@
 .card-status-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--black) 40%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -683,7 +683,7 @@
 }
 
 .card-condition-badge.cond-used {
-  background: #ffedd5;
+  background: var(--warning-light);
   color: var(--black);
   border-color: var(--black);
 }
@@ -872,7 +872,7 @@
 .wishlist-status-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: color-mix(in srgb, var(--black) 45%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -924,16 +924,16 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 2px 2px 0 var(--black);
-  color: #e23b3b;
-  fill: #e23b3b;
+  color: var(--danger);
+  fill: var(--danger);
 }
 
 .wishlist-card-remove-btn:hover {
   transform: scale(1.1) translate(-1px, -1px);
   box-shadow: 3.5px 3.5px 0 var(--black);
-  background: #fde8e8;
-  color: #e23b3b;
-  fill: #e23b3b;
+  background: var(--danger-light);
+  color: var(--danger);
+  fill: var(--danger);
 }
 
 .wishlist-card-body {
@@ -1168,22 +1168,22 @@
 
 .order-status-badge.pending {
   background: var(--warning-light);
-  color: #b45309;
+  color: var(--warning-dark);
 }
 
 .order-status-badge.shipped {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--info-light);
+  color: var(--info-dark);
 }
 
 .order-status-badge.delivered {
-  background: #d1fae5;
-  color: #047857;
+  background: var(--success-light);
+  color: var(--success-dark);
 }
 
 .order-status-badge.cancelled {
-  background: #ffe4e6;
-  color: #be123c;
+  background: var(--danger-light);
+  color: var(--danger-dark);
 }
 
 .order-card-body {
@@ -1318,14 +1318,14 @@
 }
 
 .timeline-step.active .step-bullet {
-  background: #10b981;
+  background: var(--success);
   color: var(--white);
   border-color: var(--black);
 }
 
 .timeline-step.current .step-bullet {
   background: var(--info);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--info) 20%, transparent);
 }
 
 .step-label {
@@ -1351,7 +1351,7 @@
 }
 
 .timeline-line.completed {
-  background: #10b981;
+  background: var(--success);
 }
 
 .order-cancelled-panel {
@@ -1359,8 +1359,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: #fff1f2;
-  border: 2px solid #f43f5e;
+  background: var(--danger-light);
+  border: 2px solid var(--danger);
   border-radius: 8px;
   text-align: left;
 }
@@ -1370,7 +1370,7 @@
   height: 28px;
   border-radius: 50%;
   border: 2px solid var(--black);
-  background: #f43f5e;
+  background: var(--danger);
   color: var(--white);
   display: flex;
   align-items: center;
@@ -1383,7 +1383,7 @@
   font-family: var(--font-primary);
   font-size: 0.85rem;
   font-weight: 900;
-  color: #be123c;
+  color: var(--danger-dark);
 }
 
 .cancelled-text-wrap p {
@@ -1410,12 +1410,12 @@
 }
 
 .order-details-toggle-bar:hover {
-  background: #eae8e2;
+  background: var(--border);
 }
 
 .order-details-panel {
   padding: 1.25rem 1.5rem;
-  background: #fafaf9;
+  background: var(--surface);
   border-bottom: 1.5px dashed var(--border);
   text-align: left;
   animation: details-slide 0.2s ease-out;
@@ -1527,9 +1527,9 @@
   font-family: var(--font-secondary);
   font-weight: 700;
   letter-spacing: 0.05em;
-  background: #f0faf4;
-  color: #1a6b35;
-  border: 1.5px solid #28a745;
+  background: var(--success-light);
+  color: var(--success-dark);
+  border: 1.5px solid var(--success);
   border-radius: var(--radius-sm);
 }
 
@@ -1567,37 +1567,37 @@
 }
 
 .btn-order-confirm {
-  background: #28a745;
+  background: var(--success);
   color: var(--white);
   box-shadow: 3px 3px 0 var(--black);
 }
 
 .btn-order-confirm:hover {
-  background: #218838;
+  background: var(--success-dark);
   transform: translate(-1.5px, -1.5px);
   box-shadow: 4.5px 4.5px 0 var(--black);
 }
 
 .btn-order-ship {
-  background: #17a2b8;
+  background: var(--info);
   color: var(--white);
   box-shadow: 3px 3px 0 var(--black);
 }
 
 .btn-order-ship:hover {
-  background: #138496;
+  background: var(--info-dark);
   transform: translate(-1.5px, -1.5px);
   box-shadow: 4.5px 4.5px 0 var(--black);
 }
 
 .btn-order-cancel {
-  background: #dc3545;
+  background: var(--danger);
   color: var(--white);
   box-shadow: 3px 3px 0 var(--black);
 }
 
 .btn-order-cancel:hover {
-  background: #bd2130;
+  background: var(--danger);
   transform: translate(-1.5px, -1.5px);
   box-shadow: 4.5px 4.5px 0 var(--black);
 }
@@ -1622,7 +1622,7 @@
 }
 
 .btn-order-dismiss:hover {
-  background: #f8f9fa;
+  background: var(--gray);
   transform: translate(-1.5px, -1.5px);
   box-shadow: 4.5px 4.5px 0 var(--black);
 }
@@ -1648,7 +1648,7 @@
 
 .stars-selector label {
   font-size: 2rem;
-  color: #ccc;
+  color: var(--border);
   cursor: pointer;
   transition: color 0.15s ease;
 }
@@ -1663,7 +1663,7 @@
 .glass-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: color-mix(in srgb, var(--black) 65%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1954,7 +1954,7 @@
 }
 
 .brutalist-modal-close:hover {
-  background: #ff5252;
+  background: var(--danger);
   color: var(--white);
   transform: translate(-1.5px, -1.5px);
   box-shadow: 3.5px 3.5px 0 var(--black);
@@ -2042,7 +2042,7 @@
 
 .form-input:focus,
 .form-textarea:focus {
-  background: #fffde7;
+  background: var(--warning-light);
   transform: translate(-3px, -3px);
   box-shadow: 6px 6px 0 var(--black);
   border-color: var(--black);
@@ -2367,7 +2367,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
-  background: #fbf9f4;
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
@@ -2410,15 +2410,15 @@
 }
 
 .trust-icon.icon-blue {
-  background: #dbeafe;
+  background: var(--info-light);
 }
 
 .trust-icon.icon-purple {
-  background: #f3e8ff;
+  background: var(--purple-light);
 }
 
 .trust-icon.icon-yellow {
-  background: #fef9c3;
+  background: var(--warning-light);
 }
 
 .trust-info {
@@ -2499,7 +2499,7 @@
 }
 
 .btn-quick-action.btn-delete {
-  background: #ff4d4d;
+  background: var(--danger);
   color: var(--white);
 }
 
@@ -2795,7 +2795,7 @@
 }
 
 .btn-card-action.btn-delete {
-  background: #ff4d4d;
+  background: var(--danger);
   color: var(--white);
   box-shadow: 2px 2px 0 var(--black);
 }
@@ -2803,7 +2803,7 @@
 .btn-card-action.btn-delete:hover {
   transform: translate(-1.5px, -1.5px);
   box-shadow: 3.5px 3.5px 0 var(--black);
-  background: #ff3333;
+  background: var(--danger);
 }
 
 .btn-card-action:active {

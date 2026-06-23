@@ -99,7 +99,7 @@
 }
 
 .admin-data-table tbody tr:hover {
-  background-color: #faf9f6;
+  background-color: var(--surface);
 }
 
 .admin-data-table tbody tr:last-child td {
@@ -200,26 +200,26 @@
 
 .order-status-select.order-status-pending {
   background-color: var(--warning-light);
-  color: #e65100;
-  border-color: #ffcc80;
+  color: var(--warning-dark);
+  border-color: var(--warning-light);
 }
 
 .order-status-select.order-status-shipped {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border-color: #90caf9;
+  background-color: var(--info-light);
+  color: var(--info-dark);
+  border-color: var(--info-light);
 }
 
 .order-status-select.order-status-delivered {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border-color: #a5d6a7;
+  background-color: var(--success-light);
+  color: var(--success-dark);
+  border-color: var(--success-light);
 }
 
 .order-status-select.order-status-cancelled {
-  background-color: #fce4ec;
-  color: #c62828;
-  border-color: #ef9a9a;
+  background-color: var(--danger-light);
+  color: var(--danger-dark);
+  border-color: var(--danger-light);
 }
 
 .order-payment-cell {
@@ -313,8 +313,8 @@
 }
 
 .error-panel {
-  background: #fff5f5;
-  border: 2px solid #fecaca;
+  background: var(--danger-light);
+  border: 2px solid var(--danger-light);
   border-radius: var(--radius-md);
   padding: 1.5rem;
   text-align: center;
@@ -327,5 +327,5 @@
 
 .error-panel p {
   margin: 0 0 1rem;
-  color: #7f1d1d;
+  color: var(--danger-dark);
 }

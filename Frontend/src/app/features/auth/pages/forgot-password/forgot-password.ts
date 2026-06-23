@@ -31,7 +31,7 @@ import { AuthService } from '../../../../core/services/auth';
           }
 
           @if (successMessage()) {
-            <div class="auth-success-banner" style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+            <div class="auth-success-banner" style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
               <span>{{ successMessage() }}</span>
             </div>
 
@@ -177,7 +177,7 @@ import { AuthService } from '../../../../core/services/auth';
     }
 
     .auth-error-banner {
-      background: #ff4d4d;
+      background: var(--danger);
       border: 2px solid var(--black);
       padding: 0.75rem 1rem;
       border-radius: var(--radius-sm);
@@ -350,7 +350,7 @@ import { AuthService } from '../../../../core/services/auth';
     .dec-1 {
       top: -2.5rem;
       right: -2.5rem;
-      box-shadow: inset -6px -6px 0 rgba(0,0,0,0.1);
+      box-shadow: inset -6px -6px 0 color-mix(in srgb, var(--black) 10%, transparent);
     }
 
     .dec-box {

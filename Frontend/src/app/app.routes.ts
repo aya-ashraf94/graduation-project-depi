@@ -155,6 +155,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/pages/orders/orders').then((m) => m.Orders),
       },
+      {
+        path: 'coupons',
+        loadComponent: () =>
+          import('./features/admin/pages/coupons/coupons').then((m) => m.Coupons),
+      },
     ],
   },
 

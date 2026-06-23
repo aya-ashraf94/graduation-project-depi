@@ -1,5 +1,5 @@
 const db = require("../db");
-const { users, products, reports, orders, categories } = require("../db/schema");
+const { users, products, reports, orders, categories, coupons } = require("../db/schema");
 const { eq, or, ilike, and, desc, count, inArray, sql } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 
@@ -375,6 +375,92 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const getCoupons = async (req, res) => {
+  try {
+    const result = await db.select().from(coupons).orderBy(desc(coupons.createdAt));
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching coupons:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const createCoupon = async (req, res) => {
+  try {
+    let { code, discountType, discountValue, expiryDate } = req.body;
+    if (!code || !discountValue) {
+      return res.status(400).json({ message: "Coupon code and discount value are required" });
+    }
+    
+    code = code.trim().toUpperCase();
+    
+    // Check uniqueness
+    const [existing] = await db.select().from(coupons).where(eq(coupons.code, code)).limit(1);
+    if (existing) {
+      return res.status(400).json({ message: "Coupon code already exists" });
+    }
+    
+    const validTypes = ["percentage", "fixed"];
+    if (discountType && !validTypes.includes(discountType)) {
+      return res.status(400).json({ message: "Invalid discount type. Must be 'percentage' or 'fixed'" });
+    }
+    
+    const [coupon] = await db.insert(coupons).values({
+      code,
+      discountType: discountType || "percentage",
+      discountValue: parseFloat(discountValue),
+      expiryDate: expiryDate ? new Date(expiryDate) : null,
+      isActive: true
+    }).returning();
+    
+    res.json(coupon);
+  } catch (error) {
+    console.error("Error creating coupon:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const patchCoupon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { discountType, discountValue, expiryDate, isActive } = req.body;
+    
+    const updateData = { updatedAt: new Date() };
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (discountType !== undefined) updateData.discountType = discountType;
+    if (discountValue !== undefined) updateData.discountValue = parseFloat(discountValue);
+    if (expiryDate !== undefined) updateData.expiryDate = expiryDate ? new Date(expiryDate) : null;
+    
+    const [coupon] = await db.update(coupons)
+      .set(updateData)
+      .where(eq(coupons.id, id))
+      .returning();
+      
+    if (!coupon) {
+      return res.status(404).json({ message: "Coupon not found" });
+    }
+    
+    res.json(coupon);
+  } catch (error) {
+    console.error("Error updating coupon:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const deleteCoupon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [coupon] = await db.delete(coupons).where(eq(coupons.id, id)).returning();
+    if (!coupon) {
+      return res.status(404).json({ message: "Coupon not found" });
+    }
+    res.json({ message: "Coupon deleted successfully", coupon });
+  } catch (error) {
+    console.error("Error deleting coupon:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getStats,
   getUsers,
@@ -388,4 +474,8 @@ module.exports = {
   deleteReport,
   getAllOrders,
   updateOrderStatus,
+  getCoupons,
+  createCoupon,
+  patchCoupon,
+  deleteCoupon,
 };

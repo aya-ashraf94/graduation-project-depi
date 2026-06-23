@@ -98,7 +98,7 @@
 
 .report-card:hover {
   border-color: var(--black);
-  box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.04);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--black) 4%, transparent);
 }
 
 /* Top row: title + badge */
@@ -266,35 +266,35 @@
 }
 
 .view-act:hover {
-  background: #dbeafe;
+  background: var(--info-light);
   border-color: var(--info);
 }
 
 .resolve-act {
   background: var(--success-light);
-  border-color: #c3fae8;
+  border-color: var(--success-light);
   color: var(--success-dark);
 }
 
 .resolve-act:hover {
-  background: #c3fae8;
+  background: var(--success-light);
   border-color: var(--success-dark);
 }
 
 .dismiss-act {
-  background: #fff5f5;
-  border-color: #ffc9c9;
+  background: var(--danger-light);
+  border-color: var(--danger-light);
   color: var(--danger);
 }
 
 .dismiss-act:hover {
-  background: #ffc9c9;
+  background: var(--danger-light);
   border-color: var(--danger);
 }
 
 .delete-act {
-  background: #fff5f5;
-  border-color: #ffc9c9;
+  background: var(--danger-light);
+  border-color: var(--danger-light);
   color: var(--danger);
 }
 

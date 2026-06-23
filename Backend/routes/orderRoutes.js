@@ -5,10 +5,12 @@ const {
     createOrder,
     getOrdersByUser,
     getOrderById,
-    updateOrder
+    updateOrder,
+    validateCoupon
 } = require("../controllers/orderController");
 
 router.post("/", authMiddleware, createOrder);
+router.post("/validate-coupon", authMiddleware, validateCoupon);
 router.get("/", authMiddleware, getOrdersByUser);
 router.get("/:id", authMiddleware, getOrderById);
 router.patch("/:id", authMiddleware, updateOrder);

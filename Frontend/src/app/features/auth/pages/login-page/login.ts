@@ -98,7 +98,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     </div>
 
     <!-- FORGOT PASSWORD MODAL -->
-    <div class="report-overlay" *ngIf="showForgotModal()" (click)="closeForgotModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem;">
+    <div class="report-overlay" *ngIf="showForgotModal()" (click)="closeForgotModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem;">
       <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
         <button class="modal-standard-close" (click)="closeForgotModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
 
@@ -106,13 +106,13 @@ import { LoginRequest } from '../../../../core/models/user.model';
         <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem;">Enter your email address and we'll send you a password reset token.</p>
 
         @if (forgotError()) {
-          <div style="background: #ff4d4d; color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
+          <div style="background: var(--danger); color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
             {{ forgotError() }}
           </div>
         }
 
         @if (forgotMessage()) {
-          <div style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+          <div style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
             {{ forgotMessage() }}
           </div>
           
@@ -158,7 +158,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     </div>
 
     <!-- RESET PASSWORD MODAL -->
-    <div class="report-overlay" *ngIf="showResetModal()" (click)="closeResetModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 1.25rem;">
+    <div class="report-overlay" *ngIf="showResetModal()" (click)="closeResetModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 1.25rem;">
       <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
         <button class="modal-standard-close" (click)="closeResetModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
 
@@ -166,13 +166,13 @@ import { LoginRequest } from '../../../../core/models/user.model';
         <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem;">Enter a strong new password below to update your account access.</p>
 
         @if (resetError()) {
-          <div style="background: #ff4d4d; color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
+          <div style="background: var(--danger); color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
             {{ resetError() }}
           </div>
         }
 
         @if (resetSuccess()) {
-          <div style="background: #4dff88; color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+          <div style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
             {{ resetSuccess() }}
           </div>
         } @else {
@@ -300,7 +300,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
     }
 
     .auth-error-banner {
-      background: #ff4d4d;
+      background: var(--danger);
       color: var(--black);
       border: 3px solid var(--black);
       padding: 0.75rem 1rem;
@@ -349,7 +349,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
 
     .auth-input:focus {
       border-color: var(--yellow-dark);
-      box-shadow: 0 0 0 3px rgba(232, 189, 24, 0.15);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--yellow) 15%, transparent);
     }
 
     .auth-input::placeholder {
@@ -547,7 +547,7 @@ import { LoginRequest } from '../../../../core/models/user.model';
       .dec-1 {
         top: 2.5rem;
         right: -40px;
-        box-shadow: inset -6px -6px 0 rgba(0,0,0,0.1);
+        box-shadow: inset -6px -6px 0 color-mix(in srgb, var(--black) 10%, transparent);
       }
 
       .dec-box {

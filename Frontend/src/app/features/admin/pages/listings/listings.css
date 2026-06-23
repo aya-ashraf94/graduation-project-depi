@@ -112,7 +112,7 @@
 }
 
 .admin-data-table tbody tr:hover {
-  background-color: #faf9f6; /* Very soft warm cream color */
+  background-color: var(--surface); /* Very soft warm cream color */
 }
 
 .admin-data-table tbody tr:last-child td {
@@ -319,7 +319,7 @@
 
 .status-pill.status-reserved {
   background-color: var(--warning-light);
-  color: #e65100;
+  color: var(--warning-dark);
 }
 
 .condition-pill {
@@ -342,7 +342,7 @@
 }
 
 .condition-pill.cond-used {
-  background: #fff3bf;
+  background: var(--warning-light);
   border-color: var(--warning);
   color: var(--warning-dark);
 }
@@ -357,7 +357,7 @@
   display: inline-block;
   background-color: var(--warning-light);
   color: var(--warning-dark);
-  border: 1px solid #ffe066;
+  border: 1px solid var(--warning-light);
   font-family: var(--font-primary);
   font-weight: 800;
   font-size: 0.7rem;
@@ -437,7 +437,7 @@
 .verify-btn.active-verified {
   background-color: var(--success-light);
   color: var(--success-dark);
-  border-color: #c3fae8;
+  border-color: var(--success-light);
 }
 
 .verify-btn.active-verified:hover {

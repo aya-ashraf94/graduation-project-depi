@@ -1,5 +1,5 @@
 const db = require("../db");
-const { orders, products, users, notifications } = require("../db/schema");
+const { orders, products, users, notifications, coupons } = require("../db/schema");
 const { eq, or, and, desc } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { updateUserStats } = require("../utils/userStats");
@@ -55,7 +55,7 @@ const formatOrder = (row, currentUserId) => {
 const createOrder = async (req, res) => {
   try {
     const buyerId = req.user.id;
-    const { productId, paymentMethod, shippingAddress, notes } = req.body;
+    const { productId, paymentMethod, shippingAddress, notes, couponCode } = req.body;
 
     if (!productId || !paymentMethod || !shippingAddress) {
       return res.status(400).json({ message: "Please provide product, payment method, and shipping address" });
@@ -75,14 +75,35 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "You cannot purchase your own product" });
     }
 
+    let finalPrice = product.price;
+    if (couponCode) {
+      const [coupon] = await db.select().from(coupons).where(eq(coupons.code, couponCode.trim().toUpperCase())).limit(1);
+      if (!coupon || !coupon.isActive) {
+        return res.status(400).json({ message: "Invalid or inactive coupon code" });
+      }
+      if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
+        return res.status(400).json({ message: "Coupon has expired" });
+      }
+      
+      let discount = 0;
+      if (coupon.discountType === 'percentage') {
+        discount = (product.price * coupon.discountValue) / 100;
+      } else {
+        discount = coupon.discountValue;
+      }
+      
+      finalPrice = Math.max(0, product.price - discount);
+    }
+
     const [order] = await db.insert(orders).values({
       productId,
       buyerId,
       sellerId,
-      price: product.price,
+      price: finalPrice,
       paymentMethod,
       shippingAddress,
       notes: notes || null,
+      couponCode: couponCode ? couponCode.trim().toUpperCase() : null,
     }).returning();
 
     await db.update(products).set({
@@ -262,9 +283,58 @@ const updateOrder = async (req, res) => {
   }
 };
 
+const validateCoupon = async (req, res) => {
+  try {
+    const { code, productId } = req.body;
+    if (!code || !productId) {
+      return res.status(400).json({ message: "Coupon code and product ID are required" });
+    }
+
+    const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const [coupon] = await db.select().from(coupons).where(eq(coupons.code, code.trim().toUpperCase())).limit(1);
+    if (!coupon) {
+      return res.status(404).json({ message: "Coupon code not found" });
+    }
+
+    if (!coupon.isActive) {
+      return res.status(400).json({ message: "Coupon is inactive" });
+    }
+
+    if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
+      return res.status(400).json({ message: "Coupon has expired" });
+    }
+
+    let discountAmount = 0;
+    if (coupon.discountType === 'percentage') {
+      discountAmount = (product.price * coupon.discountValue) / 100;
+    } else {
+      discountAmount = coupon.discountValue;
+    }
+    
+    discountAmount = Math.min(discountAmount, product.price);
+    const finalPrice = Math.max(0, product.price - discountAmount);
+
+    res.json({
+      valid: true,
+      discountAmount,
+      finalPrice,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue
+    });
+  } catch (error) {
+    console.error("Error validating coupon:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrdersByUser,
   getOrderById,
   updateOrder,
+  validateCoupon,
 };

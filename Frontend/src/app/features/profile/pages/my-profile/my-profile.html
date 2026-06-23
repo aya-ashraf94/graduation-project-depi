@@ -40,8 +40,8 @@
               <h1 class="profile-name">{{ user.firstName }} {{ user.lastName }}</h1>
               <div class="verify-badge" title="Verified Trader" *ngIf="user.isVerified">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle;">
-                  <path d="M23 12l-2.4-2.7.3-3.6-3.5-.8-1.8-3.2-3.3 1.4-3.3-1.4-1.8 3.2-3.5.8.3 3.6-2.4 2.7 2.4 2.7-.3 3.6 3.5.8 1.8 3.2 3.3-1.4 3.3 1.4 1.8-3.2 3.5-.8-.3-3.6z" fill="#e8bd18"/>
-                  <path d="M9.5 15.5L5.5 11.5L6.9 10.1L9.5 12.7L16.1 6.1L17.5 7.5L9.5 15.5Z" fill="#ffffff"/>
+                  <path d="M23 12l-2.4-2.7.3-3.6-3.5-.8-1.8-3.2-3.3 1.4-3.3-1.4-1.8 3.2-3.5.8.3 3.6-2.4 2.7 2.4 2.7-.3 3.6 3.5.8 1.8 3.2 3.3-1.4 3.3 1.4 1.8-3.2 3.5-.8-.3-3.6z" fill="var(--yellow)"/>
+                  <path d="M9.5 15.5L5.5 11.5L6.9 10.1L9.5 12.7L16.1 6.1L17.5 7.5L9.5 15.5Z" fill="var(--white)"/>
                 </svg>
               </div>
               <span class="admin-badge-team" *ngIf="user.role === 'admin'">🛡️ Nafa3ni Team</span>
@@ -153,7 +153,7 @@
         <!-- Rating -->
         <div class="stats-col" (click)="selectTab('reviews')" style="cursor: pointer;">
           <div class="stats-icon-wrap icon-rating">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: #e8bd18;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: var(--yellow);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
           <div class="stats-text-stack">
             <div class="stats-val">{{ (user.rating || 4.9) | number:'1.1-1' }}</div>
@@ -279,7 +279,7 @@
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    [attr.fill]="wishlistService.isWishlisted(item.id) ? '#e23b3b' : 'none'"
+                    [attr.fill]="wishlistService.isWishlisted(item.id) ? 'var(--danger)' : 'none'"
                     stroke="currentColor"
                     stroke-width="2.5"
                   >
@@ -764,8 +764,8 @@
                 <div class="right-actions-wrap">
                   <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
                   <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
-                  <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745; display: inline-flex; align-items: center;"><span class="pulse-dot"></span>⏳ AWAITING BUYER RECEIPT</span>
-                  <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:#e8f5e9;color:#1a6b35;border-color:#28a745;">✓ DELIVERED</span>
+                  <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:var(--success-light);color:var(--success-dark);border-color:var(--success); display: inline-flex; align-items: center;"><span class="pulse-dot"></span>⏳ AWAITING BUYER RECEIPT</span>
+                  <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:var(--success-light);color:var(--success-dark);border-color:var(--success);">✓ DELIVERED</span>
                   <button *ngIf="order.status === 'cancelled'" type="button" class="btn-order-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
                 </div>
               </div>
@@ -850,7 +850,7 @@
                     </div>
                     <div class="rev-buyer-meta">
                       <div class="rev-buyer-name">{{ getReviewerName(review) }}</div>
-                      <div class="rev-stars-row" style="color: #e8bd18; font-weight: bold;">{{ getStars(review.rating) }}</div>
+                      <div class="rev-stars-row" style="color: var(--yellow); font-weight: bold;">{{ getStars(review.rating) }}</div>
                     </div>
                   </div>
                   <div class="rev-date">{{ review.createdAt | date:'mediumDate' }}</div>
@@ -880,7 +880,7 @@
       <div class="trust-strip">
         <div class="trust-item">
           <div class="trust-icon icon-green">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11 11 13 15 9"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 11 11 13 15 9"/></svg>
           </div>
           <div class="trust-info">
             <h4 class="trust-title">Trusted Seller</h4>
@@ -889,7 +889,7 @@
         </div>
         <div class="trust-item">
           <div class="trust-icon icon-blue">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
           <div class="trust-info">
             <h4 class="trust-title">Campus Handover</h4>
@@ -898,7 +898,7 @@
         </div>
         <div class="trust-item">
           <div class="trust-icon icon-purple">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </div>
           <div class="trust-info">
             <h4 class="trust-title">Secure Payments</h4>
@@ -907,7 +907,7 @@
         </div>
         <div class="trust-item">
           <div class="trust-icon icon-yellow">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#e8bd18" stroke="#000" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--yellow)" stroke="var(--black)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </div>
           <div class="trust-info">
             <h4 class="trust-title">Top Rated</h4>
@@ -1126,10 +1126,10 @@
 
     <h3 class="modal-standard-title" style="margin-bottom: 1.5rem; text-align: center; font-family: var(--font-primary); font-weight: 900;">LEAVE A REVIEW</h3>
 
-    <div *ngIf="reviewSuccess()" class="banner banner-success" style="background: #d4edda; color: #155724; border: 2px solid #c3e6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
+    <div *ngIf="reviewSuccess()" class="banner banner-success" style="background: var(--success-light); color: var(--success-dark); border: 2px solid var(--success-light); padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
       {{ reviewSuccess() }}
     </div>
-    <div *ngIf="reviewError()" class="banner banner-error" style="background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
+    <div *ngIf="reviewError()" class="banner banner-error" style="background: var(--danger-light); color: var(--danger-dark); border: 2px solid var(--danger-light); padding: 10px; margin-bottom: 1rem; font-family: var(--font-secondary); font-weight: bold; border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black);">
       {{ reviewError() }}
     </div>
 
@@ -1167,7 +1167,7 @@
     <button class="modal-standard-close" (click)="closeDeleteModal()">✕</button>
 
     <div class="modal-standard-icon-header">
-      <div class="lock-icon-circle" style="background: #ffebee; border-color: #ff4d4d; color: #c62828;">
+      <div class="lock-icon-circle" style="background: var(--danger-light); border-color: var(--danger); color: var(--danger-dark);">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -1185,7 +1185,7 @@
       <button type="button" class="modal-btn-secondary" (click)="closeDeleteModal()" style="margin: 0; padding: 10px 20px; font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); cursor: pointer;">
         Cancel
       </button>
-      <button type="button" class="modal-btn-primary" (click)="deleteSelectedProduct()" style="margin: 0; padding: 10px 20px; background: #ff4d4d; color: var(--white); font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); cursor: pointer;">
+      <button type="button" class="modal-btn-primary" (click)="deleteSelectedProduct()" style="margin: 0; padding: 10px 20px; background: var(--danger); color: var(--white); font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); cursor: pointer;">
         Delete
       </button>
     </div>

@@ -63,4 +63,15 @@ export class OrderService {
   updateOrder(id: string, payload: UpdateOrderRequest): Observable<Order> {
     return this.http.patch<Order>(`${this.apiUrl}/${id}`, payload);
   }
+
+  /** VALIDATE DISCOUNT COUPON */
+  validateCoupon(code: string, productId: string): Observable<{
+    valid: boolean;
+    discountAmount: number;
+    finalPrice: number;
+    discountType: string;
+    discountValue: number;
+  }> {
+    return this.http.post<any>(`${this.apiUrl}/validate-coupon`, { code, productId });
+  }
 }
