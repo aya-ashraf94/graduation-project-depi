@@ -66,13 +66,17 @@ export class ProductService {
   // ── Write methods (API calls) ─────────────────────────────────────────────
 
   /** Create new product */
-  createProduct(payload: CreateProductRequest): Observable<Product> {
-    const dynamicAttributes = {
-      condition: payload.condition === 'new_with_tags' ? 'New' : 'Used',
-      conditionScore: payload.conditionScore,
-      brand: payload.brand,
-      size: payload.size
-    };
+  createProduct(payload: any): Observable<Product> {
+    let dynamicAttributes: any = (payload as any).dynamicAttributes || {};
+
+    if (!(payload as any).dynamicAttributes) {
+      dynamicAttributes = {
+        condition: payload.condition === 'new_with_tags' ? 'New' : 'Used',
+        conditionScore: payload.conditionScore,
+        brand: payload.brand,
+        size: payload.size
+      };
+    }
 
     const backendPayload = {
       title: payload.title,

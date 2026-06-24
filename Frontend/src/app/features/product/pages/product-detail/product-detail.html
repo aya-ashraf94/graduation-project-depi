@@ -83,9 +83,9 @@
 
           <!-- Pricing Row V3 -->
           <div class="pricing-row-v3">
-            <div class="price-display-v3">{{ product.price | currencyFormat }}</div>
-            <div class="price-crossed-v3" *ngIf="marketAverage > product.price">{{ marketAverage | currencyFormat }}</div>
-            <span class="price-discount-badge-v3" *ngIf="marketAverage > product.price">Save {{ priceSavingsPercent }}%</span>
+            <div class="price-display-v3">{{ effectivePrice | currencyFormat }}</div>
+            <div class="price-crossed-v3" *ngIf="product.price > effectivePrice">{{ product.price | currencyFormat }}</div>
+            <span class="price-discount-badge-v3" *ngIf="product.price > effectivePrice">Save {{ priceSavingsPercent }}%</span>
           </div>
 
           <!-- Checkout Actions Grid -->
@@ -547,124 +547,143 @@
 </div>
 
 <!-- BUY NOW MODAL -->
-<div class="report-overlay" *ngIf="showBuyModal" (click)="closeBuy()">
-  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 480px; padding: 2rem;">
-    <button class="modal-standard-close" (click)="closeBuy()">✕</button>
-
-    <h3 class="modal-standard-title" style="margin-bottom: 1rem; text-align: center; font-weight: 800;">Checkout Order</h3>
-    <p style="font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem; line-height: 1.5;">
-      You are purchasing <strong>{{ product.title }}</strong> for <strong>{{ product.price | currencyFormat }}</strong>.
-    </p>
-
-    <!-- Success / Error Banners -->
-    <div *ngIf="buySuccess()" style="background: var(--success-light); color: var(--success-dark); border: 1.5px solid var(--success-light); padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center;">
-      {{ buySuccess() }}
+<div class="report-overlay" *ngIf="showBuyModal">
+  <div class="checkout-card">
+    
+    <!-- ===== HEADER ===== -->
+    <div style="padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--black);">
+      <h3 style="font-family: var(--font-primary); font-size: 1.4rem; font-weight: 900; text-transform: uppercase; color: var(--black); margin: 0; line-height: 1;">Checkout</h3>
+      <button (click)="closeBuy()" style="width: 32px; height: 32px; border-radius: 50%; background: var(--white); border: 2px solid var(--black); color: var(--black); font-size: 1rem; font-weight: 900; cursor: pointer; box-shadow: 2px 2px 0 var(--black); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s ease; line-height: 1;"
+        onmouseover="this.style.background='var(--danger)'; this.style.color='white'; this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)'"
+        onmouseout="this.style.background='var(--white)'; this.style.color='var(--black)'; this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)'">✕</button>
     </div>
 
-    <div *ngIf="buyError()" style="background: var(--danger-light); color: var(--danger-dark); border: 1.5px solid var(--danger-light); padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center;">
-      {{ buyError() }}
+    <div class="checkout-card-body">
+
+      <!-- ===== SUCCESS / ERROR BANNERS ===== -->
+      <div *ngIf="buySuccess()" style="background: var(--success-light); color: var(--success-dark); border: 2px solid var(--success); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
+        {{ buySuccess() }}
+      </div>
+      <div *ngIf="buyError()" style="background: var(--danger-light); color: var(--danger-dark); border: 2px solid var(--danger); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
+        {{ buyError() }}
+      </div>
+
+      <form (ngSubmit)="submitOrder()" *ngIf="!buySuccess()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
+
+        <div class="checkout-columns">
+
+          <!-- ===== LEFT COLUMN: Payment + Address + Coupon ===== -->
+          <div class="checkout-left-col">
+
+            <!-- Payment Method (inline) -->
+            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Payment Method</label>
+              <div class="checkout-payment-methods">
+                <label style="flex: 1; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-family: var(--font-secondary); font-weight: 600; font-size: 0.8rem; padding: 0.4rem 0.65rem; border: 1.5px solid var(--border); border-radius: 6px; transition: all 0.12s ease;"
+                  [style.borderColor]="paymentMethod === 'cash_on_delivery' ? 'var(--black)' : 'var(--border)'"
+                  [style.background]="paymentMethod === 'cash_on_delivery' ? 'var(--surface-2)' : 'var(--white)'">
+                  <input type="radio" name="payMethod" value="cash_on_delivery" [(ngModel)]="paymentMethod" style="accent-color: var(--yellow-dark);" />
+                  <span style="font-size: 1rem;">💵</span>
+                  <span>Cash on Delivery</span>
+                </label>
+                <label style="flex: 1; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-family: var(--font-secondary); font-weight: 600; font-size: 0.8rem; padding: 0.4rem 0.65rem; border: 1.5px solid var(--border); border-radius: 6px; transition: all 0.12s ease;"
+                  [style.borderColor]="paymentMethod === 'online' ? 'var(--black)' : 'var(--border)'"
+                  [style.background]="paymentMethod === 'online' ? 'var(--surface-2)' : 'var(--white)'">
+                  <input type="radio" name="payMethod" value="online" [(ngModel)]="paymentMethod" style="accent-color: var(--yellow-dark);" />
+                  <span style="font-size: 1rem;">🏦</span>
+                  <span>Bank Transfer</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Shipping Address (compact) -->
+            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Shipping Address</label>
+              <div class="checkout-address-fields">
+                <input type="text" [(ngModel)]="shippingCity" name="shippingCity" placeholder="City" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingArea" name="shippingArea" placeholder="Area" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingStreet" name="shippingStreet" placeholder="Street" style="flex: 2; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+              </div>
+              <input type="text" [(ngModel)]="shippingBuilding" name="shippingBuilding" placeholder="Building / Apartment (optional)" style="width: 100%; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; box-sizing: border-box;" />
+            </div>
+
+            <!-- Coupon Code -->
+            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Coupon Code <span style="color: var(--gray-3); font-weight: 400;">(optional)</span></label>
+              <div style="display: flex; gap: 0.4rem; align-items: center;">
+                <input type="text" [(ngModel)]="couponCode" name="couponCode" placeholder="Enter code" [disabled]="appliedCoupon"
+                  style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; text-transform: uppercase; box-sizing: border-box;"
+                  [style.borderColor]="appliedCoupon ? 'var(--success)' : 'var(--border)'" />
+                <button type="button" (click)="applyCoupon()" *ngIf="!appliedCoupon" [disabled]="!couponCode || isValidatingCoupon"
+                  style="padding: 0.45rem 0.85rem; background: var(--black); color: var(--white); border: 1.5px solid var(--black); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap; box-shadow: 2px 2px 0 var(--black); transition: all 0.12s ease;"
+                  onmouseover="this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)'"
+                  onmouseout="this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)'">{{ isValidatingCoupon ? '...' : 'Apply' }}</button>
+                <button type="button" (click)="removeCoupon()" *ngIf="appliedCoupon"
+                  style="padding: 0.45rem 0.85rem; background: var(--danger-light); color: var(--danger-dark); border: 1.5px solid var(--danger); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap;">Remove</button>
+              </div>
+              <span *ngIf="couponValidationMessage" [style.color]="appliedCoupon ? 'var(--success-dark)' : 'var(--danger-dark)'" style="font-size: 0.65rem; font-weight: 600; margin-top: 1px;">{{ couponValidationMessage }}</span>
+            </div>
+
+          </div>
+
+          <!-- ===== RIGHT COLUMN: Summary Card ===== -->
+          <div class="checkout-right-col">
+
+            <!-- Order Summary Card -->
+            <div style="border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem;">
+              <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1.5px solid var(--border);">
+                <img *ngIf="product.images.length" [src]="product.images[0]" alt="" style="width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1.5px solid var(--black); flex-shrink: 0;" onerror="this.style.display='none'" />
+                <div style="flex: 1; min-width: 0;">
+                  <p style="font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; color: var(--black); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.title }}</p>
+                  <p style="font-family: var(--font-secondary); font-size: 0.7rem; color: var(--gray-3); margin: 0.1rem 0 0;">Qty: 1</p>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.2rem; font-family: var(--font-secondary); font-size: 0.75rem;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--gray-3);">Subtotal</span>
+                  <span style="font-weight: 700; color: var(--black);">{{ effectivePrice | currencyFormat }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--gray-3);">Shipping</span>
+                  <span style="font-weight: 600; color: var(--gray-3);">To be agreed</span>
+                </div>
+                <div *ngIf="appliedCoupon" style="display: flex; justify-content: space-between; color: var(--success-dark); font-weight: 700;">
+                  <span>Discount</span>
+                  <span>-{{ couponDiscount | currencyFormat }}</span>
+                </div>
+                <div style="border-top: 1.5px solid var(--black); margin-top: 0.2rem; padding-top: 0.3rem; display: flex; justify-content: space-between; font-weight: 900; font-size: 0.9rem; color: var(--black);">
+                  <span>Total</span>
+                  <span>{{ (effectivePrice - (appliedCoupon ? couponDiscount : 0)) | currencyFormat }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security + Notes stack -->
+            <div style="border: 2px solid var(--black); border-radius: 8px; padding: 0.6rem 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1.5px solid var(--border);">
+                <span style="font-size: 0.9rem;">🔒</span>
+                <span style="font-family: var(--font-secondary); font-size: 0.65rem; color: var(--gray-3);">Secure checkout</span>
+              </div>
+              <label style="font-family: var(--font-primary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--gray-3); letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Notes</label>
+              <input type="text" [(ngModel)]="orderNotes" name="orderNotes" placeholder="e.g. Call before delivery"
+                style="width: 100%; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.75rem; outline: none; box-sizing: border-box;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== BUTTONS ===== -->
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; border-top: 2px solid var(--black); padding-top: 0.75rem;">
+          <button type="button" (click)="closeBuy()" [disabled]="buyLoading"
+            style="padding: 0; background: transparent; color: var(--gray-3); border: none; font-family: var(--font-secondary); font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color 0.12s ease;"
+            onmouseover="this.style.color='var(--black)'"
+            onmouseout="this.style.color='var(--gray-3)'">Cancel</button>
+          <button type="submit" [disabled]="buyLoading || !shippingCity || !shippingStreet"
+            style="padding: 0.7rem 2rem; background: var(--yellow); color: var(--black); border: 2px solid var(--black); border-radius: 8px; font-family: var(--font-primary); font-size: 0.85rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 4px 4px 0 var(--black); transition: all 0.12s ease; letter-spacing: 0.04em;"
+            onmouseover="this.style.transform='translate(-2px,-2px)'; this.style.boxShadow='6px 6px 0 var(--black)'; this.style.background='var(--yellow-dark)'"
+            onmouseout="this.style.transform='none'; this.style.boxShadow='4px 4px 0 var(--black)'; this.style.background='var(--yellow)'">{{ buyLoading ? 'Placing Order...' : 'Place Order' }}</button>
+        </div>
+      </form>
     </div>
-
-    <form (ngSubmit)="submitOrder()" *ngIf="!buySuccess()" style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%; text-align: left;">
-      <!-- Payment Method -->
-      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; color: var(--gray-3);">PAYMENT METHOD</label>
-        <div style="display: flex; gap: 1.5rem;">
-          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
-            <input type="radio" name="payMethod" value="cash_on_delivery" [(ngModel)]="paymentMethod" style="accent-color: var(--yellow-dark);" />
-            <span>Cash on Delivery</span>
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
-            <input type="radio" name="payMethod" value="online" [(ngModel)]="paymentMethod" style="accent-color: var(--yellow-dark);" />
-            <span>Bank Transfer</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Shipping Address -->
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; color: var(--gray-3);">SHIPPING ADDRESS</label>
-        <textarea 
-          [(ngModel)]="shippingAddress" 
-          name="shippingAddress" 
-          required 
-          rows="3" 
-          placeholder="Enter your address (e.g. Cairo, Tagamoa, Building 14)" 
-          style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; resize: vertical;"
-        ></textarea>
-      </div>
-
-      <!-- Notes -->
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; color: var(--gray-3);">ORDER NOTES (OPTIONAL)</label>
-        <input 
-          type="text" 
-          [(ngModel)]="orderNotes" 
-          name="orderNotes" 
-          placeholder="e.g. Call before delivery" 
-          style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none;" 
-        />
-      </div>
-
-      <!-- Coupon Code -->
-      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-        <label style="font-weight: 700; font-size: 0.85rem; color: var(--gray-3);">DISCOUNT COUPON (OPTIONAL)</label>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <input 
-            type="text" 
-            [(ngModel)]="couponCode" 
-            name="couponCode" 
-            placeholder="e.g. WELCOME10" 
-            [disabled]="appliedCoupon"
-            style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; flex-grow: 1; text-transform: uppercase;" 
-          />
-          <button type="button" 
-                  (click)="applyCoupon()"
-                  *ngIf="!appliedCoupon"
-                  [disabled]="!couponCode || isValidatingCoupon"
-                  class="btn"
-                  style="padding: 10px 14px; background: var(--black); color: var(--white); border-radius: 8px; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;">
-            {{ isValidatingCoupon ? 'Checking...' : 'Apply' }}
-          </button>
-          <button type="button" 
-                  (click)="removeCoupon()"
-                  *ngIf="appliedCoupon"
-                  class="btn"
-                  style="padding: 10px 14px; background: var(--danger-light); color: var(--danger-dark); border-radius: 8px; font-weight: 700; font-size: 0.85rem; border: 1px solid var(--danger-light); cursor: pointer;">
-            Remove
-          </button>
-        </div>
-        <span *ngIf="couponValidationMessage" 
-              [style.color]="appliedCoupon ? 'var(--success-dark)' : 'var(--danger-dark)'"
-              style="font-size: 0.75rem; font-weight: 600; margin-top: 2px;">
-          {{ couponValidationMessage }}
-        </span>
-      </div>
-
-      <!-- Price Breakdown -->
-      <div *ngIf="appliedCoupon" style="border-top: 1px dashed var(--border); padding-top: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem;">
-        <div style="display: flex; justify-content: space-between; color: var(--gray-3);">
-          <span>Subtotal</span>
-          <span>{{ product.price | currencyFormat }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; color: var(--success-dark); font-weight: 600;">
-          <span>Coupon Discount</span>
-          <span>-{{ couponDiscount | currencyFormat }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1rem; border-top: 1px solid var(--border); padding-top: 0.25rem; margin-top: 0.25rem;">
-          <span>Total Price</span>
-          <span>{{ (product.price - couponDiscount) | currencyFormat }}</span>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end;">
-        <button type="button" class="modal-btn-secondary" (click)="closeBuy()" [disabled]="buyLoading" style="margin: 0; padding: 10px 20px; border-radius: 8px; font-weight: 600;">Cancel</button>
-        <button type="submit" class="modal-btn-primary" [disabled]="buyLoading || !shippingAddress" style="margin: 0; padding: 10px 20px; background: var(--yellow); color: var(--black); border: 2px solid var(--black); box-shadow: 3px 3px 0 var(--black); border-radius: 8px; font-weight: 900;">
-          {{ buyLoading ? 'Placing Order...' : 'Place Order' }}
-        </button>
-      </div>
-    </form>
   </div>
 </div>
 } @else {

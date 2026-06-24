@@ -33,3 +33,6 @@
 
 <!-- Global Confirmation Modals -->
 <app-confirm></app-confirm>
+
+<!-- Lucky Cat Easter Egg Game -->
+<app-lucky-cat *ngIf="!isAuthRoute() && !isAdminRoute() && !isListingFormRoute()"></app-lucky-cat>

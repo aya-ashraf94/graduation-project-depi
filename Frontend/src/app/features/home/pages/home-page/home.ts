@@ -10,6 +10,7 @@ import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pip
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -104,7 +105,7 @@ export class Home implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     private productService: ProductService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {

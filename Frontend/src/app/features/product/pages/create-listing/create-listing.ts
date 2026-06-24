@@ -301,6 +301,7 @@ export class CreateListing implements OnInit {
       location: this.city,
       phoneNumber: this.phone,
       showContactInfo: this.showContact,
+      dynamicAttributes: this.dynamicFields,
     };
 
     this.productService.createProduct(payload).subscribe({
@@ -355,6 +356,7 @@ export class CreateListing implements OnInit {
       phoneNumber: this.phone || '0000000000',
       showContactInfo: this.showContact,
       status: 'draft',
+      dynamicAttributes: this.dynamicFields,
     };
 
     this.productService.createProduct(payload).subscribe({

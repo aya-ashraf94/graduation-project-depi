@@ -122,6 +122,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/chat/pages/chat-page/chat-page').then((m) => m.ChatPage),
   },
+  {
+    path: 'scratch-card',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/scratch-card/scratch-card').then((m) => m.ScratchCard),
+  },
 
   // ── Admin Routes ─────────────────────────────────────────────
   {

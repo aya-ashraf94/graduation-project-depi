@@ -75,7 +75,8 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "You cannot purchase your own product" });
     }
 
-    let finalPrice = product.price;
+    let basePrice = req.body.price || product.price;
+    let finalPrice = basePrice;
     if (couponCode) {
       const [coupon] = await db.select().from(coupons).where(eq(coupons.code, couponCode.trim().toUpperCase())).limit(1);
       if (!coupon || !coupon.isActive) {
@@ -87,12 +88,12 @@ const createOrder = async (req, res) => {
       
       let discount = 0;
       if (coupon.discountType === 'percentage') {
-        discount = (product.price * coupon.discountValue) / 100;
+        discount = (basePrice * coupon.discountValue) / 100;
       } else {
         discount = coupon.discountValue;
       }
-      
-      finalPrice = Math.max(0, product.price - discount);
+
+      finalPrice = Math.max(0, basePrice - discount);
     }
 
     const [order] = await db.insert(orders).values({
@@ -285,7 +286,7 @@ const updateOrder = async (req, res) => {
 
 const validateCoupon = async (req, res) => {
   try {
-    const { code, productId } = req.body;
+    const { code, productId, price } = req.body;
     if (!code || !productId) {
       return res.status(400).json({ message: "Coupon code and product ID are required" });
     }
@@ -308,15 +309,16 @@ const validateCoupon = async (req, res) => {
       return res.status(400).json({ message: "Coupon has expired" });
     }
 
+    const basePrice = price || product.price;
     let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
-      discountAmount = (product.price * coupon.discountValue) / 100;
+      discountAmount = (basePrice * coupon.discountValue) / 100;
     } else {
       discountAmount = coupon.discountValue;
     }
-    
-    discountAmount = Math.min(discountAmount, product.price);
-    const finalPrice = Math.max(0, product.price - discountAmount);
+
+    discountAmount = Math.min(discountAmount, basePrice);
+    const finalPrice = Math.max(0, basePrice - discountAmount);
 
     res.json({
       valid: true,
@@ -331,10 +333,40 @@ const validateCoupon = async (req, res) => {
   }
 };
 
+const getRandomActiveCoupon = async (req, res) => {
+  try {
+    const allCoupons = await db.select().from(coupons).where(eq(coupons.isActive, true));
+    
+    // Filter out expired coupons
+    const validCoupons = allCoupons.filter(coupon => {
+      return !coupon.expiryDate || new Date(coupon.expiryDate) > new Date();
+    });
+
+    if (validCoupons.length === 0) {
+      return res.status(404).json({ message: "No active coupons available at the moment. Try again later!" });
+    }
+
+    // Pick one at random
+    const randomIndex = Math.floor(Math.random() * validCoupons.length);
+    const chosenCoupon = validCoupons[randomIndex];
+
+    res.json({
+      code: chosenCoupon.code,
+      discountType: chosenCoupon.discountType,
+      discountValue: chosenCoupon.discountValue,
+      expiryDate: chosenCoupon.expiryDate
+    });
+  } catch (error) {
+    console.error("Error fetching random coupon:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrdersByUser,
   getOrderById,
   updateOrder,
   validateCoupon,
+  getRandomActiveCoupon,
 };

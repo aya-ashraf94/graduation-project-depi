@@ -143,19 +143,12 @@
                 <div class="product-img-wrap skeleton-img-wrap">
                   <div class="skeleton-shimmer"></div>
                 </div>
-                <div class="product-info">
-                  <div class="product-meta" style="flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div class="skeleton-shimmer skeleton-brand"></div>
-                    <div class="skeleton-shimmer skeleton-title"></div>
+                <div class="product-content">
+                  <div class="skeleton-shimmer skeleton-title" style="margin-bottom: 0.6rem;"></div>
+                  <div class="metadata-price-row">
+                    <div class="skeleton-shimmer skeleton-meta"></div>
+                    <div class="skeleton-shimmer skeleton-price" style="width: 4.5rem;"></div>
                   </div>
-                  <div class="skeleton-shimmer skeleton-price"></div>
-                </div>
-                <div class="product-tags">
-                  <div class="tag-row">
-                    <div class="skeleton-shimmer skeleton-tag"></div>
-                    <div class="skeleton-shimmer skeleton-tag" style="width: 4rem;"></div>
-                  </div>
-                  <div class="skeleton-shimmer skeleton-score"></div>
                 </div>
                 <div class="product-footer">
                   <div class="skeleton-shimmer skeleton-loc"></div>
@@ -203,21 +196,16 @@
               </div>
             </div>
 
-            <div class="product-info">
-              <div class="product-meta">
-                <div class="brand-name" *ngIf="product.brand">{{ product.brand }}</div>
-                <h3 class="item-name">{{ product.title }}</h3>
+            <div class="product-content">
+              <h3 class="item-name" [routerLink]="['/products', product.id]" style="cursor: pointer;">{{ product.title }}</h3>
+              <div class="metadata-price-row">
+                <div class="card-metadata">
+                  <span>{{ productService.conditionLabels[product.condition] || product.condition }}</span>
+                  <span *ngIf="product.conditionScore"> • {{ product.conditionScore }}/10</span>
+                  <span *ngIf="product.size"> • {{ product.size }}</span>
+                </div>
+                <div class="price-box">{{ product.price | currencyFormat }}</div>
               </div>
-              <div class="price-box">{{ product.price | currencyFormat }}</div>
-            </div>
-
-            <div class="product-tags">
-              <div class="tag-row">
-                <span *ngIf="product.size" class="tag-box">{{ product.size }}</span>
-                <span *ngIf="product.categoryName" class="tag-box">{{ product.categoryName }}</span>
-                <span class="tag-box">{{ productService.conditionLabels[product.condition] || product.condition }}</span>
-              </div>
-              <span class="score-tag">SCORE: {{ product.conditionScore }}/10</span>
             </div>
 
             <div class="product-footer">
