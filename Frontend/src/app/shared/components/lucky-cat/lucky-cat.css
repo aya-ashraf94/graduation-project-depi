@@ -1,0 +1,299 @@
+/* ===== GAME AREA ===== */
+.game-area {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.cat-slot {
+  position: absolute;
+  top: var(--cat-y, 40%);
+  left: var(--cat-x, 50%);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.is-entering .cat-slot {
+  animation: catDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.is-dodging .cat-slot {
+  animation: dodgePoof 0.4s ease-out forwards;
+}
+
+@keyframes catDrop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  50% { transform: translate(-50%, -50%) scale(1.12); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes dodgePoof {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  40% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.3) rotate(20deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1) rotate(40deg); }
+}
+
+/* ===== SVG CAT ===== */
+.cat-svg {
+  width: 100px;
+  height: auto;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.25));
+  transition: transform 0.2s ease;
+}
+
+.cat-slot:hover .cat-svg {
+  transform: scale(1.08);
+}
+
+.caught-svg {
+  animation: svgShake 0.3s ease-in-out 3;
+}
+
+.tail {
+  transform-origin: 82px 82px;
+  animation: tailWag 2s ease-in-out infinite;
+}
+
+@keyframes tailWag {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(22deg); }
+}
+
+.eyeball {
+  animation: svgBlink 3s infinite;
+}
+
+@keyframes svgBlink {
+  0%, 88%, 96% { transform: scaleY(1); }
+  92% { transform: scaleY(0.12); }
+}
+
+.ear {
+  transform-origin: bottom center;
+  animation: earTwitch 5s ease-in-out infinite;
+}
+
+@keyframes earTwitch {
+  0%, 97%, 100% { transform: rotate(0deg); }
+  98% { transform: rotate(-10deg); }
+}
+
+.eyes-dizzy {
+  display: none;
+}
+
+.caught-svg .eyes-normal { display: none; }
+.caught-svg .eyes-dizzy { display: block; }
+
+@keyframes svgShake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-6px) rotate(-8deg); }
+  75% { transform: translateX(6px) rotate(8deg); }
+}
+
+/* ===== SPEECH BUBBLE ===== */
+.speech-bubble {
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--font-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 3px 0 var(--black);
+  white-space: nowrap;
+  pointer-events: none;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
+  order: -1;
+  position: relative;
+  animation: bubbleFloat 2s ease-in-out infinite alternate;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 10px 8px 0 8px;
+  border-style: solid;
+  border-color: var(--black) transparent transparent transparent;
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 9px 7px 0 7px;
+  border-style: solid;
+  border-color: var(--white) transparent transparent transparent;
+  z-index: 1;
+}
+
+.speech-bubble.nervous {
+  border-color: var(--danger);
+  box-shadow: 3px 3px 0 var(--danger);
+  animation: bubbleFloat 2s ease-in-out infinite alternate, urgentPulse 0.8s ease-in-out infinite alternate;
+}
+
+.speech-bubble.nervous::after {
+  border-color: var(--danger) transparent transparent transparent;
+}
+
+@keyframes bubbleFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+@keyframes urgentPulse {
+  0% { box-shadow: 3px 3px 0 var(--danger); }
+  100% { box-shadow: 5px 5px 0 var(--danger); }
+}
+
+/* ===== CONFETTI ===== */
+.confetti-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999998;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  left: var(--x, 50%);
+  width: 10px;
+  height: 10px;
+  background: var(--color, var(--yellow));
+  border: 1px solid var(--black);
+  border-radius: 1px;
+  animation: confettiFall 1.8s ease-out forwards;
+  animation-delay: var(--delay, 0s);
+  transform: rotate(var(--rotation, 0deg));
+}
+
+@keyframes confettiFall {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  50% { opacity: 1; transform: translateY(50vh) rotate(720deg) scale(1.1); }
+  100% { opacity: 0; transform: translateY(100vh) rotate(1080deg) scale(0.4); }
+}
+
+/* ===== CAUGHT TOAST ===== */
+.caught-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999997;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--yellow);
+  color: var(--black);
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 2.2rem;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border: 3px solid var(--black);
+  border-radius: var(--radius-sm);
+  box-shadow: 5px 5px 0 var(--black);
+  animation: caughtPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  pointer-events: none;
+  letter-spacing: 1px;
+}
+
+.caught-emoji { font-size: 2.5rem; animation: caughtSpin 1s ease-in-out infinite; }
+
+@keyframes caughtPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+
+@keyframes caughtSpin {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-20deg); }
+  75% { transform: rotate(20deg); }
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--black) 65%, transparent);
+  backdrop-filter: blur(8px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card-container {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2.5px solid var(--black);
+  color: var(--black);
+  font-size: 0.9rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--black);
+  z-index: 101;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  background: var(--danger);
+  color: var(--white);
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3.5px 3.5px 0 var(--black);
+}

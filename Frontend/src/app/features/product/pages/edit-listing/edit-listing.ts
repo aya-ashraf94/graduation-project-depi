@@ -95,7 +95,7 @@ export class EditListing implements OnInit {
         setTimeout(() => {
           this.product = product;
 
-          const catId = (product.categoryId as any)?._id || product.categoryId || '';
+          const catId = (product.categoryId as any)?.id || (product.categoryId as any)?._id || product.categoryId || '';
 
           const currentUser = this.authService.currentUser();
           this.isOwner = currentUser?.id === product.seller.id;

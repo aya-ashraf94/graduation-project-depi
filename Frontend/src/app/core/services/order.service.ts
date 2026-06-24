@@ -65,13 +65,23 @@ export class OrderService {
   }
 
   /** VALIDATE DISCOUNT COUPON */
-  validateCoupon(code: string, productId: string): Observable<{
+  validateCoupon(code: string, productId: string, price?: number): Observable<{
     valid: boolean;
     discountAmount: number;
     finalPrice: number;
     discountType: string;
     discountValue: number;
   }> {
-    return this.http.post<any>(`${this.apiUrl}/validate-coupon`, { code, productId });
+    return this.http.post<any>(`${this.apiUrl}/validate-coupon`, { code, productId, price });
+  }
+
+  /** GET RANDOM ACTIVE COUPON FOR SCRATCH CARD GAME */
+  getScratchCoupon(): Observable<{
+    code: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    expiryDate?: string;
+  }> {
+    return this.http.get<any>(`${this.apiUrl}/scratch/get-coupon`);
   }
 }

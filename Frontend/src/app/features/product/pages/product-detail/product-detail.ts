@@ -58,12 +58,18 @@ export class ProductDetail implements OnInit {
   // Buy Flow state variables
   get displayAttributes(): { label: string; value: string }[] {
     if (!this.product?.rawDynamicAttributes) return [];
-    const skip = new Set(['conditionscore', 'score', 'brand', 'color', 'storage', 'condition']);
+    const skip = new Set(['conditionscore', 'score', 'brand', 'color', 'storage', 'condition', 'item_type']);
+    const raw = this.product.rawDynamicAttributes;
     const result: { label: string; value: string }[] = [];
-    for (const [key, val] of Object.entries(this.product.rawDynamicAttributes)) {
+    for (const [key, val] of Object.entries(raw)) {
       if (skip.has(key.toLowerCase())) continue;
       if (val === undefined || val === null || val === '') continue;
-      result.push({ label: key.charAt(0).toUpperCase() + key.slice(1), value: String(val) });
+      if (key.endsWith('_other')) continue;
+      let displayValue = String(val);
+      if (displayValue === 'Other' && raw[key + '_other']) {
+        displayValue = String(raw[key + '_other']);
+      }
+      result.push({ label: key.charAt(0).toUpperCase() + key.slice(1), value: displayValue });
     }
     return result;
   }
@@ -80,8 +86,8 @@ export class ProductDetail implements OnInit {
     return this.product?.conditionScore ? Math.min(100, this.product.conditionScore * 10 - 2) : 92;
   }
 
-  get marketAverage(): number {
-    return this.product?.price ? Math.round(this.product.price * (1 + this.discountPercent / 100)) : 0;
+  get effectivePrice(): number {
+    return this.product?.price ? Math.round(this.product.price * (1 - this.discountPercent / 100)) : 0;
   }
 
   get priceSavingsPercent(): number {
@@ -94,7 +100,10 @@ export class ProductDetail implements OnInit {
 
   showBuyModal = false;
   paymentMethod: PaymentMethod = 'cash_on_delivery';
-  shippingAddress = '';
+  shippingCity = '';
+  shippingArea = '';
+  shippingStreet = '';
+  shippingBuilding = '';
   orderNotes = '';
   buyLoading = false;
   buySuccess = signal<string | null>(null);
@@ -180,7 +189,12 @@ export class ProductDetail implements OnInit {
           this.product = product;
           this.activeImage = 0;
           this.isLoading = false;
-          this.categoryLabel = product.categoryName || CATEGORY_LABELS[product.category] || product.category;
+          const catName = product.categoryName || CATEGORY_LABELS[product.category] || product.category || '';
+          if (catName.toLowerCase() === 'other' && product.rawDynamicAttributes?.['item_type']) {
+            this.categoryLabel = product.rawDynamicAttributes['item_type'];
+          } else {
+            this.categoryLabel = catName;
+          }
 
           const currentUser = this.authService.currentUser();
           this.isOwner = currentUser?.id === product.seller.id;
@@ -328,7 +342,10 @@ export class ProductDetail implements OnInit {
     this.executeAuthorizedAction(() => {
       this.showBuyModal = true;
       this.paymentMethod = 'cash_on_delivery';
-      this.shippingAddress = '';
+      this.shippingCity = '';
+      this.shippingArea = '';
+      this.shippingStreet = '';
+      this.shippingBuilding = '';
       this.orderNotes = '';
       this.buyLoading = false;
       this.buySuccess.set(null);
@@ -352,7 +369,7 @@ export class ProductDetail implements OnInit {
     this.isValidatingCoupon = true;
     this.couponValidationMessage = '';
     
-    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id).subscribe({
+    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id, this.effectivePrice).subscribe({
       next: (res) => {
         this.isValidatingCoupon = false;
         if (res.valid) {
@@ -380,8 +397,10 @@ export class ProductDetail implements OnInit {
   }
 
   submitOrder(): void {
-    if (!this.shippingAddress.trim() || !this.product) {
-      this.buyError.set('Please provide a shipping address');
+    if (!this.product) return;
+    const addrParts = [this.shippingCity, this.shippingArea, this.shippingStreet, this.shippingBuilding].filter(Boolean);
+    if (addrParts.length < 2) {
+      this.buyError.set('Please provide at least your city and street address');
       return;
     }
     
@@ -392,8 +411,9 @@ export class ProductDetail implements OnInit {
     const payload = {
       productId: this.product.id,
       paymentMethod: this.paymentMethod,
-      shippingAddress: this.shippingAddress,
+      shippingAddress: addrParts.join(', '),
       notes: this.orderNotes,
+      price: this.effectivePrice,
       couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined
     };
     

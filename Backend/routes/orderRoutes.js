@@ -6,12 +6,14 @@ const {
     getOrdersByUser,
     getOrderById,
     updateOrder,
-    validateCoupon
+    validateCoupon,
+    getRandomActiveCoupon
 } = require("../controllers/orderController");
 
 router.post("/", authMiddleware, createOrder);
 router.post("/validate-coupon", authMiddleware, validateCoupon);
 router.get("/", authMiddleware, getOrdersByUser);
+router.get("/scratch/get-coupon", authMiddleware, getRandomActiveCoupon);
 router.get("/:id", authMiddleware, getOrderById);
 router.patch("/:id", authMiddleware, updateOrder);
 
