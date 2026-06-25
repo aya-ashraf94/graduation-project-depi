@@ -1,6 +1,7 @@
 const db = require("../db");
-const { conversations, conversationParticipants, messages, users, notifications, products } = require("../db/schema");
+const { conversations, conversationParticipants, messages, users, notifications, products, offers } = require("../db/schema");
 const { eq, and, ne, desc, inArray, sql } = require("drizzle-orm");
+const { checkAndExpireOffer } = require("./offerController");
 
 const assertParticipant = async (userId, conversationId) => {
   const [entry] = await db.select()
@@ -95,6 +96,8 @@ const getConversations = async (req, res) => {
           senderId: m.senderId,
           content: m.content,
           status: m.status,
+          type: m.type,
+          metadata: m.metadata,
           sentAt: m.createdAt,
         };
       }
@@ -105,6 +108,7 @@ const getConversations = async (req, res) => {
         productId: row.products?.id,
         productTitle: row.products?.title,
         productPrice: row.products?.price,
+        productOwnerId: row.products?.userId,
         productThumbnail: (row.products?.images || [])[0],
         lastMessage: lastMsgData,
         unreadCount: unreadMap[conv.id] || 0,
@@ -131,14 +135,36 @@ const getMessages = async (req, res) => {
       .where(eq(messages.conversationId, conversationId))
       .orderBy(messages.createdAt);
 
-    const result = msgs.map(m => ({
-      id: m.id,
-      conversationId: m.conversationId,
-      senderId: m.senderId,
-      content: m.content,
-      status: m.status,
-      sentAt: m.createdAt,
-    }));
+    // Fetch all offers for this conversation and ensure they are expired if past expiry time
+    const rawOffers = await db.select().from(offers).where(eq(offers.conversationId, conversationId));
+    const activeOffersMap = {};
+    for (const offer of rawOffers) {
+      const checkedOffer = await checkAndExpireOffer(offer);
+      activeOffersMap[checkedOffer.id] = checkedOffer;
+    }
+
+    const result = msgs.map(m => {
+      let updatedMetadata = m.metadata;
+      if (m.metadata && m.metadata.offerId && activeOffersMap[m.metadata.offerId]) {
+        const liveOffer = activeOffersMap[m.metadata.offerId];
+        updatedMetadata = {
+          ...m.metadata,
+          offerStatus: liveOffer.status,
+          counterAmount: liveOffer.counterAmount,
+          expiresAt: liveOffer.expiresAt,
+        };
+      }
+      return {
+        id: m.id,
+        conversationId: m.conversationId,
+        senderId: m.senderId,
+        content: m.content,
+        status: m.status,
+        type: m.type,
+        metadata: updatedMetadata,
+        sentAt: m.createdAt,
+      };
+    });
 
     res.json(result);
   } catch (error) {
@@ -232,8 +258,7 @@ const startConversation = async (req, res) => {
 
 const sendMessage = async (req, res) => {
   try {
-    const senderId = req.user.id;
-    const { conversationId, content } = req.body;
+    const { conversationId, content, type = 'text', metadata = null } = req.body;
 
     if (!conversationId || !content) {
       return res.status(400).json({ message: "Conversation ID and content are required" });
@@ -249,6 +274,8 @@ const sendMessage = async (req, res) => {
       senderId,
       content,
       status: "sent",
+      type,
+      metadata,
     }).returning();
 
     await db.update(conversations).set({
@@ -284,6 +311,8 @@ const sendMessage = async (req, res) => {
       senderId: msg.senderId,
       content: msg.content,
       status: msg.status,
+      type: msg.type,
+      metadata: msg.metadata,
       sentAt: msg.createdAt,
     };
 
@@ -326,10 +355,46 @@ const markAsRead = async (req, res) => {
   }
 };
 
+const deleteConversation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { conversationId } = req.params;
+
+    const isParticipant = await assertParticipant(userId, conversationId);
+    if (!isParticipant) {
+      return res.status(403).json({ message: "Not a participant of this conversation" });
+    }
+
+    // Delete the participant entry for this user
+    await db.delete(conversationParticipants)
+      .where(and(
+        eq(conversationParticipants.conversationId, conversationId),
+        eq(conversationParticipants.userId, userId)
+      ));
+
+    // Check if there are any remaining participants in this conversation
+    const remaining = await db.select()
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.conversationId, conversationId));
+
+    if (remaining.length === 0) {
+      // If no participants remain, delete the conversation and messages completely
+      await db.delete(messages).where(eq(messages.conversationId, conversationId));
+      await db.delete(conversations).where(eq(conversations.id, conversationId));
+    }
+
+    res.json({ message: "Conversation deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getConversations,
   getMessages,
   startConversation,
   sendMessage,
   markAsRead,
+  deleteConversation,
 };

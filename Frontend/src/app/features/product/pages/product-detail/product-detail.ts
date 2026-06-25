@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
 import { SettingsService } from '../../../../core/services/settings.service';
+import { OfferService } from '../../../../core/services/offer.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -20,14 +21,15 @@ import { SettingsService } from '../../../../core/services/settings.service';
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
-export class ProductDetail implements OnInit {
+export class ProductDetail implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
   private productService = inject(ProductService);
   private authService = inject(AuthService);
-  private orderService = inject(OrderService);
   wishlistService = inject(WishlistService);
+  private orderService = inject(OrderService);
+  private offerService = inject(OfferService);
   private cdr = inject(ChangeDetectorRef);
   private settingsService = inject(SettingsService);
 
@@ -54,6 +56,14 @@ export class ProductDetail implements OnInit {
   showOfferModal = false;
   offerAmount = 0;
   offerSuccess = '';
+
+  checkoutCountdown = signal<string>('');
+  private checkoutTimerId: any = null;
+
+  negotiatedPrice = signal<number | null>(null);
+  activeOfferId: string | null = null;
+  private _pendingNegotiatedPrice: number | null = null;
+  private _pendingAutoOpenBuy = false;
 
   // Buy Flow state variables
   get displayAttributes(): { label: string; value: string }[] {
@@ -87,6 +97,10 @@ export class ProductDetail implements OnInit {
   }
 
   get effectivePrice(): number {
+    const negPrice = this.negotiatedPrice();
+    if (negPrice !== null) {
+      return negPrice;
+    }
     return this.product?.price ? Math.round(this.product.price * (1 - this.discountPercent / 100)) : 0;
   }
 
@@ -160,10 +174,24 @@ export class ProductDetail implements OnInit {
   }
 
   submitOffer() {
-    this.offerSuccess = `Offer of $${this.offerAmount} submitted to seller!`;
-    setTimeout(() => {
-      this.closeOfferModal();
-    }, 2000);
+    if (!this.product) return;
+    this.offerService.makeOffer({ productId: this.product.id, amount: this.offerAmount }).subscribe({
+      next: (res) => {
+        this.offerSuccess = `Offer of $${this.offerAmount} submitted to seller!`;
+        setTimeout(() => {
+          this.closeOfferModal();
+          this.router.navigate(['/chat'], {
+            queryParams: {
+              recipientId: this.product!.seller.id,
+              productId: this.product!.id
+            }
+          });
+        }, 1500);
+      },
+      error: (err) => {
+        console.error('Failed to submit offer:', err);
+      }
+    });
   }
 
   ngOnInit() {
@@ -181,6 +209,9 @@ export class ProductDetail implements OnInit {
       const id = params.get('id') ?? '';
       this.isLoading = true;
       this.product = undefined;
+      this.negotiatedPrice.set(null);
+      this._pendingNegotiatedPrice = null;
+      this._pendingAutoOpenBuy = false;
       
       const startTime = Date.now();
 
@@ -199,6 +230,28 @@ export class ProductDetail implements OnInit {
           const currentUser = this.authService.currentUser();
           this.isOwner = currentUser?.id === product.seller.id;
 
+          if (currentUser) {
+            this.offerService.getMyOffers().subscribe({
+              next: (offers) => {
+                const acceptedOffer = offers.find(o => 
+                  o.productId === product.id && 
+                  o.status === 'accepted' && 
+                  o.buyerId === currentUser.id
+                );
+                if (acceptedOffer) {
+                   this.negotiatedPrice.set(acceptedOffer.counterAmount || acceptedOffer.amount);
+                   this.activeOfferId = acceptedOffer.id;
+                   if (acceptedOffer.expiresAt) {
+                     this.startCheckoutCountdown(acceptedOffer.expiresAt);
+                   }
+                   this.cdr.detectChanges();
+                 }
+              }
+            });
+          }
+
+          this._checkPendingOfferCheckout();
+
           this.productService.getProducts().subscribe(allProducts => {
             const matched = allProducts.filter(p => p.id !== id && p.category === product.category);
             this.relatedProducts = matched.sort(() => 0.5 - Math.random()).slice(0, 8);
@@ -216,6 +269,37 @@ export class ProductDetail implements OnInit {
       
       window.scrollTo(0, 0);
     });
+
+    this.route.queryParams.subscribe(params => {
+      const buyNow = params['buyNow'];
+      const offerId = params['offerId'];
+      if (buyNow === 'true' && offerId) {
+        this.offerService.getOffer(offerId).subscribe({
+          next: (offer) => {
+            const finalPrice = offer.status === 'accepted' ? (offer.counterAmount || offer.amount) : null;
+            if (finalPrice !== null) {
+              this._pendingNegotiatedPrice = finalPrice;
+              this._pendingAutoOpenBuy = true;
+              this.activeOfferId = offer.id;
+              if (offer.expiresAt) {
+                this.startCheckoutCountdown(offer.expiresAt);
+              }
+              this._checkPendingOfferCheckout();
+            }
+          },
+          error: (err) => console.error('Error fetching offer for checkout:', err)
+        });
+      }
+    });
+  }
+
+  private _checkPendingOfferCheckout() {
+    if (this._pendingAutoOpenBuy && this.product && this._pendingNegotiatedPrice !== null) {
+      this.negotiatedPrice.set(this._pendingNegotiatedPrice);
+      this._pendingAutoOpenBuy = false;
+      this._pendingNegotiatedPrice = null;
+      this.openBuy();
+    }
   }
 
   setActiveImage(index: number) {
@@ -362,6 +446,43 @@ export class ProductDetail implements OnInit {
 
   closeBuy(): void {
     this.showBuyModal = false;
+    if (this.checkoutTimerId) {
+      clearInterval(this.checkoutTimerId);
+      this.checkoutTimerId = null;
+    }
+  }
+
+  startCheckoutCountdown(expiresAtStr: string | Date) {
+    if (this.checkoutTimerId) clearInterval(this.checkoutTimerId);
+    const expiresAt = new Date(expiresAtStr).getTime();
+    
+    const update = () => {
+      const now = Date.now();
+      const diff = expiresAt - now;
+      if (diff > 0) {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        const hh = String(hours).padStart(2, '0');
+        const mm = String(minutes).padStart(2, '0');
+        const ss = String(seconds).padStart(2, '0');
+        this.checkoutCountdown.set(`${hh}:${mm}:${ss}`);
+      } else {
+        this.checkoutCountdown.set('Expired');
+        clearInterval(this.checkoutTimerId);
+        this.checkoutTimerId = null;
+      }
+    };
+    
+    update();
+    this.checkoutTimerId = setInterval(update, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.checkoutTimerId) {
+      clearInterval(this.checkoutTimerId);
+    }
   }
 
   applyCoupon(): void {
@@ -414,7 +535,8 @@ export class ProductDetail implements OnInit {
       shippingAddress: addrParts.join(', '),
       notes: this.orderNotes,
       price: this.effectivePrice,
-      couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined
+      couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
+      offerId: this.route.snapshot.queryParams['offerId'] || undefined
     };
     
     this.orderService.createOrder(payload).subscribe({
@@ -424,6 +546,7 @@ export class ProductDetail implements OnInit {
         if (this.product) {
           this.product.status = 'sold';
         }
+        this.offerService.activeReservation.set(null);
         setTimeout(() => {
           this.closeBuy();
         }, 2500);

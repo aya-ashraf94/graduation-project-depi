@@ -1,130 +1,307 @@
-<div class="chat-card">
-
-    <!-- Conversation List -->
-    <aside class="conv-list">
-      <div class="conv-list-header">
-        <div class="header-title">MESSAGES</div>
-        <div class="search-bar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" placeholder="Search conversations..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)">
-        </div>
+<div class="chat-page">
+  <!-- Conversation Sidebar -->
+  <aside class="conv-sidebar" [class.active]="!activeConversation">
+    <div class="conv-sidebar-header">
+      <div class="conv-header-title">Messages</div>
+      <div class="conv-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)">
       </div>
+    </div>
 
-      @if (filteredConversations().length === 0) {
-        <div class="conv-empty">{{ searchTerm() ? 'No conversations match your search.' : 'No conversations yet.' }}</div>
-      }
+    @if (filteredConversations().length === 0) {
+      <div class="conv-empty">{{ searchTerm() ? 'No conversations match.' : 'No conversations yet.' }}</div>
+    }
 
-      <div class="conv-list-scroll">
-        @for (conv of filteredConversations(); track conv.id) {
-          <div
-            class="conv-item"
-            [class.active]="activeConversation?.id === conv.id"
-            (click)="selectConversation(conv)"
-          >
-            <div class="conv-avatar">
-              {{ getOtherParticipant(conv)?.firstName?.[0] || '?' }}
-              <div class="online-indicator"></div>
+    <div class="conv-list">
+      @for (conv of filteredConversations(); track conv.id) {
+        <div class="conv-item" [class.active]="activeConversation?.id === conv.id" (click)="selectConversation(conv)">
+          <div class="conv-avatar">
+            @if (getOtherParticipant(conv)?.avatar) {
+              <img [src]="getOtherParticipant(conv)!.avatar" [alt]="getOtherParticipant(conv)!.firstName" />
+            } @else {
+              <span>{{ getOtherParticipant(conv)?.firstName?.[0] || '?' }}</span>
+            }
+            <div class="online-dot"></div>
+          </div>
+          <div class="conv-info">
+            <div class="conv-top-row">
+              <span class="conv-name">{{ getOtherParticipant(conv)?.firstName }} {{ getOtherParticipant(conv)?.lastName }}</span>
+              <span class="conv-time">{{ conv.updatedAt | timeAgo }}</span>
             </div>
-            <div class="conv-info">
-              <div class="conv-name-row">
-                <span class="conv-name">{{ getOtherParticipant(conv)?.firstName }} {{ getOtherParticipant(conv)?.lastName }}</span>
-                <span class="conv-time">{{ conv.updatedAt | timeAgo }}</span>
-              </div>
-              @if (conv.productTitle) {
-                <div class="conv-product">{{ conv.productTitle }}</div>
-              }
-              <div class="conv-preview-row">
-                <span class="conv-preview">{{ conv.lastMessage?.content || 'Started a conversation' }}</span>
+            @if (conv.productTitle) {
+              <div class="conv-product">{{ conv.productTitle }}</div>
+            }
+            <div class="conv-bottom-row">
+              <span class="conv-preview">{{ conv.lastMessage?.content || 'Started a conversation' }}</span>
+              <div class="conv-badges">
                 @if (conv.unreadCount > 0) {
                   <span class="unread-badge">{{ conv.unreadCount }}</span>
                 }
+                <button class="btn-delete-conv" (click)="deleteChat(conv.id, $event)" title="Delete Chat">✕</button>
               </div>
             </div>
           </div>
-        }
-      </div>
-    </aside>
+        </div>
+      }
+    </div>
+  </aside>
 
-    <!-- Message Thread -->
-    <main class="message-thread">
-      @if (activeConversation) {
-        <div class="thread-header">
-          <div class="thread-user-info">
-            <div class="thread-avatar">{{ getOtherParticipant(activeConversation)?.firstName?.[0] || '?' }}</div>
-            <div class="thread-user-details">
-              <div class="thread-username">{{ getOtherParticipant(activeConversation)?.firstName }} {{ getOtherParticipant(activeConversation)?.lastName }}</div>
-              <div class="thread-status"><span class="status-dot"></span> Online</div>
-            </div>
+  <!-- Message Thread -->
+  <main class="chat-thread">
+    @if (activeConversation) {
+      <!-- Thread Header -->
+      <div class="thread-header">
+        <div class="thread-user">
+          <div class="thread-avatar">
+            @if (getOtherParticipant(activeConversation)?.avatar) {
+              <img [src]="getOtherParticipant(activeConversation)!.avatar" [alt]="getOtherParticipant(activeConversation)!.firstName" />
+            } @else {
+              <span>{{ getOtherParticipant(activeConversation)?.firstName?.[0] || '?' }}</span>
+            }
           </div>
+          <div class="thread-user-meta">
+            <div class="thread-name">{{ getOtherParticipant(activeConversation)?.firstName }} {{ getOtherParticipant(activeConversation)?.lastName }}</div>
+            <div class="thread-status"><span class="status-dot"></span> Online</div>
+          </div>
+        </div>
 
+        <div class="thread-header-actions">
           @if (activeConversation.productTitle) {
-            <div class="thread-product-card">
-              <div class="product-thumb">
-                @if (activeConversation.productThumbnail) {
-                  <img [src]="activeConversation.productThumbnail" [alt]="activeConversation.productTitle" class="product-thumb-img" />
-                }
-              </div>
+            <div class="thread-product">
+              @if (activeConversation.productThumbnail) {
+                <img [src]="activeConversation.productThumbnail" [alt]="activeConversation.productTitle" class="product-thumb" />
+              }
               <div class="product-meta">
                 <div class="product-title">{{ activeConversation.productTitle }}</div>
                 <div class="product-price">{{ activeConversation.productPrice | currencyFormat }}</div>
               </div>
-              <button class="btn-view-listing" [routerLink]="['/products', activeConversation.productId]">VIEW LISTING</button>
+              <button class="btn-view-listing" [routerLink]="['/products', activeConversation.productId]">View</button>
             </div>
           }
-
           <button class="btn-options">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
           </button>
         </div>
+      </div>
 
-        <div class="chat-container-wrapper">
-          <div class="chat-container">
-            <div class="messages">
-              @for (msg of messages; track msg.id) {
-                <div class="message" [class.mine]="msg.senderId === currentUserId">
-                  <div class="bubble-wrapper">
-                    <div class="bubble">{{ msg.content }}</div>
-                    <div class="msg-meta">
-                      <span class="msg-time">{{ msg.sentAt | timeAgo }}</span>
-                      @if (msg.senderId === currentUserId) {
-                        <span class="msg-status">Delivered</span>
-                      }
+      <!-- Messages -->
+      <div class="messages-area">
+        @for (msg of messages; track msg.id) {
+          @if (msg.type === 'system') {
+            <div class="system-message"><span>{{ msg.content }}</span></div>
+          } @else if (msg.type === 'offer') {
+            <div class="message" [class.mine]="msg.senderId === currentUserId">
+              <div class="bubble-wrapper">
+                <div class="offer-card" 
+                     [class.accepted]="msg.metadata?.offerStatus === 'accepted' && isLatestAcceptedOffer(msg.metadata?.offerId)" 
+                     [class.rejected]="msg.metadata?.offerStatus === 'rejected'" 
+                     [class.countered]="msg.metadata?.offerStatus === 'countered'"
+                     [class.superseded]="msg.metadata?.offerStatus === 'accepted' && !isLatestAcceptedOffer(msg.metadata?.offerId)">
+                  <div class="offer-card-top-row">
+                    <div class="offer-card-header">
+                      <span class="offer-icon">💸</span>
+                      <span class="offer-title">Offer</span>
+                    </div>
+                    <div class="offer-status-badge" [class]="msg.metadata?.offerStatus">
+                      {{ msg.metadata?.offerStatus | uppercase }}
                     </div>
                   </div>
+                  <div class="offer-amount">{{ msg.metadata?.offerAmount | currencyFormat }}</div>
+                  
+                  @if (isOwnerOfProduct() && msg.metadata?.offerStatus === 'pending') {
+                    @if (counteringOfferId() === msg.metadata?.offerId) {
+                      <div class="counter-input-row">
+                        <input type="number" 
+                               [ngModel]="counterOfferAmount()"
+                               (ngModelChange)="counterOfferAmount.set($event)"
+                               placeholder="Counter price"
+                               class="counter-input" />
+                        <button class="btn-offer-action accept" (click)="submitCounterOffer(msg.metadata?.offerId)">Send</button>
+                        <button class="btn-offer-action reject" (click)="cancelCounterOffer()">✕</button>
+                      </div>
+                    } @else {
+                      <div class="offer-actions">
+                        <button class="btn-offer-action accept" (click)="acceptOffer(msg.metadata?.offerId)">Accept</button>
+                        <button class="btn-offer-action reject" (click)="rejectOffer(msg.metadata?.offerId)">Reject</button>
+                        <button class="btn-offer-action counter" (click)="startCounterOffer(msg.metadata!.offerId)">Counter</button>
+                      </div>
+                    }
+                  }
+
+                  @if (!isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                      <div class="offer-checkout-action">
+                        <a class="btn-checkout-now"
+                           [routerLink]="['/products', activeConversation.productId]"
+                           [queryParams]="{ buyNow: 'true', offerId: msg.metadata?.offerId }">
+                          💳 Complete Purchase
+                        </a>
+                        <div class="offer-expiry">⏳ Expires in: {{ getCountdownTime(msg.metadata?.offerId) }}</div>
+                      </div>
+                    } @else {
+                      <div class="offer-superseded-action">
+                        <div class="superseded-label">Deal superseded by newer offer</div>
+                      </div>
+                    }
+                  }
+
+                  @if (isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                      <div class="offer-seller-info">
+                        <span class="reserved-badge">🔒 Reserved — Awaiting buyer payment</span>
+                      </div>
+                    } @else {
+                      <div class="offer-superseded-action">
+                        <div class="superseded-label">Deal superseded by newer offer</div>
+                      </div>
+                    }
+                  }
                 </div>
-              }
+                <div class="msg-meta">
+                  <span class="msg-time">{{ msg.sentAt | timeAgo }}</span>
+                  @if (msg.senderId === currentUserId) {
+                    <span class="msg-status">{{ msg.status === 'read' ? '✓✓ Read' : '✓ Sent' }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          } @else if (msg.type === 'counter_offer') {
+            <div class="message" [class.mine]="msg.senderId === currentUserId">
+              <div class="bubble-wrapper">
+                <div class="offer-card countered" 
+                     [class.accepted]="msg.metadata?.offerStatus === 'accepted' && isLatestAcceptedOffer(msg.metadata?.offerId)" 
+                     [class.rejected]="msg.metadata?.offerStatus === 'rejected'"
+                     [class.superseded]="msg.metadata?.offerStatus === 'accepted' && !isLatestAcceptedOffer(msg.metadata?.offerId)">
+                  <div class="offer-card-top-row">
+                    <div class="offer-card-header">
+                      <span class="offer-icon">🔄</span>
+                      <span class="offer-title">Counter</span>
+                    </div>
+                    <div class="offer-status-badge" [class]="msg.metadata?.offerStatus">
+                      {{ msg.metadata?.offerStatus | uppercase }}
+                    </div>
+                  </div>
+                  <div class="offer-amount">
+                    <span class="old-amount">{{ msg.metadata?.offerAmount | currencyFormat }}</span>
+                    <span class="arrow">➜</span>
+                    <span class="new-amount">{{ msg.metadata?.counterAmount | currencyFormat }}</span>
+                  </div>
+                  
+                  @if (!isOwnerOfProduct() && msg.metadata?.offerStatus === 'countered') {
+                    <div class="offer-actions">
+                      <button class="btn-offer-action accept" (click)="acceptOffer(msg.metadata?.offerId)">Accept</button>
+                      <button class="btn-offer-action reject" (click)="rejectOffer(msg.metadata?.offerId)">Reject</button>
+                    </div>
+                  }
+
+                  @if (!isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                      <div class="offer-checkout-action">
+                        <a class="btn-checkout-now"
+                           [routerLink]="['/products', activeConversation.productId]"
+                           [queryParams]="{ buyNow: 'true', offerId: msg.metadata?.offerId }">
+                          💳 Complete Purchase
+                        </a>
+                        <div class="offer-expiry">⏳ Expires in: {{ getCountdownTime(msg.metadata?.offerId) }}</div>
+                      </div>
+                    } @else {
+                      <div class="offer-superseded-action">
+                        <div class="superseded-label">Deal superseded by newer offer</div>
+                      </div>
+                    }
+                  }
+
+                  @if (isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                      <div class="offer-seller-info">
+                        <span class="reserved-badge">🔒 Reserved — Awaiting buyer payment</span>
+                      </div>
+                    } @else {
+                      <div class="offer-superseded-action">
+                        <div class="superseded-label">Deal superseded by newer offer</div>
+                      </div>
+                    }
+                  }
+                </div>
+                <div class="msg-meta">
+                  <span class="msg-time">{{ msg.sentAt | timeAgo }}</span>
+                  @if (msg.senderId === currentUserId) {
+                    <span class="msg-status">{{ msg.status === 'read' ? '✓✓ Read' : '✓ Sent' }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="message" [class.mine]="msg.senderId === currentUserId">
+              <div class="bubble-wrapper">
+                <div class="bubble">{{ msg.content }}</div>
+                <div class="msg-meta">
+                  <span class="msg-time">{{ msg.sentAt | timeAgo }}</span>
+                  @if (msg.senderId === currentUserId) {
+                    <span class="msg-status">{{ msg.status === 'read' ? '✓✓ Read' : '✓ Sent' }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+        <div #messagesEnd></div>
+      </div>
+
+      <!-- Offer Input Panel -->
+      @if (showOfferPanel()) {
+        <div class="offer-panel">
+          <div class="offer-panel-header">
+            <span class="panel-title">Propose a Negotiated Price</span>
+            <button class="btn-close-panel" (click)="closeOfferPanel()">×</button>
+          </div>
+          <div class="offer-panel-body">
+            <div class="price-input-row">
+              <span class="currency-symbol">$</span>
+              <input
+                type="number"
+                placeholder="Enter your offer"
+                [ngModel]="offerAmountInput()"
+                (ngModelChange)="offerAmountInput.set($event)"
+                name="offerAmountInput"
+              />
+            </div>
+            <p class="offer-disclaimer">Offers expire in 48 hours. The seller will be notified to accept, reject, or counter your offer.</p>
+            <div class="offer-panel-actions">
+              <button class="btn-cancel-offer" (click)="closeOfferPanel()">Cancel</button>
+              <button class="btn-submit-offer" [disabled]="isSendingOffer() || offerAmountInput() <= 0" (click)="submitOffer()">
+                {{ isSendingOffer() ? 'Sending...' : 'Send Offer' }}
+              </button>
             </div>
           </div>
         </div>
-
-        <div class="compose">
-          <button class="btn-utility">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          </button>
-          <div class="input-wrapper">
-            <input
-              id="chat-input"
-              type="text"
-              placeholder="Message {{ getOtherParticipant(activeConversation)?.firstName }}..."
-              [(ngModel)]="newMessage"
-              (keydown.enter)="send()"
-            />
-            <button class="btn-emoji">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
-            </button>
-          </div>
-          <button id="chat-send" class="btn-send" (click)="send()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-          </button>
-        </div>
-      } @else {
-        <div class="no-thread">
-          <div class="no-thread-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          </div>
-          <div class="no-thread-text">SELECT A CONVERSATION</div>
-        </div>
       }
-    </main>
 
-  </div>
+      <!-- Compose -->
+      <div class="chat-compose">
+        @if (activeConversation.productId && !isOwnerOfProduct()) {
+          <button class="btn-offer-compose" (click)="openOfferPanel()">+ Offer</button>
+        }
+        <button class="btn-image" title="Attach Image">📷</button>
+        <div class="input-wrap">
+          <input
+            id="chat-input"
+            type="text"
+            placeholder="Type a message..."
+            [(ngModel)]="newMessage"
+            (keydown.enter)="send()"
+          />
+        </div>
+        <button class="btn-send" (click)="send()">➤</button>
+      </div>
+    } @else {
+      <div class="no-thread">
+        <div class="no-thread-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <div class="no-thread-text">Select a conversation</div>
+      </div>
+    }
+  </main>
+</div>

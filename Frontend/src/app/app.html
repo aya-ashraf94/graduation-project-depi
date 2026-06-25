@@ -12,7 +12,10 @@
   </div>
 </header>
 
-<main [class.auth-main]="isAuthRoute() && !isAdminRoute()" [class.admin-main]="isAdminRoute()">
+<main [class.auth-main]="isAuthRoute() && !isAdminRoute()" 
+      [class.admin-main]="isAdminRoute()"
+      [class.has-banner]="offerService.activeReservation() && !isAuthRoute() && !isAdminRoute() && !isChatRoute()"
+      [style.margin-top]="offerService.activeReservation() && !isAuthRoute() && !isAdminRoute() && !isChatRoute() ? '36px' : '0'">
   <router-outlet></router-outlet>
 </main>
 
@@ -35,4 +38,4 @@
 <app-confirm></app-confirm>
 
 <!-- Lucky Cat Easter Egg Game -->
-<app-lucky-cat *ngIf="!isAuthRoute() && !isAdminRoute() && !isListingFormRoute()"></app-lucky-cat>
+<app-lucky-cat *ngIf="shouldShowLuckyCat()"></app-lucky-cat>

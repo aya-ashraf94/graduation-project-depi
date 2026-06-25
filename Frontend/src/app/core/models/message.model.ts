@@ -6,6 +6,7 @@
 import { UserSummary } from './user.model';
 
 export type MessageStatus = 'sent' | 'delivered' | 'read';
+export type MessageType = 'text' | 'offer' | 'system' | 'counter_offer';
 
 export interface Message {
   id: string;
@@ -13,6 +14,14 @@ export interface Message {
   senderId: string;
   content: string;
   status: MessageStatus;
+  type?: MessageType;
+  metadata?: {
+    offerId?: string;
+    offerAmount?: number;
+    counterAmount?: number;
+    offerStatus?: 'pending' | 'accepted' | 'rejected' | 'countered';
+    expiresAt?: string | Date;
+  };
   sentAt: Date;
 }
 
@@ -24,6 +33,7 @@ export interface Conversation {
   productTitle?: string;
   productThumbnail?: string;
   productPrice?: number;
+  productOwnerId?: string;
   lastMessage?: Message;
   unreadCount: number;
   updatedAt: Date;
@@ -33,6 +43,8 @@ export interface Conversation {
 export interface SendMessageRequest {
   conversationId: string;
   content: string;
+  type?: MessageType;
+  metadata?: any;
 }
 
 /** Payload to start a new conversation (e.g. "Message Seller" button) */

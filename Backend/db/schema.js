@@ -77,6 +77,7 @@ const orders = pgTable('orders', {
   notes: text('notes'),
   trackingNumber: text('tracking_number'),
   couponCode: text('coupon_code'),
+  offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -126,6 +127,8 @@ const messages = pgTable('messages', {
   senderId: uuid('sender_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
   status: text('status', { enum: ['sent', 'delivered', 'read'] }).default('sent').notNull(),
+  type: text('type', { enum: ['text', 'offer', 'system', 'counter_offer'] }).default('text').notNull(),
+  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -192,7 +195,10 @@ const offers = pgTable('offers', {
   buyerId: uuid('buyer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   amount: doublePrecision('amount').notNull(),
-  status: text('status', { enum: ['pending', 'accepted', 'rejected'] }).default('pending').notNull(),
+  status: text('status', { enum: ['pending', 'accepted', 'rejected', 'countered', 'expired'] }).default('pending').notNull(),
+  conversationId: uuid('conversation_id').references(() => conversations.id, { onDelete: 'set null' }),
+  expiresAt: timestamp('expires_at', { mode: 'date' }),
+  counterAmount: doublePrecision('counter_amount'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({

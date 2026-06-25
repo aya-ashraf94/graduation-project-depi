@@ -27,7 +27,7 @@ export class Dashboard implements OnInit {
   errorMessage = signal<string | null>(null);
   
   discountSetting = 7;
-  savingSettings = false;
+  savingSettings = signal(false);
 
   ngOnInit(): void {
     this.loadData();
@@ -82,16 +82,16 @@ export class Dashboard implements OnInit {
       this.toastService.error('Discount percentage must be between 0 and 100.');
       return;
     }
-    this.savingSettings = true;
+    this.savingSettings.set(true);
     this.settingsService.updateDiscount(this.discountSetting).subscribe({
       next: () => {
-        this.savingSettings = false;
+        this.savingSettings.set(false);
         this.toastService.success('Discount percentage updated successfully.');
       },
       error: (err) => {
         console.error('Failed to update discount setting:', err);
         this.toastService.error(err?.error?.message || 'Failed to update discount percentage.');
-        this.savingSettings = false;
+        this.savingSettings.set(false);
       }
     });
   }

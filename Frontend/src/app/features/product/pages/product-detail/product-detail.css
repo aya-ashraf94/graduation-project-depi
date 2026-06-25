@@ -2362,3 +2362,53 @@
   }
 }
 
+.secondary-actions-row .btn-offer-v3 {
+  flex: 1;
+  height: 3.5rem;
+  background: var(--white);
+  color: var(--black);
+  border: 3px solid var(--black);
+  border-radius: 12px;
+  font-family: var(--font-primary);
+  font-size: 1.25rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--black);
+  transition: var(--transition-smooth);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.secondary-actions-row .btn-offer-v3:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4.5px 4.5px 0 var(--black);
+  background: var(--surface);
+}
+
+.btn-mobile-offer-v2 {
+  flex: 1;
+  height: 3rem;
+  background: var(--white);
+  color: var(--black);
+  border: 3px solid var(--black);
+  border-radius: 10px;
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--black);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: var(--transition-smooth);
+}
+
+.btn-mobile-offer-v2:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--black);
+}
+

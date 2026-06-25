@@ -1,4 +1,19 @@
-<nav class="navbar" [class.scrolled]="isScrolled" [class.menu-open]="menuOpen">
+@if (offerService.activeReservation(); as activeRes) {
+  @if (!isChatRoute()) {
+    <div class="reservation-banner">
+      <div class="banner-content">
+        <span class="banner-icon">⚡</span>
+        <span class="banner-text">
+          <strong>{{ activeRes.productTitle }}</strong> — Reserved for you
+        </span>
+        <span class="banner-timer">🕒 {{ reservationTimeRemaining() }}</span>
+        <a class="banner-btn" [routerLink]="['/products', activeRes.productId]" [queryParams]="{ buyNow: 'true', offerId: activeRes.id }">Pay Now</a>
+      </div>
+    </div>
+  }
+}
+
+<nav class="navbar" [class.scrolled]="isScrolled" [class.menu-open]="menuOpen" [class.has-banner]="offerService.activeReservation() !== null && !isChatRoute()">
   <div class="nav-container">
 
     <!-- Logo -->
@@ -20,6 +35,38 @@
 
     <!-- Desktop Nav Links -->
     <ul class="nav-links" [class.open]="menuOpen">
+
+      <!-- Mobile-drawer user card -->
+      @if (isLoggedIn()) {
+        <li class="mobile-only drawer-user-card">
+          <div class="drawer-user-avatar">
+            @if (currentUser()?.avatar) {
+              <img [src]="currentUser()!.avatar" [alt]="currentUser()!.firstName" />
+            } @else {
+              <span>{{ currentUser()?.firstName?.[0] }}{{ currentUser()?.lastName?.[0] }}</span>
+            }
+          </div>
+          <div class="drawer-user-info">
+            <span class="drawer-user-name">{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</span>
+            <span class="drawer-user-email">{{ currentUser()?.email }}</span>
+          </div>
+        </li>
+      }
+
+      <!-- Mobile search -->
+      <li class="mobile-only drawer-search-li">
+        <div class="drawer-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input
+            type="text"
+            class="drawer-search-input"
+            [(ngModel)]="searchQuery"
+            placeholder="Search items..."
+            (keyup.enter)="submitSearch()"
+          />
+        </div>
+      </li>
+
       <li>
         <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}"
            class="nav-link" (click)="closeMenu()">Home</a>
@@ -33,7 +80,12 @@
       @if (isLoggedIn()) {
         <li>
           <a routerLink="/chat" routerLinkActive="active-link"
-             class="nav-link" (click)="closeMenu()">Messages</a>
+             class="nav-link" (click)="closeMenu()">
+            Messages
+            @if (unreadMessagesCount() > 0) {
+              <span class="icon-badge inline-badge">{{ unreadMessagesCount() }}</span>
+            }
+          </a>
         </li>
 
         <!-- Mobile-only: profile + logout in the drawer -->
@@ -101,18 +153,25 @@
           }
         </div>
 
-        <!-- User avatar / profile link -->
-        <a id="nav-profile-link" routerLink="/profile/me" class="nav-avatar" title="My Profile">
-          @if (currentUser()?.avatar) {
-            <img [src]="currentUser()!.avatar" [alt]="currentUser()!.firstName" />
-          } @else {
-            <span>{{ currentUser()?.firstName?.[0] }}{{ currentUser()?.lastName?.[0] }}</span>
+        <!-- User avatar / profile dropdown -->
+        <div class="profile-dropdown-wrap">
+          <a class="nav-avatar" (click)="toggleProfileDropdown()" title="My Profile">
+            @if (currentUser()?.avatar) {
+              <img [src]="currentUser()!.avatar" [alt]="currentUser()!.firstName" />
+            } @else {
+              <span>{{ currentUser()?.firstName?.[0] }}{{ currentUser()?.lastName?.[0] }}</span>
+            }
+          </a>
+          @if (showProfileDropdown) {
+            <div class="profile-dropdown">
+              <a routerLink="/profile/me" class="dropdown-item" (click)="closeProfileDropdown()">My Profile</a>
+              <button class="dropdown-item dropdown-logout" (click)="logout()">Log Out</button>
+            </div>
           }
-        </a>
+        </div>
         <a id="nav-post-item" routerLink="/listings/create" class="btn btn-primary">
           + Sell Item
         </a>
-        <button id="nav-logout" class="btn btn-outline" (click)="logout()">Log Out</button>
       } @else {
         <a id="nav-login" routerLink="/auth/login" class="btn btn-outline">Log In</a>
         <a id="nav-register" routerLink="/auth/register" class="btn btn-primary">Register</a>

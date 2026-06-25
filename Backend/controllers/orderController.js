@@ -1,5 +1,5 @@
 const db = require("../db");
-const { orders, products, users, notifications, coupons } = require("../db/schema");
+const { orders, products, users, notifications, coupons, offers } = require("../db/schema");
 const { eq, or, and, desc } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { updateUserStats } = require("../utils/userStats");
@@ -55,7 +55,7 @@ const formatOrder = (row, currentUserId) => {
 const createOrder = async (req, res) => {
   try {
     const buyerId = req.user.id;
-    const { productId, paymentMethod, shippingAddress, notes, couponCode } = req.body;
+    const { productId, paymentMethod, shippingAddress, notes, couponCode, offerId } = req.body;
 
     if (!productId || !paymentMethod || !shippingAddress) {
       return res.status(400).json({ message: "Please provide product, payment method, and shipping address" });
@@ -68,6 +68,21 @@ const createOrder = async (req, res) => {
 
     if (product.status === "sold") {
       return res.status(400).json({ message: "This product is already sold" });
+    }
+
+    if (product.status === "reserved") {
+      // If reserved, check if this buyer has an accepted offer
+      const activeOffers = await db.select().from(offers)
+        .where(and(
+          eq(offers.productId, productId),
+          eq(offers.status, "accepted"),
+          eq(offers.buyerId, buyerId)
+        ))
+        .limit(1);
+
+      if (activeOffers.length === 0) {
+        return res.status(400).json({ message: "This item is currently reserved for another buyer." });
+      }
     }
 
     const sellerId = product.userId;
@@ -105,6 +120,7 @@ const createOrder = async (req, res) => {
       shippingAddress,
       notes: notes || null,
       couponCode: couponCode ? couponCode.trim().toUpperCase() : null,
+      offerId: offerId || null,
     }).returning();
 
     await db.update(products).set({
