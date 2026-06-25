@@ -132,7 +132,7 @@ export class AuthService {
       isSuspended: u.isSuspended ?? false,
       avatar: u.avatar && u.avatar.startsWith('/uploads')
         ? `${baseUrl}${u.avatar}`
-        : u.avatar || '',
+        : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id || u.id}`,
       bio: u.bio || '',
       phoneNumber: u.phoneNumber || '',
       location: u.location || '',

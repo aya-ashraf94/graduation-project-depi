@@ -103,6 +103,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+const jwt = require("jsonwebtoken");
+const db = require("./db");
+const { conversationParticipants } = require("./db/schema");
+const { and, eq } = require("drizzle-orm");
+
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -112,12 +117,43 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log(`Socket Connected: ${socket.id}`);
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error("Authentication required"));
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.id;
+    next();
+  } catch (err) {
+    next(new Error("Invalid token"));
+  }
+});
 
-  socket.on("join_conversation", (conversationId) => {
-    socket.join(conversationId);
-    console.log(`User joined room: ${conversationId}`);
+io.on("connection", (socket) => {
+  console.log(`Socket Connected: ${socket.id} (User: ${socket.userId})`);
+
+  socket.on("join_conversation", async (conversationId) => {
+    try {
+      const [participant] = await db.select()
+        .from(conversationParticipants)
+        .where(and(
+          eq(conversationParticipants.conversationId, conversationId),
+          eq(conversationParticipants.userId, socket.userId)
+        ))
+        .limit(1);
+
+      if (!participant) {
+        console.log(`Unauthorized socket join attempt by user ${socket.userId} to room ${conversationId}`);
+        return;
+      }
+
+      socket.join(conversationId);
+      console.log(`User ${socket.userId} joined room: ${conversationId}`);
+    } catch (err) {
+      console.error("Error in join_conversation socket handler:", err);
+    }
   });
 
   socket.on("disconnect", () => {

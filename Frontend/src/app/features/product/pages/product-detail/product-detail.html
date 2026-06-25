@@ -99,8 +99,8 @@
             <ng-container *ngIf="!isOwner">
               <!-- Buy Now (Primary CTA) -->
               <button class="btn-action-v2 btn-buy-now-v3" 
-                      [disabled]="product.status === 'reserved'" 
-                      (click)="product.status === 'available' && openBuy()" 
+                      [disabled]="product.status === 'reserved' && negotiatedPrice() === null" 
+                      (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()" 
                       *ngIf="product.status !== 'sold'">
                 Buy Now
               </button>
@@ -111,6 +111,7 @@
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                   Chat
                 </button>
+
 
                 <!-- Wishlist (Save to Favorites) -->
                 <button class="btn-action-v2 btn-wishlist-v3" 
@@ -400,7 +401,10 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       <span>Chat</span>
     </button>
-    <button class="btn-mobile-action-v2 btn-mobile-buy-v2" [disabled]="product.status === 'reserved'" (click)="product.status === 'available' && openBuy()" *ngIf="product.status !== 'sold'">
+    <button class="btn-mobile-action-v2 btn-mobile-buy-v2" 
+            [disabled]="product.status === 'reserved' && negotiatedPrice() === null" 
+            (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()" 
+            *ngIf="product.status !== 'sold'">
       <span>Buy Now</span>
     </button>
   </div>
@@ -569,6 +573,18 @@
       </div>
 
       <form (ngSubmit)="submitOrder()" *ngIf="!buySuccess()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
+
+        <!-- Urgent warning banner for reserved checkout -->
+        <div *ngIf="negotiatedPrice() !== null" style="background: rgba(231, 76, 60, 0.08); color: var(--danger-dark); border: 2px dashed var(--danger); padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-primary); display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.5rem; box-sizing: border-box; width: 100%;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span>🤝 NEGOTIATED PRICE</span>
+            <span style="font-weight: 900; font-size: 1rem; color: var(--danger-dark);">{{ negotiatedPrice() | currencyFormat }}</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; border-top: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); padding-top: 0.35rem; margin-top: 0.15rem; font-size: 0.75rem;">
+            <span>⏳ RESERVATION COUNTDOWN:</span>
+            <span style="font-weight: 900; color: var(--danger); font-family: monospace; font-size: 0.85rem;">{{ checkoutCountdown() }}</span>
+          </div>
+        </div>
 
         <div class="checkout-columns">
 

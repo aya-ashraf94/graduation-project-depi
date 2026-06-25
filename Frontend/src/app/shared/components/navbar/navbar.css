@@ -35,7 +35,7 @@
   max-width: 75rem;
   margin: 0 auto;
   padding: 0 1rem;
-  height: 4.25rem;
+  height: var(--navbar-height);
 }
 
 /* ---------- Logo ---------- */
@@ -69,10 +69,10 @@
   flex-direction: column;
   align-items: flex-start;
   position: fixed;
-  top: 4.25rem;
+  top: var(--navbar-height);
   right: -17.5rem;
   width: 17.5rem;
-  height: calc(100vh - 4.25rem);
+  height: calc(100vh - var(--navbar-height));
   background: color-mix(in srgb, var(--white) 98%, transparent);
   border-left: 2px solid var(--black);
   padding: 2rem 1.5rem;
@@ -316,6 +316,57 @@
   object-fit: cover;
 }
 
+/* ---------- Profile Dropdown ---------- */
+.profile-dropdown-wrap {
+  position: relative;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 10rem;
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-heavy);
+  z-index: 2000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  font-family: var(--font-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--black);
+  background: var(--white);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background: var(--surface-2);
+}
+
+.dropdown-logout {
+  color: var(--danger);
+  border-top: 1px solid var(--border);
+}
+
+.dropdown-logout:hover {
+  background: var(--danger-light);
+}
+
 /* Nav link used as a button (logout in mobile drawer) */
 .nav-link-btn {
   background: transparent;
@@ -330,6 +381,107 @@
 /* Show only inside mobile drawer by default */
 .mobile-only {
   display: list-item;
+}
+
+/* ── Drawer User Card ── */
+.drawer-user-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+  list-style: none;
+}
+
+.drawer-user-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 2px solid var(--yellow);
+  background: var(--dark-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9rem;
+  color: var(--yellow);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.drawer-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.drawer-user-name {
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--black);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-user-email {
+  font-size: 0.75rem;
+  color: var(--gray-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Drawer Search ── */
+.drawer-search-li {
+  list-style: none;
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
+}
+
+.drawer-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.drawer-search:focus-within {
+  border-color: var(--black);
+  background: var(--white);
+}
+
+.drawer-search svg {
+  color: var(--gray-3);
+  flex-shrink: 0;
+}
+
+.drawer-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-secondary);
+  font-size: 0.9rem;
+  width: 100%;
+  color: var(--black);
+}
+
+.drawer-search-input::placeholder {
+  color: var(--gray-3);
 }
 
 /* ---------- Hamburger (Mobile Default) ---------- */
@@ -475,4 +627,86 @@
   .nav-overlay {
     display: none;
   }
+}
+
+.inline-badge {
+  position: relative !important;
+  display: inline-flex !important;
+  top: -2px !important;
+  right: auto !important;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
+/* ---------- RESERVATION BANNER ---------- */
+.reservation-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: var(--yellow);
+  color: var(--black);
+  border-bottom: 2px solid var(--black);
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0 1rem;
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.banner-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.banner-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.banner-timer {
+  font-family: monospace;
+  font-weight: 900;
+  font-size: 0.75rem;
+  background: var(--black);
+  color: var(--white);
+  padding: 0.125rem 0.5rem;
+  border-radius: 3px;
+  line-height: 1.3;
+}
+
+.banner-btn {
+  background: var(--white);
+  color: var(--black);
+  border: 2px solid var(--black);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 3px;
+  line-height: 1.4;
+  transition: background 0.1s;
+}
+
+.banner-btn:hover {
+  background: var(--surface-2);
+}
+
+.navbar.has-banner {
+  top: 36px;
 }

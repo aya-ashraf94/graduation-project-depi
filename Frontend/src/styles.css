@@ -93,7 +93,7 @@
   --warning-dark: #b45309;
 
   /* Layout */
-  --navbar-height: 4.25rem;
+  --navbar-height: 3.75rem;
 
   /* Spacing & Radius */
   --radius-xs: 0.25rem;
@@ -123,7 +123,7 @@
 html {
   scroll-behavior: smooth;
   font-size: 100%;
-  scroll-padding-top: 5.25rem;
+  scroll-padding-top: calc(var(--navbar-height) + 1rem);
 }
 
 body {

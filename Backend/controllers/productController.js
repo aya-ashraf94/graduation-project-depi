@@ -84,7 +84,11 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const conditions = [ne(products.status, 'sold'), ne(products.status, 'draft')];
+    const conditions = [
+      ne(products.status, 'sold'),
+      ne(products.status, 'draft'),
+      ne(products.status, 'reserved')
+    ];
 
     if (req.query.category) {
       const catQuery = req.query.category.trim();
