@@ -131,8 +131,22 @@ io.use((socket, next) => {
   }
 });
 
+const onlineUsers = new Map(); // userId -> Set of socket.ids
+
 io.on("connection", (socket) => {
   console.log(`Socket Connected: ${socket.id} (User: ${socket.userId})`);
+
+  // Track online user
+  if (!onlineUsers.has(socket.userId)) {
+    onlineUsers.set(socket.userId, new Set());
+  }
+  onlineUsers.get(socket.userId).add(socket.id);
+
+  // Send the list of current online users to this newly connected user
+  socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
+
+  // Broadcast to all other users that this user is online
+  socket.broadcast.emit("user_status_changed", { userId: socket.userId, status: "online" });
 
   socket.on("join_conversation", async (conversationId) => {
     try {
@@ -158,6 +172,15 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log(`Socket Disconnected: ${socket.id}`);
+    const userSockets = onlineUsers.get(socket.userId);
+    if (userSockets) {
+      userSockets.delete(socket.id);
+      if (userSockets.size === 0) {
+        onlineUsers.delete(socket.userId);
+        // Broadcast to everyone that this user is offline
+        io.emit("user_status_changed", { userId: socket.userId, status: "offline" });
+      }
+    }
   });
 });
 
