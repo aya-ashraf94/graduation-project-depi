@@ -21,6 +21,7 @@ export interface Message {
     counterAmount?: number;
     offerStatus?: 'pending' | 'accepted' | 'rejected' | 'countered';
     expiresAt?: string | Date;
+    orderId?: string;
   };
   sentAt: Date;
 }
