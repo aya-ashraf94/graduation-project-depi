@@ -13,6 +13,7 @@ export interface Offer {
   createdAt: string | Date;
   updatedAt: string | Date;
   productTitle?: string;
+  orderId?: string;
 }
 
 export interface MakeOfferRequest {

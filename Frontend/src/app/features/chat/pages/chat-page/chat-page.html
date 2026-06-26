@@ -130,7 +130,7 @@
                   }
 
                   @if (!isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
-                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId) && !msg.metadata?.orderId) {
                       <div class="offer-checkout-action">
                         <a class="btn-checkout-now"
                            [routerLink]="['/products', activeConversation.productId]"
@@ -138,6 +138,10 @@
                           💳 Complete Purchase
                         </a>
                         <div class="offer-expiry">⏳ Expires in: {{ getCountdownTime(msg.metadata?.offerId) }}</div>
+                      </div>
+                    } @else if (msg.metadata?.orderId) {
+                      <div class="offer-seller-info">
+                        <span class="reserved-badge" style="background: var(--success-light); color: var(--success-dark); border-color: var(--success);">✓ Ordered</span>
                       </div>
                     } @else {
                       <div class="offer-superseded-action">
@@ -147,9 +151,13 @@
                   }
 
                   @if (isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
-                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId) && !msg.metadata?.orderId) {
                       <div class="offer-seller-info">
                         <span class="reserved-badge">🔒 Reserved — Awaiting buyer payment</span>
+                      </div>
+                    } @else if (msg.metadata?.orderId) {
+                      <div class="offer-seller-info">
+                        <span class="reserved-badge" style="background: var(--success-light); color: var(--success-dark); border-color: var(--success);">✓ Sold</span>
                       </div>
                     } @else {
                       <div class="offer-superseded-action">
@@ -188,15 +196,28 @@
                     <span class="new-amount">{{ msg.metadata?.counterAmount | currencyFormat }}</span>
                   </div>
                   
-                  @if (!isOwnerOfProduct() && msg.metadata?.offerStatus === 'countered') {
-                    <div class="offer-actions">
-                      <button class="btn-offer-action accept" (click)="acceptOffer(msg.metadata?.offerId)">Accept</button>
-                      <button class="btn-offer-action reject" (click)="rejectOffer(msg.metadata?.offerId)">Reject</button>
-                    </div>
+                  @if (msg.senderId !== currentUserId && msg.metadata?.offerStatus === 'countered') {
+                    @if (counteringOfferId() === msg.metadata?.offerId) {
+                      <div class="counter-input-row">
+                        <input type="number" 
+                               [ngModel]="counterOfferAmount()"
+                               (ngModelChange)="counterOfferAmount.set($event)"
+                               placeholder="Counter price"
+                               class="counter-input" />
+                        <button class="btn-offer-action accept" (click)="submitCounterOffer(msg.metadata?.offerId)">Send</button>
+                        <button class="btn-offer-action reject" (click)="cancelCounterOffer()">✕</button>
+                      </div>
+                    } @else {
+                      <div class="offer-actions">
+                        <button class="btn-offer-action accept" (click)="acceptOffer(msg.metadata?.offerId)">Accept</button>
+                        <button class="btn-offer-action reject" (click)="rejectOffer(msg.metadata?.offerId)">Reject</button>
+                        <button class="btn-offer-action counter" (click)="startCounterOffer(msg.metadata?.offerId)">Counter</button>
+                      </div>
+                    }
                   }
 
                   @if (!isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
-                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId) && !msg.metadata?.orderId) {
                       <div class="offer-checkout-action">
                         <a class="btn-checkout-now"
                            [routerLink]="['/products', activeConversation.productId]"
@@ -204,6 +225,10 @@
                           💳 Complete Purchase
                         </a>
                         <div class="offer-expiry">⏳ Expires in: {{ getCountdownTime(msg.metadata?.offerId) }}</div>
+                      </div>
+                    } @else if (msg.metadata?.orderId) {
+                      <div class="offer-seller-info">
+                        <span class="reserved-badge" style="background: var(--success-light); color: var(--success-dark); border-color: var(--success);">✓ Ordered</span>
                       </div>
                     } @else {
                       <div class="offer-superseded-action">
@@ -213,9 +238,13 @@
                   }
 
                   @if (isOwnerOfProduct() && msg.metadata?.offerStatus === 'accepted') {
-                    @if (isLatestAcceptedOffer(msg.metadata?.offerId)) {
+                    @if (isLatestAcceptedOffer(msg.metadata?.offerId) && !msg.metadata?.orderId) {
                       <div class="offer-seller-info">
                         <span class="reserved-badge">🔒 Reserved — Awaiting buyer payment</span>
+                      </div>
+                    } @else if (msg.metadata?.orderId) {
+                      <div class="offer-seller-info">
+                        <span class="reserved-badge" style="background: var(--success-light); color: var(--success-dark); border-color: var(--success);">✓ Sold</span>
                       </div>
                     } @else {
                       <div class="offer-superseded-action">

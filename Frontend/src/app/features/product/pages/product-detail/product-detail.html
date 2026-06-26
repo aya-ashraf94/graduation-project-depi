@@ -693,7 +693,7 @@
             style="padding: 0; background: transparent; color: var(--gray-3); border: none; font-family: var(--font-secondary); font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color 0.12s ease;"
             onmouseover="this.style.color='var(--black)'"
             onmouseout="this.style.color='var(--gray-3)'">Cancel</button>
-          <button type="submit" [disabled]="buyLoading || !shippingCity || !shippingStreet"
+          <button type="submit" [disabled]="buyLoading"
             style="padding: 0.7rem 2rem; background: var(--yellow); color: var(--black); border: 2px solid var(--black); border-radius: 8px; font-family: var(--font-primary); font-size: 0.85rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 4px 4px 0 var(--black); transition: all 0.12s ease; letter-spacing: 0.04em;"
             onmouseover="this.style.transform='translate(-2px,-2px)'; this.style.boxShadow='6px 6px 0 var(--black)'; this.style.background='var(--yellow-dark)'"
             onmouseout="this.style.transform='none'; this.style.boxShadow='4px 4px 0 var(--black)'; this.style.background='var(--yellow)'">{{ buyLoading ? 'Placing Order...' : 'Place Order' }}</button>
