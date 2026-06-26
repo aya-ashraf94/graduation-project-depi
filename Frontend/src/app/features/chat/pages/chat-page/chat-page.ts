@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, inject, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, inject, signal, computed, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
@@ -11,13 +11,16 @@ import { Conversation, Message } from '../../../../core/models/message.model';
 import { Offer } from '../../../../core/models/offer.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { ProductService } from '../../../../core/services/product.service';
+import { ReportModal } from '../../../../shared/components/report-modal/report-modal';
 
 import { io, Socket } from 'socket.io-client';
 
 @Component({
   selector: 'app-chat-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimeAgoPipe, RouterLink, CurrencyFormatPipe],
+  imports: [CommonModule, FormsModule, TimeAgoPipe, RouterLink, CurrencyFormatPipe, ReportModal],
   templateUrl: './chat-page.html',
   styleUrl: './chat-page.css',
 })
@@ -28,6 +31,8 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private confirmService = inject(ConfirmService);
+  private notificationService = inject(NotificationService);
+  private productService = inject(ProductService);
 
   private socket: Socket | null = null;
   private previousMessagesLength = 0;
@@ -42,13 +47,19 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   newMessage = '';
   currentUserId = '';
   searchTerm = signal('');
+  onlineUserIds = signal<Set<string>>(new Set());
 
   // Offer panel signals
   showOfferPanel = signal(false);
   offerAmountInput = signal(0);
   isSendingOffer = signal(false);
+  isSendingMessage = signal(false);
+  showOptionsMenu = signal(false);
   counteringOfferId = signal<string | null>(null);
   counterOfferAmount = signal<number>(0);
+
+  // Report modal signals
+  showReportModal = signal(false);
 
   filteredConversations = computed(() => {
     const convs = this.conversations();
@@ -78,11 +89,27 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
       auth: { token }
     });
 
+    this.socket.on("initial_online_users", (userIds: string[]) => {
+      this.onlineUserIds.set(new Set(userIds));
+    });
+
+    this.socket.on("user_status_changed", (data: { userId: string, status: 'online' | 'offline' }) => {
+      const current = new Set(this.onlineUserIds());
+      if (data.status === 'online') {
+        current.add(data.userId);
+      } else {
+        current.delete(data.userId);
+      }
+      this.onlineUserIds.set(current);
+    });
+
     this.socket.on("new_message", (msg: Message) => {
       if (this.activeConversation && msg.conversationId === this.activeConversation.id) {
         if (!this.messages.some(m => m.id === msg.id)) {
           this.messages.push(msg);
-          this.chatService.markAsRead(this.activeConversation.id).subscribe();
+          this.chatService.markAsRead(this.activeConversation.id).subscribe({
+            next: () => this.notificationService.fetchNotifications()
+          });
           this.startCountdownTimer();
         }
       }
@@ -126,8 +153,23 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     this.route.queryParams.subscribe(params => {
       const recipientId = params['recipientId'];
       const productId = params['productId'];
+      const conversationId = params['conversationId'];
 
-      if (recipientId && productId) {
+      if (conversationId) {
+        this.chatService.getConversations().subscribe({
+          next: (convs) => {
+            this.conversations.set(convs);
+            const found = convs.find(c => c.id === conversationId);
+            if (found) {
+              this.selectConversation(found);
+            }
+          },
+          error: (err) => {
+            console.error('Error loading conversations:', err);
+            this.loadConversations(true);
+          }
+        });
+      } else if (recipientId && productId) {
         this.chatService.getConversations().subscribe({
           next: (convs) => {
             this.conversations.set(convs);
@@ -221,6 +263,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
         this.chatService.markAsRead(conv.id).subscribe({
           next: () => {
             this.loadConversations(false);
+            this.notificationService.fetchNotifications();
           }
         });
       },
@@ -289,8 +332,15 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     return latestMsg.metadata?.offerId === offerId;
   }
 
+  isUserOnline(userId: string | undefined): boolean {
+    if (!userId) return false;
+    return this.onlineUserIds().has(userId);
+  }
+
   send() {
-    if (!this.newMessage.trim() || !this.activeConversation) return;
+    if (!this.newMessage.trim() || !this.activeConversation || this.isSendingMessage()) return;
+
+    this.isSendingMessage.set(true);
 
     const payload = {
       conversationId: this.activeConversation.id,
@@ -303,9 +353,13 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
           this.messages.push(msg);
         }
         this.newMessage = '';
+        this.isSendingMessage.set(false);
         this.loadConversations(false);
       },
-      error: (err) => console.error('Error sending message:', err)
+      error: (err) => {
+        console.error('Error sending message:', err);
+        this.isSendingMessage.set(false);
+      }
     });
   }
 
@@ -402,5 +456,61 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
         });
       }
     });
+  }
+
+  toggleOptionsMenu(event: Event) {
+    event.stopPropagation();
+    this.showOptionsMenu.set(!this.showOptionsMenu());
+  }
+
+  triggerDeleteChat(event: Event) {
+    if (this.activeConversation) {
+      this.deleteChat(this.activeConversation.id, event);
+    }
+    this.showOptionsMenu.set(false);
+  }
+
+  viewUserProfile() {
+    const other = this.getOtherParticipant(this.activeConversation!);
+    if (other) {
+      this.router.navigate(['/profile', other.id]);
+    }
+    this.showOptionsMenu.set(false);
+  }
+
+  blockUser(event: Event) {
+    event.stopPropagation();
+    const other = this.getOtherParticipant(this.activeConversation!);
+    if (!other) return;
+    this.confirmService.show({
+      title: 'Block User',
+      message: `Are you sure you want to block ${other.firstName} ${other.lastName}? You will no longer receive messages from them.`,
+      onConfirm: () => {
+        this.showOptionsMenu.set(false);
+        this.confirmService.show({
+          title: 'User Blocked',
+          message: `${other.firstName} ${other.lastName} has been blocked successfully.`,
+          onConfirm: () => {}
+        });
+      }
+    });
+  }
+
+  openReport(event?: Event) {
+    if (event) event.stopPropagation();
+    this.showReportModal.set(true);
+    this.showOptionsMenu.set(false);
+  }
+
+  closeReport() {
+    this.showReportModal.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.btn-options') && !target.closest('.options-dropdown')) {
+      this.showOptionsMenu.set(false);
+    }
   }
 }

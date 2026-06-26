@@ -625,8 +625,12 @@
                 <div class="right-actions-wrap">
                   <span *ngIf="order.status === 'delivered' && reviewedOrderIds.has(order.id)" class="reviewed-badge">✓ REVIEWED</span>
                   <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="btn-order btn-order-review" (click)="openReviewModal(order)">REVIEW PRODUCT</button>
-                  <button *ngIf="order.status === 'shipped'"  type="button" class="btn-order btn-order-confirm" (click)="updateOrderStatus(order.id, 'delivered')">✓ CONFIRM RECEIVED</button>
-                  <button *ngIf="order.status === 'pending'"  type="button" class="btn-order btn-order-cancel"  (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
+                  <button *ngIf="order.status === 'shipped'"  type="button" class="btn-order btn-order-confirm" [disabled]="updatingOrders[order.id]" (click)="updateOrderStatus(order.id, 'delivered')">
+                    {{ updatingOrders[order.id] === 'delivered' ? 'Updating...' : '✓ CONFIRM RECEIVED' }}
+                  </button>
+                  <button *ngIf="order.status === 'pending'"  type="button" class="btn-order btn-order-cancel" [disabled]="updatingOrders[order.id]" (click)="updateOrderStatus(order.id, 'cancelled')">
+                    {{ updatingOrders[order.id] === 'cancelled' ? 'Updating...' : 'CANCEL ORDER' }}
+                  </button>
                   <button *ngIf="order.status === 'cancelled'" type="button" class="btn-order-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>
                 </div>
               </div>
@@ -762,8 +766,12 @@
               <div class="order-card-actions-footer">
                 <div class="left-actions-placeholder"></div>
                 <div class="right-actions-wrap">
-                  <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-ship"   (click)="updateOrderStatus(order.id, 'shipped')">MARK SHIPPED</button>
-                  <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-cancel" (click)="updateOrderStatus(order.id, 'cancelled')">CANCEL ORDER</button>
+                  <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-ship" [disabled]="updatingOrders[order.id]" (click)="updateOrderStatus(order.id, 'shipped')">
+                    {{ updatingOrders[order.id] === 'shipped' ? 'Updating...' : 'MARK SHIPPED' }}
+                  </button>
+                  <button *ngIf="order.status === 'pending'" type="button" class="btn-order btn-order-cancel" [disabled]="updatingOrders[order.id]" (click)="updateOrderStatus(order.id, 'cancelled')">
+                    {{ updatingOrders[order.id] === 'cancelled' ? 'Updating...' : 'CANCEL ORDER' }}
+                  </button>
                   <span   *ngIf="order.status === 'shipped'"   class="reviewed-badge" style="background:var(--success-light);color:var(--success-dark);border-color:var(--success); display: inline-flex; align-items: center;"><span class="pulse-dot"></span>⏳ AWAITING BUYER RECEIPT</span>
                   <span   *ngIf="order.status === 'delivered'" class="reviewed-badge" style="background:var(--success-light);color:var(--success-dark);border-color:var(--success);">✓ DELIVERED</span>
                   <button *ngIf="order.status === 'cancelled'" type="button" class="btn-order-dismiss" (click)="dismissOrder(order.id)">✕ Dismiss Notification</button>

@@ -254,13 +254,13 @@
             <span class="spec-lbl-v3">Brand</span>
             <span class="spec-val-v3">{{ product.brand }}</span>
           </div>
-          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['storage']">
+          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['storage'] as storage">
             <span class="spec-lbl-v3">Storage</span>
-            <span class="spec-val-v3">{{ product.rawDynamicAttributes?.['storage'] }}</span>
+            <span class="spec-val-v3">{{ storage }}</span>
           </div>
-          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['color']">
+          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['color'] as color">
             <span class="spec-lbl-v3">Color</span>
-            <span class="spec-val-v3">{{ product.rawDynamicAttributes?.['color'] }}</span>
+            <span class="spec-val-v3">{{ color }}</span>
           </div>
           <div class="spec-row-v3" *ngIf="product.size">
             <span class="spec-lbl-v3">Size</span>
@@ -481,54 +481,11 @@
 </div>
 
 <!-- REPORT MODAL -->
-<div class="brutal-overlay" [class.prevent-close]="submittingReport" *ngIf="showReportModal" (click)="closeReport()">
-  <div class="brutal-modal-card" (click)="$event.stopPropagation()">
-    <button class="brutal-modal-close" [disabled]="submittingReport" (click)="closeReport()">✕</button>
-    <div class="brutal-modal-header">
-      <h3 class="brutal-modal-title">Report Listing</h3>
-      <p class="brutal-modal-desc">Please select the reason that best describes your concern with this listing.</p>
-    </div>
-
-    <!-- Error state -->
-    @if (reportError) {
-      <div class="brutal-modal-error">
-        <span class="error-icon">⚠️</span>
-        <p>{{ reportError }}</p>
-        <button class="brutal-btn-dismiss-error" (click)="reportError = ''">Dismiss</button>
-      </div>
-    }
-
-    <div class="brutal-modal-body" *ngIf="!reportSubmitted">
-      <div class="brutal-modal-options">
-        <label class="brutal-modal-option" [class.active]="reportReason === r" *ngFor="let r of ['Misleading description', 'Counterfeit item', 'Inappropriate content', 'Scam / fraud', 'Other']">
-          <input type="radio" name="reason" [value]="r" (click)="reportReason = r" [checked]="reportReason === r" />
-          <span>{{ r }}</span>
-        </label>
-      </div>
-
-      <!-- Conditional explanation field if 'Other' is selected -->
-      <div class="report-details-container" *ngIf="reportReason === 'Other'">
-        <label class="details-label">Please explain your reason:</label>
-        <textarea class="details-textarea" [(ngModel)]="reportDetails" placeholder="Tell us more about the issue..."></textarea>
-      </div>
-
-      <div class="brutal-modal-footer">
-        <button class="brutal-btn-submit" [disabled]="submittingReport || !reportReason || (reportReason === 'Other' && !reportDetails.trim())" (click)="submitReport()">
-          <span class="spinner-micro" *ngIf="submittingReport"></span>
-          <span>{{ submittingReport ? 'Submitting...' : 'Submit Report' }}</span>
-        </button>
-      </div>
-    </div>
-    <div class="brutal-modal-success" *ngIf="reportSubmitted">
-      <div class="success-icon-box">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success-dark)" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>
-      </div>
-      <h4 class="brutal-success-title">Report Submitted</h4>
-      <p class="brutal-success-desc">Thank you for helping keep our community safe. Our moderation team will review this listing shortly.</p>
-      <button class="brutal-btn-done" (click)="closeReport(true)">Done</button>
-    </div>
-  </div>
-</div>
+<app-report-modal
+  *ngIf="showReportModal && product"
+  [productId]="product.id"
+  (close)="closeReport()">
+</app-report-modal>
 
 <!-- AUTH REQUIRED MODAL -->
 <div class="brutal-overlay" *ngIf="showAuthModal" (click)="closeAuthModal()">
@@ -614,11 +571,13 @@
 
             <!-- Shipping Address (compact) -->
             <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Shipping Address</label>
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">
+                Shipping Address <span style="color: var(--danger); font-weight: 900;">*</span>
+              </label>
               <div class="checkout-address-fields">
-                <input type="text" [(ngModel)]="shippingCity" name="shippingCity" placeholder="City" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
-                <input type="text" [(ngModel)]="shippingArea" name="shippingArea" placeholder="Area" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
-                <input type="text" [(ngModel)]="shippingStreet" name="shippingStreet" placeholder="Street" style="flex: 2; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingCity" name="shippingCity" placeholder="City *" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingArea" name="shippingArea" placeholder="Area *" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingStreet" name="shippingStreet" placeholder="Street *" style="flex: 2; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
               </div>
               <input type="text" [(ngModel)]="shippingBuilding" name="shippingBuilding" placeholder="Building / Apartment (optional)" style="width: 100%; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; box-sizing: border-box;" />
             </div>

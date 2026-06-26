@@ -97,11 +97,11 @@ export class Navbar implements OnInit, OnDestroy {
       .filter(n => !n.isRead && n.type === 'message').length;
   });
 
-  /** Reactive notifications (top 5, sorted) */
+  /** Reactive notifications (top 15, sorted) */
   readonly notifications = computed(() => {
     const user = this.currentUser();
     if (!user) return [];
-    return this.notificationService.getNotifications(user.id).slice(0, 5);
+    return this.notificationService.getNotifications(user.id).slice(0, 15);
   });
 
   @HostListener('window:scroll')
@@ -165,7 +165,11 @@ export class Navbar implements OnInit, OnDestroy {
     this.notificationService.markAsRead(notif.id);
     this.showNotifDropdown = false;
     if (notif.linkedRoute) {
-      this.router.navigateByUrl(notif.linkedRoute);
+      if (notif.type === 'message' && notif.linkedEntityId) {
+        this.router.navigate([notif.linkedRoute], { queryParams: { conversationId: notif.linkedEntityId } });
+      } else {
+        this.router.navigateByUrl(notif.linkedRoute);
+      }
     }
   }
 

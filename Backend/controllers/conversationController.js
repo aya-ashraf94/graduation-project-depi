@@ -260,6 +260,7 @@ const startConversation = async (req, res) => {
 const sendMessage = async (req, res) => {
   try {
     const { conversationId, content, type = 'text', metadata = null } = req.body;
+    const senderId = req.user.id;
 
     if (!conversationId || !content) {
       return res.status(400).json({ message: "Conversation ID and content are required" });
@@ -346,6 +347,17 @@ const markAsRead = async (req, res) => {
           eq(messages.conversationId, conversationId),
           ne(messages.senderId, userId),
           ne(messages.status, 'read')
+        )
+      );
+
+    // Also mark notifications for this conversation as read
+    await db.update(notifications).set({ isRead: true })
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.type, "message"),
+          eq(notifications.linkedEntityId, conversationId),
+          eq(notifications.isRead, false)
         )
       );
 

@@ -569,13 +569,26 @@ export class MyProfile implements OnInit, AfterViewInit {
     });
   }
 
+  updatingOrders: { [orderId: string]: OrderStatus } = {};
+
   updateOrderStatus(orderId: string, status: OrderStatus) {
+    if (this.updatingOrders[orderId]) return;
+    this.updatingOrders[orderId] = status;
+    this.cdr.detectChanges();
+
     this.orderService.updateOrder(orderId, { status }).subscribe({
       next: (updated) => {
         // Refresh orders list
-        this.orderService.getOrders().subscribe(orders => {
-          this.myOrders = orders;
-          this.cdr.detectChanges();
+        this.orderService.getOrders().subscribe({
+          next: (orders) => {
+            this.myOrders = orders;
+            delete this.updatingOrders[orderId];
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            delete this.updatingOrders[orderId];
+            this.cdr.detectChanges();
+          }
         });
 
         // Refresh listings and wishlist so the product status updates instantly
@@ -584,7 +597,11 @@ export class MyProfile implements OnInit, AfterViewInit {
         }
         this.loadWishlist();
       },
-      error: (err) => console.error('Error updating order:', err)
+      error: (err) => {
+        console.error('Error updating order:', err);
+        delete this.updatingOrders[orderId];
+        this.cdr.detectChanges();
+      }
     });
   }
 

@@ -13,11 +13,12 @@ import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pip
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
 import { SettingsService } from '../../../../core/services/settings.service';
 import { OfferService } from '../../../../core/services/offer.service';
+import { ReportModal } from '../../../../shared/components/report-modal/report-modal';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective],
+  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective, ReportModal],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -42,10 +43,6 @@ export class ProductDetail implements OnInit, OnDestroy {
   isOwner = false;
   showReportModal = false;
   showAuthModal = false;
-  reportReason = '';
-  reportDetails = '';
-  reportSubmitted = false;
-  submittingReport = false;
   isLoading = true;
   categoryLabel = '';
 
@@ -379,48 +376,14 @@ export class ProductDetail implements OnInit, OnDestroy {
     });
   }
 
-  reportError = '';
-
   openReport(): void {
     this.executeAuthorizedAction(() => {
       this.showReportModal = true;
-      this.reportReason = '';
-      this.reportDetails = '';
-      this.reportSubmitted = false;
-      this.submittingReport = false;
-      this.reportError = '';
     });
   }
 
-  closeReport(force: boolean = false): void {
-    if (!force && (this.submittingReport || this.reportSubmitted)) return;
+  closeReport(): void {
     this.showReportModal = false;
-  }
-
-  submitReport(): void {
-    if (this.submittingReport) return;
-    if (this.reportReason.trim() && this.product) {
-      this.submittingReport = true;
-      this.reportError = '';
-      this.productService.reportProduct(this.product.id, this.reportReason, this.reportDetails || undefined).subscribe({
-        next: () => {
-          this.reportSubmitted = true;
-          this.submittingReport = false;
-          setTimeout(() => this.closeReport(true), 2500);
-        },
-        error: (err) => {
-          this.submittingReport = false;
-          if (err.status === 409) {
-            this.reportError = err.error?.message || 'You have already reported this listing.';
-          } else if (err.status === 400) {
-            this.reportError = err.error?.message || 'Invalid submission. Please check your input.';
-          } else {
-            this.reportError = 'Something went wrong. Please try again later.';
-          }
-          this.cdr.detectChanges();
-        }
-      });
-    }
   }
 
   openBuy(): void {
