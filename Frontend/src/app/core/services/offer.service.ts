@@ -24,6 +24,7 @@ export class OfferService {
       next: (offers) => {
         const active = offers.find(o => 
           o.status === 'accepted' && 
+          !o.orderId &&
           o.buyerId === currentUser.id && 
           o.expiresAt && 
           new Date(o.expiresAt) > new Date()

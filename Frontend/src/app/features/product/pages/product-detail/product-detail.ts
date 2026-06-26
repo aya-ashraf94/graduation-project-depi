@@ -236,6 +236,7 @@ export class ProductDetail implements OnInit, OnDestroy {
                 const acceptedOffer = offers.find(o => 
                   o.productId === product.id && 
                   o.status === 'accepted' && 
+                  !o.orderId &&
                   o.buyerId === currentUser.id
                 );
                 if (acceptedOffer) {
@@ -276,7 +277,7 @@ export class ProductDetail implements OnInit, OnDestroy {
       if (buyNow === 'true' && offerId) {
         this.offerService.getOffer(offerId).subscribe({
           next: (offer) => {
-            const finalPrice = offer.status === 'accepted' ? (offer.counterAmount || offer.amount) : null;
+            const finalPrice = (offer.status === 'accepted' && !offer.orderId) ? (offer.counterAmount || offer.amount) : null;
             if (finalPrice !== null) {
               this._pendingNegotiatedPrice = finalPrice;
               this._pendingAutoOpenBuy = true;
@@ -519,11 +520,13 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   submitOrder(): void {
     if (!this.product) return;
-    const addrParts = [this.shippingCity, this.shippingArea, this.shippingStreet, this.shippingBuilding].filter(Boolean);
-    if (addrParts.length < 2) {
-      this.buyError.set('Please provide at least your city and street address');
+    
+    if (!this.shippingCity || !this.shippingStreet) {
+      this.buyError.set('Please provide both City and Street in your shipping address');
       return;
     }
+
+    const addrParts = [this.shippingCity, this.shippingArea, this.shippingStreet, this.shippingBuilding].filter(Boolean);
     
     this.buyLoading = true;
     this.buyError.set(null);
@@ -546,6 +549,11 @@ export class ProductDetail implements OnInit, OnDestroy {
         if (this.product) {
           this.product.status = 'sold';
         }
+        if (this.checkoutTimerId) {
+          clearInterval(this.checkoutTimerId);
+          this.checkoutTimerId = null;
+        }
+        this.checkoutCountdown.set('');
         this.offerService.activeReservation.set(null);
         setTimeout(() => {
           this.closeBuy();

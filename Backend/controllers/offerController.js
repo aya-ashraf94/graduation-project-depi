@@ -4,11 +4,14 @@ const { eq, and, or, desc } = require("drizzle-orm");
 
 const checkAndExpireOffer = async (offer) => {
   if (!offer) return offer;
+
+  // Check if an order exists for this offer to attach it
+  const [order] = await db.select().from(orders).where(eq(orders.offerId, offer.id)).limit(1);
+  const offerWithOrder = { ...offer, orderId: order ? order.id : null };
+
   if (offer.status === "accepted" && offer.expiresAt && new Date() > new Date(offer.expiresAt)) {
-    // Check if an order exists for this offer
-    const [order] = await db.select().from(orders).where(eq(orders.offerId, offer.id)).limit(1);
     if (order) {
-      return offer; // Order exists, so not expired
+      return offerWithOrder; // Order exists, so not expired
     }
 
     // Revert offer status to expired
@@ -27,9 +30,10 @@ const checkAndExpireOffer = async (offer) => {
     return {
       ...updated,
       productTitle: offer.productTitle,
+      orderId: null,
     };
   }
-  return offer;
+  return offerWithOrder;
 };
 
 const makeOffer = async (req, res) => {
@@ -270,14 +274,34 @@ const acceptOffer = async (req, res) => {
     }
 
     // Auth check
+    let isAllowed = false;
     if (offer.status === "pending") {
-      if (offer.sellerId !== userId) {
-        return res.status(403).json({ message: "Only the seller can accept a pending offer" });
-      }
+      isAllowed = (offer.sellerId === userId);
     } else if (offer.status === "countered") {
-      if (offer.buyerId !== userId) {
-        return res.status(403).json({ message: "Only the buyer can accept a counter-offer" });
+      const [lastCounterMsg] = await db.select()
+        .from(messages)
+        .where(
+          and(
+            eq(messages.conversationId, offer.conversationId),
+            eq(messages.type, "counter_offer")
+          )
+        )
+        .orderBy(desc(messages.createdAt))
+        .limit(1);
+
+      if (lastCounterMsg) {
+        if (lastCounterMsg.senderId === offer.sellerId) {
+          isAllowed = (offer.buyerId === userId);
+        } else {
+          isAllowed = (offer.sellerId === userId);
+        }
+      } else {
+        isAllowed = (offer.buyerId === userId);
       }
+    }
+
+    if (!isAllowed) {
+      return res.status(403).json({ message: "You are not authorized to accept this offer" });
     }
 
     const checkoutExpiry = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours to checkout
@@ -375,14 +399,34 @@ const rejectOffer = async (req, res) => {
     }
 
     // Auth check
+    let isAllowed = false;
     if (offer.status === "pending") {
-      if (offer.sellerId !== userId) {
-        return res.status(403).json({ message: "Only the seller can reject a pending offer" });
-      }
+      isAllowed = (offer.sellerId === userId);
     } else if (offer.status === "countered") {
-      if (offer.buyerId !== userId) {
-        return res.status(403).json({ message: "Only the buyer can reject a counter-offer" });
+      const [lastCounterMsg] = await db.select()
+        .from(messages)
+        .where(
+          and(
+            eq(messages.conversationId, offer.conversationId),
+            eq(messages.type, "counter_offer")
+          )
+        )
+        .orderBy(desc(messages.createdAt))
+        .limit(1);
+
+      if (lastCounterMsg) {
+        if (lastCounterMsg.senderId === offer.sellerId) {
+          isAllowed = (offer.buyerId === userId);
+        } else {
+          isAllowed = (offer.sellerId === userId);
+        }
+      } else {
+        isAllowed = (offer.buyerId === userId);
       }
+    }
+
+    if (!isAllowed) {
+      return res.status(403).json({ message: "You are not authorized to reject this offer" });
     }
 
     const [updatedOffer] = await db.update(offers)
@@ -466,12 +510,38 @@ const counterOffer = async (req, res) => {
       return res.status(404).json({ message: "Offer not found" });
     }
 
-    if (offer.sellerId !== userId) {
-      return res.status(403).json({ message: "Only the seller can counter an offer" });
+    if (offer.status !== "pending" && offer.status !== "countered") {
+      return res.status(400).json({ message: `Cannot counter offer with status ${offer.status}` });
     }
 
-    if (offer.status !== "pending") {
-      return res.status(400).json({ message: `Cannot counter offer with status ${offer.status}` });
+    let isAllowed = false;
+    if (offer.status === "pending") {
+      isAllowed = (offer.sellerId === userId);
+    } else if (offer.status === "countered") {
+      const [lastCounterMsg] = await db.select()
+        .from(messages)
+        .where(
+          and(
+            eq(messages.conversationId, offer.conversationId),
+            eq(messages.type, "counter_offer")
+          )
+        )
+        .orderBy(desc(messages.createdAt))
+        .limit(1);
+
+      if (lastCounterMsg) {
+        if (lastCounterMsg.senderId === offer.sellerId) {
+          isAllowed = (offer.buyerId === userId);
+        } else {
+          isAllowed = (offer.sellerId === userId);
+        }
+      } else {
+        isAllowed = (offer.buyerId === userId);
+      }
+    }
+
+    if (!isAllowed) {
+      return res.status(403).json({ message: "You are not authorized to counter this offer" });
     }
 
     if (offer.expiresAt && new Date() > new Date(offer.expiresAt)) {

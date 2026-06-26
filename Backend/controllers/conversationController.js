@@ -152,6 +152,7 @@ const getMessages = async (req, res) => {
           offerStatus: liveOffer.status,
           counterAmount: liveOffer.counterAmount,
           expiresAt: liveOffer.expiresAt,
+          orderId: liveOffer.orderId,
         };
       }
       return {
