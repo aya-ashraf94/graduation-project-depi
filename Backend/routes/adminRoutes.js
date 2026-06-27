@@ -20,6 +20,12 @@ const {
     patchCoupon,
     deleteCoupon
 } = require("../controllers/adminController");
+const {
+    getAllFlashSales,
+    createFlashSale,
+    updateFlashSale,
+    deleteFlashSale,
+} = require("../controllers/flashSaleController");
 
 // Apply auth and admin middleware to all routes below
 router.use(authMiddleware);
@@ -46,5 +52,10 @@ router.get("/coupons", getCoupons);
 router.post("/coupons", createCoupon);
 router.patch("/coupons/:id", patchCoupon);
 router.delete("/coupons/:id", deleteCoupon);
+
+router.get("/flash-sales", getAllFlashSales);
+router.post("/flash-sales", createFlashSale);
+router.patch("/flash-sales/:id", updateFlashSale);
+router.delete("/flash-sales/:id", deleteFlashSale);
 
 module.exports = router;

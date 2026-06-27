@@ -55,6 +55,12 @@ export interface Product {
   /** Raw dynamicAttributes from the backend (preserved for edit forms) */
   rawDynamicAttributes?: Record<string, any>;
 
+  /** Flash sale fields */
+  originalPrice?: number;
+  salePrice?: number;
+  flashSaleName?: string;
+  isFlashSale?: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -78,6 +84,12 @@ export interface ProductSummary {
   soldByNafa3ni?: boolean;
   isVerified?: boolean;
   location?: string;
+
+  /** Flash sale fields */
+  originalPrice?: number;
+  salePrice?: number;
+  flashSaleName?: string;
+  isFlashSale?: boolean;
 }
 
 /** Payload to create a new listing */

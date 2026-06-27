@@ -16,6 +16,7 @@
       [class.admin-main]="isAdminRoute()"
       [class.has-banner]="offerService.activeReservation() && !isAuthRoute() && !isAdminRoute() && !isChatRoute()"
       [style.margin-top]="offerService.activeReservation() && !isAuthRoute() && !isAdminRoute() && !isChatRoute() ? '36px' : '0'">
+  <app-flash-sale-banner *ngIf="shouldShowFlashBanner()"></app-flash-sale-banner>
   <router-outlet></router-outlet>
 </main>
 
@@ -30,6 +31,37 @@
 
 <!-- Global Footer: Hidden on Auth, Chat, and Admin pages -->
 <app-footer *ngIf="!isAuthRoute() && !isChatRoute() && !isAdminRoute()"></app-footer>
+
+<!-- Flash Sale Ending Popup Alert -->
+@if (flashSaleAlert(); as alert) {
+  <div class="flash-sale-alert-overlay" (click)="dismissFlashAlert()">
+    <div class="flash-sale-alert-card" (click)="$event.stopPropagation()">
+      <button class="flash-sale-alert-close" (click)="dismissFlashAlert()">✕</button>
+      <div class="flash-sale-alert-strip">⏳ HURRY! ENDING SOON</div>
+      <div class="flash-sale-alert-header">
+        <span class="flash-sale-alert-badge">⚡ FLASH SALE</span>
+        <div class="flash-sale-alert-discount">-{{ alert.discountPercent }}%</div>
+      </div>
+      <h2 class="flash-sale-alert-title">{{ alert.title }}</h2>
+      <p class="flash-sale-alert-body">{{ alert.body }}</p>
+      <div class="flash-sale-alert-countdown">
+        <div class="flash-sale-countdown-item">
+          <span class="flash-sale-countdown-value">{{ alert.endsInMinutes }}</span>
+          <span class="flash-sale-countdown-label">MIN</span>
+        </div>
+        <span class="flash-sale-countdown-sep">:</span>
+        <div class="flash-sale-countdown-item">
+          <span class="flash-sale-countdown-value">00</span>
+          <span class="flash-sale-countdown-label">SEC</span>
+        </div>
+      </div>
+      <div class="flash-sale-alert-progress">
+        <div class="flash-sale-alert-progress-bar" [style.animation-duration.ms]="10000"></div>
+      </div>
+      <a routerLink="/products" class="flash-sale-alert-cta" (click)="dismissFlashAlert()">Shop Now →</a>
+    </div>
+  </div>
+}
 
 <!-- Global Toast Notifications -->
 <app-toast></app-toast>

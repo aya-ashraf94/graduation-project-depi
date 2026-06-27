@@ -903,3 +903,62 @@
   padding-top: 0.75rem;
   border-top: 2px solid var(--black);
 }
+
+/* ── Flash Sale Pricing Styles ──────────────────────────── */
+.home-sale-price {
+  background: var(--yellow, #ffd700) !important;
+  color: var(--danger, #e74c3c) !important;
+  border-color: var(--danger, #e74c3c) !important;
+}
+
+.home-original-price {
+  font-size: 0.75rem;
+  color: var(--gray-3, #999);
+  text-decoration: line-through;
+  margin-left: 0.3rem;
+}
+
+.home-flash-badge {
+  font-family: var(--font-primary, sans-serif);
+  font-weight: 900;
+  font-size: 0.65rem;
+  background: var(--danger, #e74c3c);
+  color: white;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  margin-left: 0.3rem;
+  animation: flash-pulse 1s ease-in-out infinite;
+}
+
+.card-price .sale-price,
+.price-box .sale-price,
+.card-price-v2 .sale-price {
+  font-weight: 900;
+  color: var(--danger, #e74c3c);
+}
+
+.card-price .original-price,
+.price-box .original-price,
+.card-price-v2 .original-price {
+  font-size: 0.75rem;
+  color: var(--gray-3, #999);
+  text-decoration: line-through;
+  margin-left: 0.3rem;
+}
+
+.price-box .flash-badge {
+  font-size: 0.55rem;
+  font-weight: 800;
+  background: var(--danger, #e74c3c);
+  color: white;
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+  animation: flash-pulse 1s ease-in-out infinite;
+}
+
+@keyframes flash-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

@@ -119,6 +119,9 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   /** Discounted sale price = original price minus discount */
   get salePrice(): number {
+    if (this.product?.isFlashSale && this.product?.salePrice) {
+      return this.product.salePrice;
+    }
     const pct = this.discountPercent;
     if (!pct || !this.product?.price) return this.product?.price ?? 0;
     return Math.round(this.product.price * (1 - pct / 100));
@@ -127,17 +130,19 @@ export class ProductDetail implements OnInit, OnDestroy {
   /** Original price (the "was" price shown crossed out) */
   get compareAtPrice(): number | undefined {
     if (!this.isOnSale || !this.product?.price) return undefined;
-    return this.product.price;
+    return this.product.originalPrice || this.product.price;
   }
 
-  /** Category sale end date */
+  /** Sale end date (from flash sale or category sale) */
   get saleEnd(): Date | undefined {
+    if (this.product?.isFlashSale) return undefined;
     const v = this._categorySale?.saleEnd;
     return v ? new Date(v) : undefined;
   }
 
-  /** Whether the category sale is currently active */
+  /** Whether a sale (category or flash) is currently active */
   get isOnSale(): boolean {
+    if (this.product?.isFlashSale) return true;
     const cat = this._categorySale;
     if (!cat?.discountPercent) return false;
     const pct = Number(cat.discountPercent);
@@ -148,8 +153,11 @@ export class ProductDetail implements OnInit, OnDestroy {
     return true;
   }
 
-  /** Savings percentage (same as category discount) */
+  /** Savings percentage */
   get savingsPercent(): number {
+    if (this.product?.isFlashSale && this.product?.originalPrice && this.product?.salePrice) {
+      return Math.round((1 - this.product.salePrice / this.product.originalPrice) * 100);
+    }
     return this.discountPercent;
   }
 
