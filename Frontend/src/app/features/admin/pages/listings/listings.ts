@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -7,13 +7,20 @@ import { ProductService } from '../../../../core/services/product.service';
 import { Product } from '../../../../core/models/product.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
+import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
+import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge';
 
 @Component({
   selector: 'app-admin-listings',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, StatusBadgeComponent],
   templateUrl: './listings.html',
-  styleUrl: './listings.css'
+  styleUrl: './listings.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Listings implements OnInit {
   private adminService = inject(AdminService);
@@ -107,25 +114,11 @@ export class Listings implements OnInit {
   }
 
   getConditionLabel(condition: string): string {
-    const labels: Record<string, string> = {
-      new_with_tags: 'New',
-      excellent: 'New',
-      good: 'Used',
-      fair: 'Used',
-      distressed: 'Used'
-    };
-    return labels[condition] || 'Used';
+    return getConditionLabel(condition);
   }
 
   getConditionClass(condition: string): string {
-    const classes: Record<string, string> = {
-      new_with_tags: 'cond-new',
-      excellent: 'cond-new',
-      good: 'cond-used',
-      fair: 'cond-used',
-      distressed: 'cond-used'
-    };
-    return classes[condition] || 'cond-used';
+    return getConditionClass(condition);
   }
 
   getStatusLabel(status: string): string {

@@ -1,22 +1,25 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ProductSummary } from '../../../../core/models/product.model';
-import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
-import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
+import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { AuthRequiredModalComponent } from '../../../../shared/components/auth-required-modal/auth-required-modal';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CurrencyFormatPipe, TimeAgoPipe],
+  imports: [CommonModule, FormsModule, ProductCardComponent, PaginationComponent, AuthRequiredModalComponent, EmptyStateComponent],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductList implements OnInit {
   protected productService = inject(ProductService);
@@ -269,9 +272,11 @@ export class ProductList implements OnInit {
     this.applyFilters();
   }
 
-  toggleWishlist(productId: string, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
+  toggleWishlist(productId: string, event?: any): void {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (this.authService.currentUser()) {
       this.wishlistService.toggle(productId);
     } else {

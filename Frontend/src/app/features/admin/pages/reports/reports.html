@@ -7,10 +7,10 @@
   </div>
 
   @if (errorMessage()) {
-    <div class="error-box">
-      <p>{{ errorMessage() }}</p>
-      <button (click)="loadReports()" class="retry-btn">Retry</button>
-    </div>
+    <app-admin-error-panel
+      [message]="errorMessage()"
+      (retry)="loadReports()">
+    </app-admin-error-panel>
   } @else if (isLoading()) {
     <div class="loading-box">
       <div class="spinner"></div>

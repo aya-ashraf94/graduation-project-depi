@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   Product,
@@ -20,6 +20,7 @@ import { UserSummary } from '../models/user.model';
 export class ProductService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/products`;
+  private categories$?: Observable<any[]>;
 
   // ── Exposed constants ─────────────────────────────────────────────────────
   readonly conditionLabels = CONDITION_LABELS;
@@ -155,7 +156,12 @@ export class ProductService {
 
   /** Get all categories from backend */
   getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/categories`);
+    if (!this.categories$) {
+      this.categories$ = this.http.get<any[]>(`${environment.apiUrl}/categories`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.categories$;
   }
 
   /** Get product counts grouped by category */

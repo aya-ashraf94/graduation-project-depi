@@ -1,0 +1,34 @@
+<div class="auth-page">
+  <div class="split-card">
+    
+    <!-- LEFT: FORM -->
+    <div class="split-left">
+      <div class="auth-header">
+        <div class="brand-tag">NAFA3NI</div>
+        <h2 class="auth-title" *ngIf="title()">{{ title() }}</h2>
+        <p class="auth-desc" *ngIf="subtitle()">{{ subtitle() }}</p>
+      </div>
+
+      <ng-content></ng-content>
+
+    </div>
+
+    <!-- RIGHT: GRAPHIC -->
+    <div class="split-right">
+      <div class="graphic-bg-pattern"></div>
+      <div class="graphic-content">
+        <div class="graphic-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <h3 class="graphic-title">SECURE YOUR TRADES</h3>
+        <p class="graphic-desc">Join thousands of students securely buying, selling, and trading on campus.</p>
+      </div>
+      <!-- Decorative abstract elements -->
+      <div class="dec-circle dec-1"></div>
+      <div class="dec-box dec-2"></div>
+    </div>
+
+  </div>
+</div>

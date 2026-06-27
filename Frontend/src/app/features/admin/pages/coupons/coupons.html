@@ -7,11 +7,10 @@
   </header>
 
   @if (errorMessage()) {
-    <div class="error-panel">
-      <h3>⚠️ Error</h3>
-      <p>{{ errorMessage() }}</p>
-      <button (click)="loadCoupons()" class="btn btn-primary">Retry</button>
-    </div>
+    <app-admin-error-panel
+      [message]="errorMessage()"
+      (retry)="loadCoupons()">
+    </app-admin-error-panel>
   } @else {
     <div class="dashboard-panels">
       <!-- Left Panel: Coupon Codes Table -->
@@ -33,22 +32,18 @@
               </thead>
               <tbody>
                 @if (isLoading()) {
-                  @for (item of [1, 2, 3]; track item) {
-                    <tr class="table-row-skeleton">
-                      <td><div class="skeleton-line text"></div></td>
-                      <td><div class="skeleton-line text"></div></td>
-                      <td><div class="skeleton-badge"></div></td>
-                      <td><div class="skeleton-line text"></div></td>
-                      <td><div class="skeleton-line text"></div></td>
-                    </tr>
-                  }
+                  <app-admin-table-skeleton
+                    [rows]="3"
+                    [columns]="['text', 'text', 'badge', 'text', 'text']">
+                  </app-admin-table-skeleton>
                 } @else if (couponsList().length === 0) {
-                  <tr>
-                    <td colspan="5" class="empty-state" style="padding: 3rem; text-align: center;">
-                      <span class="empty-icon" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🎫</span>
-                      <p style="font-weight: 700; color: var(--gray-3);">No coupons created yet.</p>
-                    </td>
-                  </tr>
+                  <app-empty-state
+                    variant="table-row"
+                    [colspan]="5"
+                    icon="🎫"
+                    title="No coupons yet"
+                    description="No coupons created yet.">
+                  </app-empty-state>
                 } @else {
                   @for (coupon of couponsList(); track coupon.id) {
                     <tr>

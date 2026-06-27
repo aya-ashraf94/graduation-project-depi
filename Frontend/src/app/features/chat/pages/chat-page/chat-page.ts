@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, inject, signal, computed, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, inject, signal, computed, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
@@ -12,17 +12,21 @@ import { Offer } from '../../../../core/models/offer.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { ProductService } from '../../../../core/services/product.service';
+
 import { ReportModal } from '../../../../shared/components/report-modal/report-modal';
+import { CountdownTimerService } from '../../../../core/services/countdown-timer.service';
 
 import { io, Socket } from 'socket.io-client';
+
+import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
 
 @Component({
   selector: 'app-chat-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimeAgoPipe, RouterLink, CurrencyFormatPipe, ReportModal],
+  imports: [CommonModule, FormsModule, TimeAgoPipe, RouterLink, CurrencyFormatPipe, ReportModal, UserAvatarComponent],
   templateUrl: './chat-page.html',
   styleUrl: './chat-page.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   private chatService = inject(ChatService);
@@ -32,7 +36,8 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   private router = inject(Router);
   private confirmService = inject(ConfirmService);
   private notificationService = inject(NotificationService);
-  private productService = inject(ProductService);
+
+  private timerService = inject(CountdownTimerService);
 
   private socket: Socket | null = null;
   private previousMessagesLength = 0;
@@ -284,22 +289,10 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
       this.messages.forEach(msg => {
         const offerId = msg.metadata?.offerId;
         if (offerId && msg.metadata?.offerStatus === 'accepted' && msg.metadata?.expiresAt) {
-          const expiresAt = new Date(msg.metadata.expiresAt).getTime();
-          const now = Date.now();
-          const diff = expiresAt - now;
-          
-          if (diff > 0) {
+          const timeStr = this.timerService.formatTimeRemaining(msg.metadata.expiresAt);
+          timers[offerId] = timeStr;
+          if (timeStr !== 'Expired') {
             hasActive = true;
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            const hh = String(hours).padStart(2, '0');
-            const mm = String(minutes).padStart(2, '0');
-            const ss = String(seconds).padStart(2, '0');
-            timers[offerId] = `${hh}:${mm}:${ss}`;
-          } else {
-            timers[offerId] = 'Expired';
           }
         }
       });

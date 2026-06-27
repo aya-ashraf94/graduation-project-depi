@@ -1,0 +1,26 @@
+<!-- =========================================================================
+     AUTH REQUIRED MODAL COMPONENT TEMPLATE
+     ========================================================================= -->
+<div class="report-overlay brutal-overlay" *ngIf="isOpen()" (click)="onClose()">
+  <div class="modal-standard-card brutal-modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-standard-close brutal-modal-close" (click)="onClose()">✕</button>
+    
+    <div class="modal-standard-icon-header brutal-modal-icon-header">
+      <div class="lock-icon-circle brutal-lock-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h3 class="modal-standard-title brutal-modal-title">Sign in Required</h3>
+      <p class="modal-standard-desc brutal-modal-desc">
+        Please sign in or create an account to start saving favorites, chatting with sellers, or reporting items.
+      </p>
+    </div>
+
+    <div class="modal-standard-footer brutal-modal-footer stacked">
+      <a routerLink="/auth/login" class="modal-btn-primary brutal-btn-primary" (click)="onClose()">Sign In</a>
+      <a routerLink="/auth/register" class="modal-btn-secondary brutal-btn-secondary" (click)="onClose()">Create an Account</a>
+    </div>
+  </div>
+</div>

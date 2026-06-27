@@ -1,0 +1,237 @@
+<!-- =========================================================================
+     PRODUCT CARD COMPONENT TEMPLATE
+     ========================================================================= -->
+
+<!-- ===== 1. HOME PAGE VARIANT ===== -->
+<ng-container *ngIf="variant() === 'home'">
+  <div class="product-card card-variant-home" style="cursor: pointer;" [routerLink]="['/products', product().id]">
+    <div class="product-img">
+      <img [src]="product().thumbnail" [alt]="product().title" appImageFallback class="product-real-img" />
+      <div class="home-cond-badge" [class]="getConditionClass(product().condition)">
+        {{ getConditionLabel(product().condition) }}
+      </div>
+    </div>
+    <div class="product-body">
+      <div class="home-brand" *ngIf="product().brand">{{ product().brand }}</div>
+      <h4 class="product-name">{{ product().title }}</h4>
+      <div class="home-tags-row" *ngIf="product().size || product().categoryName">
+        <span class="home-tag" *ngIf="product().size">{{ product().size }}</span>
+        <span class="home-tag" *ngIf="product().categoryName">{{ product().categoryName }}</span>
+      </div>
+      <div class="home-details-row">
+        <span class="home-loc">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ product().location || 'Local' }}
+        </span>
+        <span class="home-dot">•</span>
+        <span class="home-date">{{ product().createdAt | timeAgo }}</span>
+      </div>
+      <div class="home-price-row">
+        <span class="home-price-tag">{{ product().price | currencyFormat }}</span>
+        <span class="home-view-link">View</span>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ===== 2. PRODUCT LIST PAGE VARIANT ===== -->
+<ng-container *ngIf="variant() === 'list'">
+  <div class="product-card card-variant-list fade-in" [class.product-sold]="product().status === 'sold'">
+    <div class="product-img-wrap" [routerLink]="['/products', product().id]" style="cursor: pointer;">
+      <!-- Status Overlay -->
+      <app-status-badge [status]="product().status" variant="overlay"></app-status-badge>
+
+      <div class="card-badges">
+        <span *ngIf="product().soldByNafa3ni" class="badge-official">✓ Official Store</span>
+        <span *ngIf="product().badge" class="badge-tag">{{ product().badge }}</span>
+      </div>
+      <button class="btn-wishlist" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
+        <svg width="22" height="22" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+      </button>
+      <img *ngIf="product().thumbnail" [src]="product().thumbnail" [alt]="product().title" class="product-img" />
+      <div *ngIf="!product().thumbnail" class="product-img empty-image-placeholder" style="background: var(--gray); display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+      </div>
+      <div class="card-overlay">
+        <button class="btn-quick-look">QUICK VIEW</button>
+      </div>
+    </div>
+
+    <div class="product-content">
+      <h3 class="item-name" [routerLink]="['/products', product().id]" style="cursor: pointer;">{{ product().title }}</h3>
+      <div class="metadata-price-row">
+        <div class="card-metadata">
+          <span>{{ getConditionLabel(product().condition) }}</span>
+          <span *ngIf="product().conditionScore"> • {{ product().conditionScore }}/10</span>
+          <span *ngIf="product().size"> • {{ product().size }}</span>
+        </div>
+        <div class="price-box">{{ product().price | currencyFormat }}</div>
+      </div>
+    </div>
+
+    <div class="product-footer">
+      <div class="card-loc" *ngIf="product().location">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        {{ product().location }}
+      </div>
+      <span class="card-date">{{ product().createdAt | timeAgo }}</span>
+    </div>
+
+    <div class="product-card-admin-actions" *ngIf="authService.isAdmin() && product().soldByNafa3ni" (click)="$event.stopPropagation();">
+      <a [routerLink]="['/listings/edit', product().id]" class="btn-edit-card">EDIT LISTING</a>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ===== 3. MY PROFILE PAGE VARIANT ===== -->
+<ng-container *ngIf="variant() === 'profile'">
+  <div class="product-card card-variant-profile" [class.product-sold]="product().status === 'sold'">
+    <div class="product-img-wrap" [routerLink]="['/products', product().id]" style="cursor: pointer">
+      <!-- Status Overlay (Sold / Reserved / Draft) -->
+      <app-status-badge [status]="product().status" variant="overlay"></app-status-badge>
+
+      <!-- Else (If Other Profile): Show Wishlist Button -->
+      <button
+        *ngIf="!isOwnProfile()"
+        type="button"
+        class="btn-wishlist"
+        [class.wishlisted]="wishlistService.isWishlisted(product().id)"
+        (click)="onWishlistToggle($event)"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+      </button>
+      <img [src]="product().thumbnail" [alt]="product().title" appImageFallback class="product-img" />
+      <div class="card-condition-badge" [class]="getConditionClass(product().condition)">
+        {{ getConditionLabel(product().condition) }}
+      </div>
+    </div>
+
+    <div class="product-info">
+      <div class="card-brand" *ngIf="product().brand">{{ product().brand }}</div>
+      <div class="card-title-price-row">
+        <h3 class="card-title" [routerLink]="['/products', product().id]">{{ product().title }}</h3>
+        <div class="card-price">{{ product().price | currencyFormat }}</div>
+      </div>
+
+      <div class="card-tags-row" *ngIf="product().size || product().categoryName">
+        <span class="card-tag" *ngIf="product().size">{{ product().size }}</span>
+        <span class="card-tag" *ngIf="product().categoryName">{{ product().categoryName }}</span>
+      </div>
+
+      <div class="card-details-row">
+        <span class="card-loc">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ product().location || 'Cairo, Egypt' }}
+        </span>
+        <span class="card-dot">•</span>
+        <span class="card-date">{{ product().createdAt | timeAgo }}</span>
+      </div>
+
+      <!-- If Own Profile: Show Edit & Delete Actions at bottom of card -->
+      <div class="card-actions-row" *ngIf="isOwnProfile()" (click)="$event.stopPropagation();">
+        <button
+          type="button"
+          class="btn-card-action btn-edit"
+          (click)="onEditClick($event)"
+          title="Edit listing"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Edit
+        </button>
+        <button
+          type="button"
+          class="btn-card-action btn-delete"
+          (click)="onDeleteClick($event)"
+          title="Delete listing"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ===== 4. RELATED PRODUCTS CAROUSEL VARIANT ===== -->
+<ng-container *ngIf="variant() === 'carousel'">
+  <div class="product-card-v2 card-variant-carousel">
+    <div class="card-img-wrap-v2" [routerLink]="['/products', product().id]">
+      <div class="card-status-overlay-v2" *ngIf="product().status === 'sold'">
+        <span class="status-overlay-tag-v2 sold-tag-v2">SOLD</span>
+      </div>
+      <div class="card-status-overlay-v2" *ngIf="product().status === 'reserved'">
+        <span class="status-overlay-tag-v2 reserved-tag-v2">RESERVED</span>
+      </div>
+      <div class="card-badges-v2">
+        <span *ngIf="product().soldByNafa3ni" class="badge-official-v2" style="font-size: 0.65rem;">✓ Official</span>
+        <span *ngIf="product().badge" class="badge-tag-v2">{{ product().badge }}</span>
+      </div>
+      
+      <!-- Quick Wishlist Button -->
+      <button class="btn-wishlist-v2-card" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
+        <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+      </button>
+
+      <img [src]="product().thumbnail" [alt]="product().title" appImageFallback class="card-img-v2" />
+      
+      <!-- Quick View Trigger Overlay -->
+      <div class="card-quick-view-overlay-v2">
+        <span class="btn-quick-view-v2">Quick View</span>
+      </div>
+    </div>
+    
+    <div class="card-info-v2" [routerLink]="['/products', product().id]">
+      <div class="card-meta-row-v2">
+        <span class="card-brand-v2">{{ product().brand }}</span>
+        <span class="card-condition-score-v2">Score: {{ product().conditionScore }}/10</span>
+      </div>
+      <h3 class="card-title-v2">{{ product().title }}</h3>
+      <div class="card-price-v2">{{ product().price | currencyFormat }}</div>
+      
+      <div class="card-footer-v2">
+        <span class="card-loc-v2" *ngIf="product().location">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ product().location }}
+        </span>
+        <span class="card-date-v2">{{ product().createdAt | timeAgo }}</span>
+      </div>
+    </div>
+  </div>
+</ng-container>

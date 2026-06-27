@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,15 +13,21 @@ import { ProductSummary } from '../../../../core/models/product.model';
 import { Review } from '../../../../core/models/review.model';
 import { OrderSummary, OrderStatus } from '../../../../core/models/order.model';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
-import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
+import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
+import { RatingDisplayComponent } from '../../../../shared/components/rating-display/rating-display';
+import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
+import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
+import { formatReviews, getReviewerName, getReviewerId } from '../../../../shared/utils/review.utils';
+import { EditProfileModalComponent } from '../../components/edit-profile-modal/edit-profile-modal';
 
 @Component({
   selector: 'app-my-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe, TimeAgoPipe, ImageFallbackDirective],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe, ImageFallbackDirective, UserAvatarComponent, RatingDisplayComponent, TimeAgoPipe, EditProfileModalComponent],
   templateUrl: './my-profile.html',
   styleUrl: './my-profile.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyProfile implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
@@ -100,19 +106,6 @@ export class MyProfile implements OnInit, AfterViewInit {
   showEditModal = false;
   profileSuccess = signal<string | null>(null);
   profileError = signal<string | null>(null);
-  savingProfile = false;
-  editTags: string[] = [];
-  tagInputValue = '';
-  editForm = {
-    firstName: '',
-    lastName: '',
-    bio: '',
-    location: '',
-    phoneNumber: '',
-    avatar: '',
-    email: ''
-  };
-  private pendingAvatarBase64: string | null = null;
 
   // Review modal state
   showReviewModal = false;
@@ -141,6 +134,10 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   editProduct(productId: string) {
     this.router.navigate(['/listings/edit', productId]);
+  }
+
+  navigateTo(path: string) {
+    this.router.navigate([path]);
   }
 
   confirmDeleteProduct(productId: string) {
@@ -197,7 +194,7 @@ export class MyProfile implements OnInit, AfterViewInit {
               }
               this.loadUserListings(user.id);
               this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
-                this.reviews = revs;
+                this.reviews = this.formatReviews(revs);
                 this.cdr.detectChanges();
               });
             }
@@ -234,7 +231,7 @@ export class MyProfile implements OnInit, AfterViewInit {
           this.loadUserListings(currentUser.id);
           this.loadWishlist();
           this.reviewService.getReviewsForUser(currentUser.id).subscribe(revs => {
-            this.reviews = revs;
+            this.reviews = this.formatReviews(revs);
             this.cdr.detectChanges();
           });
           this.orderService.getOrders().subscribe(orders => {
@@ -283,7 +280,6 @@ export class MyProfile implements OnInit, AfterViewInit {
   loadUserListings(userId: string) {
     this.productService.getProductsBySeller(userId).subscribe({
       next: (products) => {
-        console.log('Fetched products for user:', userId, products);
         this.myListings = products;
         this.cdr.detectChanges();
       },
@@ -292,16 +288,6 @@ export class MyProfile implements OnInit, AfterViewInit {
       }
     });
   }
-
-  // loadWishlist(): void {
-  //   const ids = this.wishlistService.getWishlistIds();
-  //   this.wishlistItems = ids
-  //     .map(id => {
-  //       const products = this.productService.getProducts();
-  //       return products.find(p => p.id === id);
-  //     })
-  //     .filter((p): p is ProductSummary => !!p);
-  // }
 
   loadWishlist(): void {
     this.wishlistService.getWishlistProducts().subscribe({
@@ -315,17 +301,20 @@ export class MyProfile implements OnInit, AfterViewInit {
     });
   }
 
-  removeFromWishlist(productId: string, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
+  private formatReviews = formatReviews;
+
+  removeFromWishlist(productId: string, event?: any): void {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.wishlistService.remove(productId);
     this.wishlistItems = this.wishlistItems.filter(item => item.id !== productId);
     this.cdr.detectChanges();
   }
 
-  getStars(rating: number): string {
-    return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
-  }
+  getConditionLabel = getConditionLabel;
+  getConditionClass = getConditionClass;
 
   getRatingPercentage(stars: number): number {
     if (this.reviews.length === 0) return 0;
@@ -337,36 +326,11 @@ export class MyProfile implements OnInit, AfterViewInit {
     return this.reviews.filter(r => Math.round(r.rating) === stars).length;
   }
 
-  getReviewerName(review: any): string {
-    return review.reviewerId?.name || review.reviewerName || 'Campus Member';
-  }
-
-  getReviewerAvatar(review: any): string {
-    return review.reviewerId?.avatar || review.reviewerAvatar || '';
-  }
+  getReviewerName = getReviewerName;
+  getReviewerId = getReviewerId;
 
   getReviewProductName(review: any): string {
     return review.productId?.title || review.productTitle || '';
-  }
-
-  getConditionLabel(condition: string): string {
-    switch (condition) {
-      case 'new_with_tags': return 'New';
-      case 'excellent': return 'New';
-      case 'good': return 'Used';
-      case 'fair': case 'distressed': return 'Used';
-      default: return 'Used';
-    }
-  }
-
-  getConditionClass(condition: string): string {
-    switch (condition) {
-      case 'new_with_tags': return 'cond-new';
-      case 'excellent': return 'cond-new';
-      case 'good': return 'cond-used';
-      case 'fair': case 'distressed': return 'cond-used';
-      default: return 'cond-used';
-    }
   }
 
   logout() {
@@ -374,9 +338,11 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
 
-  toggleWishlist(productId: string, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
+  toggleWishlist(productId: string, event?: any): void {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (this.authService.currentUser()) {
       this.wishlistService.toggle(productId);
     } else {
@@ -389,22 +355,6 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   openEditModal() {
-    if (!this.user) return;
-    this.profileSuccess.set(null);
-    this.profileError.set(null);
-    this.savingProfile = false;
-    this.pendingAvatarBase64 = null;
-    this.editTags = [...(this.user.tags || [])];
-    this.tagInputValue = '';
-    this.editForm = {
-      firstName: this.user.firstName || '',
-      lastName: this.user.lastName || '',
-      bio: this.user.bio || '',
-      location: this.user.location || '',
-      phoneNumber: this.user.phoneNumber || '',
-      avatar: this.user.avatar || '',
-      email: this.user.email || ''
-    };
     this.showEditModal = true;
   }
 
@@ -429,83 +379,13 @@ export class MyProfile implements OnInit, AfterViewInit {
     }, 3000);
   }
 
-  saveProfile() {
-    if (!this.user) return;
-    this.profileSuccess.set(null);
-    this.profileError.set(null);
-    this.savingProfile = true;
-
-    const tags = this.editTags;
-    const avatar = this.pendingAvatarBase64 || this.editForm.avatar;
-    this.pendingAvatarBase64 = null;
-
-    const payload = {
-      firstName: this.editForm.firstName,
-      lastName: this.editForm.lastName,
-      bio: this.editForm.bio,
-      location: this.editForm.location,
-      phoneNumber: this.editForm.phoneNumber,
-      tags,
-      avatar,
-      email: this.editForm.email
-    };
-
-    this.userService.updateProfile(this.user.id, payload).subscribe({
-      next: (updatedUser) => {
-        this.savingProfile = false;
-        this.user = updatedUser;
-        this.authService.updateLocalUser(updatedUser);
-        this.profileSuccess.set('Profile updated successfully!');
-        this.closeEditModal();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.savingProfile = false;
-        console.error('Error updating profile:', err);
-        this.profileError.set(err?.error?.message || 'Failed to update profile. Please try again.');
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  addTag(event: Event) {
-    event.preventDefault();
-    const val = this.tagInputValue.trim();
-    if (val && !this.editTags.includes(val)) {
-      this.editTags.push(val);
-    }
-    this.tagInputValue = '';
-  }
-
-  addTagFromInput(input: HTMLInputElement) {
-    const val = input.value.trim();
-    if (val && !this.editTags.includes(val)) {
-      this.editTags.push(val);
-    }
-    input.value = '';
-    this.tagInputValue = '';
-  }
-
-  removeTag(index: number) {
-    this.editTags.splice(index, 1);
-  }
-
-  onAvatarSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-
-    // Show preview instantly using object URL (synchronous, no delay)
-    this.editForm.avatar = URL.createObjectURL(file);
+  onProfileSaved(updatedUser: User) {
+    this.user = updatedUser;
+    this.profileSuccess.set('Profile updated successfully!');
+    setTimeout(() => {
+      this.profileSuccess.set(null);
+    }, 3000);
     this.cdr.detectChanges();
-
-    // Read as base64 in background for saving to backend
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.pendingAvatarBase64 = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
   }
 
   openReviewModal(order: OrderSummary) {
@@ -553,7 +433,7 @@ export class MyProfile implements OnInit, AfterViewInit {
         // Refresh reviews displayed on profile
         if (this.user?.id) {
           this.reviewService.getReviewsForUser(this.user.id).subscribe(revs => {
-            this.reviews = revs;
+            this.reviews = this.formatReviews(revs);
             this.cdr.detectChanges();
           });
         }

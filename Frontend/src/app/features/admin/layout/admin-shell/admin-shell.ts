@@ -4,10 +4,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { AuthService } from '../../../../core/services/auth';
 import { AdminService } from '../../../../core/services/admin.service';
 
+import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
+
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, UserAvatarComponent],
   templateUrl: './admin-shell.html',
   styleUrl: './admin-shell.css'
 })

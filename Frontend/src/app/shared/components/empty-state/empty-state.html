@@ -1,0 +1,25 @@
+<!-- =========================================================================
+     EMPTY STATE COMPONENT TEMPLATE
+     ========================================================================= -->
+
+<!-- ===== 1. TABLE ROW VARIANT ===== -->
+<ng-container *ngIf="variant() === 'table-row'">
+  <tr>
+    <td [attr.colspan]="colspan()" class="empty-table-cell text-center" style="padding: 3rem 1rem; text-align: center;">
+      <div style="font-size: 2.5rem; margin-bottom: 1rem;">{{ icon() }}</div>
+      <h4 *ngIf="title()" style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; color: var(--black);">{{ title() }}</h4>
+      <p *ngIf="description()" style="color: var(--gray-3); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">{{ description() }}</p>
+      <button *ngIf="ctaLabel()" class="btn btn-primary" type="button" (click)="onCtaClick()">{{ ctaLabel() }}</button>
+    </td>
+  </tr>
+</ng-container>
+
+<!-- ===== 2. GENERAL PAGE / CARD VARIANT ===== -->
+<ng-container *ngIf="variant() !== 'table-row'">
+  <div class="empty-state">
+    <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 1rem;">{{ icon() }}</div>
+    <h3 *ngIf="title()" style="font-family: var(--font-primary); font-weight: 900; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--black);">{{ title() }}</h3>
+    <p *ngIf="description()" style="font-family: var(--font-secondary); color: var(--gray-3); margin-bottom: 1.5rem; max-width: 450px; margin-left: auto; margin-right: auto;">{{ description() }}</p>
+    <button *ngIf="ctaLabel()" class="btn btn-primary" type="button" (click)="onCtaClick()">{{ ctaLabel() }}</button>
+  </div>
+</ng-container>

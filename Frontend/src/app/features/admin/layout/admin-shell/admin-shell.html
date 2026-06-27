@@ -9,12 +9,7 @@
     <div class="admin-profile-box">
       <div class="admin-avatar-container">
         <div class="admin-avatar-frame">
-          <img *ngIf="authService.currentUser()?.avatar; else defaultAvatar" [src]="authService.currentUser()?.avatar" [alt]="authService.currentUser()?.firstName" />
-          <ng-template #defaultAvatar>
-            <div class="admin-avatar-fallback">
-              {{ authService.currentUser()?.firstName?.substring(0, 1) | uppercase }}{{ authService.currentUser()?.lastName?.substring(0, 1) | uppercase }}
-            </div>
-          </ng-template>
+          <app-user-avatar [user]="authService.currentUser()"></app-user-avatar>
         </div>
         <div class="admin-status-dot" title="Active Admin Session"></div>
       </div>

@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReviewService } from '../../../../core/services/review.service';
 import { Review } from '../../../../core/models/review.model';
+import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
+import { RatingDisplayComponent } from '../../../../shared/components/rating-display/rating-display';
+import { formatReviews, getReviewerName, getReviewerId } from '../../../../shared/utils/review.utils';
 
 @Component({
   selector: 'app-all-reviews',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, UserAvatarComponent, RatingDisplayComponent],
   template: `
     <div class="all-reviews-page">
       <div class="all-reviews-container">
@@ -27,15 +30,11 @@ import { Review } from '../../../../core/models/review.model';
                 <div class="review-card-header">
                   <div class="reviewer-info">
                     <div class="reviewer-avatar">
-                      @if (getReviewerAvatar(review)) {
-                        <img [src]="getReviewerAvatar(review)" alt="" />
-                      } @else {
-                        <div class="avatar-fallback">{{ getReviewerName(review).substring(0, 1) }}</div>
-                      }
+                      <app-user-avatar [user]="review.reviewerId" />
                     </div>
                     <div>
-                      <div class="reviewer-name">{{ getReviewerName(review) }}</div>
-                      <div class="review-stars">{{ getStars(review.rating) }}</div>
+                      <a class="reviewer-name" [routerLink]="['/profile', getReviewerId(review)]">{{ getReviewerName(review) }}</a>
+                      <app-rating-display [rating]="review.rating" size="sm" />
                     </div>
                   </div>
                   <div class="review-date">{{ review.createdAt | date:'mediumDate' }}</div>
@@ -155,10 +154,13 @@ import { Review } from '../../../../core/models/review.model';
       font-family: var(--font-primary);
       font-weight: 800;
       font-size: 1rem;
+      color: var(--black);
+      text-decoration: none;
+      transition: color 0.15s ease;
     }
-    .review-stars {
+    .reviewer-name:hover {
       color: var(--yellow);
-      font-weight: bold;
+      text-decoration: underline;
     }
     .review-date {
       font-family: var(--font-secondary);
@@ -199,7 +201,7 @@ export class AllReviews implements OnInit {
         this.userId = id;
         this.reviewService.getReviewsForUser(id).subscribe({
           next: (revs) => {
-            this.reviews.set(revs);
+            this.reviews.set(this.formatReviews(revs));
             this.loading.set(false);
           },
           error: () => this.loading.set(false)
@@ -208,15 +210,7 @@ export class AllReviews implements OnInit {
     });
   }
 
-  getReviewerName(review: any): string {
-    return review.reviewerId?.name || review.reviewerName || 'Campus Member';
-  }
-
-  getReviewerAvatar(review: any): string {
-    return review.reviewerId?.avatar || review.reviewerAvatar || '';
-  }
-
-  getStars(rating: number): string {
-    return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
-  }
+  private formatReviews = formatReviews;
+  getReviewerName = getReviewerName;
+  getReviewerId = getReviewerId;
 }

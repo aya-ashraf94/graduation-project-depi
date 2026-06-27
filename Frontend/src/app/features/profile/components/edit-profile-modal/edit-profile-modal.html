@@ -1,0 +1,158 @@
+<div class="glass-modal-overlay" *ngIf="isOpen()" (click)="closeModal()">
+  <div class="brutalist-modal-card" (click)="$event.stopPropagation()">
+    <button class="brutalist-modal-close" (click)="closeModal()" aria-label="Close modal">✕</button>
+
+    <div class="modal-header-banner">
+      <h3 class="brutalist-modal-title">EDIT PROFILE</h3>
+      <p class="modal-subtitle">Update your public campus trader details</p>
+    </div>
+
+    <!-- Success Banner -->
+    <div *ngIf="profileSuccess()" class="brutalist-banner brutalist-banner-success">
+      <div class="banner-icon-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="banner-message">{{ profileSuccess() }}</div>
+    </div>
+
+    <!-- Error Banner -->
+    <div *ngIf="profileError()" class="brutalist-banner brutalist-banner-error">
+      <div class="banner-icon-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <div class="banner-message">{{ profileError() }}</div>
+    </div>
+
+    <div class="edit-form-scroll-area">
+      <form (ngSubmit)="saveProfile()" class="brutalist-form">
+
+        <!-- SECTION: PERSONAL INFO -->
+        <div class="edit-form-section">
+          <div class="edit-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Personal Info</span>
+          </div>
+          <div class="edit-section-body">
+            <div class="form-row-two-cols">
+              <div class="form-group">
+                <label class="form-label">FIRST NAME</label>
+                <input type="text" [(ngModel)]="editForm.firstName" name="firstName" required class="form-input" placeholder="e.g. John" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">LAST NAME</label>
+                <input type="text" [(ngModel)]="editForm.lastName" name="lastName" required class="form-input" placeholder="e.g. Doe" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label">BIO</label>
+              <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" class="form-textarea" placeholder="Tell students about what you sell, your major, or response times..."></textarea>
+              <span class="field-hint">Max 2 lines recommended. Be concise and professional.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: AVATAR -->
+        <div class="edit-form-section">
+          <div class="edit-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Avatar</span>
+          </div>
+          <div class="edit-section-body">
+            <div class="avatar-url-row">
+              <div class="avatar-preview-frame" *ngIf="editForm.avatar; else noAvatarPreview">
+                <img [src]="editForm.avatar" alt="Avatar preview" class="avatar-preview-img" />
+              </div>
+              <ng-template #noAvatarPreview>
+                <div class="avatar-preview-frame avatar-preview-empty">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-2)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+              </ng-template>
+              <div class="avatar-url-field">
+                <label class="form-label">AVATAR URL</label>
+                <input type="text" [(ngModel)]="editForm.avatar" name="avatar" class="form-input" placeholder="https://example.com/avatar.jpg" />
+                <div class="avatar-upload-row">
+                  <button type="button" class="brutalist-btn btn-upload-avatar" (click)="avatarFileInput.click()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Photo
+                  </button>
+                  <input
+                    type="file"
+                    #avatarFileInput
+                    accept="image/*"
+                    (change)="onAvatarSelected($event)"
+                    style="display: none"
+                  />
+                  <span class="field-hint">Or paste an image URL above</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: CONTACT & LOCATION -->
+        <div class="edit-form-section">
+          <div class="edit-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>Contact &amp; Location</span>
+          </div>
+          <div class="edit-section-body">
+            <div class="form-row-two-cols">
+              <div class="form-group">
+                <label class="form-label">EMAIL ADDRESS</label>
+                <input type="email" [(ngModel)]="editForm.email" name="email" required class="form-input" placeholder="e.g. email@test.com" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">PHONE NUMBER</label>
+                <input type="tel" [(ngModel)]="editForm.phoneNumber" name="phoneNumber" class="form-input" placeholder="e.g. +20 100 123 4567" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label">LOCATION</label>
+              <input type="text" [(ngModel)]="editForm.location" name="location" class="form-input" placeholder="e.g. Dorms, Library, Faculty Building" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: TAGS -->
+        <div class="edit-form-section">
+          <div class="edit-section-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <span>Tags</span>
+          </div>
+          <div class="edit-section-body">
+            <div class="tags-chips-row">
+              <span class="tag-chip" *ngFor="let tag of editTags; let i = index">
+                {{ tag }}
+                <button type="button" class="tag-chip-remove" (click)="removeTag(i)" aria-label="Remove tag">&times;</button>
+              </span>
+              <span *ngIf="editTags.length === 0" class="tags-empty-hint">No tags yet. Add one below.</span>
+            </div>
+            <div class="tag-input-row">
+              <input
+                type="text"
+                #tagInput
+                [value]="tagInputValue"
+                (input)="tagInputValue = $any($event.target).value"
+                (keydown.enter)="addTag($event)"
+                (keydown.comma)="addTag($event)"
+                class="form-input tag-input-short"
+                placeholder="Type a tag and press Enter"
+              />
+              <button type="button" class="brutalist-btn btn-tag-add" (click)="addTagFromInput(tagInput)">+ Add</button>
+            </div>
+            <span class="field-hint">Press Enter or comma to add. Click &times; to remove.</span>
+          </div>
+        </div>
+
+        <!-- FORM ACTIONS -->
+        <div class="brutalist-form-actions">
+          <button type="button" class="brutalist-btn btn-cancel" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="brutalist-btn btn-submit" [disabled]="savingProfile">
+            <span *ngIf="!savingProfile">Save Changes</span>
+            <span *ngIf="savingProfile" class="btn-saving-spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

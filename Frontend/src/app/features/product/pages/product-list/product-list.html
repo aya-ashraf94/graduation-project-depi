@@ -159,114 +159,39 @@
           }
 
           <!-- Empty state -->
-          <div *ngIf="!isLoading && products.length === 0" class="empty-state">
-            <p>No items match your filters.</p>
-            <button class="btn-apply-filters" (click)="resetFilters()">CLEAR FILTERS</button>
-          </div>
+          <app-empty-state
+            *ngIf="!isLoading && products.length === 0"
+            title="No items found"
+            description="No items match your filters."
+            ctaLabel="CLEAR FILTERS"
+            (ctaClick)="resetFilters()"
+          ></app-empty-state>
 
-          <div *ngFor="let product of products" class="product-card fade-in" [class.product-sold]="product.status === 'sold'">
-            <div class="product-img-wrap" [routerLink]="['/products', product.id]" style="cursor: pointer;">
-              <!-- Status Overlay -->
-              <div class="card-status-overlay" *ngIf="product.status === 'sold'">
-                <span class="status-overlay-tag sold-tag">SOLD</span>
-              </div>
-              <div class="card-status-overlay" *ngIf="product.status === 'reserved'">
-                <span class="status-overlay-tag reserved-tag">RESERVED</span>
-              </div>
-
-              <div class="card-badges">
-                <span *ngIf="product.soldByNafa3ni" class="badge-official">✓ Official Store</span>
-                <span *ngIf="product.badge" class="badge-tag">{{ product.badge }}</span>
-              </div>
-              <button class="btn-wishlist" [class.wishlisted]="wishlistService.isWishlisted(product.id)" (click)="toggleWishlist(product.id, $event)">
-                <svg width="22" height="22" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              </button>
-              <img *ngIf="product.thumbnail" [src]="product.thumbnail" [alt]="product.title" class="product-img" />
-              <div *ngIf="!product.thumbnail" class="product-img empty-image-placeholder" style="background: var(--gray); display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-              </div>
-              <div class="card-overlay">
-                <button class="btn-quick-look">QUICK VIEW</button>
-              </div>
-            </div>
-
-            <div class="product-content">
-              <h3 class="item-name" [routerLink]="['/products', product.id]" style="cursor: pointer;">{{ product.title }}</h3>
-              <div class="metadata-price-row">
-                <div class="card-metadata">
-                  <span>{{ productService.conditionLabels[product.condition] || product.condition }}</span>
-                  <span *ngIf="product.conditionScore"> • {{ product.conditionScore }}/10</span>
-                  <span *ngIf="product.size"> • {{ product.size }}</span>
-                </div>
-                <div class="price-box">{{ product.price | currencyFormat }}</div>
-              </div>
-            </div>
-
-            <div class="product-footer">
-              <div class="card-loc" *ngIf="product.location">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ product.location }}
-              </div>
-              <span class="card-date">{{ product.createdAt | timeAgo }}</span>
-            </div>
-
-            <div class="product-card-admin-actions" *ngIf="authService.isAdmin() && product.soldByNafa3ni" (click)="$event.stopPropagation();">
-              <a [routerLink]="['/listings/edit', product.id]" class="btn-edit-card">EDIT LISTING</a>
-            </div>
-          </div>
+          <app-product-card
+            *ngFor="let product of products"
+            [product]="product"
+            variant="list"
+            (wishlistToggle)="toggleWishlist(product.id, $event)"
+          ></app-product-card>
         </div>
 
         <!-- Pagination -->
-        <div class="pagination" *ngIf="totalPages > 1">
-          <button class="pag-btn" [disabled]="currentPage === 1" (click)="prevPage()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          <div class="pag-numbers">
-            <button
-              *ngFor="let p of pagesArray"
-              class="num-btn"
-              [class.active]="currentPage === p"
-              (click)="goToPage(p)"
-            >
-              {{ p }}
-            </button>
-          </div>
-          <button class="pag-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
-        </div>
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          variant="icons"
+          (prevPage)="prevPage()"
+          (nextPage)="nextPage()"
+          (pageChange)="goToPage($event)"
+        ></app-pagination>
       </section>
 
     </main>
   </div>
 
   <!-- AUTH REQUIRED MODAL -->
-  <div class="report-overlay" *ngIf="showAuthModal" (click)="closeAuthModal()">
-    <div class="modal-standard-card" (click)="$event.stopPropagation()">
-      <button class="modal-standard-close" (click)="closeAuthModal()">✕</button>
-      
-      <div class="modal-standard-icon-header">
-        <div class="lock-icon-circle">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        </div>
-        <h3 class="modal-standard-title">Sign in Required</h3>
-        <p class="modal-standard-desc">Please sign in or create an account to start saving favorites, chatting with sellers, or reporting items.</p>
-      </div>
-
-      <div class="modal-standard-footer stacked">
-        <a routerLink="/auth/login" class="modal-btn-primary" (click)="closeAuthModal()">Sign In</a>
-        <a routerLink="/auth/register" class="modal-btn-secondary" (click)="closeAuthModal()">Create an Account</a>
-      </div>
-    </div>
-  </div>
+  <app-auth-required-modal
+    [isOpen]="showAuthModal"
+    (closed)="closeAuthModal()"
+  ></app-auth-required-modal>
 </div>

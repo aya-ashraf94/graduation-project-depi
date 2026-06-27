@@ -97,7 +97,7 @@ const getReviewsForUser = async (req, res) => {
 
     const formatted = result.map(r => ({
       ...r.reviews,
-      reviewerId: r.reviewer ? { id: r.reviewer.id, name: r.reviewer.name, email: r.reviewer.email, avatar: r.reviewer.avatar } : null,
+      reviewerId: r.reviewer ? { id: r.reviewer.id, name: r.reviewer.name, email: r.reviewer.email, avatar: r.reviewer.avatar || `https://i.pravatar.cc/150?u=${r.reviewer.email}` } : null,
       productId: r.products ? { id: r.products.id, title: r.products.title, price: r.products.price, thumbnail: (r.products.images || [])[0] } : null,
     }));
 
@@ -119,7 +119,7 @@ const getReviewsByUser = async (req, res) => {
 
     const formatted = result.map(r => ({
       ...r.reviews,
-      revieweeId: r.reviewee ? { id: r.reviewee.id, name: r.reviewee.name, email: r.reviewee.email, avatar: r.reviewee.avatar } : null,
+      revieweeId: r.reviewee ? { id: r.reviewee.id, name: r.reviewee.name, email: r.reviewee.email, avatar: r.reviewee.avatar || `https://i.pravatar.cc/150?u=${r.reviewee.email}` } : null,
     }));
 
     res.json(formatted);

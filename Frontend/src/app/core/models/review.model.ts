@@ -6,9 +6,9 @@
 export interface Review {
   id: string;
   orderId: string;
-  reviewerId: string;       // who wrote the review
+  reviewerId: any;          // who wrote the review (string or object with id/name/avatar)
   revieweeId: string;       // who received the review
-  productId: string;
+  productId: any;           // string or object
   rating: number;           // 1–5
   comment: string;
   createdAt: Date | string;

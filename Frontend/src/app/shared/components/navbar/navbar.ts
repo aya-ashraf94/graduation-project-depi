@@ -7,11 +7,14 @@ import { AuthService } from '../../../core/services/auth';
 import { NotificationService } from '../../../core/services/notification.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { OfferService } from '../../../core/services/offer.service';
+import { CountdownTimerService } from '../../../core/services/countdown-timer.service';
+
+import { UserAvatarComponent } from '../user-avatar/user-avatar';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule, UserAvatarComponent],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
@@ -21,6 +24,7 @@ export class Navbar implements OnInit, OnDestroy {
   notificationService = inject(NotificationService);
   wishlistService = inject(WishlistService);
   offerService = inject(OfferService);
+  private timerService = inject(CountdownTimerService);
 
   isScrolled = false;
   menuOpen = false;
@@ -60,19 +64,9 @@ export class Navbar implements OnInit, OnDestroy {
     this.timerIntervalId = setInterval(() => {
       const active = this.offerService.activeReservation();
       if (active && active.expiresAt) {
-        const expiresAt = new Date(active.expiresAt).getTime();
-        const now = Date.now();
-        const diff = expiresAt - now;
-        if (diff > 0) {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-          const hh = String(hours).padStart(2, '0');
-          const mm = String(minutes).padStart(2, '0');
-          const ss = String(seconds).padStart(2, '0');
-          this.reservationTimeRemaining.set(`${hh}:${mm}:${ss}`);
-        } else {
-          this.reservationTimeRemaining.set('Expired');
+        const timeStr = this.timerService.formatTimeRemaining(active.expiresAt);
+        this.reservationTimeRemaining.set(timeStr);
+        if (timeStr === 'Expired') {
           this.offerService.activeReservation.set(null);
         }
       }

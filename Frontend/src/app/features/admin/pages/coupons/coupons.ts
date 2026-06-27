@@ -1,16 +1,20 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
+import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
+import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
 
 @Component({
   selector: 'app-admin-coupons',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent],
   templateUrl: './coupons.html',
-  styleUrl: './coupons.css'
+  styleUrl: './coupons.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Coupons implements OnInit {
   private adminService = inject(AdminService);

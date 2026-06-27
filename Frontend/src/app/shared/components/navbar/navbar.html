@@ -40,11 +40,7 @@
       @if (isLoggedIn()) {
         <li class="mobile-only drawer-user-card">
           <div class="drawer-user-avatar">
-            @if (currentUser()?.avatar) {
-              <img [src]="currentUser()!.avatar" [alt]="currentUser()!.firstName" />
-            } @else {
-              <span>{{ currentUser()?.firstName?.[0] }}{{ currentUser()?.lastName?.[0] }}</span>
-            }
+            <app-user-avatar [user]="currentUser()"></app-user-avatar>
           </div>
           <div class="drawer-user-info">
             <span class="drawer-user-name">{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</span>
@@ -156,11 +152,7 @@
         <!-- User avatar / profile dropdown -->
         <div class="profile-dropdown-wrap">
           <a class="nav-avatar" (click)="toggleProfileDropdown()" title="My Profile">
-            @if (currentUser()?.avatar) {
-              <img [src]="currentUser()!.avatar" [alt]="currentUser()!.firstName" />
-            } @else {
-              <span>{{ currentUser()?.firstName?.[0] }}{{ currentUser()?.lastName?.[0] }}</span>
-            }
+            <app-user-avatar [user]="currentUser()"></app-user-avatar>
           </a>
           @if (showProfileDropdown) {
             <div class="profile-dropdown">
