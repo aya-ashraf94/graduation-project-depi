@@ -388,6 +388,16 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  getPaymentLabel(method: string | undefined): string {
+    const labels: Record<string, string> = {
+      cash_on_delivery: 'Cash on Delivery',
+      bank_transfer: 'Bank Transfer',
+      online: 'Online Payment',
+      credit_card: 'Credit Card'
+    };
+    return labels[method || ''] || method || '';
+  }
+
   openReviewModal(order: OrderSummary) {
     this.selectedOrderForReview = order;
     this.reviewForm = {

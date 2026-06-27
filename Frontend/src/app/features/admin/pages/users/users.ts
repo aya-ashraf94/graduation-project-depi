@@ -14,11 +14,12 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, UserAvatarComponent, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, UserAvatarComponent, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
   templateUrl: './users.html',
   styleUrl: './users.css',
   changeDetection: ChangeDetectionStrategy.OnPush

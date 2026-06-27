@@ -12,7 +12,7 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled';
 
-export type PaymentMethod = 'cash_on_delivery' | 'bank_transfer' | 'online';
+export type PaymentMethod = 'cash_on_delivery' | 'bank_transfer' | 'online' | 'credit_card';
 
 export interface Order {
   id: string;

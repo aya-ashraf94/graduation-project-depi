@@ -55,10 +55,7 @@
   </div>
 
   @if (isLoading() && !stats()) {
-    <div class="dashboard-loader">
-      <div class="spinner"></div>
-      <p>Retrieving control panel metrics...</p>
-    </div>
+    <app-admin-loader message="Loading dashboard..."></app-admin-loader>
   } @else if (errorMessage()) {
     <app-admin-error-panel
       [message]="errorMessage()"

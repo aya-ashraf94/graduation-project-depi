@@ -29,7 +29,9 @@
     </form>
   </div>
 
-  @if (errorMessage()) {
+  @if (isLoading() && products().length === 0) {
+    <app-admin-loader message="Loading listings..."></app-admin-loader>
+  } @else if (errorMessage()) {
     <app-admin-error-panel
       [message]="errorMessage()"
       (retry)="loadListings()">

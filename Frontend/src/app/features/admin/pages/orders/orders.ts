@@ -7,11 +7,12 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -87,7 +88,8 @@ export class Orders implements OnInit {
     const labels: Record<string, string> = {
       cash_on_delivery: 'Cash on Delivery',
       bank_transfer: 'Bank Transfer',
-      online: 'Online'
+      online: 'Online',
+      credit_card: 'Credit Card'
     };
     return labels[method] || method;
   }

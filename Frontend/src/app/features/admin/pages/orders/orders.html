@@ -16,7 +16,9 @@
     </div>
   </div>
 
-  @if (errorMessage()) {
+  @if (isLoading() && orders().length === 0) {
+    <app-admin-loader message="Loading orders..."></app-admin-loader>
+  } @else if (errorMessage()) {
     <app-admin-error-panel
       [message]="errorMessage()"
       (retry)="loadOrders()">

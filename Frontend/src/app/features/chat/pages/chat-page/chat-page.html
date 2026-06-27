@@ -9,7 +9,31 @@
       </div>
     </div>
 
-    @if (filteredConversations().length === 0) {
+    @if (isLoadingConversations()) {
+      <div class="conv-loading">
+        <div class="skeleton-item">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line w-60"></div>
+            <div class="skeleton-line w-40"></div>
+          </div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line w-50"></div>
+            <div class="skeleton-line w-35"></div>
+          </div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line w-55"></div>
+            <div class="skeleton-line w-40"></div>
+          </div>
+        </div>
+      </div>
+    } @else if (filteredConversations().length === 0) {
       <div class="conv-empty">{{ searchTerm() ? 'No conversations match.' : 'No conversations yet.' }}</div>
     }
 

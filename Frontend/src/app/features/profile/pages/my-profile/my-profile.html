@@ -595,7 +595,7 @@
                   <div class="details-col">
                     <span class="details-col-lbl">PAYMENT METHOD</span>
                     <p class="details-col-val">
-                      {{ order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Online Payment' }}
+                      {{ getPaymentLabel(order.paymentMethod) }}
                     </p>
                   </div>
                   <div class="details-col">
@@ -738,7 +738,7 @@
                   <div class="details-col">
                     <span class="details-col-lbl">PAYMENT METHOD</span>
                     <p class="details-col-val">
-                      {{ order.paymentMethod === 'cash_on_delivery' ? 'Cash on Delivery' : order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Online Payment' }}
+                      {{ getPaymentLabel(order.paymentMethod) }}
                     </p>
                   </div>
                   <div class="details-col">

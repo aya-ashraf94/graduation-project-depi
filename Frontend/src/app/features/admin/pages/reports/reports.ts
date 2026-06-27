@@ -5,11 +5,12 @@ import { AdminService, AdminReport } from '../../../../core/services/admin.servi
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
+import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule, RouterLink, AdminErrorPanelComponent],
+  imports: [CommonModule, RouterLink, AdminErrorPanelComponent, AdminLoaderComponent],
   templateUrl: './reports.html',
   styleUrl: './reports.css',
   changeDetection: ChangeDetectionStrategy.OnPush
