@@ -7,11 +7,12 @@ import { ConfirmService } from '../../../../core/services/confirm.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 
 @Component({
   selector: 'app-admin-coupons',
   standalone: true,
-  imports: [CommonModule, FormsModule, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent],
+  imports: [CommonModule, FormsModule, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
   templateUrl: './coupons.html',
   styleUrl: './coupons.css',
   changeDetection: ChangeDetectionStrategy.OnPush

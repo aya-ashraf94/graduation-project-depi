@@ -52,6 +52,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   newMessage = '';
   currentUserId = '';
   searchTerm = signal('');
+  isLoadingConversations = signal(false);
   onlineUserIds = signal<Set<string>>(new Set());
 
   // Offer panel signals
@@ -241,6 +242,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   loadConversations(selectFirst = false) {
+    this.isLoadingConversations.set(true);
     this.chatService.getConversations().subscribe({
       next: (convs) => {
         this.conversations.set(convs);
@@ -248,7 +250,8 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
           this.selectConversation(convs[0]);
         }
       },
-      error: (err) => console.error('Error loading conversations:', err)
+      error: (err) => console.error('Error loading conversations:', err),
+      complete: () => this.isLoadingConversations.set(false)
     });
   }
 
@@ -256,7 +259,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     this.activeConversation = conv;
     this.previousMessagesLength = 0;
     this.showOfferPanel.set(false);
-    
+
     if (this.socket) {
       this.socket.emit("join_conversation", conv.id);
     }
@@ -281,11 +284,11 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
       clearInterval(this.countdownIntervalId);
       this.countdownIntervalId = null;
     }
-    
+
     const updateTimers = () => {
       const timers: Record<string, string> = {};
       let hasActive = false;
-      
+
       this.messages.forEach(msg => {
         const offerId = msg.metadata?.offerId;
         if (offerId && msg.metadata?.offerStatus === 'accepted' && msg.metadata?.expiresAt) {
@@ -296,14 +299,14 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
           }
         }
       });
-      
+
       this.countdownTimers.set(timers);
       if (!hasActive && this.countdownIntervalId) {
         clearInterval(this.countdownIntervalId);
         this.countdownIntervalId = null;
       }
     };
-    
+
     updateTimers();
     this.countdownIntervalId = setInterval(updateTimers, 1000);
   }
@@ -315,9 +318,9 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
 
   isLatestAcceptedOffer(offerId: string | undefined): boolean {
     if (!offerId) return false;
-    const acceptedMsgs = this.messages.filter(m => 
-      (m.type === 'offer' || m.type === 'counter_offer') && 
-      m.metadata?.offerStatus === 'accepted' && 
+    const acceptedMsgs = this.messages.filter(m =>
+      (m.type === 'offer' || m.type === 'counter_offer') &&
+      m.metadata?.offerStatus === 'accepted' &&
       m.metadata?.offerId
     );
     if (acceptedMsgs.length === 0) return false;

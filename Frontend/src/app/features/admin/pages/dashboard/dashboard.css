@@ -543,6 +543,174 @@
   }
 }
 
+/* ===== SKELETON LOADING STYLES ===== */
+@keyframes sk-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.dash-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.skeleton-stats-strip {
+  display: flex;
+  background: var(--white);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.skeleton-stat-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.25rem;
+}
+
+.sk-block {
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.sk-icon-round {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.sk-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.sk-line {
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  height: 14px;
+  width: 100%;
+}
+
+.sk-val {
+  height: 28px;
+  width: 50%;
+}
+
+.sk-lbl {
+  height: 10px;
+  width: 40%;
+}
+
+.sk-h3 {
+  height: 22px;
+  width: 40%;
+}
+
+.sk-link {
+  height: 12px;
+  width: 120px;
+}
+
+.dash-skeleton-panels {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 992px) {
+  .dash-skeleton-panels { grid-template-columns: 1fr; }
+}
+
+.sk-panel {
+  background: var(--white);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.sk-panel-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: var(--border-width) solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sk-panel-body {
+  padding: 1.5rem;
+}
+
+.sk-table-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.sk-table-row:last-child {
+  border-bottom: none;
+}
+
+.sk-table-row .sk-line {
+  flex: 1;
+  width: auto;
+}
+
+.sk-table-row .sk-th {
+  height: 12px;
+  background: linear-gradient(90deg, var(--gray) 0%, var(--border) 40%, var(--gray) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.sk-badge {
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.sk-actions {
+  width: 70px;
+  height: 24px;
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.sk-quick-op {
+  height: 56px;
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--border);
+}
+
 @media (max-width: 640px) {
   .admin-topbar {
     flex-direction: column;
