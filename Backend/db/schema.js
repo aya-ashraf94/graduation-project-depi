@@ -235,6 +235,21 @@ const coupons = pgTable('coupons', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
+const flashSales = pgTable('flash_sales', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull(),
+  discountPercent: doublePrecision('discount_percent').notNull(),
+  scopeType: text('scope_type', { enum: ['all', 'category', 'product'] }).default('all').notNull(),
+  scopeId: uuid('scope_id'),
+  startDate: timestamp('start_date', { mode: 'date' }).notNull(),
+  endDate: timestamp('end_date', { mode: 'date' }).notNull(),
+  notifyBeforeMinutes: integer('notify_before_minutes').default(30).notNull(),
+  notificationSent: boolean('notification_sent').default(false).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
 module.exports = {
   users,
   categories,
@@ -254,4 +269,5 @@ module.exports = {
   follows,
   settings,
   coupons,
+  flashSales,
 };

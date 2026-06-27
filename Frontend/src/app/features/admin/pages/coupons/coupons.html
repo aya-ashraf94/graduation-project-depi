@@ -6,7 +6,9 @@
     </div>
   </header>
 
-  @if (errorMessage()) {
+  @if (isLoading() && couponsList().length === 0) {
+    <app-admin-loader message="Loading coupons..."></app-admin-loader>
+  } @else if (errorMessage()) {
     <app-admin-error-panel
       [message]="errorMessage()"
       (retry)="loadCoupons()">

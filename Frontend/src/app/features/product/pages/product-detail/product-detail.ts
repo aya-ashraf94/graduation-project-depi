@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
+import { OrderService } from '../../../../core/services/order.service';
+import { PaymentMethod } from '../../../../core/models/order.model';
 import { Product, ProductSummary, CONDITION_LABELS, CATEGORY_LABELS } from '../../../../core/models/product.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
@@ -14,12 +16,11 @@ import { ReportModal } from '../../../../shared/components/report-modal/report-m
 import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { AuthRequiredModalComponent } from '../../../../shared/components/auth-required-modal/auth-required-modal';
 import { CountdownTimerService } from '../../../../core/services/countdown-timer.service';
-import { CheckoutModalComponent } from '../../components/checkout-modal/checkout-modal';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective, ReportModal, ProductCardComponent, AuthRequiredModalComponent, CheckoutModalComponent],
+  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective, ReportModal, ProductCardComponent, AuthRequiredModalComponent],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +33,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   wishlistService = inject(WishlistService);
   private offerService = inject(OfferService);
+  private orderService = inject(OrderService);
   private cdr = inject(ChangeDetectorRef);
   private timerService = inject(CountdownTimerService);
 
@@ -117,6 +119,9 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   /** Discounted sale price = original price minus discount */
   get salePrice(): number {
+    if (this.product?.isFlashSale && this.product?.salePrice) {
+      return this.product.salePrice;
+    }
     const pct = this.discountPercent;
     if (!pct || !this.product?.price) return this.product?.price ?? 0;
     return Math.round(this.product.price * (1 - pct / 100));
@@ -125,17 +130,19 @@ export class ProductDetail implements OnInit, OnDestroy {
   /** Original price (the "was" price shown crossed out) */
   get compareAtPrice(): number | undefined {
     if (!this.isOnSale || !this.product?.price) return undefined;
-    return this.product.price;
+    return this.product.originalPrice || this.product.price;
   }
 
-  /** Category sale end date */
+  /** Sale end date (from flash sale or category sale) */
   get saleEnd(): Date | undefined {
+    if (this.product?.isFlashSale) return undefined;
     const v = this._categorySale?.saleEnd;
     return v ? new Date(v) : undefined;
   }
 
-  /** Whether the category sale is currently active */
+  /** Whether a sale (category or flash) is currently active */
   get isOnSale(): boolean {
+    if (this.product?.isFlashSale) return true;
     const cat = this._categorySale;
     if (!cat?.discountPercent) return false;
     const pct = Number(cat.discountPercent);
@@ -146,8 +153,11 @@ export class ProductDetail implements OnInit, OnDestroy {
     return true;
   }
 
-  /** Savings percentage (same as category discount) */
+  /** Savings percentage */
   get savingsPercent(): number {
+    if (this.product?.isFlashSale && this.product?.originalPrice && this.product?.salePrice) {
+      return Math.round((1 - this.product.salePrice / this.product.originalPrice) * 100);
+    }
     return this.discountPercent;
   }
 
@@ -158,6 +168,28 @@ export class ProductDetail implements OnInit, OnDestroy {
   }
 
   showBuyModal = false;
+  paymentMethod: PaymentMethod = 'cash_on_delivery';
+  shippingCity = '';
+  shippingArea = '';
+  shippingStreet = '';
+  shippingBuilding = '';
+  orderNotes = '';
+  buyLoading = false;
+  buySuccess = signal<string | null>(null);
+  buyError = signal<string | null>(null);
+
+  // Credit Card fields
+  cardNumber = '';
+  cardExpiry = '';
+  cardCvv = '';
+  cardHolderName = '';
+
+  // Coupon State
+  couponCode = '';
+  appliedCoupon = false;
+  couponDiscount = 0;
+  couponValidationMessage = '';
+  isValidatingCoupon = false;
 
   openLightbox(index: number) {
     this.lightboxIndex = index;
@@ -231,7 +263,7 @@ export class ProductDetail implements OnInit, OnDestroy {
       this.negotiatedPrice.set(null);
       this._pendingNegotiatedPrice = null;
       this._pendingAutoOpenBuy = false;
-      
+
       const startTime = Date.now();
 
       this.productService.getProductById(id).subscribe({
@@ -252,9 +284,9 @@ export class ProductDetail implements OnInit, OnDestroy {
           if (currentUser) {
             this.offerService.getMyOffers().subscribe({
               next: (offers) => {
-                const acceptedOffer = offers.find(o => 
-                  o.productId === product.id && 
-                  o.status === 'accepted' && 
+                const acceptedOffer = offers.find(o =>
+                  o.productId === product.id &&
+                  o.status === 'accepted' &&
                   !o.orderId &&
                   o.buyerId === currentUser.id
                 );
@@ -286,7 +318,7 @@ export class ProductDetail implements OnInit, OnDestroy {
           this.router.navigate(['/products']);
         }
       });
-      
+
       window.scrollTo(0, 0);
     });
 
@@ -409,6 +441,26 @@ export class ProductDetail implements OnInit, OnDestroy {
   openBuy(): void {
     this.executeAuthorizedAction(() => {
       this.showBuyModal = true;
+      this.paymentMethod = 'cash_on_delivery';
+      this.shippingCity = '';
+      this.shippingArea = '';
+      this.shippingStreet = '';
+      this.shippingBuilding = '';
+      this.orderNotes = '';
+      this.buyLoading = false;
+      this.buySuccess.set(null);
+      this.buyError.set(null);
+      this.cardNumber = '';
+      this.cardExpiry = '';
+      this.cardCvv = '';
+      this.cardHolderName = '';
+
+      // Reset coupon state
+      this.couponCode = '';
+      this.appliedCoupon = false;
+      this.couponDiscount = 0;
+      this.couponValidationMessage = '';
+      this.isValidatingCoupon = false;
     });
   }
 
@@ -422,7 +474,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   startCheckoutCountdown(expiresAtStr: string | Date) {
     if (this.checkoutTimerId) clearInterval(this.checkoutTimerId);
-    
+
     const update = () => {
       const timeStr = this.timerService.formatTimeRemaining(expiresAtStr);
       this.checkoutCountdown.set(timeStr);
@@ -431,7 +483,7 @@ export class ProductDetail implements OnInit, OnDestroy {
         this.checkoutTimerId = null;
       }
     };
-    
+
     update();
     this.checkoutTimerId = setInterval(update, 1000);
   }
@@ -442,15 +494,122 @@ export class ProductDetail implements OnInit, OnDestroy {
     }
   }
 
-  onOrderPlaced(): void {
-    if (this.product) {
-      this.product.status = 'sold';
+  applyCoupon(): void {
+    if (!this.couponCode.trim() || !this.product) return;
+    this.isValidatingCoupon = true;
+    this.couponValidationMessage = '';
+
+    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id, this.effectivePrice).subscribe({
+      next: (res) => {
+        this.isValidatingCoupon = false;
+        if (res.valid) {
+          this.appliedCoupon = true;
+          this.couponDiscount = res.discountAmount;
+          this.couponValidationMessage = `Coupon applied! Saved $${res.discountAmount}`;
+        } else {
+          this.couponValidationMessage = 'Invalid coupon code';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isValidatingCoupon = false;
+        this.couponValidationMessage = err?.error?.message || 'Invalid coupon code';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  formatCardNumber(): void {
+    const cleaned = this.cardNumber.replace(/\D/g, '');
+    const groups: string[] = [];
+    for (let i = 0; i < cleaned.length && groups.length < 4; i += 4) {
+      groups.push(cleaned.substring(i, i + 4));
     }
-    if (this.checkoutTimerId) {
-      clearInterval(this.checkoutTimerId);
-      this.checkoutTimerId = null;
+    this.cardNumber = groups.join(' ').trim();
+  }
+
+  formatCardExpiry(): void {
+    let val = this.cardExpiry.replace(/\D/g, '');
+    if (val.length >= 2) {
+      val = val.substring(0, 2) + '/' + val.substring(2, 4);
     }
-    this.checkoutCountdown.set('');
-    this.offerService.activeReservation.set(null);
+    this.cardExpiry = val;
+  }
+
+  removeCoupon(): void {
+    this.couponCode = '';
+    this.appliedCoupon = false;
+    this.couponDiscount = 0;
+    this.couponValidationMessage = '';
+  }
+
+  submitOrder(): void {
+    if (!this.product) return;
+    const addrParts = [this.shippingCity, this.shippingArea, this.shippingStreet, this.shippingBuilding].filter(Boolean);
+    if (addrParts.length < 2) {
+      this.buyError.set('Please provide at least your city and street address');
+      return;
+    }
+
+    if (this.paymentMethod === 'credit_card') {
+      const num = this.cardNumber.replace(/\s/g, '');
+      if (!num || num.length < 13) {
+        this.buyError.set('Please enter a valid card number');
+        return;
+      }
+      if (!this.cardExpiry || !/^\d{2}\/\d{2}$/.test(this.cardExpiry)) {
+        this.buyError.set('Please enter a valid expiry date (MM/YY)');
+        return;
+      }
+      if (!this.cardCvv || this.cardCvv.length < 3) {
+        this.buyError.set('Please enter a valid CVV');
+        return;
+      }
+      if (!this.cardHolderName.trim()) {
+        this.buyError.set('Please enter the cardholder name');
+        return;
+      }
+    }
+
+    this.buyLoading = true;
+    this.buyError.set(null);
+    this.buySuccess.set(null);
+
+    const payload: any = {
+      productId: this.product.id,
+      paymentMethod: this.paymentMethod,
+      shippingAddress: addrParts.join(', '),
+      notes: this.orderNotes,
+      price: this.effectivePrice,
+      couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
+      offerId: this.route.snapshot.queryParams['offerId'] || undefined
+    };
+
+    if (this.paymentMethod === 'credit_card') {
+      payload.cardDetails = {
+        cardNumber: this.cardNumber.replace(/\s/g, ''),
+        cardExpiry: this.cardExpiry,
+        cardCvv: this.cardCvv,
+        cardHolderName: this.cardHolderName.trim()
+      };
+    }
+
+    this.orderService.createOrder(payload).subscribe({
+      next: (order) => {
+        this.buyLoading = false;
+        this.buySuccess.set('Order placed successfully! Product is now marked as Sold.');
+        if (this.product) {
+          this.product.status = 'sold';
+        }
+        this.offerService.activeReservation.set(null);
+        setTimeout(() => {
+          this.closeBuy();
+        }, 2500);
+      },
+      error: (err) => {
+        this.buyLoading = false;
+        this.buyError.set(err?.error?.message || 'Failed to place order. Please try again.');
+      }
+    });
   }
 }

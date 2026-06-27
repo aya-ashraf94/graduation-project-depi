@@ -1,7 +1,7 @@
 @if (!isLoading && product) {
 <div class="product-detail-page fade-in">
   <div class="container">
-    
+
     <!-- HEADER BREADCRUMB & BACK BUTTON -->
     <header class="detail-header-v2">
       <button type="button" class="btn-back-v2" (click)="goBack()">
@@ -17,7 +17,7 @@
 
     <!-- MAIN GRID: ABOVE THE FOLD -->
     <div class="detail-grid-v2">
-      
+
       <!-- LEFT: Image Gallery & Thumbnails -->
       <div class="gallery-col-v2">
         <div class="main-image-wrap-v2" (click)="openLightbox(activeImage)">
@@ -46,12 +46,12 @@
             <span>Click to expand</span>
           </div>
         </div>
-        
+
         <!-- Thumbnails -->
         <div class="thumbnails-v2" *ngIf="product.images.length > 0">
-          <div class="thumb-wrap-v2" 
-               *ngFor="let img of product.images; let i = index" 
-               [class.active]="activeImage === i" 
+          <div class="thumb-wrap-v2"
+               *ngFor="let img of product.images; let i = index"
+               [class.active]="activeImage === i"
                (click)="setActiveImage(i)">
             <img [src]="img" [alt]="product.title + ' ' + i" appImageFallback class="thumb-img-v2" />
           </div>
@@ -60,10 +60,10 @@
 
       <!-- RIGHT: Primary Checkout & Contact Sidebar Card -->
       <div class="info-col-v2">
-        
+
         <!-- Main Listing Information Card -->
         <div class="info-main-card-v3">
-          
+
           <!-- Product Header Block (Title, brand, condition tag) -->
           <div class="product-header-block-v3">
             <div class="header-left-v3">
@@ -75,7 +75,7 @@
                 <span>Listed {{ product.createdAt | timeAgo }}</span>
               </div>
             </div>
-            
+
             <span class="tag-condition-badge-v3 inline-card-condition" [attr.data-condition]="product.condition">
               ✦ {{ conditionLabels[product.condition] }}
             </span>
@@ -105,9 +105,9 @@
 
             <ng-container *ngIf="!isOwner">
               <!-- Buy Now (Primary CTA) -->
-              <button class="btn-action-v2 btn-buy-now-v3" 
-                      [disabled]="product.status === 'reserved' && negotiatedPrice() === null" 
-                      (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()" 
+              <button class="btn-action-v2 btn-buy-now-v3"
+                      [disabled]="product.status === 'reserved' && negotiatedPrice() === null"
+                      (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()"
                       *ngIf="product.status !== 'sold'">
                 Buy Now
               </button>
@@ -121,8 +121,8 @@
 
 
                 <!-- Wishlist (Save to Favorites) -->
-                <button class="btn-action-v2 btn-wishlist-v3" 
-                        [class.wishlisted]="wishlistService.isWishlisted(product.id)" 
+                <button class="btn-action-v2 btn-wishlist-v3"
+                        [class.wishlisted]="wishlistService.isWishlisted(product.id)"
                         (click)="toggleWishlist()">
                   <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product.id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -218,7 +218,7 @@
 
     <!-- DOUBLE COLUMN SECTION: SELLER NOTES & SPECIFICATIONS -->
     <div class="notes-specs-grid-v3">
-      
+
       <!-- Left: Notes & History -->
       <div class="notes-col-v3">
         <h3 class="section-title-v3">Seller Notes</h3>
@@ -290,7 +290,7 @@
     <section class="shipping-card-v3">
       <div class="shipping-info-left">
         <h3 class="shipping-card-title">Shipping &amp; Logistics</h3>
-        
+
         <div class="shipping-benefits-grid">
           <div class="shipping-benefit-item">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -367,9 +367,9 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       <span>Chat</span>
     </button>
-    <button class="btn-mobile-action-v2 btn-mobile-buy-v2" 
-            [disabled]="product.status === 'reserved' && negotiatedPrice() === null" 
-            (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()" 
+    <button class="btn-mobile-action-v2 btn-mobile-buy-v2"
+            [disabled]="product.status === 'reserved' && negotiatedPrice() === null"
+            (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()"
             *ngIf="product.status !== 'sold'">
       <span>Buy Now</span>
     </button>
@@ -384,11 +384,11 @@
 <!-- FULLSCREEN IMAGE LIGHTBOX MODAL -->
 <div class="lightbox-overlay-v2" *ngIf="showLightbox" (click)="closeLightbox()">
   <button class="lightbox-close-v2" (click)="closeLightbox()">✕</button>
-  
+
   <button class="lightbox-nav-v2 lightbox-prev-v2" (click)="prevLightboxImage($event)">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
   </button>
-  
+
   <div class="lightbox-content-v2" (click)="$event.stopPropagation()">
     <img [src]="product.images[lightboxIndex]" [alt]="product.title" class="lightbox-image-v2" />
   </div>
@@ -410,7 +410,7 @@
       <h3 class="modal-standard-title">Make an Offer</h3>
       <p class="modal-standard-desc">Suggest a reasonable offer price to the seller.</p>
     </div>
-    
+
     <div class="modal-standard-body" *ngIf="!offerSuccess">
       <div style="text-align: center; margin: 1rem 0;">
         <span style="font-size: 0.85rem; font-weight: 700; color: var(--gray-3); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Asking Price</span>
@@ -421,9 +421,9 @@
         <label style="font-weight: 700; font-size: 0.85rem; color: var(--gray-3);">YOUR OFFER AMOUNT</label>
         <div style="position: relative; display: flex; align-items: center;">
           <span style="position: absolute; left: 16px; font-weight: 800; font-size: 1.5rem; color: var(--dark);">$</span>
-          <input type="number" 
-                 [(ngModel)]="offerAmount" 
-                 name="offerAmount" 
+          <input type="number"
+                 [(ngModel)]="offerAmount"
+                 name="offerAmount"
                  style="width: 100%; padding: 12px 12px 12px 32px; border: 2px solid var(--dark); border-radius: 8px; font-size: 1.5rem; font-weight: 800; text-align: left; outline: none; box-shadow: 3px 3px 0 var(--black);" />
         </div>
         <span style="font-size: 0.75rem; color: var(--gray-3); margin-top: 4px;">Recommended offer: 10% - 15% discount.</span>
@@ -460,15 +460,181 @@
 ></app-auth-required-modal>
 
 <!-- BUY NOW MODAL -->
-<app-checkout-modal
-  [isOpen]="showBuyModal"
-  [product]="product"
-  [effectivePrice]="effectivePrice"
-  [negotiatedPrice]="negotiatedPrice()"
-  [checkoutCountdown]="checkoutCountdown()"
-  (close)="closeBuy()"
-  (orderPlaced)="onOrderPlaced()"
-></app-checkout-modal>
+<div class="report-overlay" *ngIf="showBuyModal">
+  <div class="checkout-card">
+
+    <!-- ===== HEADER ===== -->
+    <div style="padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--black);">
+      <h3 style="font-family: var(--font-primary); font-size: 1.4rem; font-weight: 900; text-transform: uppercase; color: var(--black); margin: 0; line-height: 1;">Checkout</h3>
+      <button (click)="closeBuy()" style="width: 32px; height: 32px; border-radius: 50%; background: var(--white); border: 2px solid var(--black); color: var(--black); font-size: 1rem; font-weight: 900; cursor: pointer; box-shadow: 2px 2px 0 var(--black); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s ease; line-height: 1;"
+        onmouseover="this.style.background='var(--danger)'; this.style.color='white'; this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)'"
+        onmouseout="this.style.background='var(--white)'; this.style.color='var(--black)'; this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)'">✕</button>
+    </div>
+
+    <div class="checkout-card-body">
+
+      <!-- ===== SUCCESS / ERROR BANNERS ===== -->
+      <div *ngIf="buySuccess()" style="background: var(--success-light); color: var(--success-dark); border: 2px solid var(--success); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
+        {{ buySuccess() }}
+      </div>
+      <div *ngIf="buyError()" style="background: var(--danger-light); color: var(--danger-dark); border: 2px solid var(--danger); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
+        {{ buyError() }}
+      </div>
+
+      <form (ngSubmit)="submitOrder()" *ngIf="!buySuccess()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
+
+        <!-- Urgent warning banner for reserved checkout -->
+        <div *ngIf="negotiatedPrice() !== null" style="background: rgba(231, 76, 60, 0.08); color: var(--danger-dark); border: 2px dashed var(--danger); padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-primary); display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.5rem; box-sizing: border-box; width: 100%;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span>🤝 NEGOTIATED PRICE</span>
+            <span style="font-weight: 900; font-size: 1rem; color: var(--danger-dark);">{{ negotiatedPrice() | currencyFormat }}</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; border-top: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); padding-top: 0.35rem; margin-top: 0.15rem; font-size: 0.75rem;">
+            <span>⏳ RESERVATION COUNTDOWN:</span>
+            <span style="font-weight: 900; color: var(--danger); font-family: monospace; font-size: 0.85rem;">{{ checkoutCountdown() }}</span>
+          </div>
+        </div>
+
+        <div class="checkout-columns">
+
+          <!-- ===== LEFT COLUMN: Payment + Address + Coupon ===== -->
+          <div class="checkout-left-col">
+
+            <!-- Payment Method -->
+            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Payment Method</label>
+              <div class="checkout-payment-methods">
+                <label class="pay-option" [class.active]="paymentMethod === 'cash_on_delivery'">
+                  <input type="radio" name="payMethod" value="cash_on_delivery" [(ngModel)]="paymentMethod" />
+                  <span class="pay-icon">💵</span>
+                  <span class="pay-label">Cash on Delivery</span>
+                </label>
+                <label class="pay-option" [class.active]="paymentMethod === 'credit_card'">
+                  <input type="radio" name="payMethod" value="credit_card" [(ngModel)]="paymentMethod" />
+                  <span class="pay-icon">💳</span>
+                  <span class="pay-label">Credit Card</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Credit Card Details -->
+            <div class="credit-card-section" [class.visible]="paymentMethod === 'credit_card'">
+              <div class="card-preview">
+                <div class="card-chip"></div>
+                <div class="card-number-display">{{ cardNumber || '•••• •••• •••• ••••' }}</div>
+                <div class="card-bottom-row">
+                  <div class="card-holder-display">
+                    <span class="card-field-label">Cardholder</span>
+                    <span class="card-field-value">{{ cardHolderName || 'Your Name' }}</span>
+                  </div>
+                  <div class="card-expiry-display">
+                    <span class="card-field-label">Expires</span>
+                    <span class="card-field-value">{{ cardExpiry || 'MM/YY' }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-inputs">
+                <div class="card-input-row">
+                  <input type="text" [(ngModel)]="cardNumber" name="cardNumber" placeholder="Card Number" maxlength="19" class="card-input card-input-full" (ngModelChange)="formatCardNumber()" inputmode="numeric" />
+                </div>
+                <div class="card-input-row card-input-row-3">
+                  <input type="text" [(ngModel)]="cardHolderName" name="cardHolderName" placeholder="Cardholder Name" class="card-input" />
+                  <input type="text" [(ngModel)]="cardExpiry" name="cardExpiry" placeholder="MM/YY" maxlength="5" class="card-input card-input-sm" (ngModelChange)="formatCardExpiry()" inputmode="numeric" />
+                  <input type="text" [(ngModel)]="cardCvv" name="cardCvv" placeholder="CVV" maxlength="4" class="card-input card-input-sm" inputmode="numeric" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipping Address (compact) -->
+            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Shipping Address</label>
+              <div class="checkout-address-fields">
+                <input type="text" [(ngModel)]="shippingCity" name="shippingCity" placeholder="City" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingArea" name="shippingArea" placeholder="Area" style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+                <input type="text" [(ngModel)]="shippingStreet" name="shippingStreet" placeholder="Street" style="flex: 2; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; min-width: 0;" />
+              </div>
+              <input type="text" [(ngModel)]="shippingBuilding" name="shippingBuilding" placeholder="Building / Apartment (optional)" style="width: 100%; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; box-sizing: border-box;" />
+            </div>
+
+            <!-- Coupon Code -->
+            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Coupon Code <span style="color: var(--gray-3); font-weight: 400;">(optional)</span></label>
+              <div style="display: flex; gap: 0.4rem; align-items: center;">
+                <input type="text" [(ngModel)]="couponCode" name="couponCode" placeholder="Enter code" [disabled]="appliedCoupon"
+                  style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; text-transform: uppercase; box-sizing: border-box;"
+                  [style.borderColor]="appliedCoupon ? 'var(--success)' : 'var(--border)'" />
+                <button type="button" (click)="applyCoupon()" *ngIf="!appliedCoupon" [disabled]="!couponCode || isValidatingCoupon"
+                  style="padding: 0.45rem 0.85rem; background: var(--black); color: var(--white); border: 1.5px solid var(--black); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap; box-shadow: 2px 2px 0 var(--black); transition: all 0.12s ease;"
+                  onmouseover="this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)'"
+                  onmouseout="this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)'">{{ isValidatingCoupon ? '...' : 'Apply' }}</button>
+                <button type="button" (click)="removeCoupon()" *ngIf="appliedCoupon"
+                  style="padding: 0.45rem 0.85rem; background: var(--danger-light); color: var(--danger-dark); border: 1.5px solid var(--danger); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap;">Remove</button>
+              </div>
+              <span *ngIf="couponValidationMessage" [style.color]="appliedCoupon ? 'var(--success-dark)' : 'var(--danger-dark)'" style="font-size: 0.65rem; font-weight: 600; margin-top: 1px;">{{ couponValidationMessage }}</span>
+            </div>
+
+          </div>
+
+          <!-- ===== RIGHT COLUMN: Summary Card ===== -->
+          <div class="checkout-right-col">
+
+            <!-- Order Summary Card -->
+            <div style="border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem;">
+              <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1.5px solid var(--border);">
+                <img *ngIf="product.images.length" [src]="product.images[0]" alt="" style="width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1.5px solid var(--black); flex-shrink: 0;" onerror="this.style.display='none'" />
+                <div style="flex: 1; min-width: 0;">
+                  <p style="font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; color: var(--black); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ product.title }}</p>
+                  <p style="font-family: var(--font-secondary); font-size: 0.7rem; color: var(--gray-3); margin: 0.1rem 0 0;">Qty: 1</p>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.2rem; font-family: var(--font-secondary); font-size: 0.75rem;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--gray-3);">Subtotal</span>
+                  <span style="font-weight: 700; color: var(--black);">{{ effectivePrice | currencyFormat }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--gray-3);">Shipping</span>
+                  <span style="font-weight: 600; color: var(--gray-3);">To be agreed</span>
+                </div>
+                <div *ngIf="appliedCoupon" style="display: flex; justify-content: space-between; color: var(--success-dark); font-weight: 700;">
+                  <span>Discount</span>
+                  <span>-{{ couponDiscount | currencyFormat }}</span>
+                </div>
+                <div style="border-top: 1.5px solid var(--black); margin-top: 0.2rem; padding-top: 0.3rem; display: flex; justify-content: space-between; font-weight: 900; font-size: 0.9rem; color: var(--black);">
+                  <span>Total</span>
+                  <span>{{ (effectivePrice - (appliedCoupon ? couponDiscount : 0)) | currencyFormat }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security + Notes stack -->
+            <div style="border: 2px solid var(--black); border-radius: 8px; padding: 0.6rem 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1.5px solid var(--border);">
+                <span style="font-size: 0.9rem;">🔒</span>
+                <span style="font-family: var(--font-secondary); font-size: 0.65rem; color: var(--gray-3);">Secure checkout</span>
+              </div>
+              <label style="font-family: var(--font-primary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--gray-3); letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Notes</label>
+              <input type="text" [(ngModel)]="orderNotes" name="orderNotes" placeholder="e.g. Call before delivery"
+                style="width: 100%; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.75rem; outline: none; box-sizing: border-box;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== BUTTONS ===== -->
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; border-top: 2px solid var(--black); padding-top: 0.75rem;">
+          <button type="button" (click)="closeBuy()" [disabled]="buyLoading"
+            style="padding: 0; background: transparent; color: var(--gray-3); border: none; font-family: var(--font-secondary); font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color 0.12s ease;"
+            onmouseover="this.style.color='var(--black)'"
+            onmouseout="this.style.color='var(--gray-3)'">Cancel</button>
+          <button type="submit" [disabled]="buyLoading || !shippingCity || !shippingStreet"
+            style="padding: 0.7rem 2rem; background: var(--yellow); color: var(--black); border: 2px solid var(--black); border-radius: 8px; font-family: var(--font-primary); font-size: 0.85rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 4px 4px 0 var(--black); transition: all 0.12s ease; letter-spacing: 0.04em;"
+            onmouseover="this.style.transform='translate(-2px,-2px)'; this.style.boxShadow='6px 6px 0 var(--black)'; this.style.background='var(--yellow-dark)'"
+            onmouseout="this.style.transform='none'; this.style.boxShadow='4px 4px 0 var(--black)'; this.style.background='var(--yellow)'">{{ buyLoading ? 'Placing Order...' : 'Place Order' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 } @else {
   <!-- SKELETON LOADING STATE -->
   @if (isLoading) {

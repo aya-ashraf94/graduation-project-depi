@@ -12,10 +12,7 @@
       (retry)="loadReports()">
     </app-admin-error-panel>
   } @else if (isLoading()) {
-    <div class="loading-box">
-      <div class="spinner"></div>
-      <p>Loading reports...</p>
-    </div>
+    <app-admin-loader message="Loading reports..."></app-admin-loader>
   } @else if (reports().length === 0) {
     <div class="empty-box">
       <span class="empty-emoji">🕊️</span>

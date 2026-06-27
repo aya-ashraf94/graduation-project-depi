@@ -15,7 +15,9 @@
     </div>
   </div>
 
-  @if (errorMessage()) {
+  @if (isLoading() && users().length === 0) {
+    <app-admin-loader message="Loading users..."></app-admin-loader>
+  } @else if (errorMessage()) {
     <app-admin-error-panel
       [message]="errorMessage()"
       (retry)="loadUsers()">

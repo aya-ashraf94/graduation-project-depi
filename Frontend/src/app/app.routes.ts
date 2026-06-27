@@ -166,6 +166,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/pages/coupons/coupons').then((m) => m.Coupons),
       },
+      {
+        path: 'flash-sales',
+        loadComponent: () =>
+          import('./features/admin/pages/flash-sales/flash-sales').then((m) => m.AdminFlashSales),
+      },
     ],
   },
 

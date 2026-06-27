@@ -353,3 +353,73 @@
   color: var(--gray-3);
   margin-left: 0.3rem;
 }
+
+/* ===== SKELETON LOADER ===== */
+@keyframes sk-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.reports-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sk-report-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sk-r-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sk-r-meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.sk-r-actions {
+  display: flex;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.sk-act {
+  height: 26px;
+  border-radius: var(--radius-sm);
+}
+
+.sk-block {
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+
+.sk-line {
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  height: 14px;
+}
+
+.sk-badge {
+  height: 20px;
+  background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
+  background-size: 400px 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  flex-shrink: 0;
+}

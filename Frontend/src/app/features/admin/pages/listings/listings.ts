@@ -12,12 +12,13 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge';
 
 @Component({
   selector: 'app-admin-listings',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, StatusBadgeComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, StatusBadgeComponent, AdminLoaderComponent],
   templateUrl: './listings.html',
   styleUrl: './listings.css',
   changeDetection: ChangeDetectionStrategy.OnPush

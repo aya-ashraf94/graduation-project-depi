@@ -30,7 +30,13 @@
         <span class="home-date">{{ product().createdAt | timeAgo }}</span>
       </div>
       <div class="home-price-row">
-        <span class="home-price-tag">{{ product().price | currencyFormat }}</span>
+        @if (product().isFlashSale) {
+          <span class="home-price-tag home-sale-price">{{ product().salePrice | currencyFormat }}</span>
+          <span class="home-original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+          <span class="home-flash-badge">-{{ ((1 - (product().salePrice! / (product().originalPrice || product().price))) * 100) | number:'1.0-0' }}%</span>
+        } @else {
+          <span class="home-price-tag">{{ product().price | currencyFormat }}</span>
+        }
         <span class="home-view-link">View</span>
       </div>
     </div>
@@ -74,7 +80,15 @@
           <span *ngIf="product().conditionScore"> • {{ product().conditionScore }}/10</span>
           <span *ngIf="product().size"> • {{ product().size }}</span>
         </div>
-        <div class="price-box">{{ product().price | currencyFormat }}</div>
+        <div class="price-box">
+          @if (product().isFlashSale) {
+            <span class="sale-price">{{ product().salePrice | currencyFormat }}</span>
+            <span class="original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+            <span class="flash-badge">FLASH</span>
+          } @else {
+            {{ product().price | currencyFormat }}
+          }
+        </div>
       </div>
     </div>
 
@@ -131,7 +145,14 @@
       <div class="card-brand" *ngIf="product().brand">{{ product().brand }}</div>
       <div class="card-title-price-row">
         <h3 class="card-title" [routerLink]="['/products', product().id]">{{ product().title }}</h3>
-        <div class="card-price">{{ product().price | currencyFormat }}</div>
+        <div class="card-price">
+          @if (product().isFlashSale) {
+            <span class="sale-price">{{ product().salePrice | currencyFormat }}</span>
+            <span class="original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+          } @else {
+            {{ product().price | currencyFormat }}
+          }
+        </div>
       </div>
 
       <div class="card-tags-row" *ngIf="product().size || product().categoryName">
@@ -220,7 +241,14 @@
         <span class="card-condition-score-v2">Score: {{ product().conditionScore }}/10</span>
       </div>
       <h3 class="card-title-v2">{{ product().title }}</h3>
-      <div class="card-price-v2">{{ product().price | currencyFormat }}</div>
+      <div class="card-price-v2">
+        @if (product().isFlashSale) {
+          <span class="sale-price">{{ product().salePrice | currencyFormat }}</span>
+          <span class="original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+        } @else {
+          {{ product().price | currencyFormat }}
+        }
+      </div>
       
       <div class="card-footer-v2">
         <span class="card-loc-v2" *ngIf="product().location">

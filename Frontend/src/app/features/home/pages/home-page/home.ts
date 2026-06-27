@@ -108,6 +108,7 @@ export class Home implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+
     // Fetch a pool of latest products to select diverse featured items
     this.productService.getProducts({ limit: 20 }).subscribe({
       next: (products) => {

@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const cloudinary = require("../config/cloudinary");
 const jwt = require("jsonwebtoken");
+const { getActiveFlashSaleDiscounts, applyDiscount, applyDiscounts } = require("../utils/flashSaleHelper");
 
 const isCloudinaryConfigured = () => {
   return process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API_SECRET;
@@ -75,7 +76,11 @@ const getProductById = async (req, res) => {
       categoryId: row.categories,
     };
 
-    res.json(data);
+    // Apply flash sale discount
+    const { discounts } = await getActiveFlashSaleDiscounts();
+    const discounted = applyDiscount(data, discounts);
+
+    res.json(discounted);
   } catch (error) {
     console.error("Error in getProductById:", error);
     res.status(500).json({ message: "Server Error" });
@@ -207,8 +212,12 @@ const getProducts = async (req, res) => {
       categoryId: r.categories,
     }));
 
+    // Apply flash sale discounts
+    const { discounts } = await getActiveFlashSaleDiscounts();
+    const discounted = applyDiscounts(formatted, discounts);
+
     res.json({
-      products: formatted,
+      products: discounted,
       total,
       page,
       pages: Math.ceil(total / limit)
@@ -233,7 +242,11 @@ const getMyProducts = async (req, res) => {
       categoryId: r.categories,
     }));
 
-    res.json(formatted);
+    // Apply flash sale discounts
+    const { discounts } = await getActiveFlashSaleDiscounts();
+    const discounted = applyDiscounts(formatted, discounts);
+
+    res.json(discounted);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
@@ -274,7 +287,11 @@ const getUserProducts = async (req, res) => {
       categoryId: r.categories,
     }));
 
-    res.json(formatted);
+    // Apply flash sale discounts
+    const { discounts } = await getActiveFlashSaleDiscounts();
+    const discounted = applyDiscounts(formatted, discounts);
+
+    res.json(discounted);
   } catch (error) {
     console.error("Error in getUserProducts:", error);
     res.status(500).json({ message: "Server Error" });

@@ -64,6 +64,7 @@ app.use("/api/wishlist", require("./routes/wishlistRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/flash-sales", require("./routes/flashSaleRoutes"));
 
 const { getPool } = require("./config/db");
 
@@ -120,14 +121,16 @@ const io = new Server(server, {
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) {
-    return next(new Error("Authentication required"));
+    socket.userId = null;
+    return next();
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.userId = decoded.id;
     next();
   } catch (err) {
-    next(new Error("Invalid token"));
+    socket.userId = null;
+    next();
   }
 });
 
@@ -136,17 +139,19 @@ const onlineUsers = new Map(); // userId -> Set of socket.ids
 io.on("connection", (socket) => {
   console.log(`Socket Connected: ${socket.id} (User: ${socket.userId})`);
 
-  // Track online user
-  if (!onlineUsers.has(socket.userId)) {
-    onlineUsers.set(socket.userId, new Set());
+  // Track online user (skip anonymous)
+  if (socket.userId) {
+    if (!onlineUsers.has(socket.userId)) {
+      onlineUsers.set(socket.userId, new Set());
+    }
+    onlineUsers.get(socket.userId).add(socket.id);
+
+    // Send the list of current online users to this newly connected user
+    socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
+
+    // Broadcast to all other users that this user is online
+    socket.broadcast.emit("user_status_changed", { userId: socket.userId, status: "online" });
   }
-  onlineUsers.get(socket.userId).add(socket.id);
-
-  // Send the list of current online users to this newly connected user
-  socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
-
-  // Broadcast to all other users that this user is online
-  socket.broadcast.emit("user_status_changed", { userId: socket.userId, status: "online" });
 
   socket.on("join_conversation", async (conversationId) => {
     try {
@@ -172,13 +177,15 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log(`Socket Disconnected: ${socket.id}`);
-    const userSockets = onlineUsers.get(socket.userId);
-    if (userSockets) {
-      userSockets.delete(socket.id);
-      if (userSockets.size === 0) {
-        onlineUsers.delete(socket.userId);
-        // Broadcast to everyone that this user is offline
-        io.emit("user_status_changed", { userId: socket.userId, status: "offline" });
+    if (socket.userId) {
+      const userSockets = onlineUsers.get(socket.userId);
+      if (userSockets) {
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          onlineUsers.delete(socket.userId);
+          // Broadcast to everyone that this user is offline
+          io.emit("user_status_changed", { userId: socket.userId, status: "offline" });
+        }
       }
     }
   });
@@ -186,6 +193,10 @@ io.on("connection", (socket) => {
 
 // Attach io to app so controller routes can trigger socket events on message insertion
 app.set("io", io);
+
+// ── Flash Sale Notification Checker ─────────────────────────────────────
+const { checkAndNotifyFlashSales } = require("./controllers/flashSaleController");
+setInterval(() => checkAndNotifyFlashSales(io), 60 * 1000); // Every minute
 
 server.listen(PORT, () => {
   console.log(`Server Running On Port ${PORT}`);
