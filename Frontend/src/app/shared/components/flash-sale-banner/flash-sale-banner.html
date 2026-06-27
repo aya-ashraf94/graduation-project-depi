@@ -1,0 +1,21 @@
+@if (sales.length > 0) {
+  <div class="flash-sale-bar">
+    <div class="flash-sale-bar-inner">
+      <div class="flash-sale-left">
+        <span class="flash-sale-icon">⚡</span>
+        <span class="flash-sale-label">FLASH SALE</span>
+        <span class="flash-sale-sep">|</span>
+        <span class="flash-sale-text">
+          @for (sale of sales; track sale.id; let last = $last) {
+            <span>{{ sale.discountPercent }}% OFF{{ sale.scopeName ? ' on ' + sale.scopeName : '' }}{{ !last ? ', ' : '' }}</span>
+          }
+        </span>
+      </div>
+      <div class="flash-sale-right">
+        <span class="flash-sale-ends">Ends in</span>
+        <span class="flash-sale-timer">{{ timeDisplay() }}</span>
+        <a routerLink="/products" class="flash-sale-cta">Shop Now</a>
+      </div>
+    </div>
+  </div>
+}

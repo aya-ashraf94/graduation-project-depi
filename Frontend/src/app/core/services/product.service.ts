@@ -281,7 +281,12 @@ export class ProductService {
       phoneNumber: p.phoneNumber || '',
       showContactInfo: p.showContactInfo ?? true,
       categoryId: p.categoryId,
-      rawDynamicAttributes: dynamic
+      rawDynamicAttributes: dynamic,
+
+      originalPrice: p.originalPrice ?? undefined,
+      salePrice: p.salePrice ?? undefined,
+      flashSaleName: p.flashSaleName ?? undefined,
+      isFlashSale: p.isFlashSale ?? false
 
     } as any;
   }
@@ -305,7 +310,12 @@ export class ProductService {
       soldByNafa3ni: mapped.soldByNafa3ni,
       isVerified: mapped.isVerified,
       size: mapped.size,
-      location: p.location || ''
+      location: p.location || '',
+
+      originalPrice: mapped.originalPrice,
+      salePrice: mapped.salePrice,
+      flashSaleName: mapped.flashSaleName,
+      isFlashSale: mapped.isFlashSale
     } as any;
   }
 

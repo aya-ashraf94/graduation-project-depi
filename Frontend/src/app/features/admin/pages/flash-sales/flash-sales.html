@@ -1,0 +1,154 @@
+<div class="flash-sales-page">
+  <div class="page-header-actions">
+    <div class="title-section">
+      <h1>⚡ Flash Sales</h1>
+      <p>Create and manage time-limited discount campaigns.</p>
+    </div>
+    <button class="btn-create" (click)="openCreateForm()" [disabled]="showForm()">+ New Flash Sale</button>
+  </div>
+
+  <!-- Create / Edit Form -->
+  @if (showForm()) {
+    <div class="flash-sale-form-card">
+      <h3>{{ editingId() ? 'Edit Flash Sale' : 'Create Flash Sale' }}</h3>
+      <form (ngSubmit)="submitForm()" class="flash-form-grid">
+        <div class="form-field">
+          <label>Campaign Name *</label>
+          <input type="text" [(ngModel)]="formModel.name" name="name" placeholder="e.g. Summer Flash" required />
+        </div>
+
+        <div class="form-field">
+          <label>Discount (%) *</label>
+          <input type="number" [(ngModel)]="formModel.discountPercent" name="discountPercent" min="1" max="100" required />
+        </div>
+
+        <div class="form-field">
+          <label>Scope *</label>
+          <select [(ngModel)]="formModel.scopeType" name="scopeType" (ngModelChange)="onScopeTypeChange()">
+            <option value="all">All Products</option>
+            <option value="category">Specific Category</option>
+            <option value="product">Specific Product</option>
+          </select>
+        </div>
+
+        @if (formModel.scopeType === 'category') {
+          <div class="form-field">
+            <label>Category *</label>
+            <select [(ngModel)]="formModel.scopeId" name="scopeId">
+              <option value="">— Select Category —</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (formModel.scopeType === 'product') {
+          <div class="form-field">
+            <label>Product *</label>
+            <input type="text" placeholder="Search product title..." (input)="searchProducts($event)" />
+            <select [(ngModel)]="formModel.scopeId" name="scopeId" style="margin-top: 0.3rem;">
+              <option value="">— Select Product —</option>
+              @for (p of products(); track p.id) {
+                <option [value]="p.id">{{ p.title }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="form-field">
+          <label>Start Date *</label>
+          <input type="datetime-local" [(ngModel)]="formModel.startDate" name="startDate" required />
+        </div>
+
+        <div class="form-field">
+          <label>End Date *</label>
+          <input type="datetime-local" [(ngModel)]="formModel.endDate" name="endDate" required />
+        </div>
+
+        <div class="form-field">
+          <label>Notify Before (minutes)</label>
+          <input type="number" [(ngModel)]="formModel.notifyBeforeMinutes" name="notifyBeforeMinutes" min="1" />
+          <small>Users will be notified this many minutes before the sale ends.</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Saving...' : editingId() ? 'Update' : 'Create' }}
+          </button>
+          <button type="button" class="btn-cancel" (click)="cancelForm()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage()) {
+    <app-admin-error-panel [message]="errorMessage()" (retry)="loadSales()"></app-admin-error-panel>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading() && sales().length === 0) {
+    <app-admin-loader message="Loading flash sales..."></app-admin-loader>
+  }
+
+  <!-- Flash Sales Table -->
+  @if (!isLoading() && !errorMessage()) {
+    <div class="admin-table-card">
+      <div class="table-container">
+        <table class="admin-data-table">
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Discount</th>
+              <th>Scope</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Notify</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (sales().length === 0) {
+              <app-empty-state variant="table-row" [colspan]="8" icon="⚡" title="No flash sales yet" description="Create your first flash sale campaign."></app-empty-state>
+            } @else {
+              @for (sale of sales(); track sale.id) {
+                <tr [class.expired-row]="isExpired(sale)" [class.live-row]="isLive(sale)">
+                  <td class="bold-text">{{ sale.name }}</td>
+                  <td><span class="discount-badge">-{{ sale.discountPercent }}%</span></td>
+                  <td>
+                    <span class="scope-pill" [class.scope-all]="sale.scopeType === 'all'">
+                      {{ sale.scopeType === 'all' ? 'All Products' : sale.scopeType === 'category' ? (sale.scopeName || 'Category') : (sale.scopeName || 'Product') }}
+                    </span>
+                  </td>
+                  <td class="date-cell">{{ sale.startDate | date:'medium' }}</td>
+                  <td class="date-cell">{{ sale.endDate | date:'medium' }}</td>
+                  <td class="date-cell">{{ sale.notifyBeforeMinutes }}min before</td>
+                  <td>
+                    <span class="status-pill" [class.status-live]="isLive(sale)" [class.status-scheduled]="isUpcoming(sale)" [class.status-expired]="isExpired(sale)" [class.status-disabled]="!sale.isActive">
+                      {{ getSaleStatus(sale) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="table-row-actions">
+                      <button (click)="toggleActive(sale)" class="row-action-btn" [title]="sale.isActive ? 'Disable' : 'Enable'">
+                        {{ sale.isActive ? '⏸' : '▶' }}
+                      </button>
+                      <button (click)="openEditForm(sale)" class="row-action-btn edit-btn" title="Edit">
+                        ✏️
+                      </button>
+                      <button (click)="deleteSale(sale)" class="row-action-btn delete-btn" title="Delete">
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

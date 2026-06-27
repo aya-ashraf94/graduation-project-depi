@@ -2,6 +2,7 @@ const db = require("../db");
 const { users, products, reports, orders, categories, coupons } = require("../db/schema");
 const { eq, or, ilike, and, desc, count, inArray, sql } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
+const { getActiveFlashSaleDiscounts, applyDiscounts } = require("../utils/flashSaleHelper");
 
 const buyer = alias(users, "buyer");
 const seller = alias(users, "seller");
@@ -176,8 +177,12 @@ const getAllProducts = async (req, res) => {
       categoryId: r.categories ? { id: r.categories.id, name: r.categories.name } : null,
     }));
 
+    // Apply flash sale discounts
+    const { discounts } = await getActiveFlashSaleDiscounts();
+    const discounted = applyDiscounts(formatted, discounts);
+
     res.json({
-      products: formatted,
+      products: discounted,
       total,
       page,
       pages: Math.ceil(total / limit),
