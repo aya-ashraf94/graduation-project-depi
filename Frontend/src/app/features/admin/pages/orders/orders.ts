@@ -1,14 +1,20 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../../core/services/admin.service';
 
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
+import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
+import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent],
   templateUrl: './orders.html',
-  styleUrl: './orders.css'
+  styleUrl: './orders.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Orders implements OnInit {
   private adminService = inject(AdminService);

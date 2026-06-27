@@ -23,12 +23,7 @@
           <!-- Avatar Block -->
           <div class="avatar-container">
             <div class="avatar-frame">
-              <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" [alt]="user.firstName" appImageFallback />
-              <ng-template #defaultAvatar>
-                <div class="avatar-fallback">
-                  {{ user.firstName.substring(0, 1) | uppercase }}{{ user.lastName.substring(0, 1) | uppercase }}
-                </div>
-              </ng-template>
+              <app-user-avatar [user]="user" size="xl" />
             </div>
             <!-- pulsating green online indicator dot -->
             <div class="status-dot" title="Active Campus Member"></div>
@@ -786,79 +781,40 @@
       <!-- TAB CONTENT: REVIEWS -->
       <div class="tab-content" *ngIf="activeTab === 'reviews'">
         <div class="reviews-card" *ngIf="reviews.length > 0; else noReviews">
-          <!-- Reviews Header Row -->
           <div class="reviews-card-header">
-            <h2 class="reviews-title">
-              Reviews
-              <span class="reviews-title-star">★ {{ (user.rating || 5.0) | number:'1.1-1' }}</span>
-              <span class="reviews-title-count">({{ reviews.length }} reviews)</span>
-            </h2>
+            <h2 class="reviews-title">Reviews</h2>
             <button type="button" class="btn-view-all-reviews" (click)="viewAllReviews()">View All Reviews</button>
           </div>
 
           <div class="reviews-layout">
-            <!-- Left Column: Star Rating Stats -->
             <div class="reviews-stats-col">
+              <div class="rating-summary-block">
+                <div class="rating-big-number">{{ (user.rating || 5.0) | number:'1.1-1' }}</div>
+                <app-rating-display [rating]="user.rating || 5" size="lg" />
+                <div class="rating-big-count">{{ reviews.length }} review{{ reviews.length !== 1 ? 's' : '' }}</div>
+              </div>
+
               <div class="rating-bars-stack">
-                <!-- Star 5 -->
-                <div class="rating-bar-row">
-                  <span class="bar-stars">5 <span class="bar-star-icon">★</span></span>
+                <div class="rating-bar-row" *ngFor="let star of [5,4,3,2,1]">
+                  <span class="bar-stars">{{ star }}</span>
                   <div class="bar-track">
-                    <div class="bar-fill" [style.width.%]="getRatingPercentage(5)"></div>
+                    <div class="bar-fill" [style.width.%]="getRatingPercentage(star)"></div>
                   </div>
-                  <span class="bar-pct">{{ getRatingPercentage(5) }}%</span>
-                </div>
-                <!-- Star 4 -->
-                <div class="rating-bar-row">
-                  <span class="bar-stars">4 <span class="bar-star-icon">★</span></span>
-                  <div class="bar-track">
-                    <div class="bar-fill" [style.width.%]="getRatingPercentage(4)"></div>
-                  </div>
-                  <span class="bar-pct">{{ getRatingPercentage(4) }}%</span>
-                </div>
-                <!-- Star 3 -->
-                <div class="rating-bar-row">
-                  <span class="bar-stars">3 <span class="bar-star-icon">★</span></span>
-                  <div class="bar-track">
-                    <div class="bar-fill" [style.width.%]="getRatingPercentage(3)"></div>
-                  </div>
-                  <span class="bar-pct">{{ getRatingPercentage(3) }}%</span>
-                </div>
-                <!-- Star 2 -->
-                <div class="rating-bar-row">
-                  <span class="bar-stars">2 <span class="bar-star-icon">★</span></span>
-                  <div class="bar-track">
-                    <div class="bar-fill" [style.width.%]="getRatingPercentage(2)"></div>
-                  </div>
-                  <span class="bar-pct">{{ getRatingPercentage(2) }}%</span>
-                </div>
-                <!-- Star 1 -->
-                <div class="rating-bar-row">
-                  <span class="bar-stars">1 <span class="bar-star-icon">★</span></span>
-                  <div class="bar-track">
-                    <div class="bar-fill" [style.width.%]="getRatingPercentage(1)"></div>
-                  </div>
-                  <span class="bar-pct">{{ getRatingPercentage(1) }}%</span>
+                  <span class="bar-pct">{{ getRatingPercentage(star) }}%</span>
                 </div>
               </div>
             </div>
 
-            <!-- Right Column: Horizontal Cards -->
             <div class="reviews-list-col">
               <div class="review-card-modern" *ngFor="let review of reviews">
                 <div class="rev-card-header">
                   <div class="rev-buyer-info">
                     <div class="rev-buyer-avatar">
-                      <img *ngIf="getReviewerAvatar(review); else initialsAvatar" [src]="getReviewerAvatar(review)" appImageFallback />
-                      <ng-template #initialsAvatar>
-                        <div class="rev-buyer-avatar-fallback">
-                          {{ getReviewerName(review).substring(0, 1) | uppercase }}
-                        </div>
-                      </ng-template>
+                      <app-user-avatar [user]="review.reviewerId" />
                     </div>
                     <div class="rev-buyer-meta">
-                      <div class="rev-buyer-name">{{ getReviewerName(review) }}</div>
-                      <div class="rev-stars-row" style="color: var(--yellow); font-weight: bold;">{{ getStars(review.rating) }}</div>
+                      <a class="rev-buyer-name" [routerLink]="['/profile', getReviewerId(review)]">{{ getReviewerName(review) }}</a>
+                      <app-rating-display [rating]="review.rating" size="sm" />
                     </div>
                   </div>
                   <div class="rev-date">{{ review.createdAt | date:'mediumDate' }}</div>
@@ -919,7 +875,7 @@
           </div>
           <div class="trust-info">
             <h4 class="trust-title">Top Rated</h4>
-            <p class="trust-desc">4.9 average rating</p>
+            <p class="trust-desc">{{ (user.rating || 5.0) | number:'1.1-1' }} average rating</p>
           </div>
         </div>
       </div>
@@ -968,164 +924,12 @@
 </div>
 
 <!-- EDIT PROFILE MODAL -->
-<div class="glass-modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
-  <div class="brutalist-modal-card" (click)="$event.stopPropagation()">
-    <button class="brutalist-modal-close" (click)="closeEditModal()" aria-label="Close modal">✕</button>
-
-    <div class="modal-header-banner">
-      <h3 class="brutalist-modal-title">EDIT PROFILE</h3>
-      <p class="modal-subtitle">Update your public campus trader details</p>
-    </div>
-
-    <!-- Success Banner -->
-    <div *ngIf="profileSuccess()" class="brutalist-banner brutalist-banner-success">
-      <div class="banner-icon-wrap">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div class="banner-message">{{ profileSuccess() }}</div>
-    </div>
-
-    <!-- Error Banner -->
-    <div *ngIf="profileError()" class="brutalist-banner brutalist-banner-error">
-      <div class="banner-icon-wrap">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </div>
-      <div class="banner-message">{{ profileError() }}</div>
-    </div>
-
-    <div class="edit-form-scroll-area">
-      <form (ngSubmit)="saveProfile()" class="brutalist-form">
-
-        <!-- SECTION: PERSONAL INFO -->
-        <div class="edit-form-section">
-          <div class="edit-section-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>Personal Info</span>
-          </div>
-          <div class="edit-section-body">
-            <div class="form-row-two-cols">
-              <div class="form-group">
-                <label class="form-label">FIRST NAME</label>
-                <input type="text" [(ngModel)]="editForm.firstName" name="firstName" required class="form-input" placeholder="e.g. John" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">LAST NAME</label>
-                <input type="text" [(ngModel)]="editForm.lastName" name="lastName" required class="form-input" placeholder="e.g. Doe" />
-              </div>
-            </div>
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label">BIO</label>
-              <textarea [(ngModel)]="editForm.bio" name="bio" rows="3" class="form-textarea" placeholder="Tell students about what you sell, your major, or response times..."></textarea>
-              <span class="field-hint">Max 2 lines recommended. Be concise and professional.</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION: AVATAR -->
-        <div class="edit-form-section">
-          <div class="edit-section-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <span>Avatar</span>
-          </div>
-          <div class="edit-section-body">
-            <div class="avatar-url-row">
-              <div class="avatar-preview-frame" *ngIf="editForm.avatar; else noAvatarPreview">
-                <img [src]="editForm.avatar" alt="Avatar preview" class="avatar-preview-img" />
-              </div>
-              <ng-template #noAvatarPreview>
-                <div class="avatar-preview-frame avatar-preview-empty">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-2)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-              </ng-template>
-              <div class="avatar-url-field">
-                <label class="form-label">AVATAR URL</label>
-                <input type="text" [(ngModel)]="editForm.avatar" name="avatar" class="form-input" placeholder="https://example.com/avatar.jpg" />
-                <div class="avatar-upload-row">
-                  <button type="button" class="brutalist-btn btn-upload-avatar" (click)="avatarFileInput.click()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload Photo
-                  </button>
-                  <input
-                    type="file"
-                    #avatarFileInput
-                    accept="image/*"
-                    (change)="onAvatarSelected($event)"
-                    style="display: none"
-                  />
-                  <span class="field-hint">Or paste an image URL above</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION: CONTACT & LOCATION -->
-        <div class="edit-form-section">
-          <div class="edit-section-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            <span>Contact &amp; Location</span>
-          </div>
-          <div class="edit-section-body">
-            <div class="form-row-two-cols">
-              <div class="form-group">
-                <label class="form-label">EMAIL ADDRESS</label>
-                <input type="email" [(ngModel)]="editForm.email" name="email" required class="form-input" placeholder="e.g. email@test.com" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">PHONE NUMBER</label>
-                <input type="tel" [(ngModel)]="editForm.phoneNumber" name="phoneNumber" class="form-input" placeholder="e.g. +20 100 123 4567" />
-              </div>
-            </div>
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label">LOCATION</label>
-              <input type="text" [(ngModel)]="editForm.location" name="location" class="form-input" placeholder="e.g. Dorms, Library, Faculty Building" />
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION: TAGS -->
-        <div class="edit-form-section">
-          <div class="edit-section-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            <span>Tags</span>
-          </div>
-          <div class="edit-section-body">
-            <div class="tags-chips-row">
-              <span class="tag-chip" *ngFor="let tag of editTags; let i = index">
-                {{ tag }}
-                <button type="button" class="tag-chip-remove" (click)="removeTag(i)" aria-label="Remove tag">&times;</button>
-              </span>
-              <span *ngIf="editTags.length === 0" class="tags-empty-hint">No tags yet. Add one below.</span>
-            </div>
-            <div class="tag-input-row">
-              <input
-                type="text"
-                #tagInput
-                [value]="tagInputValue"
-                (input)="tagInputValue = $any($event.target).value"
-                (keydown.enter)="addTag($event)"
-                (keydown.comma)="addTag($event)"
-                class="form-input tag-input-short"
-                placeholder="Type a tag and press Enter"
-              />
-              <button type="button" class="brutalist-btn btn-tag-add" (click)="addTagFromInput(tagInput)">+ Add</button>
-            </div>
-            <span class="field-hint">Press Enter or comma to add. Click &times; to remove.</span>
-          </div>
-        </div>
-
-        <!-- FORM ACTIONS -->
-        <div class="brutalist-form-actions">
-          <button type="button" class="brutalist-btn btn-cancel" (click)="closeEditModal()">Cancel</button>
-          <button type="submit" class="brutalist-btn btn-submit" [disabled]="savingProfile">
-            <span *ngIf="!savingProfile">Save Changes</span>
-            <span *ngIf="savingProfile" class="btn-saving-spinner"></span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<app-edit-profile-modal
+  [isOpen]="showEditModal"
+  [user]="user"
+  (close)="closeEditModal()"
+  (save)="onProfileSaved($event)"
+/>
 
 <!-- LEAVE REVIEW MODAL -->
 <div class="report-overlay" *ngIf="showReviewModal" (click)="closeReviewModal()">

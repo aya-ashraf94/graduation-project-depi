@@ -1,0 +1,54 @@
+<!-- =========================================================================
+     PAGINATION COMPONENT TEMPLATE
+     ========================================================================= -->
+
+<!-- ===== 1. ICONS VARIANT (USER-FACING PAGES) ===== -->
+<ng-container *ngIf="variant() === 'icons'">
+  <div class="pagination" *ngIf="totalPages() > 1">
+    <button class="pag-btn" type="button" [disabled]="currentPage() === 1 || isLoading()" (click)="onPrevPage()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+    <div class="pag-numbers">
+      <button
+        *ngFor="let p of pagesArray()"
+        class="num-btn"
+        type="button"
+        [class.active]="currentPage() === p"
+        (click)="onPageClick(p)"
+      >
+        {{ p }}
+      </button>
+    </div>
+    <button class="pag-btn" type="button" [disabled]="currentPage() === totalPages() || isLoading()" (click)="onNextPage()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+  </div>
+</ng-container>
+
+<!-- ===== 2. TEXT VARIANT (ADMIN PAGES) ===== -->
+<ng-container *ngIf="variant() === 'text'">
+  <div class="brutal-pagination" *ngIf="totalPages() > 1">
+    <button 
+      [disabled]="currentPage() === 1 || isLoading()" 
+      (click)="onPrevPage()"
+      class="pag-btn prev-btn"
+    >
+      ← Previous
+    </button>
+    <span class="pag-info">
+      Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong>
+      <ng-container *ngIf="totalItems() > 0"> ({{ totalItems() }} total {{ label() }})</ng-container>
+    </span>
+    <button 
+      [disabled]="currentPage() === totalPages() || isLoading()" 
+      (click)="onNextPage()"
+      class="pag-btn next-btn"
+    >
+      Next →
+    </button>
+  </div>
+</ng-container>

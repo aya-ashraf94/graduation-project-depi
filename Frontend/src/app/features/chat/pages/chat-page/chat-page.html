@@ -17,14 +17,11 @@
       @for (conv of filteredConversations(); track conv.id) {
         <div class="conv-item" [class.active]="activeConversation?.id === conv.id" (click)="selectConversation(conv)">
           <div class="conv-avatar">
-            @if (getOtherParticipant(conv)?.avatar) {
-              <img [src]="getOtherParticipant(conv)!.avatar" [alt]="getOtherParticipant(conv)!.firstName" />
-            } @else {
-              <span>{{ getOtherParticipant(conv)?.firstName?.[0] || '?' }}</span>
-            }
-            @if (isUserOnline(getOtherParticipant(conv)?.id)) {
-              <div class="online-dot"></div>
-            }
+            <app-user-avatar
+              [user]="getOtherParticipant(conv)"
+              [showOnlineDot]="true"
+              [isOnline]="isUserOnline(getOtherParticipant(conv)?.id)"
+            ></app-user-avatar>
           </div>
           <div class="conv-info">
             <div class="conv-top-row">
@@ -55,11 +52,7 @@
       <div class="thread-header">
         <div class="thread-user">
           <div class="thread-avatar">
-            @if (getOtherParticipant(activeConversation)?.avatar) {
-              <img [src]="getOtherParticipant(activeConversation)!.avatar" [alt]="getOtherParticipant(activeConversation)!.firstName" />
-            } @else {
-              <span>{{ getOtherParticipant(activeConversation)?.firstName?.[0] || '?' }}</span>
-            }
+            <app-user-avatar [user]="getOtherParticipant(activeConversation)"></app-user-avatar>
           </div>
           <div class="thread-user-meta">
             <div class="thread-name">{{ getOtherParticipant(activeConversation)?.firstName }} {{ getOtherParticipant(activeConversation)?.lastName }}</div>

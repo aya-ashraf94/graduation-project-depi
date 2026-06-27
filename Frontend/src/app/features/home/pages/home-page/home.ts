@@ -5,16 +5,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth';
 import { ProductService } from '../../../../core/services/product.service';
+import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { ProductSummary } from '../../../../core/models/product.model';
-import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
-import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
-import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
+import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe, ImageFallbackDirective, TimeAgoPipe],
+  imports: [CommonModule, RouterLink, FormsModule, ProductCardComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -213,26 +212,6 @@ export class Home implements OnInit, AfterViewInit {
 
   toSafeHtml(svg: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(svg);
-  }
-
-  getConditionLabel(condition: string): string {
-    switch (condition) {
-      case 'new_with_tags': return 'New';
-      case 'excellent': return 'New';
-      case 'good': return 'Used';
-      case 'fair': case 'distressed': return 'Used';
-      default: return 'Used';
-    }
-  }
-
-  getConditionClass(condition: string): string {
-    switch (condition) {
-      case 'new_with_tags': return 'cond-new';
-      case 'excellent': return 'cond-new';
-      case 'good': return 'cond-used';
-      case 'fair': case 'distressed': return 'cond-used';
-      default: return 'cond-used';
-    }
   }
 
   subscribeNewsletter() {

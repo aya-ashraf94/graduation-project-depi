@@ -154,34 +154,11 @@
       </button>
     </div>
     <div class="products-grid">
-      <div class="product-card" style="cursor: pointer;" *ngFor="let product of featuredProducts" [routerLink]="['/products', product.id]">
-        <div class="product-img">
-          <img [src]="product.thumbnail" [alt]="product.title" appImageFallback class="product-real-img" />
-          <div class="home-cond-badge" [class]="getConditionClass(product.condition)">
-            {{ getConditionLabel(product.condition) }}
-          </div>
-        </div>
-        <div class="product-body">
-          <div class="home-brand" *ngIf="product.brand">{{ product.brand }}</div>
-          <h4 class="product-name">{{ product.title }}</h4>
-          <div class="home-tags-row" *ngIf="product.size || product.categoryName">
-            <span class="home-tag" *ngIf="product.size">{{ product.size }}</span>
-            <span class="home-tag" *ngIf="product.categoryName">{{ product.categoryName }}</span>
-          </div>
-          <div class="home-details-row">
-            <span class="home-loc">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="display: inline-block; vertical-align: middle; margin-right: 2px; margin-top: -2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              {{ product.location || 'Local' }}
-            </span>
-            <span class="home-dot">•</span>
-            <span class="home-date">{{ product.createdAt | timeAgo }}</span>
-          </div>
-          <div class="home-price-row">
-            <span class="home-price-tag">{{ product.price | currencyFormat }}</span>
-            <span class="home-view-link">View</span>
-          </div>
-        </div>
-      </div>
+      <app-product-card
+        *ngFor="let product of featuredProducts"
+        [product]="product"
+        variant="home"
+      ></app-product-card>
     </div>
   </div>
 </section>

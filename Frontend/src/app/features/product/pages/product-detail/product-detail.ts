@@ -1,26 +1,28 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
-import { OrderService } from '../../../../core/services/order.service';
-import { PaymentMethod } from '../../../../core/models/order.model';
 import { Product, ProductSummary, CONDITION_LABELS, CATEGORY_LABELS } from '../../../../core/models/product.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
-import { SettingsService } from '../../../../core/services/settings.service';
 import { OfferService } from '../../../../core/services/offer.service';
 import { ReportModal } from '../../../../shared/components/report-modal/report-modal';
+import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
+import { AuthRequiredModalComponent } from '../../../../shared/components/auth-required-modal/auth-required-modal';
+import { CountdownTimerService } from '../../../../core/services/countdown-timer.service';
+import { CheckoutModalComponent } from '../../components/checkout-modal/checkout-modal';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective, ReportModal],
+  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, CurrencyFormatPipe, ImageFallbackDirective, ReportModal, ProductCardComponent, AuthRequiredModalComponent, CheckoutModalComponent],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDetail implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -29,12 +31,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private authService = inject(AuthService);
   wishlistService = inject(WishlistService);
-  private orderService = inject(OrderService);
   private offerService = inject(OfferService);
   private cdr = inject(ChangeDetectorRef);
-  private settingsService = inject(SettingsService);
-
-  discountPercent = 7;
+  private timerService = inject(CountdownTimerService);
 
   product: Product | undefined;
   relatedProducts: ProductSummary[] = [];
@@ -93,39 +92,72 @@ export class ProductDetail implements OnInit, OnDestroy {
     return this.product?.conditionScore ? Math.min(100, this.product.conditionScore * 10 - 2) : 92;
   }
 
+  /** Price the buyer actually pays (sale price or negotiated price) */
   get effectivePrice(): number {
     const negPrice = this.negotiatedPrice();
     if (negPrice !== null) {
       return negPrice;
     }
-    return this.product?.price ? Math.round(this.product.price * (1 - this.discountPercent / 100)) : 0;
+    if (this.isOnSale) return this.salePrice;
+    return this.product?.price ?? 0;
   }
 
-  get priceSavingsPercent(): number {
+  /** Get category sale data from the resolved categoryId object */
+  private get _categorySale(): any {
+    const cat = this.product?.categoryId;
+    if (!cat || typeof cat === 'string' || Array.isArray(cat)) return null;
+    return cat;
+  }
+
+  /** Category discount percent (e.g. 20 = 20% off) */
+  get discountPercent(): number {
+    const v = this._categorySale?.discountPercent;
+    return v ? Number(v) : 0;
+  }
+
+  /** Discounted sale price = original price minus discount */
+  get salePrice(): number {
+    const pct = this.discountPercent;
+    if (!pct || !this.product?.price) return this.product?.price ?? 0;
+    return Math.round(this.product.price * (1 - pct / 100));
+  }
+
+  /** Original price (the "was" price shown crossed out) */
+  get compareAtPrice(): number | undefined {
+    if (!this.isOnSale || !this.product?.price) return undefined;
+    return this.product.price;
+  }
+
+  /** Category sale end date */
+  get saleEnd(): Date | undefined {
+    const v = this._categorySale?.saleEnd;
+    return v ? new Date(v) : undefined;
+  }
+
+  /** Whether the category sale is currently active */
+  get isOnSale(): boolean {
+    const cat = this._categorySale;
+    if (!cat?.discountPercent) return false;
+    const pct = Number(cat.discountPercent);
+    if (pct <= 0) return false;
+    const now = new Date();
+    if (cat.saleStart && new Date(cat.saleStart) > now) return false;
+    if (cat.saleEnd && new Date(cat.saleEnd) < now) return false;
+    return true;
+  }
+
+  /** Savings percentage (same as category discount) */
+  get savingsPercent(): number {
     return this.discountPercent;
   }
 
-  get priceSavingsValue(): number {
-    return this.product?.price ? Math.round(this.product.price * (this.discountPercent / 100)) : 0;
+  /** Savings value */
+  get savingsValue(): number {
+    if (!this.isOnSale || !this.product) return 0;
+    return Math.round(this.product.price * this.discountPercent / 100);
   }
 
   showBuyModal = false;
-  paymentMethod: PaymentMethod = 'cash_on_delivery';
-  shippingCity = '';
-  shippingArea = '';
-  shippingStreet = '';
-  shippingBuilding = '';
-  orderNotes = '';
-  buyLoading = false;
-  buySuccess = signal<string | null>(null);
-  buyError = signal<string | null>(null);
-
-  // Coupon State
-  couponCode = '';
-  appliedCoupon = false;
-  couponDiscount = 0;
-  couponValidationMessage = '';
-  isValidatingCoupon = false;
 
   openLightbox(index: number) {
     this.lightboxIndex = index;
@@ -192,16 +224,6 @@ export class ProductDetail implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.settingsService.getDiscount().subscribe({
-      next: (res) => {
-        this.discountPercent = res.discount;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Failed to load discount setting:', err);
-      }
-    });
-
     this.route.paramMap.subscribe(params => {
       const id = params.get('id') ?? '';
       this.isLoading = true;
@@ -322,10 +344,6 @@ export class ProductDetail implements OnInit, OnDestroy {
     }
   }
 
-  getStars(rating: number): string {
-    return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
-  }
-
   executeAuthorizedAction(action: () => void): void {
     if (this.authService.currentUser()) {
       action();
@@ -368,9 +386,11 @@ export class ProductDetail implements OnInit, OnDestroy {
     });
   }
 
-  toggleWishlistCard(productId: string, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
+  toggleWishlistCard(productId: string, event?: any): void {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.executeAuthorizedAction(() => {
       this.wishlistService.toggle(productId);
     });
@@ -389,22 +409,6 @@ export class ProductDetail implements OnInit, OnDestroy {
   openBuy(): void {
     this.executeAuthorizedAction(() => {
       this.showBuyModal = true;
-      this.paymentMethod = 'cash_on_delivery';
-      this.shippingCity = '';
-      this.shippingArea = '';
-      this.shippingStreet = '';
-      this.shippingBuilding = '';
-      this.orderNotes = '';
-      this.buyLoading = false;
-      this.buySuccess.set(null);
-      this.buyError.set(null);
-      
-      // Reset coupon state
-      this.couponCode = '';
-      this.appliedCoupon = false;
-      this.couponDiscount = 0;
-      this.couponValidationMessage = '';
-      this.isValidatingCoupon = false;
     });
   }
 
@@ -418,22 +422,11 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   startCheckoutCountdown(expiresAtStr: string | Date) {
     if (this.checkoutTimerId) clearInterval(this.checkoutTimerId);
-    const expiresAt = new Date(expiresAtStr).getTime();
     
     const update = () => {
-      const now = Date.now();
-      const diff = expiresAt - now;
-      if (diff > 0) {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        const hh = String(hours).padStart(2, '0');
-        const mm = String(minutes).padStart(2, '0');
-        const ss = String(seconds).padStart(2, '0');
-        this.checkoutCountdown.set(`${hh}:${mm}:${ss}`);
-      } else {
-        this.checkoutCountdown.set('Expired');
+      const timeStr = this.timerService.formatTimeRemaining(expiresAtStr);
+      this.checkoutCountdown.set(timeStr);
+      if (timeStr === 'Expired') {
         clearInterval(this.checkoutTimerId);
         this.checkoutTimerId = null;
       }
@@ -449,83 +442,15 @@ export class ProductDetail implements OnInit, OnDestroy {
     }
   }
 
-  applyCoupon(): void {
-    if (!this.couponCode.trim() || !this.product) return;
-    this.isValidatingCoupon = true;
-    this.couponValidationMessage = '';
-    
-    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id, this.effectivePrice).subscribe({
-      next: (res) => {
-        this.isValidatingCoupon = false;
-        if (res.valid) {
-          this.appliedCoupon = true;
-          this.couponDiscount = res.discountAmount;
-          this.couponValidationMessage = `Coupon applied! Saved $${res.discountAmount}`;
-        } else {
-          this.couponValidationMessage = 'Invalid coupon code';
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isValidatingCoupon = false;
-        this.couponValidationMessage = err?.error?.message || 'Invalid coupon code';
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  removeCoupon(): void {
-    this.couponCode = '';
-    this.appliedCoupon = false;
-    this.couponDiscount = 0;
-    this.couponValidationMessage = '';
-  }
-
-  submitOrder(): void {
-    if (!this.product) return;
-    
-    if (!this.shippingCity || !this.shippingStreet) {
-      this.buyError.set('Please provide both City and Street in your shipping address');
-      return;
+  onOrderPlaced(): void {
+    if (this.product) {
+      this.product.status = 'sold';
     }
-
-    const addrParts = [this.shippingCity, this.shippingArea, this.shippingStreet, this.shippingBuilding].filter(Boolean);
-    
-    this.buyLoading = true;
-    this.buyError.set(null);
-    this.buySuccess.set(null);
-    
-    const payload = {
-      productId: this.product.id,
-      paymentMethod: this.paymentMethod,
-      shippingAddress: addrParts.join(', '),
-      notes: this.orderNotes,
-      price: this.effectivePrice,
-      couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
-      offerId: this.route.snapshot.queryParams['offerId'] || undefined
-    };
-    
-    this.orderService.createOrder(payload).subscribe({
-      next: (order) => {
-        this.buyLoading = false;
-        this.buySuccess.set('Order placed successfully! Product is now marked as Sold.');
-        if (this.product) {
-          this.product.status = 'sold';
-        }
-        if (this.checkoutTimerId) {
-          clearInterval(this.checkoutTimerId);
-          this.checkoutTimerId = null;
-        }
-        this.checkoutCountdown.set('');
-        this.offerService.activeReservation.set(null);
-        setTimeout(() => {
-          this.closeBuy();
-        }, 2500);
-      },
-      error: (err) => {
-        this.buyLoading = false;
-        this.buyError.set(err?.error?.message || 'Failed to place order. Please try again.');
-      }
-    });
+    if (this.checkoutTimerId) {
+      clearInterval(this.checkoutTimerId);
+      this.checkoutTimerId = null;
+    }
+    this.checkoutCountdown.set('');
+    this.offerService.activeReservation.set(null);
   }
 }

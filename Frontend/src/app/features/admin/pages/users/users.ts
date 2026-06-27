@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, computed, effect } from '@angular/core';
+import { Component, signal, inject, OnInit, computed, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -9,12 +9,19 @@ import { AuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 
+import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
+import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
+import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
+
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, UserAvatarComponent, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent],
   templateUrl: './users.html',
-  styleUrl: './users.css'
+  styleUrl: './users.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Users implements OnInit {
   private adminService = inject(AdminService);

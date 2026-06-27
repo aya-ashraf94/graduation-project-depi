@@ -1,16 +1,18 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminService, AdminReport } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AdminErrorPanelComponent],
   templateUrl: './reports.html',
-  styleUrl: './reports.css'
+  styleUrl: './reports.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Reports implements OnInit {
   private adminService = inject(AdminService);

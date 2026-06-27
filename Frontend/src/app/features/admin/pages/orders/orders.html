@@ -17,11 +17,10 @@
   </div>
 
   @if (errorMessage()) {
-    <div class="error-panel">
-      <h3>⚠️ Error</h3>
-      <p>{{ errorMessage() }}</p>
-      <button (click)="loadOrders()" class="btn btn-primary">Retry</button>
-    </div>
+    <app-admin-error-panel
+      [message]="errorMessage()"
+      (retry)="loadOrders()">
+    </app-admin-error-panel>
   } @else {
     <div class="admin-table-card">
       <div class="table-container">
@@ -39,24 +38,18 @@
           </thead>
           <tbody>
             @if (isLoading()) {
-              @for (item of [1, 2, 3, 4, 5]; track item) {
-                <tr class="table-row-skeleton">
-                  <td><div class="skeleton-line text"></div></td>
-                  <td><div class="skeleton-line text"></div></td>
-                  <td><div class="skeleton-line text"></div></td>
-                  <td><div class="skeleton-line text"></div></td>
-                  <td><div class="skeleton-badge"></div></td>
-                  <td><div class="skeleton-line text"></div></td>
-                  <td><div class="skeleton-line text"></div></td>
-                </tr>
-              }
+              <app-admin-table-skeleton
+                [rows]="5"
+                [columns]="['text', 'text', 'text', 'text', 'badge', 'text', 'text']">
+              </app-admin-table-skeleton>
             } @else if (orders().length === 0) {
-              <tr>
-                <td colspan="7" class="empty-table-cell">
-                  <span>📭</span>
-                  <p>No orders found.</p>
-                </td>
-              </tr>
+              <app-empty-state
+                variant="table-row"
+                [colspan]="7"
+                icon="📭"
+                title="No orders found"
+                description="No orders found matching the filter.">
+              </app-empty-state>
             } @else {
               @for (order of orders(); track order.id) {
                 <tr>
@@ -108,12 +101,15 @@
       </div>
     </div>
 
-    @if (totalPages() > 1) {
-      <div class="brutal-pagination">
-        <button [disabled]="currentPage() === 1 || isLoading()" (click)="prevPage()" class="pag-btn prev-btn">← Previous</button>
-        <span class="pag-info">Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalOrders() }} total orders)</span>
-        <button [disabled]="currentPage() === totalPages() || isLoading()" (click)="nextPage()" class="pag-btn next-btn">Next →</button>
-      </div>
-    }
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalItems]="totalOrders()"
+      label="orders"
+      variant="text"
+      [isLoading]="isLoading()"
+      (prevPage)="prevPage()"
+      (nextPage)="nextPage()"
+    ></app-pagination>
   }
 </div>

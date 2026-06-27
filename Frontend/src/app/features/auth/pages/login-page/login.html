@@ -1,0 +1,177 @@
+<app-auth-layout title="Welcome Back" subtitle="Hey, welcome back to your special place">
+  @if (errorMessage()) {
+    <div class="auth-error-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+  
+  <form class="auth-form" (ngSubmit)="signIn()">
+    <div class="auth-field">
+      <input
+        id="login-email"
+        type="email"
+        class="auth-input"
+        placeholder="Email address"
+        [(ngModel)]="form.email"
+        name="email"
+        required
+        [disabled]="isLoading()"
+      />
+    </div>
+    
+    <div class="auth-field">
+      <input
+        id="login-password"
+        type="password"
+        class="auth-input"
+        placeholder="Password"
+        [(ngModel)]="form.password"
+        name="password"
+        required
+        [disabled]="isLoading()"
+      />
+    </div>
+
+    <div class="auth-options">
+      <label class="remember-me">
+        <input type="checkbox" class="auth-checkbox" [disabled]="isLoading()">
+        <span>Remember me</span>
+      </label>
+      <a class="forgot-link" routerLink="/auth/forgot-password">Forgot Password?</a>
+    </div>
+
+    <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">
+      {{ isLoading() ? 'LOGGING IN...' : 'LOGIN' }}
+    </button>
+  </form>
+
+  <div class="auth-footer">
+    <p class="auth-link">Don't have an account? <a routerLink="/auth/register">REGISTER</a></p>
+  </div>
+</app-auth-layout>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="report-overlay" *ngIf="showForgotModal()" (click)="closeForgotModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem;">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
+    <button class="modal-standard-close" (click)="closeForgotModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
+
+    <h3 style="font-family: var(--font-primary); font-weight: 900; font-size: 1.5rem; text-transform: uppercase; margin-bottom: 0.5rem;">Reset Password</h3>
+    <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem;">Enter your email address and we'll send you a password reset token.</p>
+
+    @if (forgotError()) {
+      <div style="background: var(--danger); color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
+        {{ forgotError() }}
+      </div>
+    }
+
+    @if (forgotMessage()) {
+      <div style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+        {{ forgotMessage() }}
+      </div>
+      
+      <div class="mock-email-inbox" style="border: 2px dashed var(--black); background: var(--surface-2); padding: 1.25rem; border-radius: var(--radius-sm); text-align: left; box-shadow: 2px 2px 0 var(--black); margin-top: 1rem;">
+        <div style="font-weight: 800; font-family: var(--font-primary); font-size: 0.9rem; border-bottom: 2px solid var(--black); padding-bottom: 0.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+          <span>📬 DEV SANDBOX EMAIL</span>
+          <span style="background: var(--yellow); color: var(--black); border: 1.5px solid var(--black); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem;">ACTION REQUIRED</span>
+        </div>
+        <p style="font-size: 0.85rem; margin-bottom: 1rem; color: var(--black); font-family: var(--font-secondary);">
+          The secure reset link has been printed to the **Node.js server console terminal** to mimic email receipt. Please copy the token from the terminal log and paste it here:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <input
+            type="password"
+            placeholder="Paste Reset Token Here"
+            [(ngModel)]="manualToken"
+            name="manualToken"
+            required
+            style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none; background: var(--white); color: var(--black);"
+          />
+          <button *ngIf="manualToken && manualToken.trim()" type="button" (click)="verifyAndOpenReset()" style="width: 100%; text-align: center; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; background: var(--yellow); border: 2px solid var(--black); padding: 8px; border-radius: var(--radius-xs); box-shadow: 2px 2px 0 var(--black); cursor: pointer; font-family: var(--font-primary); margin-top: 0.5rem; color: var(--black);">
+            🔑 OPEN RESET PASSWORD FORM
+          </button>
+        </div>
+      </div>
+    } @else {
+      <form (ngSubmit)="sendForgot()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+        <input
+          type="email"
+          placeholder="Email address"
+          [(ngModel)]="forgotEmail"
+          name="forgotEmail"
+          required
+          [disabled]="forgotLoading()"
+          style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none;"
+        />
+        <button type="submit" [disabled]="forgotLoading()" style="padding: 0.75rem 24px; background: var(--yellow); border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 700; box-shadow: 3px 3px 0 var(--black); cursor: pointer; color: var(--black); align-self: flex-end;">
+          {{ forgotLoading() ? 'SENDING...' : 'SEND TOKEN' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="report-overlay" *ngIf="showResetModal()" (click)="closeResetModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 1.25rem;">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
+    <button class="modal-standard-close" (click)="closeResetModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
+
+    <h3 style="font-family: var(--font-primary); font-weight: 900; font-size: 1.5rem; text-transform: uppercase; margin-bottom: 0.5rem;">Reset Your Password</h3>
+    <p style="font-family: var(--font-secondary); font-size: 0.9rem; color: var(--gray-3); margin-bottom: 1.5rem;">Enter a strong new password below to update your account access.</p>
+
+    @if (resetError()) {
+      <div style="background: var(--danger); color: var(--black); border: 2px solid var(--black); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1rem;">
+        {{ resetError() }}
+      </div>
+    }
+
+    @if (resetSuccess()) {
+      <div style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-bottom: 1.5rem;">
+        {{ resetSuccess() }}
+      </div>
+    } @else {
+      <form (ngSubmit)="sendReset()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+        <input
+          type="hidden"
+          [(ngModel)]="resetTokenInput"
+          name="resetTokenInput"
+          required
+        />
+        
+        <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+          <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary); color: var(--black);">NEW PASSWORD</label>
+          <input
+            type="password"
+            placeholder="Minimum 6 characters"
+            [(ngModel)]="resetPasswordInput"
+            name="resetPasswordInput"
+            required
+            [disabled]="resetLoading()"
+            style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none;"
+          />
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+          <label style="font-weight: 700; font-size: 0.8rem; font-family: var(--font-secondary); color: var(--black);">CONFIRM PASSWORD</label>
+          <input
+            type="password"
+            placeholder="Confirm password"
+            [(ngModel)]="resetPasswordConfirm"
+            name="resetPasswordConfirm"
+            required
+            [disabled]="resetLoading()"
+            style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none;"
+          />
+        </div>
+
+        <button type="submit" [disabled]="resetLoading()" style="padding: 0.75rem 24px; background: var(--yellow); border: 2px solid var(--black); border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.95rem; font-weight: 700; box-shadow: 3px 3px 0 var(--black); cursor: pointer; color: var(--black); align-self: flex-end; margin-top: 0.5rem;">
+          {{ resetLoading() ? 'RESETTING...' : 'RESET PASSWORD' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

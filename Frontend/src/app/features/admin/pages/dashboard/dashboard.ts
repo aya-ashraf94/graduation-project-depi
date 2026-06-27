@@ -1,36 +1,120 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 import { AdminService, AdminStats, AdminReport } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
-import { SettingsService } from '../../../../core/services/settings.service';
+import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, AdminErrorPanelComponent],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css'
+  styleUrl: './dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Dashboard implements OnInit {
   private adminService = inject(AdminService);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
-  private settingsService = inject(SettingsService);
+  private http = inject(HttpClient);
 
   stats = signal<AdminStats | null>(null);
   recentReports = signal<AdminReport[]>([]);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
-  
-  discountSetting = 7;
-  savingSettings = signal(false);
+
+  // Category sale management
+  categories = signal<any[]>([]);
+  selectedCatId = signal<string>('');
+  salePercent = signal<number>(0);
+  saleFormStart = signal<string>('');
+  saleFormEnd = signal<string>('');
+  savingSale = signal(false);
+  loadingCats = signal(false);
+
+  get selectedCategory(): any {
+    return this.categories().find(c => c.id === this.selectedCatId()) || null;
+  }
+
+  get isCategoryOnSale(): boolean {
+    const cat = this.selectedCategory;
+    if (!cat?.discountPercent) return false;
+    const now = new Date();
+    if (cat.saleStart && new Date(cat.saleStart) > now) return false;
+    if (cat.saleEnd && new Date(cat.saleEnd) < now) return false;
+    return true;
+  }
+
+  onCategorySelect(): void {
+    const cat = this.selectedCategory;
+    this.salePercent.set(cat?.discountPercent ? Number(cat.discountPercent) : 0);
+    this.saleFormStart.set(cat?.saleStart ? this.formatDateForInput(cat.saleStart) : '');
+    this.saleFormEnd.set(cat?.saleEnd ? this.formatDateForInput(cat.saleEnd) : '');
+  }
 
   ngOnInit(): void {
     this.loadData();
+  }
+
+  loadCategories(): void {
+    this.http.get<any[]>(`${environment.apiUrl}/categories`).subscribe({
+      next: (cats) => this.categories.set(cats),
+      error: () => this.toastService.error('Failed to load categories.')
+    });
+  }
+
+  saveCategorySale(): void {
+    const catId = this.selectedCatId();
+    if (!catId) return;
+    this.savingSale.set(true);
+    const pct = this.salePercent() > 0 ? this.salePercent() : null;
+    this.http.put(`${environment.apiUrl}/categories/${catId}/sale`, {
+      discountPercent: pct,
+      saleStart: this.saleFormStart() || null,
+      saleEnd: this.saleFormEnd() || null,
+    }).subscribe({
+      next: (updated: any) => {
+        this.categories.update(list => list.map(c => c.id === catId ? { ...c, ...updated } : c));
+        this.toastService.success('Category sale updated.');
+        this.savingSale.set(false);
+      },
+      error: () => {
+        this.toastService.error('Failed to update category sale.');
+        this.savingSale.set(false);
+      }
+    });
+  }
+
+  clearCategorySale(): void {
+    const catId = this.selectedCatId();
+    if (!catId) return;
+    this.savingSale.set(true);
+    this.http.put(`${environment.apiUrl}/categories/${catId}/sale/clear`, {}).subscribe({
+      next: (updated: any) => {
+        this.categories.update(list => list.map(c => c.id === catId ? { ...c, ...updated } : c));
+        this.toastService.success('Category sale cleared.');
+        this.salePercent.set(0);
+        this.saleFormStart.set('');
+        this.saleFormEnd.set('');
+        this.savingSale.set(false);
+      },
+      error: () => {
+        this.toastService.error('Failed to clear category sale.');
+        this.savingSale.set(false);
+      }
+    });
+  }
+
+  formatDateForInput(date: Date | string | null | undefined): string {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toISOString().slice(0, 16);
   }
 
   loadData(): void {
@@ -39,14 +123,13 @@ export class Dashboard implements OnInit {
 
     forkJoin({
       stats: this.adminService.getStats(),
-      reports: this.adminService.getReports(),
-      settings: this.settingsService.getDiscount()
+      reports: this.adminService.getReports()
     }).subscribe({
-      next: ({ stats, reports, settings }) => {
+      next: ({ stats, reports }) => {
         this.stats.set(stats);
         this.recentReports.set(reports.slice(0, 5));
-        this.discountSetting = settings.discount;
         this.isLoading.set(false);
+        this.loadCategories();
       },
       error: (err) => {
         console.error('Error loading dashboard data:', err);
@@ -77,22 +160,4 @@ export class Dashboard implements OnInit {
     });
   }
 
-  saveDiscountSetting(): void {
-    if (this.discountSetting === undefined || this.discountSetting === null || this.discountSetting < 0 || this.discountSetting > 100) {
-      this.toastService.error('Discount percentage must be between 0 and 100.');
-      return;
-    }
-    this.savingSettings.set(true);
-    this.settingsService.updateDiscount(this.discountSetting).subscribe({
-      next: () => {
-        this.savingSettings.set(false);
-        this.toastService.success('Discount percentage updated successfully.');
-      },
-      error: (err) => {
-        console.error('Failed to update discount setting:', err);
-        this.toastService.error(err?.error?.message || 'Failed to update discount percentage.');
-        this.savingSettings.set(false);
-      }
-    });
-  }
 }

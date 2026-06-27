@@ -61,31 +61,30 @@
 
     <!-- RESULTS GRID -->
     <div class="results-grid" *ngIf="results.length > 0; else noResults">
-      <a class="result-card" *ngFor="let item of results" [routerLink]="['/products', item.id]">
-        <div class="result-img-wrap">
-          <img [src]="item.thumbnail" [alt]="item.title" appImageFallback />
-          <span *ngIf="item.badge" class="result-badge">{{ item.badge }}</span>
-        </div>
-        <div class="result-body">
-          <div class="result-brand">{{ item.brand }}</div>
-          <h3 class="result-title">{{ item.title }}</h3>
-          <div class="result-meta">
-            <span class="result-price">{{ item.price | currencyFormat }}</span>
-            <span class="result-condition">{{ conditionLabels[item.condition] }}</span>
-          </div>
-        </div>
-      </a>
+      <app-product-card
+        *ngFor="let item of results"
+        [product]="item"
+        variant="list"
+        (wishlistToggle)="toggleWishlist(item.id, $event)"
+      ></app-product-card>
     </div>
 
     <!-- EMPTY STATE -->
     <ng-template #noResults>
-      <div class="empty-state">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <h3>No items found</h3>
-        <p>Try adjusting your search or filters to find what you're looking for.</p>
-        <button class="btn btn-primary" (click)="clearFilters()">CLEAR ALL FILTERS</button>
-      </div>
+      <app-empty-state
+        icon="🔍"
+        title="No items found"
+        description="Try adjusting your search or filters to find what you're looking for."
+        ctaLabel="CLEAR ALL FILTERS"
+        (ctaClick)="clearFilters()">
+      </app-empty-state>
     </ng-template>
 
   </div>
+
+  <!-- AUTH REQUIRED MODAL -->
+  <app-auth-required-modal
+    [isOpen]="showAuthModal"
+    (closed)="closeAuthModal()"
+  ></app-auth-required-modal>
 </div>

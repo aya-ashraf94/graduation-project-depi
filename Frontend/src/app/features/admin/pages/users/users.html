@@ -16,11 +16,10 @@
   </div>
 
   @if (errorMessage()) {
-    <div class="error-panel">
-      <h3>⚠️ Error</h3>
-      <p>{{ errorMessage() }}</p>
-      <button (click)="loadUsers()" class="btn btn-primary">Retry</button>
-    </div>
+    <app-admin-error-panel
+      [message]="errorMessage()"
+      (retry)="loadUsers()">
+    </app-admin-error-panel>
   } @else {
     <div class="admin-table-card">
       <div class="table-container">
@@ -37,31 +36,18 @@
           </thead>
           <tbody>
             @if (isLoading()) {
-              @for (item of [1, 2, 3, 4, 5]; track item) {
-                <tr class="table-row-skeleton">
-                  <td>
-                    <div class="user-profile-cell">
-                      <div class="skeleton-avatar"></div>
-                      <div class="skeleton-text-block">
-                        <div class="skeleton-line name"></div>
-                        <div class="skeleton-line sub"></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td><div class="skeleton-line text"></div></td>
-                  <td><div class="skeleton-badge"></div></td>
-                  <td><div class="skeleton-badge"></div></td>
-                  <td><div class="skeleton-badge"></div></td>
-                  <td><div class="skeleton-actions"></div></td>
-                </tr>
-              }
+              <app-admin-table-skeleton
+                [rows]="5"
+                [columns]="['avatar', 'text', 'badge', 'badge', 'badge', 'actions']">
+              </app-admin-table-skeleton>
             } @else if (users().length === 0) {
-              <tr>
-                <td colspan="6" class="empty-table-cell">
-                  <span>🤷</span>
-                  <p>No user profiles match your query.</p>
-                </td>
-              </tr>
+              <app-empty-state
+                variant="table-row"
+                [colspan]="6"
+                icon="🤷"
+                title="No user profiles found"
+                description="No user profiles match your query.">
+              </app-empty-state>
             } @else {
               @for (user of users(); track user.id) {
                 <tr [class.user-suspended-row]="user.isSuspended">
@@ -69,12 +55,7 @@
                     <div class="user-profile-cell">
                       <div class="avatar-container">
                         <div class="avatar-frame">
-                          <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" [alt]="user.firstName">
-                          <ng-template #defaultAvatar>
-                            <div class="avatar-fallback">
-                              {{ user.firstName.substring(0, 1) | uppercase }}{{ user.lastName.substring(0, 1) | uppercase }}
-                            </div>
-                          </ng-template>
+                          <app-user-avatar [user]="user"></app-user-avatar>
                         </div>
                         <div class="user-status-dot" [class.suspended]="user.isSuspended" [class.active]="!user.isSuspended"></div>
                       </div>
@@ -164,24 +145,15 @@
     </div>
 
     <!-- Pagination -->
-    @if (totalPages() > 1) {
-      <div class="brutal-pagination">
-        <button 
-          [disabled]="currentPage() === 1 || isLoading()" 
-          (click)="prevPage()"
-          class="pag-btn prev-btn"
-        >
-          ← Previous
-        </button>
-        <span class="pag-info">Page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong> ({{ totalUsers() }} total users)</span>
-        <button 
-          [disabled]="currentPage() === totalPages() || isLoading()" 
-          (click)="nextPage()"
-          class="pag-btn next-btn"
-        >
-          Next →
-        </button>
-      </div>
-    }
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalItems]="totalUsers()"
+      label="users"
+      variant="text"
+      [isLoading]="isLoading()"
+      (prevPage)="prevPage()"
+      (nextPage)="nextPage()"
+    ></app-pagination>
   }
 </div>

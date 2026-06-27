@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth';
 import { ProductService } from '../../../../core/services/product.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { compressImage } from '../../../../shared/utils/image.utils';
 
 export type PricingMode = 'fixed' | 'trade';
 
@@ -196,7 +197,7 @@ export class CreateListing implements OnInit {
       let slotIndex = this.activeSlotIndex;
       let fileIndex = 0;
 
-      const readNextFile = () => {
+      const readNextFile = async () => {
         if (fileIndex >= files.length || slotIndex >= this.imageSlots().length) {
           input.value = '';
           this.cdr.detectChanges();
@@ -204,51 +205,27 @@ export class CreateListing implements OnInit {
         }
 
         const file = files[fileIndex];
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = new Image();
-          img.src = reader.result as string;
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const max_size = 1000;
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > max_size) {
-                height *= max_size / width;
-                width = max_size;
-              }
-            } else {
-              if (height > max_size) {
-                width *= max_size / height;
-                height = max_size;
-              }
-            }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, width, height);
-              const compressedString = canvas.toDataURL('image/jpeg', 0.7);
+        try {
+          const compressedString = await compressImage(file, 1000, 0.7);
 
-              // Find next empty slot if we're dealing with multiple files
-              while (slotIndex < this.imageSlots().length && this.imageSlots()[slotIndex] !== null && fileIndex > 0) {
-                slotIndex++;
-              }
+          // Find next empty slot if we're dealing with multiple files
+          while (slotIndex < this.imageSlots().length && this.imageSlots()[slotIndex] !== null && fileIndex > 0) {
+            slotIndex++;
+          }
 
-              if (slotIndex < this.imageSlots().length) {
-                const currentSlots = [...this.imageSlots()];
-                currentSlots[slotIndex] = compressedString;
-                this.imageSlots.set(currentSlots);
-                slotIndex++;
-                this.cdr.detectChanges();
-              }
-            }
-            fileIndex++;
-            readNextFile();
-          };
-        };
-        reader.readAsDataURL(file);
+          if (slotIndex < this.imageSlots().length) {
+            const currentSlots = [...this.imageSlots()];
+            currentSlots[slotIndex] = compressedString;
+            this.imageSlots.set(currentSlots);
+            slotIndex++;
+            this.cdr.detectChanges();
+          }
+        } catch (err) {
+          console.error('Error compressing image:', err);
+        }
+
+        fileIndex++;
+        readNextFile();
       };
 
       readNextFile();

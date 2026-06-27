@@ -1,0 +1,89 @@
+<app-auth-layout title="Create Account" subtitle="Join the community and start buying or selling today.">
+  @if (errorMessage()) {
+    <div class="auth-error-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <form class="auth-form" (ngSubmit)="register()">
+    <div class="auth-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+      <div class="auth-field">
+        <input
+          id="register-firstname"
+          type="text"
+          class="auth-input"
+          placeholder="First name"
+          [(ngModel)]="form.firstName"
+          name="firstName"
+          required
+          [disabled]="isLoading()"
+        />
+      </div>
+      <div class="auth-field">
+        <input
+          id="register-lastname"
+          type="text"
+          class="auth-input"
+          placeholder="Last name"
+          [(ngModel)]="form.lastName"
+          name="lastName"
+          required
+          [disabled]="isLoading()"
+        />
+      </div>
+    </div>
+
+    <div class="auth-field">
+      <input
+        id="register-email"
+        type="email"
+        class="auth-input"
+        placeholder="Email address"
+        [(ngModel)]="form.email"
+        name="email"
+        required
+        [disabled]="isLoading()"
+      />
+    </div>
+
+    <div class="auth-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+      <div class="auth-field">
+        <input
+          id="register-password"
+          type="password"
+          class="auth-input"
+          placeholder="Password"
+          [(ngModel)]="form.password"
+          name="password"
+          required
+          [disabled]="isLoading()"
+        />
+      </div>
+      <div class="auth-field">
+        <input
+          id="register-confirm"
+          type="password"
+          class="auth-input"
+          placeholder="Confirm password"
+          [(ngModel)]="form.confirmPassword"
+          name="confirmPassword"
+          required
+          [disabled]="isLoading()"
+        />
+      </div>
+    </div>
+
+    <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">
+      {{ isLoading() ? 'REGISTERING...' : 'REGISTER' }}
+    </button>
+  </form>
+
+  <div class="auth-footer">
+    <p class="auth-link">Already have an account? <a routerLink="/auth/login">Sign In</a></p>
+  </div>
+</app-auth-layout>
