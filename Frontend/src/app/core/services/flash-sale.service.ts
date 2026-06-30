@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FlashSale } from '../models/flash-sale.model';
 
@@ -11,10 +11,15 @@ export class FlashSaleService {
   private adminApiUrl = `${environment.apiUrl}/admin/flash-sales`;
 
   activeSales = signal<FlashSale[]>([]);
+  private _salesChanged = new Subject<void>();
+  salesChanged$ = this._salesChanged.asObservable();
 
   refreshActiveSales(): void {
     this.getActiveFlashSales().subscribe({
-      next: (sales) => this.activeSales.set(sales),
+      next: (sales) => {
+        this.activeSales.set(sales);
+        this._salesChanged.next();
+      },
       error: () => {},
     });
   }

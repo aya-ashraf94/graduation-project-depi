@@ -97,7 +97,7 @@
         </div>
 
         <!-- Right Side: Vertical Stack Action Buttons Column -->
-        <div class="profile-header-right">
+        <div class="profile-header-right" *ngIf="!isViewerBlocked">
           <!-- If Own Profile -->
           <ng-container *ngIf="isOwnProfile">
             <button *ngIf="isAdmin()" type="button" class="action-btn btn-admin-panel" (click)="goToAdminPanel()">
@@ -115,14 +115,19 @@
 
           <!-- If Other User Profile -->
           <ng-container *ngIf="!isOwnProfile">
-            <button type="button" class="action-btn btn-primary-yellow" [routerLink]="['/chat']" [queryParams]="{ recipientId: user.id }">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Message
+            <button *ngIf="isPartnerBlockedByMe" type="button" class="action-btn btn-primary-yellow" (click)="unblockUser(user.id)">
+              🚫 Unblock User
             </button>
-            <button type="button" class="action-btn btn-secondary-white" (click)="toggleFollowSeller()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              {{ isFollowing ? 'Unfollow Seller' : 'Follow Seller' }}
-            </button>
+            <ng-container *ngIf="!isPartnerBlockedByMe">
+              <button type="button" class="action-btn btn-primary-yellow" [routerLink]="['/chat']" [queryParams]="{ recipientId: user.id }">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Message
+              </button>
+              <button type="button" class="action-btn btn-secondary-white" (click)="toggleFollowSeller()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                {{ isFollowing ? 'Unfollow Seller' : 'Follow Seller' }}
+              </button>
+            </ng-container>
             <button type="button" class="action-btn btn-secondary-white" (click)="shareProfile()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Share Profile
@@ -131,7 +136,7 @@
         </div>
       </div>
       <!-- SELLER STATS STRIP -->
-      <div class="stats-strip">
+      <div class="stats-strip" *ngIf="!isViewerBlocked">
         <!-- Products -->
         <div class="stats-col">
           <div class="stats-icon-wrap icon-products">
@@ -184,6 +189,7 @@
 
       </div>
 
+      <ng-container *ngIf="!isViewerBlocked">
       <!-- TABS SECTION -->
       <div class="profile-tabs-wrap" #tabsSection>
         <div class="profile-tabs-container">
@@ -230,16 +236,27 @@
               Wishlist
             </button>
 
-            <!-- Orders Tab -->
-            <button
-              *ngIf="isOwnProfile"
-              class="tab-item"
-              [class.active]="activeTab === 'orders'"
-              (click)="selectTab('orders')"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-              Orders
-            </button>
+             <!-- Orders Tab -->
+             <button
+               *ngIf="isOwnProfile"
+               class="tab-item"
+               [class.active]="activeTab === 'orders'"
+               (click)="selectTab('orders')"
+             >
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+               Orders
+             </button>
+
+             <!-- Blocked Tab -->
+             <button
+               *ngIf="isOwnProfile"
+               class="tab-item"
+               [class.active]="activeTab === 'blocked'"
+               (click)="selectTab('blocked')"
+             >
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+               Blocked
+             </button>
           </div>
         </div>
       </div>
@@ -838,6 +855,35 @@
         </ng-template>
       </div>
 
+      <!-- TAB CONTENT: BLOCKED USERS -->
+      <div class="tab-content" *ngIf="activeTab === 'blocked' && isOwnProfile">
+        <div class="blocked-section">
+          <div class="blocked-section-header">
+            <h2 class="blocked-section-title">Blocked Users</h2>
+            <span class="blocked-section-count">({{ blockedUsers.length }})</span>
+          </div>
+
+          <div *ngIf="blockedUsers.length > 0; else noBlocked">
+            <div class="blocked-list">
+                <div *ngFor="let u of blockedUsers" class="blocked-user-row">
+                <a class="blocked-user-info" [routerLink]="['/profile', u.id]">
+                  <app-user-avatar [user]="u" class="blocked-user-avatar"></app-user-avatar>
+                  <span class="blocked-user-name">{{ u.firstName }} {{ u.lastName }}</span>
+                </a>
+                <button type="button" class="btn-unblock" (click)="unblockUser(u.id)">
+                  Unblock
+                </button>
+              </div>
+            </div>
+          </div>
+          <ng-template #noBlocked>
+            <div class="blocked-empty-state">
+              <p>You haven't blocked any users yet.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
 
 
       <!-- TRUST BADGES STRIP -->
@@ -877,6 +923,15 @@
             <h4 class="trust-title">Top Rated</h4>
             <p class="trust-desc">{{ (user.rating || 5.0) | number:'1.1-1' }} average rating</p>
           </div>
+        </div>
+      </div>
+      </ng-container>
+
+      <div class="blocked-profile-container" *ngIf="isViewerBlocked">
+        <div class="blocked-profile-card">
+          <div class="blocked-profile-icon">🚫</div>
+          <h2 class="blocked-profile-title">Account Unavailable</h2>
+          <p class="blocked-profile-desc">You can no longer view this user's listings, reviews or message them because you have been blocked.</p>
         </div>
       </div>
     </div>

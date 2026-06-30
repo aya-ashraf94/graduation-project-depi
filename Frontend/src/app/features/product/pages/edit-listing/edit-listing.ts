@@ -51,6 +51,7 @@ export class EditListing implements OnInit {
       title: ['', [Validators.required, Validators.minLength(2)]],
       description: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
+      minPrice: [null, [Validators.min(0)]],
       categoryId: ['', Validators.required],
       status: ['available', Validators.required],
       location: [''],
@@ -108,6 +109,7 @@ export class EditListing implements OnInit {
             title: product.title,
             description: product.description,
             price: product.price,
+            minPrice: product.minPrice ?? null,
             categoryId: catId,
             status: product.status,
             location: product.location || '',
@@ -204,6 +206,14 @@ export class EditListing implements OnInit {
     this.saving.set(true);
     const v = this.form.value;
 
+    if (v.minPrice !== null && v.minPrice !== undefined && v.minPrice !== '') {
+      if (Number(v.minPrice) > Number(v.price)) {
+        this.formError.set('Minimum price cannot exceed the asking price');
+        this.saving.set(false);
+        return;
+      }
+    }
+
     const dynamicAttributes: any = {};
     for (const key of Object.keys(this.dynamicFields)) {
       if (!key.endsWith('_other') && this.dynamicFields[key] !== undefined && this.dynamicFields[key] !== null && this.dynamicFields[key] !== '') {
@@ -215,6 +225,7 @@ export class EditListing implements OnInit {
       title: v.title,
       description: v.description,
       price: v.price,
+      minPrice: (v.minPrice === '' || v.minPrice === null) ? null : Number(v.minPrice),
       categoryId: v.categoryId,
       dynamicAttributes,
       status: v.status as ProductStatus,

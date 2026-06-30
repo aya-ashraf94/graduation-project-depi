@@ -58,7 +58,7 @@ export class CheckoutModalComponent {
     this.isValidatingCoupon = true;
     this.couponValidationMessage = '';
     
-    this.orderService.validateCoupon(this.couponCode.trim(), prod.id, this.effectivePrice()).subscribe({
+    this.orderService.validateCoupon(this.couponCode.trim(), prod.id).subscribe({
       next: (res) => {
         this.isValidatingCoupon = false;
         if (res.valid) {
@@ -105,7 +105,6 @@ export class CheckoutModalComponent {
       paymentMethod: this.paymentMethod,
       shippingAddress: addrParts.join(', '),
       notes: this.orderNotes,
-      price: this.effectivePrice() - (this.appliedCoupon ? this.couponDiscount : 0),
       couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
       offerId: this.route.snapshot.queryParams['offerId'] || undefined
     };

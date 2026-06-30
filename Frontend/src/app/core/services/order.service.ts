@@ -65,14 +65,14 @@ export class OrderService {
   }
 
   /** VALIDATE DISCOUNT COUPON */
-  validateCoupon(code: string, productId: string, price?: number): Observable<{
+  validateCoupon(code: string, productId: string): Observable<{
     valid: boolean;
     discountAmount: number;
     finalPrice: number;
     discountType: string;
     discountValue: number;
   }> {
-    return this.http.post<any>(`${this.apiUrl}/validate-coupon`, { code, productId, price });
+    return this.http.post<any>(`${this.apiUrl}/validate-coupon`, { code, productId });
   }
 
   /** GET RANDOM ACTIVE COUPON FOR SCRATCH CARD GAME */

@@ -83,6 +83,7 @@ export class ProductService {
       title: payload.title,
       description: payload.description,
       price: payload.price,
+      minPrice: payload.minPrice !== undefined && payload.minPrice !== null && (payload.minPrice as any) !== '' ? Number(payload.minPrice) : null,
       dynamicAttributes,
       images: payload.images,
       categoryId: (payload as any).categoryId,
@@ -103,6 +104,7 @@ export class ProductService {
       title: payload.title,
       description: payload.description,
       price: payload.price,
+      minPrice: payload.minPrice !== undefined && payload.minPrice !== null && (payload.minPrice as any) !== '' ? Number(payload.minPrice) : null,
 
       images: payload.images,
       categoryId: (payload as any).categoryId,
@@ -255,6 +257,7 @@ export class ProductService {
       brand,
       description: p.description || '',
       price: p.price || 0,
+      minPrice: p.minPrice ?? null,
       condition,
       conditionScore,
       category,
@@ -286,7 +289,12 @@ export class ProductService {
       originalPrice: p.originalPrice ?? undefined,
       salePrice: p.salePrice ?? undefined,
       flashSaleName: p.flashSaleName ?? undefined,
-      isFlashSale: p.isFlashSale ?? false
+      isFlashSale: p.isFlashSale ?? false,
+      isOnSale: p.isOnSale ?? false,
+      categorySalePercent: p.categorySalePercent ?? undefined,
+      savingsPercent: p.savingsPercent ?? undefined,
+      savingsValue: p.savingsValue ?? undefined,
+      saleEnd: p.saleEnd ?? undefined
 
     } as any;
   }
@@ -298,6 +306,7 @@ export class ProductService {
       title: mapped.title,
       brand: mapped.brand,
       price: mapped.price,
+      minPrice: mapped.minPrice,
       condition: mapped.condition,
       conditionScore: mapped.conditionScore,
       category: mapped.category,
@@ -315,7 +324,12 @@ export class ProductService {
       originalPrice: mapped.originalPrice,
       salePrice: mapped.salePrice,
       flashSaleName: mapped.flashSaleName,
-      isFlashSale: mapped.isFlashSale
+      isFlashSale: mapped.isFlashSale,
+      isOnSale: mapped.isOnSale,
+      categorySalePercent: mapped.categorySalePercent,
+      savingsPercent: mapped.savingsPercent,
+      savingsValue: mapped.savingsValue,
+      saleEnd: mapped.saleEnd
     } as any;
   }
 

@@ -1,8 +1,9 @@
-import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { AdminService } from '../../../../core/services/admin.service';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { AdminService, AdminStats } from '../../../../core/services/admin.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { Product } from '../../../../core/models/product.model';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -33,12 +34,16 @@ export class Listings implements OnInit {
   products = signal<Product[]>([]);
   totalProducts = signal(0);
   currentPage = signal(1);
-  pageSize = 20;
+  pageSize = 10;
   totalPages = signal(0);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+  stats = signal<AdminStats | null>(null);
+  activeDropdownProductId = signal<string | null>(null);
 
   filterForm!: FormGroup;
+  searchControl = new FormControl('');
+  activeMetric = signal<string | null>(null);
 
   categoriesList: { value: string; label: string }[] = [{ value: '', label: 'All Categories' }];
 
@@ -61,6 +66,14 @@ export class Listings implements OnInit {
       this.loadListings();
     });
 
+    this.searchControl.valueChanges.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage.set(1);
+      this.loadListings();
+    });
+
     this.productService.getCategories().subscribe({
       next: (cats) => {
         this.categoriesList = [
@@ -73,6 +86,47 @@ export class Listings implements OnInit {
       }
     });
 
+    this.loadStats();
+    this.loadListings();
+  }
+
+  loadStats(): void {
+    this.adminService.getStats().subscribe({
+      next: (res) => this.stats.set(res),
+      error: () => {}
+    });
+  }
+
+  toggleProductDropdown(productId: string, event: Event): void {
+    event.stopPropagation();
+    if (this.activeDropdownProductId() === productId) {
+      this.activeDropdownProductId.set(null);
+    } else {
+      this.activeDropdownProductId.set(productId);
+    }
+  }
+
+  @HostListener('document:click')
+  closeDropdowns(): void {
+    this.activeDropdownProductId.set(null);
+  }
+
+  setMetricFilter(metric: string | null): void {
+    this.activeMetric.set(metric);
+    this.currentPage.set(1);
+    switch (metric) {
+      case 'total':
+        this.filterForm.patchValue({ status: '', category: '' }, { emitEvent: false });
+        break;
+      case 'active':
+        this.filterForm.patchValue({ status: 'active', category: '' }, { emitEvent: false });
+        break;
+      case 'sold':
+        this.filterForm.patchValue({ status: 'sold', category: '' }, { emitEvent: false });
+        break;
+      default:
+        this.filterForm.patchValue({ status: '', category: '' }, { emitEvent: false });
+    }
     this.loadListings();
   }
 
@@ -82,7 +136,8 @@ export class Listings implements OnInit {
 
     const filters = {
       status: this.filterForm.get('status')?.value || undefined,
-      category: this.filterForm.get('category')?.value || undefined
+      category: this.filterForm.get('category')?.value || undefined,
+      search: this.searchControl.value || undefined
     };
 
     this.adminService.getAllProducts(this.currentPage(), this.pageSize, filters).subscribe({
@@ -138,6 +193,7 @@ export class Listings implements OnInit {
       next: (updatedProd) => {
         this.products.update(list => list.map(p => p.id === product.id ? { ...p, isVerified: updatedProd.isVerified } : p));
         this.toastService.success(`Product verification status toggled successfully.`);
+        this.loadStats();
       },
       error: (err) => {
         console.error('Failed to update product verification:', err);
@@ -155,6 +211,7 @@ export class Listings implements OnInit {
         this.adminService.deleteProduct(product.id).subscribe({
           next: () => {
             this.toastService.success('Product listing deleted successfully.');
+            this.loadStats();
             this.loadListings();
           },
           error: (err) => {

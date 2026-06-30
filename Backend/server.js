@@ -64,6 +64,7 @@ app.use("/api/wishlist", require("./routes/wishlistRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/users/block", require("./routes/blockRoutes"));
 app.use("/api/flash-sales", require("./routes/flashSaleRoutes"));
 
 const { getPool } = require("./config/db");

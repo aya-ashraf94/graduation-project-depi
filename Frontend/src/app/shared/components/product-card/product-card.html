@@ -30,10 +30,10 @@
         <span class="home-date">{{ product().createdAt | timeAgo }}</span>
       </div>
       <div class="home-price-row">
-        @if (product().isFlashSale) {
+        @if (product().isOnSale) {
           <span class="home-price-tag home-sale-price">{{ product().salePrice | currencyFormat }}</span>
           <span class="home-original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
-          <span class="home-flash-badge">-{{ ((1 - (product().salePrice! / (product().originalPrice || product().price))) * 100) | number:'1.0-0' }}%</span>
+          <span class="home-flash-badge">-{{ product().savingsPercent || ((1 - (product().salePrice! / (product().originalPrice || product().price))) * 100) | number:'1.0-0' }}%</span>
         } @else {
           <span class="home-price-tag">{{ product().price | currencyFormat }}</span>
         }
@@ -81,10 +81,12 @@
           <span *ngIf="product().size"> • {{ product().size }}</span>
         </div>
         <div class="price-box">
-          @if (product().isFlashSale) {
+          @if (product().isOnSale) {
             <span class="sale-price">{{ product().salePrice | currencyFormat }}</span>
             <span class="original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
-            <span class="flash-badge">FLASH</span>
+            @if (product().isFlashSale) {
+              <span class="flash-badge">SALE</span>
+            }
           } @else {
             {{ product().price | currencyFormat }}
           }
@@ -146,7 +148,7 @@
       <div class="card-title-price-row">
         <h3 class="card-title" [routerLink]="['/products', product().id]">{{ product().title }}</h3>
         <div class="card-price">
-          @if (product().isFlashSale) {
+          @if (product().isOnSale) {
             <span class="sale-price">{{ product().salePrice | currencyFormat }}</span>
             <span class="original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
           } @else {
@@ -242,7 +244,7 @@
       </div>
       <h3 class="card-title-v2">{{ product().title }}</h3>
       <div class="card-price-v2">
-        @if (product().isFlashSale) {
+        @if (product().isOnSale) {
           <span class="sale-price">{{ product().salePrice | currencyFormat }}</span>
           <span class="original-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
         } @else {

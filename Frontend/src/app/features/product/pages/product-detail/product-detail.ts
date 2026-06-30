@@ -12,6 +12,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { ImageFallbackDirective } from '../../../../shared/directives/image-fallback.directive';
 import { OfferService } from '../../../../core/services/offer.service';
+import { FlashSaleService } from '../../../../core/services/flash-sale.service';
 import { ReportModal } from '../../../../shared/components/report-modal/report-modal';
 import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { AuthRequiredModalComponent } from '../../../../shared/components/auth-required-modal/auth-required-modal';
@@ -34,6 +35,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   wishlistService = inject(WishlistService);
   private offerService = inject(OfferService);
   private orderService = inject(OrderService);
+  private flashSaleService = inject(FlashSaleService);
   private cdr = inject(ChangeDetectorRef);
   private timerService = inject(CountdownTimerService);
 
@@ -57,6 +59,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   checkoutCountdown = signal<string>('');
   private checkoutTimerId: any = null;
+  private _flashSub: any = null;
 
   negotiatedPrice = signal<number | null>(null);
   activeOfferId: string | null = null;
@@ -94,77 +97,54 @@ export class ProductDetail implements OnInit, OnDestroy {
     return this.product?.conditionScore ? Math.min(100, this.product.conditionScore * 10 - 2) : 92;
   }
 
-  /** Price the buyer actually pays (sale price or negotiated price) */
+  /**
+   * Price the buyer actually pays.
+   * Uses server-computed pricing from the discount engine when available,
+   * falls back to product price or negotiated offer price.
+   */
   get effectivePrice(): number {
     const negPrice = this.negotiatedPrice();
     if (negPrice !== null) {
       return negPrice;
     }
-    if (this.isOnSale) return this.salePrice;
+    if (this.product?.isOnSale && this.product?.salePrice) {
+      return this.product.salePrice;
+    }
     return this.product?.price ?? 0;
   }
 
-  /** Get category sale data from the resolved categoryId object */
-  private get _categorySale(): any {
-    const cat = this.product?.categoryId;
-    if (!cat || typeof cat === 'string' || Array.isArray(cat)) return null;
-    return cat;
-  }
-
-  /** Category discount percent (e.g. 20 = 20% off) */
-  get discountPercent(): number {
-    const v = this._categorySale?.discountPercent;
-    return v ? Number(v) : 0;
-  }
-
-  /** Discounted sale price = original price minus discount */
+  /** Discounted sale price — sourced from server-side engine */
   get salePrice(): number {
-    if (this.product?.isFlashSale && this.product?.salePrice) {
+    if (this.product?.isOnSale && this.product?.salePrice) {
       return this.product.salePrice;
     }
-    const pct = this.discountPercent;
-    if (!pct || !this.product?.price) return this.product?.price ?? 0;
-    return Math.round(this.product.price * (1 - pct / 100));
+    return this.product?.price ?? 0;
   }
 
   /** Original price (the "was" price shown crossed out) */
   get compareAtPrice(): number | undefined {
-    if (!this.isOnSale || !this.product?.price) return undefined;
+    if (!this.product?.isOnSale || !this.product?.price) return undefined;
     return this.product.originalPrice || this.product.price;
   }
 
-  /** Sale end date (from flash sale or category sale) */
-  get saleEnd(): Date | undefined {
-    if (this.product?.isFlashSale) return undefined;
-    const v = this._categorySale?.saleEnd;
-    return v ? new Date(v) : undefined;
-  }
-
-  /** Whether a sale (category or flash) is currently active */
+  /** Whether a sale (flash or category) is currently active */
   get isOnSale(): boolean {
-    if (this.product?.isFlashSale) return true;
-    const cat = this._categorySale;
-    if (!cat?.discountPercent) return false;
-    const pct = Number(cat.discountPercent);
-    if (pct <= 0) return false;
-    const now = new Date();
-    if (cat.saleStart && new Date(cat.saleStart) > now) return false;
-    if (cat.saleEnd && new Date(cat.saleEnd) < now) return false;
-    return true;
+    return this.product?.isOnSale ?? false;
   }
 
-  /** Savings percentage */
+  /** Savings percentage from the server */
   get savingsPercent(): number {
-    if (this.product?.isFlashSale && this.product?.originalPrice && this.product?.salePrice) {
-      return Math.round((1 - this.product.salePrice / this.product.originalPrice) * 100);
-    }
-    return this.discountPercent;
+    return this.product?.savingsPercent ?? 0;
   }
 
-  /** Savings value */
+  /** Savings value from the server */
   get savingsValue(): number {
-    if (!this.isOnSale || !this.product) return 0;
-    return Math.round(this.product.price * this.discountPercent / 100);
+    return this.product?.savingsValue ?? 0;
+  }
+
+  /** Whether this item is on a flash sale (not just a category sale) */
+  get isFlashSaleItem(): boolean {
+    return this.product?.isFlashSale ?? false;
   }
 
   showBuyModal = false;
@@ -322,6 +302,19 @@ export class ProductDetail implements OnInit, OnDestroy {
       window.scrollTo(0, 0);
     });
 
+    // Refresh product pricing when flash sales start or end
+    this._flashSub = this.flashSaleService.salesChanged$.subscribe(() => {
+      const pid = this.product?.id;
+      if (pid && this.negotiatedPrice() === null) {
+        this.productService.getProductById(pid).subscribe({
+          next: (fresh) => {
+            Object.assign(this.product!, fresh);
+            this.cdr.markForCheck();
+          },
+        });
+      }
+    });
+
     this.route.queryParams.subscribe(params => {
       const buyNow = params['buyNow'];
       const offerId = params['offerId'];
@@ -440,6 +433,16 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   openBuy(): void {
     this.executeAuthorizedAction(() => {
+      // Refresh product data so stale flash sale prices don't carry over
+      if (this.product) {
+        this.productService.getProductById(this.product.id).subscribe({
+          next: (fresh) => {
+            this.product = fresh;
+            this.cdr.detectChanges();
+          },
+        });
+      }
+
       this.showBuyModal = true;
       this.paymentMethod = 'cash_on_delivery';
       this.shippingCity = '';
@@ -492,6 +495,9 @@ export class ProductDetail implements OnInit, OnDestroy {
     if (this.checkoutTimerId) {
       clearInterval(this.checkoutTimerId);
     }
+    if (this._flashSub) {
+      this._flashSub.unsubscribe();
+    }
   }
 
   applyCoupon(): void {
@@ -499,7 +505,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     this.isValidatingCoupon = true;
     this.couponValidationMessage = '';
 
-    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id, this.effectivePrice).subscribe({
+    this.orderService.validateCoupon(this.couponCode.trim(), this.product.id).subscribe({
       next: (res) => {
         this.isValidatingCoupon = false;
         if (res.valid) {

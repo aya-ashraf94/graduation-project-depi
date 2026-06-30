@@ -40,16 +40,16 @@
     <div class="conv-list">
       @for (conv of filteredConversations(); track conv.id) {
         <div class="conv-item" [class.active]="activeConversation?.id === conv.id" (click)="selectConversation(conv)">
-          <div class="conv-avatar">
+          <a class="conv-avatar" [routerLink]="['/profile', getOtherParticipant(conv)?.id]" (click)="$event.stopPropagation()">
             <app-user-avatar
               [user]="getOtherParticipant(conv)"
               [showOnlineDot]="true"
               [isOnline]="isUserOnline(getOtherParticipant(conv)?.id)"
             ></app-user-avatar>
-          </div>
+          </a>
           <div class="conv-info">
             <div class="conv-top-row">
-              <span class="conv-name">{{ getOtherParticipant(conv)?.firstName }} {{ getOtherParticipant(conv)?.lastName }}</span>
+              <a class="conv-name" [routerLink]="['/profile', getOtherParticipant(conv)?.id]" (click)="$event.stopPropagation()">{{ getOtherParticipant(conv)?.firstName }} {{ getOtherParticipant(conv)?.lastName }}</a>
               <span class="conv-time">{{ conv.updatedAt | timeAgo }}</span>
             </div>
             @if (conv.productTitle) {
@@ -75,11 +75,12 @@
       <!-- Thread Header -->
       <div class="thread-header">
         <div class="thread-user">
-          <div class="thread-avatar">
+          <button type="button" class="btn-back-mobile" (click)="activeConversation = null">←</button>
+          <a class="thread-avatar" [routerLink]="['/profile', getOtherParticipant(activeConversation)?.id]">
             <app-user-avatar [user]="getOtherParticipant(activeConversation)"></app-user-avatar>
-          </div>
+          </a>
           <div class="thread-user-meta">
-            <div class="thread-name">{{ getOtherParticipant(activeConversation)?.firstName }} {{ getOtherParticipant(activeConversation)?.lastName }}</div>
+            <a class="thread-name" [routerLink]="['/profile', getOtherParticipant(activeConversation)?.id]">{{ getOtherParticipant(activeConversation)?.firstName }} {{ getOtherParticipant(activeConversation)?.lastName }}</a>
             @if (isUserOnline(getOtherParticipant(activeConversation)?.id)) {
               <div class="thread-status"><span class="status-dot"></span> Online</div>
             } @else {
@@ -117,10 +118,10 @@
                     Report Listing
                   </button>
                 }
-                <button class="options-dropdown-item" (click)="blockUser($event)">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                  Block User
-                </button>
+                 <button class="options-dropdown-item" (click)="toggleBlockCurrentPartner($event)">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                   {{ isCurrentPartnerBlocked() ? 'Unblock User' : 'Block User' }}
+                 </button>
                 <hr class="dropdown-divider" />
                 <button class="options-dropdown-item delete-action" (click)="triggerDeleteChat($event)">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -134,6 +135,13 @@
 
       <!-- Messages -->
       <div class="messages-area">
+        @if (isLoadingMessages()) {
+          <div class="messages-skeleton">
+            <div class="skeleton-bubble left"></div>
+            <div class="skeleton-bubble right"></div>
+            <div class="skeleton-bubble left"></div>
+          </div>
+        }
         @for (msg of messages; track msg.id) {
           @if (msg.type === 'system') {
             <div class="system-message"><span>{{ msg.content }}</span></div>
@@ -355,22 +363,37 @@
       }
 
       <!-- Compose -->
-      <div class="chat-compose">
-        @if (activeConversation.productId && !isOwnerOfProduct()) {
-          <button class="btn-offer-compose" (click)="openOfferPanel()">+ Offer</button>
-        }
-        <div class="input-wrap">
-          <input
-            id="chat-input"
-            type="text"
-            placeholder="Type a message..."
-            [(ngModel)]="newMessage"
-            (keydown.enter)="send()"
-            [disabled]="isSendingMessage()"
-          />
+      @if (isCurrentPartnerBlocked()) {
+        <div class="chat-blocked-banner">
+          <span>🚫 You blocked this user. Unblock to resume messaging.</span>
+          <button class="btn-banner-unblock" (click)="unblockCurrentPartner()">Unblock</button>
         </div>
-        <button class="btn-send" (click)="send()" [disabled]="isSendingMessage()">➤</button>
-      </div>
+      } @else if (isViewerBlockedByPartner()) {
+        <div class="chat-blocked-banner">
+          <span>🚫 You have been blocked by this user. You cannot send messages.</span>
+        </div>
+      } @else if (isConversationEnded()) {
+        <div class="chat-closed-banner">
+          <span>🤝 Deal Completed — This conversation is now closed.</span>
+        </div>
+      } @else {
+        <div class="chat-compose">
+          @if (activeConversation.productId && !isOwnerOfProduct()) {
+            <button class="btn-offer-compose" (click)="openOfferPanel()">+ Offer</button>
+          }
+          <div class="input-wrap">
+            <input
+              id="chat-input"
+              type="text"
+              placeholder="Type a message..."
+              [(ngModel)]="newMessage"
+              (keydown.enter)="send()"
+              [disabled]="isSendingMessage()"
+            />
+          </div>
+          <button class="btn-send" (click)="send()" [disabled]="isSendingMessage()">➤</button>
+        </div>
+      }
     } @else {
       <div class="no-thread">
         <div class="no-thread-icon">

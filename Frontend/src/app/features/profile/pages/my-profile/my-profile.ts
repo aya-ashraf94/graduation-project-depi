@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth';
+import { ChatService } from '../../../../core/services/chat.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ReviewService } from '../../../../core/services/review.service';
@@ -20,6 +21,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
 import { formatReviews, getReviewerName, getReviewerId } from '../../../../shared/utils/review.utils';
 import { EditProfileModalComponent } from '../../components/edit-profile-modal/edit-profile-modal';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-my-profile',
@@ -31,6 +33,7 @@ import { EditProfileModalComponent } from '../../components/edit-profile-modal/e
 })
 export class MyProfile implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
+  private chatService = inject(ChatService);
   private productService = inject(ProductService);
   wishlistService = inject(WishlistService);
   private reviewService = inject(ReviewService);
@@ -40,6 +43,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private location = inject(Location);
+  private toastService = inject(ToastService);
 
   @ViewChild('tabsSection') tabsSection!: ElementRef;
 
@@ -56,7 +60,10 @@ export class MyProfile implements OnInit, AfterViewInit {
   reviewedOrderIds: Set<string> = new Set();
   dismissedOrderIds: Set<string> = new Set();
   expandedOrderIds: Set<string> = new Set();
-  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' = 'products';
+  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' = 'products';
+  blockedUsers: any[] = [];
+  isViewerBlocked = false;
+  isPartnerBlockedByMe = false;
   orderView: 'purchases' | 'sales' = 'purchases';
   orderStatusFilter: string = 'all';
 
@@ -65,6 +72,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   pageSize = 8;
 
   get filteredListingsByTab(): ProductSummary[] {
+    if (this.isViewerBlocked) return [];
     if (this.activeTab === 'drafts') {
       return this.myListings.filter(item => item.status === 'draft');
     }
@@ -176,6 +184,10 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       const currentUser = this.authService.currentUser();
+      this.isViewerBlocked = false;
+      this.isPartnerBlockedByMe = false;
+      this.myListings = [];
+      this.reviews = [];
       this.isLoadingProfile = true;
 
       if (id && id !== 'me' && id !== currentUser?.id) {
@@ -185,18 +197,37 @@ export class MyProfile implements OnInit, AfterViewInit {
           next: (user) => {
             this.user = user;
             this.isLoadingProfile = false;
+            this.isViewerBlocked = false;
             if (user && user.id) {
               const currentId = this.authService.currentUser()?.id;
               if (user.id === currentId) {
                 this.isOwnProfile = true;
+                this.loadUserListings(user.id);
+                this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
+                  this.reviews = this.formatReviews(revs);
+                  this.cdr.detectChanges();
+                });
               } else {
                 this.isOwnProfile = false;
+                this.chatService.checkBlockStatus(user.id).subscribe({
+                  next: (status) => {
+                    this.isViewerBlocked = status.isBlockedByPartner;
+                    this.isPartnerBlockedByMe = status.isBlocked;
+                    if (!this.isViewerBlocked) {
+                      this.loadUserListings(user.id);
+                      this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
+                        this.reviews = this.formatReviews(revs);
+                        this.cdr.detectChanges();
+                      });
+                    }
+                    this.cdr.detectChanges();
+                  },
+                  error: (err) => {
+                    console.error('Error checking block status:', err);
+                    this.loadUserListings(user.id);
+                  }
+                });
               }
-              this.loadUserListings(user.id);
-              this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
-                this.reviews = this.formatReviews(revs);
-                this.cdr.detectChanges();
-              });
             }
             this.cdr.detectChanges();
           },
@@ -251,8 +282,11 @@ export class MyProfile implements OnInit, AfterViewInit {
     // Handle Tabs (reading from query params)
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders') {
+      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked') {
         this.activeTab = tab;
+        if (tab === 'blocked') {
+          this.loadBlockedUsers();
+        }
         if (!this.isLocalTabClick) {
           this.shouldScrollToTabs = true;
           this.scrollToTabsSection();
@@ -534,10 +568,13 @@ export class MyProfile implements OnInit, AfterViewInit {
     }
   }
 
-  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders'): void {
+  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked'): void {
     this.activeTab = tab;
     this.currentPage = 1; // Reset products page on tab switch
     this.showAllListingsMobile = false; // Reset slider expansion
+    if (tab === 'blocked') {
+      this.loadBlockedUsers();
+    }
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: { tab },
@@ -545,6 +582,27 @@ export class MyProfile implements OnInit, AfterViewInit {
     }).toString();
     this.location.go(url);
     this.scrollToTabsSectionDirectly();
+  }
+
+  loadBlockedUsers() {
+    this.chatService.getBlockedUsers().subscribe({
+      next: (list) => {
+        this.blockedUsers = list;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error fetching blocked users:', err)
+    });
+  }
+
+  unblockUser(userId: string) {
+    this.chatService.unblockUser(userId).subscribe({
+      next: () => {
+        this.blockedUsers = this.blockedUsers.filter(u => u.id !== userId);
+        this.toastService.success('User unblocked successfully.');
+        this.cdr.detectChanges();
+      },
+      error: () => this.toastService.error('Failed to unblock user.')
+    });
   }
 
   viewAllReviews(): void {

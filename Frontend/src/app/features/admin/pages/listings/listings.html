@@ -2,25 +2,70 @@
   <div class="page-header-actions">
     <div class="title-section">
       <h1>Marketplace Listings</h1>
-      <p>
-        Moderate user items, toggle verification marks, verify official store stock, and purge spam.
-      </p>
+      <p>Moderate user items, toggle verification marks, verify official store stock, and purge spam.</p>
+    </div>
+  </div>
+
+  <!-- Top Metrics Summary Cards -->
+  <div class="listings-metrics-grid">
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'total'" (click)="setMetricFilter('total')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">📦</span>
+        <span class="metric-title">Total Listings</span>
+      </div>
+      <div class="metric-value">{{ stats()?.totalProducts ?? 0 }}</div>
+    </div>
+    
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'active'" (click)="setMetricFilter('active')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">🟢</span>
+        <span class="metric-title">Active Listings</span>
+      </div>
+      <div class="metric-value">{{ stats()?.activeProducts ?? 0 }}</div>
     </div>
 
-    <!-- Filters Panel -->
-    <form [formGroup]="filterForm" class="brutal-filters-form">
-      <div class="filter-field">
-        <label for="status-select">Status</label>
-        <select id="status-select" formControlName="status">
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'sold'" (click)="setMetricFilter('sold')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">💰</span>
+        <span class="metric-title">Items Sold</span>
+      </div>
+      <div class="metric-value">{{ stats()?.soldProducts ?? 0 }}</div>
+    </div>
+
+    <div class="metric-card-brutal" (click)="setMetricFilter('total')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">👁️</span>
+        <span class="metric-title">Total Views</span>
+      </div>
+      <div class="metric-value">{{ stats()?.totalProductViews ?? 0 }}</div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Toolbar Row -->
+  <div class="listings-toolbar-row">
+    <div class="search-box-brutal">
+      <span class="search-icon">🔍</span>
+      <input 
+        [formControl]="searchControl" 
+        type="text" 
+        placeholder="Search listings by title or SKU..." 
+        aria-label="Search listings"
+      >
+    </div>
+    
+    <form [formGroup]="filterForm" class="filter-controls-group">
+      <!-- Filter 1: Status -->
+      <div class="toolbar-filter-select-wrapper">
+        <select formControlName="status" class="toolbar-select">
           @for (s of statusList; track s.value) {
             <option [value]="s.value">{{ s.label }}</option>
           }
         </select>
       </div>
 
-      <div class="filter-field">
-        <label for="category-select">Category</label>
-        <select id="category-select" formControlName="category">
+      <!-- Filter 2: Category -->
+      <div class="toolbar-filter-select-wrapper">
+        <select formControlName="category" class="toolbar-select">
           @for (c of categoriesList; track c.value) {
             <option [value]="c.value">{{ c.label }}</option>
           }
@@ -65,7 +110,7 @@
                 description="No products match the selected filters.">
               </app-empty-state>
             } @else {
-              @for (product of products(); track product.id) {
+              @for (product of products(); track product.id; let idx = $index) {
                 <tr>
                   <td>
                     <div class="product-profile-cell">
@@ -141,35 +186,31 @@
                     <app-status-badge [status]="product.status"></app-status-badge>
                   </td>
                   <td>
-                    <div class="table-row-actions">
-                      <!-- Edit Listing -->
-                      <a
-                        *ngIf="product.soldByNafa3ni"
-                        [routerLink]="['/listings/edit', product.id]"
-                        class="row-action-btn edit-btn"
-                        title="Edit Official Product"
+                    <div class="product-action-dropdown-container">
+                      <button 
+                        (click)="toggleProductDropdown(product.id, $event)" 
+                        class="manage-btn"
+                        [class.active]="activeDropdownProductId() === product.id"
+                        title="Manage Product Actions"
                       >
-                        <span class="btn-icon">✏️</span>
-                      </a>
-
-                      <!-- Toggle Verify -->
-                      <button
-                        (click)="toggleVerify(product)"
-                        class="row-action-btn verify-btn"
-                        [class.active-verified]="product.isVerified"
-                        [title]="product.isVerified ? 'Remove Verification' : 'Verify Listing'"
-                      >
-                        <span class="btn-icon">{{ product.isVerified ? '✕' : '✓' }}</span>
+                        Manage ▾
                       </button>
-
-                      <!-- Delete Listing -->
-                      <button
-                        (click)="deleteProduct(product)"
-                        class="row-action-btn delete-btn"
-                        title="Delete Listing"
-                      >
-                        <span class="btn-icon">🗑️</span>
-                      </button>
+                      @if (activeDropdownProductId() === product.id) {
+                        <div class="product-action-dropdown-menu" [class.open-up]="idx >= products().length - 3" (click)="$event.stopPropagation()">
+                          <button type="button" (click)="toggleVerify(product); activeDropdownProductId.set(null)" class="dropdown-item">
+                            {{ product.isVerified ? '✕ Unverify Item' : '✓ Verify Item' }}
+                          </button>
+                          @if (product.soldByNafa3ni) {
+                            <a [routerLink]="['/listings/edit', product.id]" class="dropdown-item">
+                              ✏️ Edit Details
+                            </a>
+                          }
+                          <div class="dropdown-divider"></div>
+                          <button type="button" (click)="deleteProduct(product); activeDropdownProductId.set(null)" class="dropdown-item dropdown-item-delete">
+                            🗑️ Delete Listing
+                          </button>
+                        </div>
+                      }
                     </div>
                   </td>
                 </tr>

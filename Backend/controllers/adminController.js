@@ -1,8 +1,8 @@
 const db = require("../db");
-const { users, products, reports, orders, categories, coupons } = require("../db/schema");
-const { eq, or, ilike, and, desc, count, inArray, sql } = require("drizzle-orm");
+const { users, products, reports, orders, categories, coupons, flashSales, notifications, messages, conversationParticipants, reviews } = require("../db/schema");
+const { eq, ne, or, ilike, and, desc, count, inArray, sql, gte, lte, isNotNull } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
-const { getActiveFlashSaleDiscounts, applyDiscounts } = require("../utils/flashSaleHelper");
+const { loadActivePromotions, annotateProducts } = require("../utils/discountEngine");
 
 const buyer = alias(users, "buyer");
 const seller = alias(users, "seller");
@@ -12,14 +12,28 @@ const productOwner = alias(users, "productOwner");
 const getStats = async (req, res) => {
   try {
     const [userCount] = await db.select({ value: count() }).from(users);
+    const [adminCount] = await db.select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+    const [verifiedCount] = await db.select({ value: count() }).from(users).where(eq(users.isVerified, true));
+    const [suspendedCount] = await db.select({ value: count() }).from(users).where(eq(users.isSuspended, true));
+    
     const [productCount] = await db.select({ value: count() }).from(products);
+    const [activeProdCount] = await db.select({ value: count() }).from(products).where(eq(products.status, 'active'));
+    const [soldProdCount] = await db.select({ value: count() }).from(products).where(eq(products.status, 'sold'));
+    const [totalProductViews] = await db.select({ value: sql`COALESCE(SUM(${products.viewCount}), 0)` }).from(products);
+
     const [reportCount] = await db.select({ value: count() }).from(reports)
       .where(eq(reports.status, 'pending'));
     const [orderCount] = await db.select({ value: count() }).from(orders);
 
     res.json({
       totalUsers: Number(userCount.value),
+      totalAdmins: Number(adminCount.value),
+      totalVerified: Number(verifiedCount.value),
+      totalSuspended: Number(suspendedCount.value),
       totalProducts: Number(productCount.value),
+      activeProducts: Number(activeProdCount.value),
+      soldProducts: Number(soldProdCount.value),
+      totalProductViews: Number(totalProductViews.value),
       openReports: Number(reportCount.value),
       totalOrders: Number(orderCount.value),
     });
@@ -29,20 +43,163 @@ const getStats = async (req, res) => {
   }
 };
 
+const getDashboard = async (req, res) => {
+  try {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // ── Core counts ───────────────────────────────────────────────
+    const [userCount] = await db.select({ value: count() }).from(users);
+    const [productCount] = await db.select({ value: count() }).from(products);
+    const [reportCount] = await db.select({ value: count() }).from(reports)
+      .where(eq(reports.status, 'pending'));
+
+    // ── Today's revenue & orders ──────────────────────────────────
+    const todayOrders = await db.select({ value: count() }).from(orders)
+      .where(gte(orders.createdAt, todayStart));
+    const todayRevenue = await db.select({ value: sql`COALESCE(SUM(${orders.price}), 0)` }).from(orders)
+      .where(and(gte(orders.createdAt, todayStart), ne(orders.status, 'cancelled')));
+
+    // ── New users (7 days) ────────────────────────────────────────
+    const [newUsers] = await db.select({ value: count() }).from(users)
+      .where(gte(users.createdAt, sevenDaysAgo));
+
+    // ── Pending verifications ─────────────────────────────────────
+    const [unverifiedProducts] = await db.select({ value: count() }).from(products)
+      .where(eq(products.isVerified, false));
+    const [unverifiedUsers] = await db.select({ value: count() }).from(users)
+      .where(eq(users.isVerified, false));
+
+    // ── Revenue history (last 30 days, by day) ────────────────────
+    const revenueRows = await db.execute(sql`
+      SELECT DATE(created_at) AS day, COALESCE(SUM(price), 0) AS revenue
+      FROM orders
+      WHERE created_at >= ${thirtyDaysAgo} AND status != 'cancelled'
+      GROUP BY DATE(created_at)
+      ORDER BY day ASC
+    `);
+    const revenueMap = {};
+    for (const row of revenueRows.rows || []) {
+      const dayStr = row.day instanceof Date ? row.day.toISOString().slice(0, 10) : String(row.day).slice(0, 10);
+      revenueMap[dayStr] = Number(row.revenue);
+    }
+    const revenueHistory = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().slice(0, 10);
+      revenueHistory.push({ date: key, revenue: revenueMap[key] || 0 });
+    }
+
+    // ── Recent orders (last 5) ────────────────────────────────────
+    const recentOrdersRaw = await db.select({
+      id: orders.id,
+      price: orders.price,
+      status: orders.status,
+      createdAt: orders.createdAt,
+      productTitle: products.title,
+      productThumbnail: sql`(${products.images})[1]`,
+      buyerName: users.name,
+    })
+      .from(orders)
+      .leftJoin(products, eq(orders.productId, products.id))
+      .leftJoin(users, eq(orders.buyerId, users.id))
+      .orderBy(desc(orders.createdAt))
+      .limit(5);
+
+    // ── Top categories by product count ───────────────────────────
+    const catCounts = await db.select({
+      name: categories.name,
+      productCount: count(),
+    })
+      .from(categories)
+      .leftJoin(products, eq(products.categoryId, categories.id))
+      .groupBy(categories.id, categories.name)
+      .orderBy(desc(count()))
+      .limit(5);
+
+    const totalCatProducts = catCounts.reduce((sum, c) => sum + Number(c.productCount), 0);
+    const topCategories = catCounts.map(c => ({
+      name: c.name,
+      productCount: Number(c.productCount),
+      percentage: totalCatProducts > 0 ? Math.round((Number(c.productCount) / totalCatProducts) * 100) : 0,
+    }));
+
+    // ── Flash sale stats ──────────────────────────────────────────
+    const [activeFlashSales] = await db.select({ value: count() }).from(flashSales)
+      .where(and(eq(flashSales.isActive, true), lte(flashSales.startDate, now), gte(flashSales.endDate, now)));
+    const [totalDiscount] = await db.select({ value: sql`COALESCE(SUM(${orders.flashSaleDiscount}), 0)` }).from(orders)
+      .where(and(isNotNull(orders.flashSaleDiscount), ne(orders.status, 'cancelled'), sql`${orders.flashSaleDiscount} > 0`));
+
+    res.json({
+      stats: {
+        totalUsers: Number(userCount.value),
+        totalProducts: Number(productCount.value),
+        openReports: Number(reportCount.value),
+        todayRevenue: Number(todayRevenue.rows?.[0]?.coalesce || 0),
+        todayOrders: Number(todayOrders.rows?.[0]?.value || 0),
+        newUsers7d: Number(newUsers.value),
+        pendingVerifications: Number(unverifiedProducts.value) + Number(unverifiedUsers.value),
+      },
+      revenueHistory,
+      recentOrders: recentOrdersRaw.map(r => ({
+        id: r.id,
+        productTitle: r.productTitle || '[Deleted]',
+        productThumbnail: r.productThumbnail || '',
+        price: r.price,
+        status: r.status,
+        buyerName: r.buyerName || 'Unknown',
+        createdAt: r.createdAt,
+      })),
+      topCategories,
+      pendingApprovals: {
+        unverifiedProducts: Number(unverifiedProducts.value),
+        unverifiedUsers: Number(unverifiedUsers.value),
+      },
+      flashSaleStats: {
+        activeSales: Number(activeFlashSales.value),
+        totalDiscountGiven: Number(totalDiscount.rows?.[0]?.coalesce || 0),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const search = req.query.search || "";
+    const role = req.query.role || "";
+    const status = req.query.status || "";
+    const verified = req.query.verified || "";
     const skip = (page - 1) * limit;
 
-    let whereConditions = undefined;
+    const conditions = [];
     if (search) {
-      whereConditions = or(
+      conditions.push(or(
         ilike(users.name, `%${search}%`),
         ilike(users.email, `%${search}%`)
-      );
+      ));
     }
+    if (role && role !== 'all') {
+      conditions.push(eq(users.role, role));
+    }
+    if (status && status !== 'all') {
+      if (status === 'suspended') {
+        conditions.push(eq(users.isSuspended, true));
+      } else if (status === 'active') {
+        conditions.push(eq(users.isSuspended, false));
+      }
+    }
+    if (verified === 'true') {
+      conditions.push(eq(users.isVerified, true));
+    }
+
+    const whereConditions = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [totalResult] = await db.select({ value: count() }).from(users)
       .where(whereConditions);
@@ -123,14 +280,41 @@ const deleteUser = async (req, res) => {
       return res.status(400).json({ message: "You cannot delete your own admin account." });
     }
 
-    const [user] = await db.delete(users).where(eq(users.id, id)).returning({ id: users.id });
-    if (!user) {
+    // 1. Delete notifications related to the user
+    await db.delete(notifications).where(eq(notifications.userId, id));
+
+    // 2. Delete messages sent by user
+    await db.delete(messages).where(eq(messages.senderId, id));
+
+    // 3. Delete conversation participants
+    await db.delete(conversationParticipants).where(eq(conversationParticipants.userId, id));
+
+    // 4. Delete reviews written by or about the user
+    await db.delete(reviews).where(or(eq(reviews.reviewerId, id), eq(reviews.revieweeId, id)));
+
+    // 5. Find all products owned by the user
+    const userProducts = await db.select({ id: products.id }).from(products).where(eq(products.userId, id));
+    const productIds = userProducts.map(p => p.id);
+
+    if (productIds.length > 0) {
+      // Delete orders referencing user's products
+      await db.delete(orders).where(inArray(orders.productId, productIds));
+      // Delete reviews referencing user's products
+      await db.delete(reviews).where(inArray(reviews.productId, productIds));
+      // Delete products
+      await db.delete(products).where(inArray(products.id, productIds));
+    }
+
+    // 6. Delete orders where user is buyer or seller
+    await db.delete(orders).where(or(eq(orders.buyerId, id), eq(orders.sellerId, id)));
+
+    // 7. Finally delete the user
+    const [deletedUser] = await db.delete(users).where(eq(users.id, id)).returning({ id: users.id });
+    if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await db.delete(products).where(eq(products.userId, id));
-
-    res.json({ message: "User and their listings deleted successfully" });
+    res.json({ message: "User and all their listings/transactions deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Server Error" });
@@ -143,10 +327,17 @@ const getAllProducts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const status = req.query.status;
     const categoryName = req.query.category;
+    const search = req.query.search || "";
     const skip = (page - 1) * limit;
 
     const conditions = [];
     if (status) conditions.push(eq(products.status, status));
+    if (search) {
+      conditions.push(or(
+        ilike(products.title, `%${search}%`),
+        ilike(products.description, `%${search}%`)
+      ));
+    }
 
     if (categoryName) {
       const matchCats = await db.select().from(categories)
@@ -177,9 +368,9 @@ const getAllProducts = async (req, res) => {
       categoryId: r.categories ? { id: r.categories.id, name: r.categories.name } : null,
     }));
 
-    // Apply flash sale discounts
-    const { discounts } = await getActiveFlashSaleDiscounts();
-    const discounted = applyDiscounts(formatted, discounts);
+    // Apply active promotions (flash sales + category sales)
+    const promotions = await loadActivePromotions();
+    const discounted = annotateProducts(formatted, promotions);
 
     res.json({
       products: discounted,
@@ -392,7 +583,7 @@ const getCoupons = async (req, res) => {
 
 const createCoupon = async (req, res) => {
   try {
-    let { code, discountType, discountValue, expiryDate } = req.body;
+    let { code, discountType, discountValue, expiryDate, maxUses, maxPerUser } = req.body;
     if (!code || !discountValue) {
       return res.status(400).json({ message: "Coupon code and discount value are required" });
     }
@@ -415,6 +606,9 @@ const createCoupon = async (req, res) => {
       discountType: discountType || "percentage",
       discountValue: parseFloat(discountValue),
       expiryDate: expiryDate ? new Date(expiryDate) : null,
+      maxUses: maxUses ? parseInt(maxUses) : null,
+      maxPerUser: maxPerUser ? parseInt(maxPerUser) : null,
+      usedCount: 0,
       isActive: true
     }).returning();
     
@@ -428,13 +622,15 @@ const createCoupon = async (req, res) => {
 const patchCoupon = async (req, res) => {
   try {
     const { id } = req.params;
-    const { discountType, discountValue, expiryDate, isActive } = req.body;
+    const { discountType, discountValue, expiryDate, isActive, maxUses, maxPerUser } = req.body;
     
     const updateData = { updatedAt: new Date() };
     if (isActive !== undefined) updateData.isActive = isActive;
     if (discountType !== undefined) updateData.discountType = discountType;
     if (discountValue !== undefined) updateData.discountValue = parseFloat(discountValue);
     if (expiryDate !== undefined) updateData.expiryDate = expiryDate ? new Date(expiryDate) : null;
+    if (maxUses !== undefined) updateData.maxUses = parseInt(maxUses);
+    if (maxPerUser !== undefined) updateData.maxPerUser = parseInt(maxPerUser);
     
     const [coupon] = await db.update(coupons)
       .set(updateData)
@@ -468,6 +664,7 @@ const deleteCoupon = async (req, res) => {
 
 module.exports = {
   getStats,
+  getDashboard,
   getUsers,
   patchUser,
   deleteUser,

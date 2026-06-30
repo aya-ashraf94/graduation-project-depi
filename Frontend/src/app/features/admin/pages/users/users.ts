@@ -1,9 +1,9 @@
-import { Component, signal, inject, OnInit, computed, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, inject, OnInit, computed, effect, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { AdminService } from '../../../../core/services/admin.service';
+import { AdminService, AdminStats } from '../../../../core/services/admin.service';
 import { User } from '../../../../core/models/user.model';
 import { AuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -33,12 +33,32 @@ export class Users implements OnInit {
   users = signal<User[]>([]);
   totalUsers = signal(0);
   currentPage = signal(1);
-  pageSize = 20;
+  pageSize = 10;
   totalPages = signal(0);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+  stats = signal<AdminStats | null>(null);
+  activeDropdownUserId = signal<string | null>(null);
 
   searchControl = new FormControl('');
+  roleControl = new FormControl('all');
+  statusControl = new FormControl('all');
+  verifiedControl = new FormControl('all');
+  activeMetric = signal<string | null>(null);
+
+  toggleUserDropdown(userId: string, event: Event): void {
+    event.stopPropagation();
+    if (this.activeDropdownUserId() === userId) {
+      this.activeDropdownUserId.set(null);
+    } else {
+      this.activeDropdownUserId.set(userId);
+    }
+  }
+
+  @HostListener('document:click')
+  closeDropdowns(): void {
+    this.activeDropdownUserId.set(null);
+  }
 
   ngOnInit(): void {
     // Setup search listener with debounce
@@ -50,15 +70,46 @@ export class Users implements OnInit {
       this.loadUsers();
     });
 
+    this.roleControl.valueChanges.subscribe(() => {
+      this.currentPage.set(1);
+      this.loadUsers();
+    });
+
+    this.statusControl.valueChanges.subscribe(() => {
+      this.currentPage.set(1);
+      this.loadUsers();
+    });
+
+    this.verifiedControl.valueChanges.subscribe(() => {
+      this.currentPage.set(1);
+      this.loadUsers();
+    });
+
+    this.loadStats();
     this.loadUsers();
+  }
+
+  loadStats(): void {
+    this.adminService.getStats().subscribe({
+      next: (res) => this.stats.set(res),
+      error: () => {}
+    });
   }
 
   loadUsers(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     const searchVal = this.searchControl.value || '';
+    const roleVal = this.roleControl.value || 'all';
+    const statusVal = this.statusControl.value || 'all';
+    const verifiedVal = this.verifiedControl.value || 'all';
 
-    this.adminService.getUsers(this.currentPage(), this.pageSize, searchVal).subscribe({
+    this.adminService.getUsers(this.currentPage(), this.pageSize, {
+      search: searchVal,
+      role: roleVal,
+      status: statusVal,
+      verified: verifiedVal !== 'all' ? verifiedVal : undefined
+    }).subscribe({
       next: (res) => {
         this.users.set(res.users);
         this.totalUsers.set(res.total);
@@ -87,12 +138,45 @@ export class Users implements OnInit {
     }
   }
 
+  setMetricFilter(metric: string | null): void {
+    this.activeMetric.set(metric);
+    this.currentPage.set(1);
+    switch (metric) {
+      case 'total':
+        this.roleControl.setValue('all', { emitEvent: false });
+        this.statusControl.setValue('all', { emitEvent: false });
+        this.verifiedControl.setValue('all', { emitEvent: false });
+        break;
+      case 'admins':
+        this.roleControl.setValue('admin', { emitEvent: false });
+        this.statusControl.setValue('all', { emitEvent: false });
+        this.verifiedControl.setValue('all', { emitEvent: false });
+        break;
+      case 'verified':
+        this.roleControl.setValue('all', { emitEvent: false });
+        this.statusControl.setValue('all', { emitEvent: false });
+        this.verifiedControl.setValue('true', { emitEvent: false });
+        break;
+      case 'suspended':
+        this.roleControl.setValue('all', { emitEvent: false });
+        this.statusControl.setValue('suspended', { emitEvent: false });
+        this.verifiedControl.setValue('all', { emitEvent: false });
+        break;
+      default:
+        this.roleControl.setValue('all', { emitEvent: false });
+        this.statusControl.setValue('all', { emitEvent: false });
+        this.verifiedControl.setValue('all', { emitEvent: false });
+    }
+    this.loadUsers();
+  }
+
   toggleVerify(user: User): void {
     const nextVal = !user.isVerified;
     this.adminService.patchUser(user.id, { isVerified: nextVal }).subscribe({
       next: (updatedUser) => {
         this.users.update(list => list.map(u => u.id === user.id ? { ...u, isVerified: updatedUser.isVerified } : u));
         this.toastService.success(`User verification status updated successfully.`);
+        this.loadStats();
       },
       error: (err) => {
         console.error('Failed to update verification:', err);
@@ -115,6 +199,7 @@ export class Users implements OnInit {
           next: (updatedUser) => {
             this.users.update(list => list.map(u => u.id === user.id ? { ...u, isSuspended: updatedUser.isSuspended } : u));
             this.toastService.success(updatedUser.isSuspended ? 'User account suspended.' : 'User account activated.');
+            this.loadStats();
           },
           error: (err) => {
             console.error('Failed to update suspension:', err);
@@ -137,6 +222,7 @@ export class Users implements OnInit {
           next: (updatedUser) => {
             this.users.update(list => list.map(u => u.id === user.id ? { ...u, role: updatedUser.role } : u));
             this.toastService.success(`User role changed to ${updatedUser.role.toUpperCase()}.`);
+            this.loadStats();
           },
           error: (err) => {
             console.error('Failed to update role:', err);
@@ -161,6 +247,7 @@ export class Users implements OnInit {
         this.adminService.deleteUser(user.id).subscribe({
           next: () => {
             this.toastService.success('User account deleted successfully.');
+            this.loadStats();
             this.loadUsers();
           },
           error: (err) => {

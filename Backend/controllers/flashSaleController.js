@@ -149,6 +149,29 @@ const getActiveFlashSales = async (req, res) => {
 const checkAndNotifyFlashSales = async (io) => {
   try {
     const now = new Date();
+
+    // ── Handle expired flash sales ─────────────────────────────────
+    const expiredSales = await db.select()
+      .from(flashSales)
+      .where(and(
+        eq(flashSales.isActive, true),
+        lte(flashSales.endDate, now)
+      ));
+
+    for (const sale of expiredSales) {
+      await db.update(flashSales)
+        .set({ isActive: false, updatedAt: now })
+        .where(eq(flashSales.id, sale.id));
+
+      if (io) {
+        io.emit("flash_sale_ended", {
+          saleId: sale.id,
+          name: sale.name,
+        });
+      }
+    }
+
+    // ── Send ending-soon notifications for active sales ────────────
     const sales = await db.select()
       .from(flashSales)
       .where(and(
@@ -163,39 +186,18 @@ const checkAndNotifyFlashSales = async (io) => {
       const notifyMs = (sale.notifyBeforeMinutes || 30) * 60 * 1000;
 
       if (timeUntilEnd <= notifyMs && timeUntilEnd > 0) {
-        // Send notification to all users
-        const allUsers = await db.select({ id: users.id }).from(users);
-
-        const notifTitle = `🔥 Flash Sale Ending Soon!`;
-        const notifBody = `"${sale.name}" - ${sale.discountPercent}% OFF ends in ${Math.ceil(timeUntilEnd / 60000)} minutes!`;
-
-        for (const user of allUsers) {
-          await db.insert(notifications).values({
-            userId: user.id,
-            type: 'system',
-            title: notifTitle,
-            body: notifBody,
-            linkedEntityId: sale.id,
-            linkedRoute: '/products',
-          });
-        }
-
-        // Mark notification as sent
         await db.update(flashSales)
-          .set({ notificationSent: true, updatedAt: new Date() })
+          .set({ notificationSent: true, updatedAt: now })
           .where(eq(flashSales.id, sale.id));
 
-        console.log(`[FlashSale] Notification sent for: ${sale.name}`);
-
-        // Emit socket event to all connected users
         if (io) {
           io.emit("flash_sale_ending", {
             saleId: sale.id,
             name: sale.name,
             discountPercent: sale.discountPercent,
             endsInMinutes: Math.ceil(timeUntilEnd / 60000),
-            title: notifTitle,
-            body: notifBody,
+            title: `🔥 Flash Sale Ending Soon!`,
+            body: `"${sale.name}" - ${sale.discountPercent}% OFF ends in ${Math.ceil(timeUntilEnd / 60000)} minutes!`,
           });
         }
       }

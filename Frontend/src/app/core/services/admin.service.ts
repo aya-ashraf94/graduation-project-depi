@@ -9,9 +9,40 @@ import { ProductService } from './product.service';
 
 export interface AdminStats {
   totalUsers: number;
+  totalAdmins: number;
+  totalVerified: number;
+  totalSuspended: number;
   totalProducts: number;
+  activeProducts: number;
+  soldProducts: number;
+  totalProductViews: number;
   openReports: number;
   totalOrders: number;
+}
+
+export interface DashboardData {
+  stats: {
+    totalUsers: number;
+    totalProducts: number;
+    openReports: number;
+    todayRevenue: number;
+    todayOrders: number;
+    newUsers7d: number;
+    pendingVerifications: number;
+  };
+  revenueHistory: { date: string; revenue: number }[];
+  recentOrders: {
+    id: string;
+    productTitle: string;
+    productThumbnail: string;
+    price: number;
+    status: string;
+    buyerName: string;
+    createdAt: string;
+  }[];
+  topCategories: { name: string; productCount: number; percentage: number }[];
+  pendingApprovals: { unverifiedProducts: number; unverifiedUsers: number };
+  flashSaleStats: { activeSales: number; totalDiscountGiven: number };
 }
 
 export interface PaginatedUsers {
@@ -76,13 +107,26 @@ export class AdminService {
     return this.http.get<AdminStats>(`${this.apiUrl}/stats`);
   }
 
-  getUsers(page: number, limit: number, search?: string): Observable<PaginatedUsers> {
+  getDashboard(): Observable<DashboardData> {
+    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`);
+  }
+
+  getUsers(page: number, limit: number, filters?: { search?: string; role?: string; status?: string; verified?: string }): Observable<PaginatedUsers> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
     
-    if (search) {
-      params = params.set('search', search);
+    if (filters?.search) {
+      params = params.set('search', filters.search);
+    }
+    if (filters?.role) {
+      params = params.set('role', filters.role);
+    }
+    if (filters?.status) {
+      params = params.set('status', filters.status);
+    }
+    if (filters?.verified) {
+      params = params.set('verified', filters.verified);
     }
 
     return this.http.get<any>(`${this.apiUrl}/users`, { params }).pipe(
@@ -108,7 +152,7 @@ export class AdminService {
   getAllProducts(
     page: number, 
     limit: number, 
-    filters?: { status?: string; category?: string }
+    filters?: { status?: string; category?: string; search?: string }
   ): Observable<PaginatedProducts> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -119,6 +163,9 @@ export class AdminService {
     }
     if (filters?.category) {
       params = params.set('category', filters.category);
+    }
+    if (filters?.search) {
+      params = params.set('search', filters.search);
     }
 
     return this.http.get<any>(`${this.apiUrl}/products`, { params }).pipe(

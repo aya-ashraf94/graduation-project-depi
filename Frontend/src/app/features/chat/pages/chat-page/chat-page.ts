@@ -12,6 +12,7 @@ import { Offer } from '../../../../core/models/offer.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 import { ReportModal } from '../../../../shared/components/report-modal/report-modal';
 import { CountdownTimerService } from '../../../../core/services/countdown-timer.service';
@@ -36,7 +37,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   private router = inject(Router);
   private confirmService = inject(ConfirmService);
   private notificationService = inject(NotificationService);
-
+  private toastService = inject(ToastService);
   private timerService = inject(CountdownTimerService);
 
   private socket: Socket | null = null;
@@ -53,6 +54,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   currentUserId = '';
   searchTerm = signal('');
   isLoadingConversations = signal(false);
+  isLoadingMessages = signal(false);
   onlineUserIds = signal<Set<string>>(new Set());
 
   // Offer panel signals
@@ -83,6 +85,13 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     if (!this.activeConversation) return false;
     return this.activeConversation.productOwnerId === this.currentUserId;
   });
+
+  isConversationEnded = computed(() => {
+    return this.messages.some(m => m.metadata?.offerStatus === 'accepted');
+  });
+
+  isCurrentPartnerBlocked = signal(false);
+  isViewerBlockedByPartner = signal(false);
 
   ngOnInit() {
     const user = this.authService.currentUser();
@@ -242,7 +251,9 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   loadConversations(selectFirst = false) {
-    this.isLoadingConversations.set(true);
+    if (this.conversations().length === 0) {
+      this.isLoadingConversations.set(true);
+    }
     this.chatService.getConversations().subscribe({
       next: (convs) => {
         this.conversations.set(convs);
@@ -250,7 +261,10 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
           this.selectConversation(convs[0]);
         }
       },
-      error: (err) => console.error('Error loading conversations:', err),
+      error: (err) => {
+        console.error('Error loading conversations:', err);
+        this.isLoadingConversations.set(false);
+      },
       complete: () => this.isLoadingConversations.set(false)
     });
   }
@@ -258,7 +272,22 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
   selectConversation(conv: Conversation) {
     this.activeConversation = conv;
     this.previousMessagesLength = 0;
+    this.messages = []; // Clear old messages instantly!
     this.showOfferPanel.set(false);
+    this.isLoadingMessages.set(true);
+    this.isCurrentPartnerBlocked.set(false);
+    this.isViewerBlockedByPartner.set(false);
+
+    const other = this.getOtherParticipant(conv);
+    if (other) {
+      this.chatService.checkBlockStatus(other.id).subscribe({
+        next: (status) => {
+          this.isCurrentPartnerBlocked.set(status.isBlocked);
+          this.isViewerBlockedByPartner.set(status.isBlockedByPartner);
+        },
+        error: (err) => console.error('Error checking block status:', err)
+      });
+    }
 
     if (this.socket) {
       this.socket.emit("join_conversation", conv.id);
@@ -267,6 +296,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.getMessages(conv.id).subscribe({
       next: (msgs) => {
         this.messages = msgs;
+        this.isLoadingMessages.set(false);
         this.startCountdownTimer();
         this.chatService.markAsRead(conv.id).subscribe({
           next: () => {
@@ -275,7 +305,10 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
           }
         });
       },
-      error: (err) => console.error('Error loading messages:', err)
+      error: (err) => {
+        console.error('Error loading messages:', err);
+        this.isLoadingMessages.set(false);
+      }
     });
   }
 
@@ -474,22 +507,53 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewChecked {
     this.showOptionsMenu.set(false);
   }
 
-  blockUser(event: Event) {
+  toggleBlockCurrentPartner(event: Event) {
     event.stopPropagation();
     const other = this.getOtherParticipant(this.activeConversation!);
     if (!other) return;
-    this.confirmService.show({
-      title: 'Block User',
-      message: `Are you sure you want to block ${other.firstName} ${other.lastName}? You will no longer receive messages from them.`,
-      onConfirm: () => {
-        this.showOptionsMenu.set(false);
-        this.confirmService.show({
-          title: 'User Blocked',
-          message: `${other.firstName} ${other.lastName} has been blocked successfully.`,
-          onConfirm: () => {}
-        });
-      }
-    });
+
+    this.showOptionsMenu.set(false);
+
+    if (this.isCurrentPartnerBlocked()) {
+      this.chatService.unblockUser(other.id).subscribe({
+        next: () => {
+          this.isCurrentPartnerBlocked.set(false);
+          this.toastService.success(`${other.firstName} has been unblocked.`);
+        },
+        error: () => this.toastService.error("Failed to unblock user")
+      });
+    } else {
+      this.confirmService.show({
+        title: 'Block User',
+        message: `Are you sure you want to block ${other.firstName} ${other.lastName}? You will no longer receive messages from them.`,
+        onConfirm: () => {
+          this.chatService.blockUser(other.id).subscribe({
+            next: () => {
+              this.isCurrentPartnerBlocked.set(true);
+              this.confirmService.show({
+                title: 'User Blocked',
+                message: `${other.firstName} ${other.lastName} has been blocked successfully.`,
+                onConfirm: () => {}
+              });
+            },
+            error: () => this.toastService.error("Failed to block user")
+          });
+        }
+      });
+    }
+  }
+
+  unblockCurrentPartner() {
+    const other = this.getOtherParticipant(this.activeConversation!);
+    if (other) {
+      this.chatService.unblockUser(other.id).subscribe({
+        next: () => {
+          this.isCurrentPartnerBlocked.set(false);
+          this.toastService.success(`${other.firstName} has been unblocked.`);
+        },
+        error: () => this.toastService.error("Failed to unblock user")
+      });
+    }
   }
 
   openReport(event?: Event) {

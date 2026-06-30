@@ -37,4 +37,20 @@ export class ChatService {
   deleteConversation(conversationId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${conversationId}`);
   }
+
+  blockUser(blockedId: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/users/block`, { blockedId });
+  }
+
+  unblockUser(blockedId: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/users/block/${blockedId}`);
+  }
+
+  getBlockedUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/users/block/list`);
+  }
+
+  checkBlockStatus(targetUserId: string): Observable<{ isBlocked: boolean; isBlockedByPartner: boolean }> {
+    return this.http.get<{ isBlocked: boolean; isBlockedByPartner: boolean }>(`${environment.apiUrl}/users/block/check/${targetUserId}`);
+  }
 }

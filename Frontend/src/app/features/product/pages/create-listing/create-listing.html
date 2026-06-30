@@ -273,6 +273,21 @@
                 [(ngModel)]="price" />
             </div>
           </div>
+
+          <div class="wiz-field">
+            <label class="wiz-label" for="w-min-price">MINIMUM ACCEPTABLE PRICE (FOR FLASH SALES)</label>
+            <div class="wiz-price-wrap">
+              <span class="wiz-currency">$</span>
+              <input id="w-min-price" class="wiz-input wiz-price-input" type="number" placeholder="No limit" min="0"
+                [(ngModel)]="minPrice" />
+            </div>
+            <span class="wiz-hint">Protects your item from being discounted below this price during platform promotional events.</span>
+            @if (minPrice !== null && minPrice !== undefined && price !== null && minPrice > price) {
+              <span style="color: var(--danger); font-size: 0.8rem; font-family: var(--font-secondary); display: block; margin-top: 0.25rem;">
+                Minimum price cannot exceed the asking price.
+              </span>
+            }
+          </div>
           }
 
           @if (pricingMode === 'trade') {

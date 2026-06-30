@@ -1,6 +1,9 @@
 <div class="admin-layout">
-  <!-- Desktop Sidebar: Aligned with Website Layout -->
-  <aside class="admin-sidebar">
+  <!-- Desktop & Mobile Drawer Sidebar -->
+  <aside class="admin-sidebar" [class.mobile-open]="isMobileMenuOpen()">
+    <!-- Mobile Close Trigger -->
+    <button class="mobile-close-sidebar-btn" (click)="closeMobileMenu()">✕</button>
+
     <div class="sidebar-header">
       <span class="sidebar-title">Admin Dashboard</span>
     </div>
@@ -22,38 +25,41 @@
 
     <!-- Navigation List: Clean Sidebar Style -->
     <nav class="sidebar-nav">
-      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">📊</span>
         <span class="nav-label">Overview</span>
       </a>
-      <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">
+      <a routerLink="/admin/users" routerLinkActive="active" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">👥</span>
         <span class="nav-label">Users Database</span>
       </a>
-      <a routerLink="/admin/listings" routerLinkActive="active" class="nav-item">
+      <a routerLink="/admin/listings" routerLinkActive="active" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">📦</span>
         <span class="nav-label">Product Inventory</span>
       </a>
-      <a routerLink="/admin/reports" routerLinkActive="active" class="nav-item">
+      <a routerLink="/admin/reports" routerLinkActive="active" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">🚨</span>
         <span class="nav-label">Reports Queue</span>
         @if (adminService.pendingReportCount() > 0) {
           <span class="report-badge">{{ adminService.pendingReportCount() }}</span>
         }
       </a>
-      <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item">
+      <a routerLink="/admin/orders" routerLinkActive="active" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">📋</span>
         <span class="nav-label">Orders</span>
       </a>
-      <a routerLink="/admin/coupons" routerLinkActive="active" class="nav-item">
+      <a routerLink="/admin/coupons" routerLinkActive="active" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">🎫</span>
         <span class="nav-label">Coupons</span>
       </a>
-      <a routerLink="/admin/flash-sales" routerLinkActive="active" class="nav-item">
+      <a routerLink="/admin/flash-sales" routerLinkActive="active" (click)="closeMobileMenu()" class="nav-item">
         <span class="nav-icon">⚡</span>
         <span class="nav-label">Flash Sales</span>
       </a>
     </nav>
+
+
+
 
     <div class="sidebar-footer">
       <a routerLink="/" class="btn-sidebar btn-back-site">
@@ -65,41 +71,18 @@
     </div>
   </aside>
 
+  <!-- Sidebar Overlay Backdrop for Mobile -->
+  <div class="sidebar-overlay" *ngIf="isMobileMenuOpen()" (click)="closeMobileMenu()"></div>
+
   <!-- Main Content Wrapper -->
   <div class="admin-main-wrapper">
-    <!-- Mobile Horizontal Tabs Navigation -->
-    <nav class="admin-mobile-tabs">
-      <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="mobile-tab-item">
-        <span>📊 Overview</span>
-      </a>
-      <a routerLink="/admin/users" routerLinkActive="active" class="mobile-tab-item">
-        <span>👥 Users</span>
-      </a>
-      <a routerLink="/admin/listings" routerLinkActive="active" class="mobile-tab-item">
-        <span>📦 Listings</span>
-      </a>
-      <a routerLink="/admin/reports" routerLinkActive="active" class="mobile-tab-item">
-        <span>🚨 Reports</span>
-        @if (adminService.pendingReportCount() > 0) {
-          <span class="report-badge-mobile">{{ adminService.pendingReportCount() }}</span>
-        }
-      </a>
-      <a routerLink="/admin/orders" routerLinkActive="active" class="mobile-tab-item">
-        <span>📋 Orders</span>
-      </a>
-      <a routerLink="/admin/coupons" routerLinkActive="active" class="mobile-tab-item">
-        <span>🎫 Coupons</span>
-      </a>
-      <a routerLink="/admin/flash-sales" routerLinkActive="active" class="mobile-tab-item">
-        <span>⚡ Flash Sales</span>
-      </a>
-      <a routerLink="/" class="mobile-tab-item mobile-back-btn">
-        <span>↩ Back to Site</span>
-      </a>
-      <button type="button" (click)="logout()" class="mobile-tab-item mobile-logout-btn">
-        <span>❌ Log Out</span>
-      </button>
-    </nav>
+    <!-- Mobile Top Header Bar with Hamburger Button -->
+    <div class="admin-mobile-header">
+      <button type="button" class="hamburger-menu-btn" (click)="toggleMobileMenu()">☰</button>
+      <span class="mobile-header-title">Admin Dashboard</span>
+      <div style="width: 24px;"></div>
+    </div>
+
 
     <!-- Main Content Area -->
     <main class="admin-main-content">

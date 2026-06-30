@@ -1,91 +1,147 @@
 .flash-sale-bar {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  border-bottom: 2px solid var(--yellow, #ffd700);
-  padding: 0.5rem 0;
+  background: var(--color-dark, #111);
+  border-bottom: 2px solid var(--color-yellow, #e8bd18);
+  padding: 0.4rem 0;
   overflow: hidden;
 }
 
 .flash-sale-bar-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .flash-sale-left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .flash-sale-icon {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
+  flex-shrink: 0;
   animation: flash-pulse 1s ease-in-out infinite;
 }
 
 .flash-sale-label {
-  font-family: var(--font-primary, sans-serif);
+  font-family: var(--font-primary, 'Barlow Condensed', sans-serif);
   font-weight: 900;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 0.1em;
-  color: var(--yellow, #ffd700);
+  color: var(--color-yellow, #e8bd18);
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .flash-sale-sep {
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.15);
   font-weight: 300;
+  flex-shrink: 0;
 }
 
 .flash-sale-text {
-  font-family: var(--font-secondary, sans-serif);
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-secondary, 'Inter', sans-serif);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .flash-sale-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .flash-sale-ends {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-secondary, 'Inter', sans-serif);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  display: none;
 }
 
 .flash-sale-timer {
-  font-family: var(--font-mono, monospace);
+  font-family: 'Courier New', Courier, monospace;
   font-weight: 900;
-  font-size: 1rem;
-  color: #ff6b6b;
-  min-width: 80px;
-  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-danger, #ef4444);
+  white-space: nowrap;
 }
 
 .flash-sale-cta {
-  font-family: var(--font-primary, sans-serif);
+  font-family: var(--font-primary, 'Barlow Condensed', sans-serif);
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  padding: 0.3rem 0.8rem;
-  border-radius: 4px;
-  background: var(--yellow, #ffd700);
-  color: var(--black, #000);
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius-xs, 4px);
+  background: var(--color-yellow, #e8bd18);
+  color: var(--color-black, #0a0a0a);
   text-decoration: none;
   transition: transform 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .flash-sale-cta:hover {
   transform: scale(1.05);
+}
+
+@media (min-width: 481px) {
+  .flash-sale-bar {
+    padding: 0.5rem 0;
+  }
+
+  .flash-sale-bar-inner {
+    padding: 0 1.5rem;
+    gap: 1rem;
+  }
+
+  .flash-sale-left {
+    gap: 0.5rem;
+  }
+
+  .flash-sale-icon {
+    font-size: 1.3rem;
+  }
+
+  .flash-sale-label {
+    font-size: 0.85rem;
+  }
+
+  .flash-sale-text {
+    font-size: 0.8rem;
+  }
+
+  .flash-sale-right {
+    gap: 0.5rem;
+  }
+
+  .flash-sale-ends {
+    display: inline;
+  }
+
+  .flash-sale-timer {
+    font-size: 1rem;
+  }
+
+  .flash-sale-cta {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+  }
 }
 
 @keyframes flash-pulse {

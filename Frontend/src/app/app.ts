@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnDestroy } from '@angular/core';
+import { Component, signal, inject, OnDestroy, effect } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -34,6 +34,7 @@ export class App implements OnDestroy {
   isListingFormRoute = signal(false);
   shouldShowLuckyCat = signal(false);
   shouldShowFlashBanner = signal(false);
+  private _routeShowsCat = signal(false);
 
   flashSaleAlert = signal<{ title: string; body: string; saleId: string; endsInMinutes: number; discountPercent: number } | null>(null);
 
@@ -55,7 +56,14 @@ export class App implements OnDestroy {
       const cleanUrl = url.split('?')[0];
       const isHome = cleanUrl === '/' || cleanUrl === '/home' || cleanUrl === '';
       const isMarketplaceOrDetail = cleanUrl === '/products' || cleanUrl.startsWith('/products/');
-      this.shouldShowLuckyCat.set(isHome || isMarketplaceOrDetail);
+      this._routeShowsCat.set(isHome || isMarketplaceOrDetail);
+    });
+
+    // Hide lucky cat when flash sales are active (flash sale already gives best price)
+    effect(() => {
+      this.shouldShowLuckyCat.set(
+        this._routeShowsCat() && this.flashSaleService.activeSales().length === 0
+      );
     });
 
     const token = this.authService.token();
@@ -71,6 +79,10 @@ export class App implements OnDestroy {
 
     this.socket.on('flash_sale_ending', (data: any) => {
       this.showFlashSaleAlert(data);
+    });
+
+    this.socket.on('flash_sale_ended', () => {
+      this.flashSaleService.refreshActiveSales();
     });
   }
 

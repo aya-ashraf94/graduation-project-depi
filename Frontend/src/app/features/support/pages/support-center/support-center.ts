@@ -81,6 +81,9 @@ type SupportTab = 'privacy' | 'terms' | 'help';
               
               <h3>4. Termination</h3>
               <p>We reserve the right to suspend or terminate your account at any time for violations of these terms or our community guidelines.</p>
+
+              <h3>5. Promotional Campaigns & Flash Sales</h3>
+              <p>Nafa3ni administration may select specific listings, categories, or all items for temporary Flash Sale campaigns. During the campaign window, listing prices are dynamically modified. Normal listing prices will be automatically restored once the campaign expires. Sellers agree that their listed items are subject to these promotional events.</p>
             </div>
           </div>
 
@@ -106,6 +109,11 @@ type SupportTab = 'privacy' | 'terms' | 'help';
               <div class="faq-item">
                 <div class="faq-q">Is payment handled through the platform?</div>
                 <div class="faq-a">Currently, all payments are handled in-person between the buyer and seller. We recommend meeting in a safe, public place on campus.</div>
+              </div>
+
+              <div class="faq-item">
+                <div class="faq-q">What are Flash Sales and how do they affect my listings?</div>
+                <div class="faq-a">Flash Sales are limited-time promotional campaigns managed by Nafa3ni administration to highlight student listings. If your product or its category is included in a campaign, a temporary discount percentage is applied automatically. A crossed-out reference price and a "Save X%" badge will be displayed to buyers during the campaign window. These promotional discounts do not stack with active coupon codes.</div>
               </div>
             </div>
             

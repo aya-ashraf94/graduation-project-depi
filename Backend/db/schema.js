@@ -48,6 +48,7 @@ const products = pgTable('products', {
   title: text('title').notNull(),
   description: text('description'),
   price: doublePrecision('price').notNull(),
+  minPrice: doublePrecision('min_price'),
   images: text('images').array().default([]).notNull(),
   categoryId: uuid('category_id').notNull().references(() => categories.id, { onDelete: 'restrict' }),
   dynamicAttributes: jsonb('dynamic_attributes').default({}).notNull(),
@@ -74,6 +75,11 @@ const orders = pgTable('orders', {
   buyerId: uuid('buyer_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
   price: doublePrecision('price').notNull(),
+  originalPrice: doublePrecision('original_price'),
+  flashSaleDiscount: doublePrecision('flash_sale_discount').default(0),
+  categorySaleDiscount: doublePrecision('category_sale_discount').default(0),
+  couponDiscount: doublePrecision('coupon_discount').default(0),
+  offerAmount: doublePrecision('offer_amount'),
   status: text('status', { enum: ['pending', 'shipped', 'delivered', 'cancelled'] }).default('pending').notNull(),
   paymentMethod: text('payment_method').notNull(),
   shippingAddress: text('shipping_address').notNull(),
@@ -231,6 +237,9 @@ const coupons = pgTable('coupons', {
   discountValue: doublePrecision('discount_value').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   expiryDate: timestamp('expiry_date', { mode: 'date' }),
+  maxUses: integer('max_uses'),
+  usedCount: integer('used_count').default(0).notNull(),
+  maxPerUser: integer('max_per_user'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -249,6 +258,16 @@ const flashSales = pgTable('flash_sales', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
+
+const userBlocks = pgTable('user_blocks', {
+  blockerId: uuid('blocker_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  blockedId: uuid('blocked_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.blockerId, table.blockedId] }),
+  blockerIdx: index('blocker_idx').on(table.blockerId),
+  blockedIdx: index('blocked_idx').on(table.blockedId),
+}));
 
 module.exports = {
   users,
@@ -270,4 +289,5 @@ module.exports = {
   settings,
   coupons,
   flashSales,
+  userBlocks,
 };

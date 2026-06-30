@@ -45,6 +45,7 @@ export class CreateListing implements OnInit {
   // ── Pricing & Contact Data ───────────────────────────────────────────────
   pricingMode: PricingMode = 'fixed';
   price: number | null = null;
+  minPrice: number | null = null;
   tradeDescription = '';
   city = '';
   phone = '';
@@ -124,7 +125,8 @@ export class CreateListing implements OnInit {
   get phase2Valid(): boolean {
     // السعر مطلوب في حالة الـ fixed فقط
     const priceOk = this.pricingMode === 'trade' || (this.price !== null && this.price > 0);
-    return priceOk && this.city.trim().length > 0 && this.phone.trim().length > 0;
+    const minPriceOk = this.pricingMode === 'trade' || this.minPrice === null || this.minPrice === undefined || (this.minPrice >= 0 && this.minPrice <= (this.price || 0));
+    return priceOk && minPriceOk && this.city.trim().length > 0 && this.phone.trim().length > 0;
   }
 
   get allValid(): boolean {
@@ -269,6 +271,7 @@ export class CreateListing implements OnInit {
       description: this.description,
       brand: this.dynamicFields['Brand'] || this.dynamicFields['brand'] || 'ARCHIVE',
       price: this.pricingMode === 'trade' ? 0 : this.price,
+      minPrice: this.pricingMode === 'trade' ? null : this.minPrice,
       categoryId: this.selectedCategory()?.id,
       condition: ['new_with_tags', 'excellent', 'good', 'fair', 'distressed'].includes(condition)
         ? condition : condition === 'new' ? 'new_with_tags' : 'good',
@@ -323,6 +326,7 @@ export class CreateListing implements OnInit {
       description: this.description || 'Draft description',
       brand: this.dynamicFields['Brand'] || this.dynamicFields['brand'] || 'ARCHIVE',
       price: this.pricingMode === 'trade' ? 0 : (this.price || 0),
+      minPrice: this.pricingMode === 'trade' ? null : this.minPrice,
       categoryId: this.selectedCategory()?.id,
       condition: ['new_with_tags', 'excellent', 'good', 'fair', 'distressed'].includes(condition)
         ? condition : condition === 'new' ? 'new_with_tags' : 'good',

@@ -1,9 +1,13 @@
 <div class="coupons-page-container">
+  <!-- TOPBAR HEADER -->
   <header class="admin-topbar">
     <div class="topbar-welcome">
       <h2>🎫 Coupons Management</h2>
       <p>Manage and create discount codes for store orders.</p>
     </div>
+    <button (click)="showCreateModal.set(true)" class="btn-create-trigger">
+      <span>➕ Create Coupon</span>
+    </button>
   </header>
 
   @if (isLoading() && couponsList().length === 0) {
@@ -14,144 +18,263 @@
       (retry)="loadCoupons()">
     </app-admin-error-panel>
   } @else {
-    <div class="dashboard-panels">
-      <!-- Left Panel: Coupon Codes Table -->
-      <div class="dashboard-panel main-panel">
-        <div class="panel-header">
-          <h3>🚨 Active & Expired Coupons</h3>
+    <!-- MAIN WORKSPACE CONTENT -->
+    <div class="workspace-layout">
+      
+      <!-- CONTROL BAR (Clean search and borderless text filters) -->
+      <div class="control-bar-card">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" 
+                 [placeholder]="'Search coupon codes...'"
+                 [value]="searchQuery()"
+                 (input)="searchQuery.set($any($event.target).value)"
+                 class="search-field" />
         </div>
-        <div class="panel-body">
-          <div class="table-wrapper">
-            <table class="brutal-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Discount</th>
-                  <th>Status</th>
-                  <th>Expiry Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (isLoading()) {
-                  <app-admin-table-skeleton
-                    [rows]="3"
-                    [columns]="['text', 'text', 'badge', 'text', 'text']">
-                  </app-admin-table-skeleton>
-                } @else if (couponsList().length === 0) {
-                  <app-empty-state
-                    variant="table-row"
-                    [colspan]="5"
-                    icon="🎫"
-                    title="No coupons yet"
-                    description="No coupons created yet.">
-                  </app-empty-state>
-                } @else {
-                  @for (coupon of couponsList(); track coupon.id) {
-                    <tr>
-                      <td class="bold-text">
-                        <span class="coupon-code-badge">{{ coupon.code }}</span>
-                      </td>
-                      <td>
-                        <strong>
-                          {{ coupon.discountType === 'percentage' ? coupon.discountValue + '%' : '$' + coupon.discountValue }}
-                        </strong>
-                      </td>
-                      <td>
-                        <button (click)="toggleCoupon(coupon)" 
-                                [class]="coupon.isActive ? 'status-pill active-pill' : 'status-pill inactive-pill'">
-                          {{ coupon.isActive ? 'Active' : 'Disabled' }}
-                        </button>
-                      </td>
-                      <td>
-                        @if (coupon.expiryDate) {
-                          <span [class.expired-date]="isExpired(coupon.expiryDate)">
-                            {{ coupon.expiryDate | date:'mediumDate' }}
-                          </span>
-                        } @else {
-                          <span class="forever-tag">Never Expires</span>
-                        }
-                      </td>
-                      <td>
-                        <div class="table-actions">
-                          <button (click)="deleteCoupon(coupon)" class="action-btn delete-btn" title="Delete Coupon">
-                            🗑️
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                }
-              </tbody>
-            </table>
-          </div>
+
+        <div class="filter-pills-row">
+          <button class="filter-link-btn" 
+                  [class.active]="statusFilter() === 'all'" 
+                  (click)="statusFilter.set('all')">
+            All
+          </button>
+          <span class="filter-link-separator">|</span>
+          <button class="filter-link-btn" 
+                  [class.active]="statusFilter() === 'active'" 
+                  (click)="statusFilter.set('active')">
+            Active
+          </button>
+          <span class="filter-link-separator">|</span>
+          <button class="filter-link-btn" 
+                  [class.active]="statusFilter() === 'expired'" 
+                  (click)="statusFilter.set('expired')">
+            Expired
+          </button>
         </div>
       </div>
 
-      <!-- Right Panel: Create Coupon Form -->
-      <div class="dashboard-panel side-panel">
-        <div class="panel-header">
-          <h3>➕ Create New Coupon</h3>
+      <!-- HORIZONTAL STATS SUMMARY STRIP (1 Card) -->
+      <div class="stats-summary-strip">
+        <div class="stats-strip-item">
+          <span class="stats-strip-label">Total Coupons</span>
+          <span class="stats-strip-val">{{ totalCount() }}</span>
         </div>
-        <div class="panel-body" style="padding: 1.5rem;">
-          <form (ngSubmit)="createCoupon()" #couponForm="ngForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
-            <!-- Code -->
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">COUPON CODE</label>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="stats-strip-label">Active & Valid</span>
+          <span class="stats-strip-val text-green">{{ activeCount() }}</span>
+        </div>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="stats-strip-label">Expired</span>
+          <span class="stats-strip-val text-red">{{ expiredCount() }}</span>
+        </div>
+      </div>
+
+      <!-- TICKET GRID CONTAINER -->
+      <div class="coupons-grid-wrapper">
+        @if (isLoading()) {
+          <div class="skeleton-grid">
+            <div class="skeleton-ticket-card" *ngFor="let i of [1,2,3,4]">
+              <div class="skeleton-stub"></div>
+              <div class="skeleton-body"></div>
+            </div>
+          </div>
+        } @else if (filteredCouponsList().length === 0) {
+          <app-empty-state
+            icon="🎫"
+            title="No Coupons Found"
+            description="No discount codes match your search query or status filter.">
+          </app-empty-state>
+        } @else {
+          <div class="tickets-grid">
+            @for (coupon of filteredCouponsList(); track coupon.id) {
+              <div class="ticket-card" [class.expired-ticket]="isExpired(coupon.expiryDate)">
+                
+                <!-- Left stub: Discount Info -->
+                <div class="ticket-stub">
+                  <span class="ticket-discount-amount">
+                    {{ coupon.discountType === 'percentage' ? coupon.discountValue : '$' + coupon.discountValue }}
+                  </span>
+                  <span class="ticket-discount-type">
+                    {{ coupon.discountType === 'percentage' ? '% OFF' : 'OFF' }}
+                  </span>
+                </div>
+
+                <!-- Jagged divider line representation -->
+                <div class="ticket-divider">
+                  <span class="notch top-notch"></span>
+                  <span class="dashed-line"></span>
+                  <span class="notch bottom-notch"></span>
+                </div>
+
+                <!-- Right body: Ultra-Compact 2-Row Details and Actions -->
+                <div class="ticket-body">
+                  <!-- Row 1: Code and Status badge -->
+                  <div class="ticket-row-top">
+                    <span class="coupon-code-badge">{{ coupon.code }}</span>
+                    <span class="badge" [class]="coupon.isActive && !isExpired(coupon.expiryDate) ? 'badge-success' : 'badge-danger'">
+                      {{ isExpired(coupon.expiryDate) ? 'EXPIRED' : (coupon.isActive ? 'ACTIVE' : 'DISABLED') }}
+                    </span>
+                  </div>
+
+                  <!-- Row 2: Expiry details and Actions -->
+                  <div class="ticket-row-bottom">
+                    <div class="ticket-expiry-text">
+                      <span>Exp: </span>
+                      <strong>{{ coupon.expiryDate ? (coupon.expiryDate | date:'mediumDate') : 'Never' }}</strong>
+                    </div>
+                    <div class="ticket-action-buttons">
+                      <button (click)="toggleCoupon(coupon)" 
+                              [class]="coupon.isActive ? 'btn-status-toggle active-state' : 'btn-status-toggle disabled-state'">
+                        {{ coupon.isActive ? 'Disable' : 'Enable' }}
+                      </button>
+                      <button (click)="deleteCoupon(coupon)" class="btn-delete-coupon" title="Delete Coupon">
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- COLLAPSIBLE GUIDE PANEL -->
+      <div class="guide-collapsible-container">
+        <button type="button" class="guide-toggle-btn" (click)="showGuide.set(!showGuide())">
+          <span class="guide-title-text">💡 Guide & Tips</span>
+          <span class="guide-arrow-icon">{{ showGuide() ? '▲' : '▼' }}</span>
+        </button>
+        <div class="guide-content-panel" *ngIf="showGuide()">
+          <ul>
+            <li>Active coupons are immediately valid for customer checkout orders.</li>
+            <li>Expired coupons are ignored during checkouts but retained for order histories.</li>
+            <li>Use the top search box to instantly search by code name.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- CREATE NEW COUPON MODAL DIALOG -->
+  <div class="modal-overlay" *ngIf="showCreateModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="panel-header">
+        <div class="panel-header-titles">
+          <h3>Create New Coupon</h3>
+          <p class="panel-header-subtitle">Create discounts for customers.</p>
+        </div>
+        <button class="modal-close-btn-header" (click)="showCreateModal.set(false)">✕</button>
+      </div>
+      <div class="panel-body">
+        <form (ngSubmit)="createCoupon()" #couponForm="ngForm" class="create-coupon-form">
+          <!-- Coupon Code Input -->
+          <div class="form-group">
+            <label class="form-label">Coupon Code</label>
+            <div class="input-with-prefix-icon">
+              <span class="input-icon-label">🏷️</span>
               <input type="text" 
                      [(ngModel)]="newCode" 
                      name="code" 
-                     placeholder="e.g. WELCOME20" 
+                     placeholder="e.g. MEGA20" 
                      required
-                     style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; text-transform: uppercase; outline: none; box-shadow: 2px 2px 0 var(--black);" />
+                     class="form-control uppercase-input" />
+            </div>
+          </div>
+
+          <!-- Type and Value Side-by-Side Grid Row -->
+          <div class="form-row-grid">
+            <!-- Custom Styled Discount Type Dropdown Select -->
+            <div class="form-group">
+              <label class="form-label">Discount Type</label>
+              <div class="custom-select-container" (click)="toggleDropdown()" [class.dropdown-active]="isDropdownOpen()">
+                <div class="custom-select-selected">
+                  <span>{{ newDiscountType === 'percentage' ? 'Percentage (%)' : 'Fixed ($)' }}</span>
+                  <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <div class="custom-select-dropdown" *ngIf="isDropdownOpen()">
+                  <div class="custom-select-option" (click)="selectDiscountType('percentage'); $event.stopPropagation()">
+                    Percentage (%)
+                  </div>
+                  <div class="custom-select-option" (click)="selectDiscountType('fixed'); $event.stopPropagation()">
+                    Fixed ($)
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Discount Type -->
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">DISCOUNT TYPE</label>
-              <select [(ngModel)]="newDiscountType" 
-                      name="discountType"
-                      style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; outline: none; box-shadow: 2px 2px 0 var(--black); background: white;">
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed Amount ($)</option>
-              </select>
-            </div>
-
-            <!-- Discount Value -->
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">DISCOUNT VALUE</label>
-              <div style="position: relative; display: flex; align-items: center;">
+            <!-- Discount Value Input -->
+            <div class="form-group">
+              <label class="form-label">Discount Value</label>
+              <div class="input-with-suffix">
                 <input type="number" 
                        [(ngModel)]="newDiscountValue" 
                        name="discountValue" 
-                       placeholder="e.g. 10" 
+                       placeholder="e.g. 15" 
                        required
                        min="1"
-                       style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; outline: none; box-shadow: 2px 2px 0 var(--black);" />
-                <span style="position: absolute; right: 16px; font-weight: 800; font-size: 1.1rem; color: var(--dark);">
+                       class="form-control" />
+                <span class="input-suffix-tag">
                   {{ newDiscountType === 'percentage' ? '%' : '$' }}
                 </span>
               </div>
             </div>
+          </div>
 
-            <!-- Expiry Date -->
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <label style="font-weight: 800; font-size: 0.8rem; color: var(--gray-3); text-transform: uppercase;">EXPIRY DATE (OPTIONAL)</label>
+          <!-- Expiry Date Input -->
+          <div class="form-group">
+            <label class="form-label">Expiry Date (Optional)</label>
+            <div class="input-with-prefix-icon">
+              <span class="input-icon-label">📅</span>
               <input type="date" 
                      [(ngModel)]="newExpiryDate" 
                      name="expiryDate" 
-                     style="width: 100%; padding: 12px; border: 2px solid var(--dark); border-radius: 6px; font-weight: 800; outline: none; box-shadow: 2px 2px 0 var(--black); background: white;" />
+                     class="form-control date-input" />
             </div>
+          </div>
 
-            <button type="submit" 
-                    [disabled]="isSubmitting"
-                    class="quick-op-btn op-yellow"
-                    style="margin: 0; padding: 12px; border: 2px solid var(--black); border-radius: 6px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 var(--black); width: 100%;">
-              {{ isSubmitting ? 'Creating...' : 'Create Coupon' }}
-            </button>
-          </form>
-        </div>
+          <!-- Max Uses and Max Per User Side-by-Side Grid Row -->
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label class="form-label">Max Total Uses</label>
+              <input type="number" 
+                     [(ngModel)]="newMaxUses" 
+                     name="maxUses" 
+                     placeholder="e.g. 100" 
+                     min="1"
+                     class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max Uses / User</label>
+              <input type="number" 
+                     [(ngModel)]="newMaxPerUser" 
+                     name="maxPerUser" 
+                     placeholder="e.g. 1" 
+                     min="1"
+                     class="form-control" />
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" 
+                  [disabled]="isSubmitting"
+                  class="btn-submit-coupon op-yellow">
+            {{ isSubmitting ? 'Creating...' : 'Create Coupon' }}
+          </button>
+        </form>
       </div>
     </div>
-  }
+  </div>
+
+  <!-- FLOATING ACTION BUTTON (FAB) FOR MOBILE -->
+  <button (click)="showCreateModal.set(true)" class="fab-create-btn" title="Create Coupon">➕</button>
 </div>

@@ -32,6 +32,7 @@ export interface Product {
   brand: string;
   description: string;
   price: number;
+  minPrice?: number | null;
   condition: ProductCondition;
   conditionScore: number;   // 0–10
   category: ProductCategory;
@@ -55,11 +56,16 @@ export interface Product {
   /** Raw dynamicAttributes from the backend (preserved for edit forms) */
   rawDynamicAttributes?: Record<string, any>;
 
-  /** Flash sale fields */
+  /** Promotion / sale fields (set by server-side discount engine) */
   originalPrice?: number;
   salePrice?: number;
   flashSaleName?: string;
   isFlashSale?: boolean;
+  isOnSale?: boolean;
+  categorySalePercent?: number;
+  savingsPercent?: number;
+  savingsValue?: number;
+  saleEnd?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -71,6 +77,7 @@ export interface ProductSummary {
   title: string;
   brand: string;
   price: number;
+  minPrice?: number | null;
   condition: ProductCondition;
   conditionScore: number;
   category: ProductCategory;
@@ -90,6 +97,11 @@ export interface ProductSummary {
   salePrice?: number;
   flashSaleName?: string;
   isFlashSale?: boolean;
+  isOnSale?: boolean;
+  categorySalePercent?: number;
+  savingsPercent?: number;
+  savingsValue?: number;
+  saleEnd?: string;
 }
 
 /** Payload to create a new listing */
@@ -98,6 +110,7 @@ export interface CreateProductRequest {
   brand: string;
   description: string;
   price: number;
+  minPrice?: number | null;
   condition: ProductCondition;
   conditionScore: number;
   category: ProductCategory;

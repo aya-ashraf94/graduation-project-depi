@@ -4,6 +4,45 @@
       <h1>Users Database</h1>
       <p>Manage accounts, toggle roles, verify seller badges, and suspend/delete profiles.</p>
     </div>
+  </div>
+
+  <!-- Top Metrics Summary Cards -->
+  <div class="users-metrics-grid">
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'total'" (click)="setMetricFilter('total')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">👥</span>
+        <span class="metric-title">Total Users</span>
+      </div>
+      <div class="metric-value">{{ stats()?.totalUsers ?? 0 }}</div>
+    </div>
+    
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'admins'" (click)="setMetricFilter('admins')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">🛡️</span>
+        <span class="metric-title">Administrators</span>
+      </div>
+      <div class="metric-value">{{ stats()?.totalAdmins ?? 0 }}</div>
+    </div>
+
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'verified'" (click)="setMetricFilter('verified')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">✅</span>
+        <span class="metric-title">Verified Sellers</span>
+      </div>
+      <div class="metric-value">{{ stats()?.totalVerified ?? 0 }}</div>
+    </div>
+
+    <div class="metric-card-brutal" [class.active]="activeMetric() === 'suspended'" (click)="setMetricFilter('suspended')">
+      <div class="metric-card-header-inner">
+        <span class="metric-icon">⛔</span>
+        <span class="metric-title">Suspended Profiles</span>
+      </div>
+      <div class="metric-value">{{ stats()?.totalSuspended ?? 0 }}</div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Toolbar Row -->
+  <div class="users-toolbar-row">
     <div class="search-box-brutal">
       <span class="search-icon">🔍</span>
       <input 
@@ -12,6 +51,26 @@
         placeholder="Search users by name or email..." 
         aria-label="Search users"
       >
+    </div>
+    
+    <div class="filter-controls-group">
+      <!-- Filter 1: Role -->
+      <div class="toolbar-filter-select-wrapper">
+        <select [formControl]="roleControl" class="toolbar-select">
+          <option value="all">All Roles</option>
+          <option value="user">Users</option>
+          <option value="admin">Admins</option>
+        </select>
+      </div>
+
+      <!-- Filter 2: Status -->
+      <div class="toolbar-filter-select-wrapper">
+        <select [formControl]="statusControl" class="toolbar-select">
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -51,7 +110,7 @@
                 description="No user profiles match your query.">
               </app-empty-state>
             } @else {
-              @for (user of users(); track user.id) {
+              @for (user of users(); track user.id; let idx = $index) {
                 <tr [class.user-suspended-row]="user.isSuspended">
                   <td>
                     <div class="user-profile-cell">
@@ -94,47 +153,33 @@
                     }
                   </td>
                   <td>
-                    <div class="table-row-actions">
-                      <!-- Verify Toggle -->
+                    <div class="user-action-dropdown-container">
                       <button 
-                        (click)="toggleVerify(user)" 
-                        class="row-action-btn verify-btn"
-                        [class.active-verified]="user.isVerified"
-                        [title]="user.isVerified ? 'Remove Verification' : 'Verify User'"
+                        (click)="toggleUserDropdown(user.id, $event)" 
+                        class="manage-btn"
+                        [class.active]="activeDropdownUserId() === user.id"
+                        title="Manage User Actions"
                       >
-                        <span class="btn-icon">{{ user.isVerified ? '✕' : '✓' }}</span>
+                        Manage ▾
                       </button>
-
-                      <!-- Suspend Toggle -->
-                      <button 
-                        (click)="toggleSuspend(user)" 
-                        class="row-action-btn suspend-btn"
-                        [class.unsuspend]="user.isSuspended"
-                        [title]="user.isSuspended ? 'Activate Account' : 'Suspend Account'"
-                      >
-                        <span class="btn-icon">{{ user.isSuspended ? '🔓' : '⛔' }}</span>
-                      </button>
-
-                      <!-- Role Toggle -->
-                      @if (user.id !== authService.currentUser()?.id) {
-                        <button 
-                          (click)="toggleRole(user)" 
-                          class="row-action-btn role-btn"
-                          [title]="user.role === 'admin' ? 'Revoke Admin Privileges' : 'Make Administrator'"
-                        >
-                          <span class="btn-icon">⚙️</span>
-                        </button>
-                      }
-
-                      <!-- Delete Action -->
-                      @if (user.id !== authService.currentUser()?.id) {
-                        <button 
-                          (click)="deleteUser(user)" 
-                          class="row-action-btn delete-btn" 
-                          title="Delete User Account"
-                        >
-                          <span class="btn-icon">🗑️</span>
-                        </button>
+                      @if (activeDropdownUserId() === user.id) {
+                        <div class="user-action-dropdown-menu" [class.open-up]="idx >= users().length - 3" (click)="$event.stopPropagation()">
+                          <button type="button" (click)="toggleVerify(user); activeDropdownUserId.set(null)" class="dropdown-item">
+                            {{ user.isVerified ? '✕ Unverify Seller' : '✓ Verify Seller' }}
+                          </button>
+                          <button type="button" (click)="toggleSuspend(user); activeDropdownUserId.set(null)" class="dropdown-item">
+                            {{ user.isSuspended ? '🔓 Activate Account' : '⛔ Suspend Account' }}
+                          </button>
+                          @if (user.id !== authService.currentUser()?.id) {
+                            <button type="button" (click)="toggleRole(user); activeDropdownUserId.set(null)" class="dropdown-item">
+                              ⚙️ {{ user.role === 'admin' ? 'Demote to User' : 'Promote to Admin' }}
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button type="button" (click)="deleteUser(user); activeDropdownUserId.set(null)" class="dropdown-item dropdown-item-delete">
+                              🗑️ Delete Account
+                            </button>
+                          }
+                        </div>
                       }
                     </div>
                   </td>

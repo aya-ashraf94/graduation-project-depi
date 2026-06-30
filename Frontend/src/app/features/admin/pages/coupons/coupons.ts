@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../../core/services/admin.service';
@@ -6,13 +6,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
-import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 
 @Component({
   selector: 'app-admin-coupons',
   standalone: true,
-  imports: [CommonModule, FormsModule, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
+  imports: [CommonModule, FormsModule, EmptyStateComponent, AdminErrorPanelComponent, AdminLoaderComponent],
   templateUrl: './coupons.html',
   styleUrl: './coupons.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,15 +26,55 @@ export class Coupons implements OnInit {
   errorMessage = signal<string | null>(null);
   today = new Date();
 
+  totalCount = computed(() => this.couponsList().length);
+  activeCount = computed(() => this.couponsList().filter(c => c.isActive && !this.isExpired(c.expiryDate)).length);
+  expiredCount = computed(() => this.couponsList().filter(c => this.isExpired(c.expiryDate)).length);
+
+  searchQuery = signal('');
+  statusFilter = signal<'all' | 'active' | 'expired'>('all');
+  showGuide = signal(false);
+
+  filteredCouponsList = computed(() => {
+    const list = this.couponsList();
+    const query = this.searchQuery().toLowerCase().trim();
+    const filter = this.statusFilter();
+
+    return list.filter(coupon => {
+      const matchesQuery = coupon.code.toLowerCase().includes(query);
+      const isExp = this.isExpired(coupon.expiryDate);
+      const isActiveAndNotExpired = coupon.isActive && !isExp;
+
+      if (filter === 'active') {
+        return matchesQuery && isActiveAndNotExpired;
+      } else if (filter === 'expired') {
+        return matchesQuery && isExp;
+      }
+      return matchesQuery;
+    });
+  });
+
   // Form Model
   newCode = '';
   newDiscountType = 'percentage';
   newDiscountValue: number | null = null;
   newExpiryDate = '';
+  newMaxUses: number | null = null;
+  newMaxPerUser: number | null = null;
   isSubmitting = false;
+  showCreateModal = signal(false);
+  isDropdownOpen = signal(false);
 
   ngOnInit(): void {
     this.loadCoupons();
+  }
+
+  toggleDropdown(): void {
+    this.isDropdownOpen.update(v => !v);
+  }
+
+  selectDiscountType(type: string): void {
+    this.newDiscountType = type;
+    this.isDropdownOpen.set(false);
   }
 
   isExpired(expiryDate: any): boolean {
@@ -78,7 +117,9 @@ export class Coupons implements OnInit {
       code: this.newCode.trim().toUpperCase(),
       discountType: this.newDiscountType,
       discountValue: this.newDiscountValue,
-      expiryDate: this.newExpiryDate ? this.newExpiryDate : null
+      expiryDate: this.newExpiryDate ? this.newExpiryDate : null,
+      maxUses: this.newMaxUses,
+      maxPerUser: this.newMaxPerUser
     };
 
     this.adminService.createCoupon(payload).subscribe({
@@ -89,7 +130,10 @@ export class Coupons implements OnInit {
         this.newCode = '';
         this.newDiscountValue = null;
         this.newExpiryDate = '';
+        this.newMaxUses = null;
+        this.newMaxPerUser = null;
         this.isSubmitting = false;
+        this.showCreateModal.set(false);
       },
       error: (err) => {
         console.error('Failed to create coupon:', err);

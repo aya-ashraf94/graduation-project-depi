@@ -48,6 +48,13 @@
               </div>
 
               <div class="field-group">
+                <label class="field-label" for="edit-min-price">MINIMUM PRICE ($)</label>
+                <input id="edit-min-price" class="field-input" type="number" formControlName="minPrice" placeholder="No limit" min="0" step="0.01" />
+                <span class="field-error" *ngIf="fieldError('minPrice')">{{ fieldError('minPrice') }}</span>
+                <span class="wiz-hint" style="font-size: 0.72rem; color: var(--gray-3); margin-top: 0.2rem; display: block;">Protects your item from promotional flash sale discounts below this price.</span>
+              </div>
+
+              <div class="field-group">
                 <label class="field-label" for="edit-category">CATEGORY</label>
                 <select id="edit-category" class="field-select" formControlName="categoryId" (change)="onCategoryChange($event)">
                   <option value="" disabled>Select a category</option>

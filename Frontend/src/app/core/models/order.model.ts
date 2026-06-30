@@ -20,6 +20,11 @@ export interface Order {
   buyer: UserSummary;
   seller: UserSummary;
   price: number;
+  originalPrice?: number;
+  flashSaleDiscount?: number;
+  categorySaleDiscount?: number;
+  couponDiscount?: number;
+  offerAmount?: number;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   shippingAddress?: string;

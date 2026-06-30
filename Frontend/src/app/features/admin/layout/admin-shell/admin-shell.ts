@@ -19,6 +19,7 @@ export class AdminShell implements OnInit {
   private router = inject(Router);
 
   isMobileMenuOpen = signal(false);
+  showGuide = signal(false);
 
   ngOnInit(): void {
     this.adminService.refreshPendingCount();

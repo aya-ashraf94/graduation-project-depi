@@ -1,11 +1,11 @@
 const db = require("../db");
-const { products, categories, users } = require("../db/schema");
-const { eq, ilike, or, and, ne, gte, lte, inArray, desc, asc, sql, count } = require("drizzle-orm");
+const { products, categories, users, userBlocks } = require("../db/schema");
+const { eq, ilike, or, and, ne, gte, lte, inArray, notInArray, desc, asc, sql, count } = require("drizzle-orm");
 const fs = require("fs");
 const path = require("path");
 const cloudinary = require("../config/cloudinary");
 const jwt = require("jsonwebtoken");
-const { getActiveFlashSaleDiscounts, applyDiscount, applyDiscounts } = require("../utils/flashSaleHelper");
+const { loadActivePromotions, annotateProduct, annotateProducts } = require("../utils/discountEngine");
 
 const isCloudinaryConfigured = () => {
   return process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API_SECRET;
@@ -58,6 +58,36 @@ const getProductById = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Extract token optionally to get logged in user ID
+    let currentUserId = null;
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      token = req.cookies?.nafa3ni_token;
+    }
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        currentUserId = decoded.id;
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    if (product && currentUserId) {
+      const [blockRelation] = await db.select()
+        .from(userBlocks)
+        .where(
+          or(
+            and(eq(userBlocks.blockerId, currentUserId), eq(userBlocks.blockedId, product.userId)),
+            and(eq(userBlocks.blockerId, product.userId), eq(userBlocks.blockedId, currentUserId))
+          )
+        )
+        .limit(1);
+      if (blockRelation) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+    }
+
     const result = await db.select()
       .from(products)
       .where(eq(products.id, req.params.id))
@@ -76,9 +106,9 @@ const getProductById = async (req, res) => {
       categoryId: row.categories,
     };
 
-    // Apply flash sale discount
-    const { discounts } = await getActiveFlashSaleDiscounts();
-    const discounted = applyDiscount(data, discounts);
+    // Apply active promotions (flash sales + category sales)
+    const promotions = await loadActivePromotions();
+    const discounted = annotateProduct(data, promotions);
 
     res.json(discounted);
   } catch (error) {
@@ -89,11 +119,43 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
+    // Extract token optionally to get logged in user ID
+    let currentUserId = null;
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      token = req.cookies?.nafa3ni_token;
+    }
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        currentUserId = decoded.id;
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    let blockedUserIds = [];
+    if (currentUserId) {
+      const blocks = await db.select()
+        .from(userBlocks)
+        .where(
+          or(
+            eq(userBlocks.blockerId, currentUserId),
+            eq(userBlocks.blockedId, currentUserId)
+          )
+        );
+      blockedUserIds = blocks.map(b => b.blockerId === currentUserId ? b.blockedId : b.blockerId);
+    }
+
     const conditions = [
       ne(products.status, 'sold'),
       ne(products.status, 'draft'),
       ne(products.status, 'reserved')
     ];
+
+    if (blockedUserIds.length > 0) {
+      conditions.push(notInArray(products.userId, blockedUserIds));
+    }
 
     if (req.query.category) {
       const catQuery = req.query.category.trim();
@@ -212,9 +274,9 @@ const getProducts = async (req, res) => {
       categoryId: r.categories,
     }));
 
-    // Apply flash sale discounts
-    const { discounts } = await getActiveFlashSaleDiscounts();
-    const discounted = applyDiscounts(formatted, discounts);
+    // Apply active promotions (flash sales + category sales)
+    const promotions = await loadActivePromotions();
+    const discounted = annotateProducts(formatted, promotions);
 
     res.json({
       products: discounted,
@@ -242,9 +304,9 @@ const getMyProducts = async (req, res) => {
       categoryId: r.categories,
     }));
 
-    // Apply flash sale discounts
-    const { discounts } = await getActiveFlashSaleDiscounts();
-    const discounted = applyDiscounts(formatted, discounts);
+    // Apply active promotions (flash sales + category sales)
+    const promotions = await loadActivePromotions();
+    const discounted = annotateProducts(formatted, promotions);
 
     res.json(discounted);
   } catch (error) {
@@ -287,9 +349,9 @@ const getUserProducts = async (req, res) => {
       categoryId: r.categories,
     }));
 
-    // Apply flash sale discounts
-    const { discounts } = await getActiveFlashSaleDiscounts();
-    const discounted = applyDiscounts(formatted, discounts);
+    // Apply active promotions (flash sales + category sales)
+    const promotions = await loadActivePromotions();
+    const discounted = annotateProducts(formatted, promotions);
 
     res.json(discounted);
   } catch (error) {
@@ -300,10 +362,20 @@ const getUserProducts = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    const { title, description, price, categoryId, dynamicAttributes, images, location, phoneNumber, showContactInfo } = req.body;
+    const { title, description, price, minPrice, categoryId, dynamicAttributes, images, location, phoneNumber, showContactInfo } = req.body;
 
     if (!title || !price || !categoryId || !location || !phoneNumber) {
       return res.status(400).json({ message: "Please provide all required fields" });
+    }
+
+    if (minPrice !== undefined && minPrice !== null && minPrice !== '') {
+      const parsedMinPrice = Number(minPrice);
+      if (isNaN(parsedMinPrice) || parsedMinPrice < 0) {
+        return res.status(400).json({ message: "Minimum price must be a valid positive number" });
+      }
+      if (parsedMinPrice > Number(price)) {
+        return res.status(400).json({ message: "Minimum price cannot be greater than listing price" });
+      }
     }
 
     const uploadPromises = (images || []).map(async (img) => {
@@ -315,7 +387,8 @@ const createProduct = async (req, res) => {
     const [product] = await db.insert(products).values({
       title,
       description: description || null,
-      price,
+      price: Number(price),
+      minPrice: minPrice !== undefined && minPrice !== null && minPrice !== '' ? Number(minPrice) : null,
       categoryId,
       dynamicAttributes: dynamicAttributes || {},
       images: savedImages,
@@ -353,6 +426,20 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    const newPrice = req.body.price !== undefined ? Number(req.body.price) : Number(existing.price);
+    const newMinPrice = req.body.minPrice !== undefined && req.body.minPrice !== null && req.body.minPrice !== ''
+      ? Number(req.body.minPrice)
+      : (req.body.minPrice === null || req.body.minPrice === '' ? null : existing.minPrice);
+
+    if (newMinPrice !== null && newMinPrice !== undefined) {
+      if (isNaN(newMinPrice) || newMinPrice < 0) {
+        return res.status(400).json({ message: "Minimum price must be a valid positive number" });
+      }
+      if (newMinPrice > newPrice) {
+        return res.status(400).json({ message: "Minimum price cannot be greater than listing price" });
+      }
+    }
+
     console.log(`[UpdateProduct] product owner: ${existing.userId}, request user: ${req.user.id}, role: ${req.user.role}`);
     if (existing.userId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: "Not authorized to update this product" });
@@ -374,7 +461,8 @@ const updateProduct = async (req, res) => {
     const allowedUpdates = {};
     if (req.body.title !== undefined) allowedUpdates.title = req.body.title;
     if (req.body.description !== undefined) allowedUpdates.description = req.body.description;
-    if (req.body.price !== undefined) allowedUpdates.price = req.body.price;
+    if (req.body.price !== undefined) allowedUpdates.price = Number(req.body.price);
+    if (req.body.minPrice !== undefined) allowedUpdates.minPrice = (req.body.minPrice === null || req.body.minPrice === '') ? null : Number(req.body.minPrice);
     if (req.body.categoryId !== undefined) {
       let catIdVal = req.body.categoryId;
       if (catIdVal && typeof catIdVal === 'object') {

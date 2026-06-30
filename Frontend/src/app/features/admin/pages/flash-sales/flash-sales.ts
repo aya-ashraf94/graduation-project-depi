@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, inject, OnInit, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FlashSaleService } from '../../../../core/services/flash-sale.service';
@@ -7,14 +7,13 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
-import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
 import { ProductService } from '../../../../core/services/product.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 
 @Component({
   selector: 'app-admin-flash-sales',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminErrorPanelComponent, AdminLoaderComponent, AdminTableSkeletonComponent, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, AdminErrorPanelComponent, AdminLoaderComponent, EmptyStateComponent],
   templateUrl: './flash-sales.html',
   styleUrl: './flash-sales.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +33,43 @@ export class AdminFlashSales implements OnInit {
   categories = signal<any[]>([]);
   products = signal<any[]>([]);
   today = new Date();
+
+  startDateVal = '';
+  startTimeVal = '';
+  endDateVal = '';
+  endTimeVal = '';
+
+  searchQuery = signal('');
+  statusFilter = signal<'all' | 'live' | 'upcoming' | 'expired'>('all');
+  isScopeDropdownOpen = signal(false);
+  showGuide = signal(false);
+
+  totalCount = computed(() => this.sales().length);
+  liveCount = computed(() => this.sales().filter(s => this.isLive(s)).length);
+  upcomingCount = computed(() => this.sales().filter(s => this.isUpcoming(s)).length);
+  expiredCount = computed(() => this.sales().filter(s => this.isExpired(s)).length);
+
+  filteredSalesList = computed(() => {
+    const list = this.sales();
+    const query = this.searchQuery().toLowerCase().trim();
+    const filter = this.statusFilter();
+
+    return list.filter(sale => {
+      const matchesQuery = sale.name.toLowerCase().includes(query);
+      const isExp = this.isExpired(sale);
+      const isLiveSale = this.isLive(sale);
+      const isUp = this.isUpcoming(sale);
+
+      if (filter === 'live') {
+        return matchesQuery && isLiveSale;
+      } else if (filter === 'upcoming') {
+        return matchesQuery && isUp;
+      } else if (filter === 'expired') {
+        return matchesQuery && isExp;
+      }
+      return matchesQuery;
+    });
+  });
 
   formModel = {
     name: '',
@@ -80,6 +116,10 @@ export class AdminFlashSales implements OnInit {
       endDate: '',
       notifyBeforeMinutes: 30,
     };
+    this.startDateVal = '';
+    this.startTimeVal = '00:00';
+    this.endDateVal = '';
+    this.endTimeVal = '23:59';
     this.showForm.set(true);
   }
 
@@ -94,6 +134,15 @@ export class AdminFlashSales implements OnInit {
       endDate: this.formatDateForInput(sale.endDate),
       notifyBeforeMinutes: sale.notifyBeforeMinutes,
     };
+
+    const startDt = new Date(sale.startDate);
+    this.startDateVal = this.formatJustDate(startDt);
+    this.startTimeVal = this.formatJustTime(startDt);
+
+    const endDt = new Date(sale.endDate);
+    this.endDateVal = this.formatJustDate(endDt);
+    this.endTimeVal = this.formatJustTime(endDt);
+
     this.showForm.set(true);
 
     if (sale.scopeType === 'product' && sale.scopeId) {
@@ -111,10 +160,13 @@ export class AdminFlashSales implements OnInit {
 
   submitForm(): void {
     const m = this.formModel;
-    if (!m.name || !m.discountPercent || !m.startDate || !m.endDate) {
+    if (!m.name || !m.discountPercent || !this.startDateVal || !this.startTimeVal || !this.endDateVal || !this.endTimeVal) {
       this.toastService.error('Please fill all required fields.');
       return;
     }
+    m.startDate = `${this.startDateVal}T${this.startTimeVal}`;
+    m.endDate = `${this.endDateVal}T${this.endTimeVal}`;
+
     if (m.discountPercent < 1 || m.discountPercent > 100) {
       this.toastService.error('Discount must be between 1-100.');
       return;
@@ -201,6 +253,29 @@ export class AdminFlashSales implements OnInit {
   private formatDateForInput(date: string | Date): string {
     const d = new Date(date);
     return d.toISOString().slice(0, 16);
+  }
+
+  private formatJustDate(d: Date): string {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatJustTime(d: Date): string {
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  toggleScopeDropdown(): void {
+    this.isScopeDropdownOpen.update(v => !v);
+  }
+
+  selectScopeType(type: 'all' | 'category' | 'product'): void {
+    this.formModel.scopeType = type;
+    this.onScopeTypeChange();
+    this.isScopeDropdownOpen.set(false);
   }
 
   onScopeTypeChange(): void {

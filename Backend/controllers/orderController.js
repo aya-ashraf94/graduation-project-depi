@@ -1,8 +1,9 @@
 const db = require("../db");
 const { orders, products, users, notifications, coupons, offers } = require("../db/schema");
-const { eq, or, and, desc } = require("drizzle-orm");
+const { eq, or, and, desc, sql } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { updateUserStats } = require("../utils/userStats");
+const { loadActivePromotions, calculateCheckoutPrice } = require("../utils/discountEngine");
 
 const buyer = alias(users, "buyer");
 const seller = alias(users, "seller");
@@ -43,6 +44,11 @@ const formatOrder = (row, currentUserId) => {
     buyer: mapUser(buyer),
     seller: mapUser(seller),
     price: o.price,
+    originalPrice: o.originalPrice,
+    flashSaleDiscount: o.flashSaleDiscount,
+    categorySaleDiscount: o.categorySaleDiscount,
+    couponDiscount: o.couponDiscount,
+    offerAmount: o.offerAmount,
     status: o.status,
     paymentMethod: o.paymentMethod,
     shippingAddress: o.shippingAddress,
@@ -90,25 +96,31 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "You cannot purchase your own product" });
     }
 
-    let basePrice = req.body.price || product.price;
-    let finalPrice = basePrice;
-    if (couponCode) {
-      const [coupon] = await db.select().from(coupons).where(eq(coupons.code, couponCode.trim().toUpperCase())).limit(1);
-      if (!coupon || !coupon.isActive) {
-        return res.status(400).json({ message: "Invalid or inactive coupon code" });
+    // Determine offer amount if an accepted offer exists
+    let offerAmount = null;
+    if (offerId) {
+      const [acceptedOffer] = await db.select().from(offers)
+        .where(and(
+          eq(offers.id, offerId),
+          eq(offers.status, "accepted"),
+          eq(offers.buyerId, buyerId)
+        ))
+        .limit(1);
+      if (acceptedOffer) {
+        offerAmount = acceptedOffer.counterAmount || acceptedOffer.amount;
       }
-      if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
-        return res.status(400).json({ message: "Coupon has expired" });
-      }
-      
-      let discount = 0;
-      if (coupon.discountType === 'percentage') {
-        discount = (basePrice * coupon.discountValue) / 100;
-      } else {
-        discount = coupon.discountValue;
-      }
+    }
 
-      finalPrice = Math.max(0, basePrice - discount);
+    // Calculate price server-side using the discount engine
+    const promotions = await loadActivePromotions();
+    const { finalPrice, breakdown, couponValid, couponMessage } = await calculateCheckoutPrice(
+      product,
+      promotions,
+      { couponCode: couponCode || null, offerAmount }
+    );
+
+    if (couponCode && !couponValid) {
+      return res.status(400).json({ message: couponMessage || "Invalid coupon" });
     }
 
     const [order] = await db.insert(orders).values({
@@ -116,6 +128,11 @@ const createOrder = async (req, res) => {
       buyerId,
       sellerId,
       price: finalPrice,
+      originalPrice: breakdown.originalPrice,
+      flashSaleDiscount: breakdown.flashSaleDiscount,
+      categorySaleDiscount: breakdown.categorySaleDiscount,
+      couponDiscount: breakdown.couponDiscount,
+      offerAmount: breakdown.offerAmount,
       paymentMethod,
       shippingAddress,
       notes: notes || null,
@@ -127,6 +144,13 @@ const createOrder = async (req, res) => {
       status: "sold",
       updatedAt: new Date(),
     }).where(eq(products.id, productId));
+
+    // Increment coupon usage counter if a coupon was applied
+    if (couponCode) {
+      await db.update(coupons)
+        .set({ usedCount: sql`${coupons.usedCount} + 1`, updatedAt: new Date() })
+        .where(eq(coupons.code, couponCode.trim().toUpperCase()));
+    }
 
     await updateUserStats(buyerId);
     await updateUserStats(sellerId);
@@ -302,7 +326,7 @@ const updateOrder = async (req, res) => {
 
 const validateCoupon = async (req, res) => {
   try {
-    const { code, productId, price } = req.body;
+    const { code, productId } = req.body;
     if (!code || !productId) {
       return res.status(400).json({ message: "Coupon code and product ID are required" });
     }
@@ -312,36 +336,23 @@ const validateCoupon = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const [coupon] = await db.select().from(coupons).where(eq(coupons.code, code.trim().toUpperCase())).limit(1);
-    if (!coupon) {
-      return res.status(404).json({ message: "Coupon code not found" });
-    }
+    // Use the discount engine to validate the coupon and compute pricing
+    const promotions = await loadActivePromotions();
+    const result = await calculateCheckoutPrice(product, promotions, { couponCode: code });
 
-    if (!coupon.isActive) {
-      return res.status(400).json({ message: "Coupon is inactive" });
+    if (!result.couponValid) {
+      return res.status(400).json({ message: result.couponMessage || "Invalid coupon code" });
     }
-
-    if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
-      return res.status(400).json({ message: "Coupon has expired" });
-    }
-
-    const basePrice = price || product.price;
-    let discountAmount = 0;
-    if (coupon.discountType === 'percentage') {
-      discountAmount = (basePrice * coupon.discountValue) / 100;
-    } else {
-      discountAmount = coupon.discountValue;
-    }
-
-    discountAmount = Math.min(discountAmount, basePrice);
-    const finalPrice = Math.max(0, basePrice - discountAmount);
 
     res.json({
       valid: true,
-      discountAmount,
-      finalPrice,
-      discountType: coupon.discountType,
-      discountValue: coupon.discountValue
+      discountAmount: result.breakdown.couponDiscount,
+      finalPrice: result.finalPrice,
+      originalPrice: result.breakdown.originalPrice,
+      salePrice: result.breakdown.originalPrice - result.breakdown.flashSaleDiscount - result.breakdown.categorySaleDiscount,
+      discountType: 'percentage',
+      discountValue: 0,
+      breakdown: result.breakdown,
     });
   } catch (error) {
     console.error("Error validating coupon:", error);
@@ -353,9 +364,11 @@ const getRandomActiveCoupon = async (req, res) => {
   try {
     const allCoupons = await db.select().from(coupons).where(eq(coupons.isActive, true));
     
-    // Filter out expired coupons
+    // Filter out expired and maxed-out coupons
     const validCoupons = allCoupons.filter(coupon => {
-      return !coupon.expiryDate || new Date(coupon.expiryDate) > new Date();
+      if (coupon.expiryDate && new Date(coupon.expiryDate) <= new Date()) return false;
+      if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) return false;
+      return true;
     });
 
     if (validCoupons.length === 0) {
