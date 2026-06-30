@@ -152,7 +152,7 @@ export class AdminService {
   getAllProducts(
     page: number, 
     limit: number, 
-    filters?: { status?: string; category?: string; search?: string }
+    filters?: { status?: string; category?: string; search?: string; verified?: string }
   ): Observable<PaginatedProducts> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -166,6 +166,9 @@ export class AdminService {
     }
     if (filters?.search) {
       params = params.set('search', filters.search);
+    }
+    if (filters?.verified) {
+      params = params.set('verified', filters.verified);
     }
 
     return this.http.get<any>(`${this.apiUrl}/products`, { params }).pipe(

@@ -137,8 +137,8 @@ const getDashboard = async (req, res) => {
         totalUsers: Number(userCount.value),
         totalProducts: Number(productCount.value),
         openReports: Number(reportCount.value),
-        todayRevenue: Number(todayRevenue.rows?.[0]?.coalesce || 0),
-        todayOrders: Number(todayOrders.rows?.[0]?.value || 0),
+        todayRevenue: Number(todayRevenue[0]?.value || 0),
+        todayOrders: Number(todayOrders[0]?.value || 0),
         newUsers7d: Number(newUsers.value),
         pendingVerifications: Number(unverifiedProducts.value) + Number(unverifiedUsers.value),
       },
@@ -159,7 +159,7 @@ const getDashboard = async (req, res) => {
       },
       flashSaleStats: {
         activeSales: Number(activeFlashSales.value),
-        totalDiscountGiven: Number(totalDiscount.rows?.[0]?.coalesce || 0),
+        totalDiscountGiven: Number(totalDiscount?.value || 0),
       },
     });
   } catch (error) {
@@ -328,10 +328,13 @@ const getAllProducts = async (req, res) => {
     const status = req.query.status;
     const categoryName = req.query.category;
     const search = req.query.search || "";
+    const verified = req.query.verified;
     const skip = (page - 1) * limit;
 
     const conditions = [];
     if (status) conditions.push(eq(products.status, status));
+    if (verified === 'true') conditions.push(eq(products.isVerified, true));
+    if (verified === 'false') conditions.push(eq(products.isVerified, false));
     if (search) {
       conditions.push(or(
         ilike(products.title, `%${search}%`),

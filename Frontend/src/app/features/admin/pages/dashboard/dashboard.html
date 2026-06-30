@@ -111,7 +111,7 @@
                 <strong>Unverified Products</strong>
                 <p>{{ d.pendingApprovals.unverifiedProducts }} awaiting review</p>
               </div>
-              <a routerLink="/admin/listings?status=pending" class="dash-approval-action">Review</a>
+              <a [routerLink]="['/admin/listings']" [queryParams]="{verified: 'false'}" class="dash-approval-action">Review</a>
             </div>
             <div class="dash-approval-item">
               <span class="dash-approval-icon">👤</span>

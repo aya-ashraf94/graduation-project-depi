@@ -1,6 +1,6 @@
 import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminService, AdminStats } from '../../../../core/services/admin.service';
@@ -30,6 +30,7 @@ export class Listings implements OnInit {
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
+  private route = inject(ActivatedRoute);
 
   products = signal<Product[]>([]);
   totalProducts = signal(0);
@@ -44,6 +45,7 @@ export class Listings implements OnInit {
   filterForm!: FormGroup;
   searchControl = new FormControl('');
   activeMetric = signal<string | null>(null);
+  activeVerified = signal<string | null>(null);
 
   categoriesList: { value: string; label: string }[] = [{ value: '', label: 'All Categories' }];
 
@@ -72,6 +74,15 @@ export class Listings implements OnInit {
     ).subscribe(() => {
       this.currentPage.set(1);
       this.loadListings();
+    });
+
+    this.route.queryParams.subscribe(params => {
+      if (params['status']) {
+        this.filterForm.patchValue({ status: params['status'] }, { emitEvent: false });
+      }
+      if (params['verified']) {
+        this.activeVerified.set(params['verified']);
+      }
     });
 
     this.productService.getCategories().subscribe({
@@ -113,6 +124,7 @@ export class Listings implements OnInit {
 
   setMetricFilter(metric: string | null): void {
     this.activeMetric.set(metric);
+    this.activeVerified.set(null);
     this.currentPage.set(1);
     switch (metric) {
       case 'total':
@@ -134,10 +146,11 @@ export class Listings implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const filters = {
+    const filters: any = {
       status: this.filterForm.get('status')?.value || undefined,
       category: this.filterForm.get('category')?.value || undefined,
-      search: this.searchControl.value || undefined
+      search: this.searchControl.value || undefined,
+      verified: this.activeVerified() || undefined
     };
 
     this.adminService.getAllProducts(this.currentPage(), this.pageSize, filters).subscribe({
