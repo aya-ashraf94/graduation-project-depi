@@ -10,6 +10,9 @@ import { Toast } from './shared/components/toast/toast';
 import { Confirm } from './shared/components/confirm/confirm';
 import { LuckyCat } from './shared/components/lucky-cat/lucky-cat';
 import { FlashSaleBannerComponent } from './shared/components/flash-sale-banner/flash-sale-banner';
+import { CustomCursor } from './shared/components/custom-cursor/custom-cursor';
+import { LoadingScreen } from './shared/components/loading-screen/loading-screen';
+import { ScrollToTop } from './shared/components/scroll-to-top/scroll-to-top';
 import { OfferService } from './core/services/offer.service';
 import { FlashSaleService } from './core/services/flash-sale.service';
 import { AuthService } from './core/services/auth';
@@ -18,7 +21,7 @@ import { environment } from '../environments/environment';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, Navbar, Footer, Toast, Confirm, LuckyCat, FlashSaleBannerComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, Navbar, Footer, Toast, Confirm, LuckyCat, FlashSaleBannerComponent, CustomCursor, LoadingScreen, ScrollToTop],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -28,6 +31,7 @@ export class App implements OnDestroy {
   offerService = inject(OfferService);
   private flashSaleService = inject(FlashSaleService);
   protected readonly title = signal('nefisant-app');
+  showLoading = signal(true);
   isAuthRoute = signal(false);
   isChatRoute = signal(false);
   isAdminRoute = signal(false);
@@ -118,6 +122,10 @@ export class App implements OnDestroy {
 
   dismissFlashAlert(): void {
     this.flashSaleAlert.set(null);
+  }
+
+  onLoadingDone(): void {
+    this.showLoading.set(false);
   }
 
   ngOnDestroy(): void {

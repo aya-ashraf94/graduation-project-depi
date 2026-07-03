@@ -26,6 +26,18 @@
   z-index: 0;
 }
 
+/* Background dot-grid pattern */
+.hero-bg-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: calc(50% + var(--bg-x, 0px)) calc(50% + var(--bg-y, 0px));
+  transition: background-position 0.2s ease-out;
+}
+
 .hero::before {
   width: 20rem;
   height: 20rem;
@@ -54,17 +66,9 @@
   padding-bottom: 0;
   text-align: center;
   margin-bottom: 1rem;
-  /* margin: 1rem; */
 }
 
-.hero-content,
-.hero-visual {
-  animation: sectionRise 0.8s ease both;
-}
 
-.hero-visual {
-  animation-delay: 0.12s;
-}
 
 /* --- Content --- */
 .hero-eyebrow {
@@ -90,14 +94,26 @@
 }
 
 .hero-title {
-  font-size: clamp(2.8rem, 11vw, 3.8rem);
+  font-size: 0;
   line-height: 0.95;
   color: var(--black);
   margin: 0 auto 1.25rem;
   max-width: 100%;
 }
 
-.hero-title-accent {
+.hero-title .gsap-word {
+  display: inline-block;
+  font-size: clamp(2.8rem, 11vw, 3.8rem);
+  line-height: 0.95;
+}
+
+.hero-title .gsap-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(60px) rotate(6deg);
+}
+
+.hero-title-accent .gsap-word {
   color: var(--yellow-dark);
   -webkit-text-stroke: 1.5px var(--black);
   paint-order: stroke fill;
@@ -109,6 +125,7 @@
   line-height: 1.7;
   max-width: 28.75rem;
   margin: 0 auto 1.5rem;
+  min-height: 1.7em;
 }
 
 .hero-actions {
@@ -121,6 +138,8 @@
 .hero-btn {
   padding: 0.875rem 1.75rem;
   font-size: 0.95rem;
+  perspective: 600px;
+  will-change: transform;
 }
 
 /* --- Visual --- */
@@ -165,6 +184,7 @@
     box-shadow 0.2s ease;
   cursor: pointer;
   position: relative;
+  will-change: transform;
 }
 
 .stack-card:hover {
@@ -359,6 +379,21 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  will-change: transform;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+  animation: livePulse 1.8s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.6); }
 }
 
 .v-check {
@@ -372,6 +407,16 @@
   align-items: center;
   font-size: 0.8rem;
   padding-bottom: 1px;
+}
+
+/* ── Sticker gentle float + rotation ──────────────────── */
+.sticker-verified {
+  animation: stickerDrift 5s ease-in-out infinite;
+}
+@keyframes stickerDrift {
+  0%, 100% { transform: rotate(-6deg) translateY(0); }
+  33%      { transform: rotate(-2deg) translateY(-5px); }
+  66%      { transform: rotate(-8deg) translateY(-2px); }
 }
 
 /* Float Animations */
@@ -450,23 +495,7 @@
   background: color-mix(in srgb, var(--white) 82%, transparent);
   box-shadow: 2px 2px 0 var(--black);
   text-align: center;
-  animation: sectionRise 0.7s ease both;
-}
-
-.dept-card:nth-child(2) {
-  animation-delay: 0.04s;
-}
-
-.dept-card:nth-child(3) {
-  animation-delay: 0.08s;
-}
-
-.dept-card:nth-child(4) {
-  animation-delay: 0.12s;
-}
-
-.dept-card:nth-child(5) {
-  animation-delay: 0.16s;
+  /* revealed by GSAP */
 }
 
 .dept-card:hover {
@@ -531,8 +560,9 @@
 
 .products-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
+  justify-items: center;
 }
 
 .product-card {
@@ -542,19 +572,7 @@
   overflow: hidden;
   transition: var(--transition);
   cursor: pointer;
-  animation: sectionRise 0.7s ease both;
-}
-
-.product-card:nth-child(2) {
-  animation-delay: 0.06s;
-}
-
-.product-card:nth-child(3) {
-  animation-delay: 0.12s;
-}
-
-.product-card:nth-child(4) {
-  animation-delay: 0.18s;
+  /* revealed by GSAP */
 }
 
 .product-card:hover {
@@ -718,19 +736,7 @@
   border-radius: 14px;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--black) 4%, transparent);
   transition: var(--transition);
-  animation: sectionRise 0.7s ease both;
-}
-
-.feature-item:nth-child(2) {
-  animation-delay: 0.05s;
-}
-
-.feature-item:nth-child(3) {
-  animation-delay: 0.1s;
-}
-
-.feature-item:nth-child(4) {
-  animation-delay: 0.15s;
+  /* revealed by GSAP */
 }
 
 .feature-item:hover {
@@ -785,15 +791,7 @@
   transition: var(--transition);
   background: color-mix(in srgb, var(--white) 80%, transparent);
   box-shadow: 3px 3px 0 color-mix(in srgb, var(--black) 90%, transparent);
-  animation: sectionRise 0.7s ease both;
-}
-
-.stat-item:nth-child(2) {
-  animation-delay: 0.05s;
-}
-
-.stat-item:nth-child(3) {
-  animation-delay: 0.1s;
+  /* revealed by GSAP */
 }
 
 .stat-item.stat-highlight {
@@ -850,15 +848,7 @@
   background: color-mix(in srgb, var(--white) 80%, transparent);
   min-height: 16.875rem;
   padding-bottom: 5.375rem;
-  animation: sectionRise 0.7s ease both;
-}
-
-.step-item:nth-child(2) {
-  animation-delay: 0.07s;
-}
-
-.step-item:nth-child(3) {
-  animation-delay: 0.14s;
+  /* revealed by GSAP */
 }
 
 .step-item:hover {
@@ -1044,10 +1034,6 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1081,9 +1067,12 @@
   }
 
   .hero-title {
-    font-size: clamp(3.5rem, 8vw, 6.5rem);
+    font-size: 0;
     margin: 0 0 20px;
     max-width: 7.6ch;
+  }
+  .hero-title .gsap-word {
+    font-size: clamp(3.5rem, 8vw, 6.5rem);
   }
 
   .hero-desc {
@@ -1096,10 +1085,6 @@
 
   .departments-grid {
     grid-template-columns: repeat(5, 1fr);
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 
   .features-grid {
@@ -1153,8 +1138,11 @@
 /* --- Large Screen (min-width: 1441px) --- */
 @media (min-width: 1441px) {
   .hero-title {
-    font-size: clamp(6.5rem, 7vw, 8rem);
+    font-size: 0;
     max-width: 9ch;
+  }
+  .hero-title .gsap-word {
+    font-size: clamp(6.5rem, 7vw, 8rem);
   }
 
   .hero-stack-container {
@@ -1163,11 +1151,6 @@
 
   .stack-info h4 {
     font-size: 1.6rem;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
   }
 
   .departments-grid {
@@ -1194,6 +1177,15 @@
   }
 }
 
-/* Lucky Scratch Card Promotion Section */
+/* ===== GSAP PARTICLES (decorative dots) ===== */
+.gsap-particle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  will-change: transform;
+}
+
+
 
 

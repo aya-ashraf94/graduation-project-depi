@@ -723,6 +723,11 @@
   line-height: 1.1;
   cursor: pointer;
   flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.2em; /* Consistent 2-line height */
 }
 
 .card-title:hover {
@@ -750,10 +755,27 @@
   font-size: 0.75rem;
   color: var(--gray-3);
   font-weight: 600;
+  margin-top: auto; /* Push footer content to the bottom of the card */
+}
+
+.card-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 
 .card-dot {
   color: var(--gray-2);
+  flex-shrink: 0;
+}
+
+.card-date {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .card-seller-row {

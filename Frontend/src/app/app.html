@@ -1,3 +1,9 @@
+@if (showLoading()) {
+  <app-loading-screen (done)="onLoadingDone()" />
+}
+
+<app-custom-cursor />
+
 <!-- Global Navbar: Hidden on Auth and Admin pages -->
 <app-navbar *ngIf="!isAuthRoute() && !isAdminRoute()"></app-navbar>
 
@@ -62,6 +68,9 @@
     </div>
   </div>
 }
+
+<!-- Scroll to Top Button -->
+<app-scroll-to-top />
 
 <!-- Global Toast Notifications -->
 <app-toast></app-toast>

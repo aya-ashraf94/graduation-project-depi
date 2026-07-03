@@ -4,6 +4,7 @@
 
 <!-- ===== 1. HERO SECTION ===== -->
 <section class="hero" id="home">
+  <div class="hero-bg-grid"></div>
   <div class="container hero-inner">
     <div class="hero-content">
       <div class="hero-eyebrow">
@@ -12,8 +13,13 @@
         <span class="hero-eyebrow-text">Est. 2024</span>
       </div>
       <h1 class="hero-title">
-        Trade Smart.<br />
-        <span class="hero-title-accent">Declutter Fast.</span>
+        <span class="gsap-word">Trade</span>
+        <span class="gsap-word">Smart.</span>
+        <br />
+        <span class="hero-title-accent">
+          <span class="gsap-word">Declutter</span>
+          <span class="gsap-word">Fast.</span>
+        </span>
       </h1>
       <p class="hero-desc">
         The premier platform to buy, sell, and trade used items, unwanted goods, and hidden gems —
@@ -41,8 +47,10 @@
     <div class="hero-visual">
       <div class="hero-stack-container">
         <!-- Floating Status Badge -->
-        <div class="sticker-verified float-fast stack-verified">
-          <span class="v-check">✔</span> Live Activity
+        <div class="sticker-verified stack-verified">
+          <span class="v-check">✔</span>
+          <span class="live-dot"></span>
+          Live Activity
         </div>
 
         <div class="hero-stack">
@@ -72,7 +80,7 @@
           </div>
 
           <!-- Card 2 -->
-          <div class="stack-card card-2">
+          <div class="stack-card card-2 float-slow" style="animation-delay: 1.5s">
             <div class="stack-header">
               <span class="stack-user"
                 ><div class="avatar bg-green"></div>
@@ -97,7 +105,7 @@
           </div>
 
           <!-- Card 3 -->
-          <div class="stack-card card-3">
+          <div class="stack-card card-3 float-slow" style="animation-delay: 3s">
             <div class="stack-header">
               <span class="stack-user"
                 ><div class="avatar bg-blue"></div>
@@ -196,8 +204,7 @@
     <div class="section-label">Process</div>
     <h2 class="section-title steps-title">Three Steps to Trade</h2>
     <div class="steps-grid">
-      <div
-        class="step-item"
+      <div class="step-item"
         *ngFor="let step of steps; let i = index"
         [class.step-featured]="i === 1"
       >

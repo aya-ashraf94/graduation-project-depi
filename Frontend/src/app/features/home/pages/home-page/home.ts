@@ -1,14 +1,17 @@
-import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { TextPlugin } from 'gsap/TextPlugin';
 import { AuthService } from '../../../../core/services/auth';
 import { ProductService } from '../../../../core/services/product.service';
 import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { ProductSummary } from '../../../../core/models/product.model';
-import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
 
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
 @Component({
   selector: 'app-home',
@@ -17,7 +20,7 @@ import { getConditionLabel, getConditionClass } from '../../../../shared/utils/c
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit, AfterViewInit {
+export class Home implements OnInit, AfterViewInit, OnDestroy {
   newsletterEmail = '';
   newsletterSuccessMessage = '';
   newsletterErrorMessage = '';
@@ -98,6 +101,9 @@ export class Home implements OnInit, AfterViewInit {
     },
   ];
 
+  private ctx: gsap.Context | null = null;
+  private _heroListeners: { el: HTMLElement; type: string; fn: (e: any) => void }[] = [];
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -105,17 +111,15 @@ export class Home implements OnInit, AfterViewInit {
     private sanitizer: DomSanitizer,
     private productService: ProductService,
     private cdr: ChangeDetectorRef,
+    private elementRef: ElementRef,
   ) {}
 
   ngOnInit(): void {
-
-    // Fetch a pool of latest products to select diverse featured items
     this.productService.getProducts({ limit: 20 }).subscribe({
       next: (products) => {
         const diverse: ProductSummary[] = [];
         const seenCategories = new Set<string>();
 
-        // Pick one item from each distinct category first
         for (const product of products) {
           const cat = product.categoryName || '';
           if (cat && !seenCategories.has(cat)) {
@@ -125,7 +129,6 @@ export class Home implements OnInit, AfterViewInit {
           if (diverse.length === 4) break;
         }
 
-        // If we still have fewer than 4 items, fill the rest with the latest products
         if (diverse.length < 4) {
           for (const product of products) {
             if (!diverse.some(p => p.id === product.id)) {
@@ -137,13 +140,14 @@ export class Home implements OnInit, AfterViewInit {
 
         this.featuredProducts = diverse;
         this.cdr.detectChanges();
+
+        setTimeout(() => this.animateFeaturedProducts(), 50);
       },
       error: (err) => {
         console.error('Error fetching featured products:', err);
       }
     });
 
-    // Fetch category counts dynamically from backend
     this.productService.getCategoryCounts().subscribe({
       next: (categoryCounts) => {
         const counts = {
@@ -204,6 +208,297 @@ export class Home implements OnInit, AfterViewInit {
         }, 350);
       }
     });
+
+    // Split hero title words into per-character spans
+    this.splitHeroChars();
+
+    // Wait for loading screen to finish, then start hero animations
+    if (document.querySelector('app-loading-screen')) {
+      setTimeout(() => this.initAnimations(), 3500);
+    } else {
+      this.initAnimations();
+    }
+  }
+
+  private splitHeroChars(): void {
+    const words = this.elementRef.nativeElement.querySelectorAll('.gsap-word');
+    words.forEach((word: HTMLElement) => {
+      const text = word.textContent || '';
+      word.textContent = '';
+      for (const ch of text) {
+        const span = document.createElement('span');
+        span.className = 'gsap-char';
+        span.textContent = ch === ' ' ? '\u00A0' : ch;
+        word.appendChild(span);
+      }
+    });
+
+    // Save & clear description for typewriter reveal
+    const desc = this.elementRef.nativeElement.querySelector('.hero-desc') as HTMLElement | null;
+    if (desc && !desc.dataset['text']) {
+      desc.dataset['text'] = desc.textContent || '';
+      desc.textContent = '';
+    }
+    if (desc) {
+      desc.style.opacity = '0';
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.ctx?.revert();
+    for (const l of this._heroListeners) {
+      l.el.removeEventListener(l.type, l.fn);
+    }
+  }
+
+  private initAnimations(): void {
+    const el = this.elementRef.nativeElement;
+
+    this.ctx = gsap.context(() => {
+
+      // ── Set initial hidden states (scroll-sections only — hero uses CSS)
+      gsap.set('.dept-card', { y: 50, opacity: 0 });
+      gsap.set('.feature-item', { y: 40, opacity: 0 });
+      gsap.set('.step-item', { y: 50, opacity: 0 });
+      gsap.set('.stat-item', { y: 30, opacity: 0 });
+      gsap.set('.sell-cta-visual', { scale: 0.6, opacity: 0 });
+      gsap.set('.newsletter-signup .container', { y: 40, opacity: 0 });
+
+      // ── Hero title per-character entrance ─────────────────
+      gsap.fromTo('.gsap-char',
+        { y: 70, opacity: 0, rotation: 8 },
+        { y: 0, opacity: 1, rotation: 0, duration: 0.55,
+          stagger: 0.05,
+          ease: 'back.out(1.7)',
+        },
+      );
+
+      // ── Continuous character wave ─────────────────────────
+      gsap.to('.gsap-char', {
+        y: -4, scale: 1.05,
+        duration: 2.4,
+        ease: 'sine.inOut',
+        stagger: { each: 0.04, from: 'start' },
+        yoyo: true, repeat: -1,
+        delay: 1.6,
+      });
+
+      // ── Reveal description ─────────────────────────────────
+      const desc = el.querySelector('.hero-desc') as HTMLElement | null;
+      if (desc) {
+        gsap.to(desc, {
+          opacity: 1, duration: 0.6, delay: 0.6,
+          ease: 'power2.out',
+          onStart: () => {
+            const text = desc.dataset['text'] || desc.textContent || '';
+            if (desc.dataset['text']) {
+              gsap.to(desc, {
+                text: { value: text, speed: 2 },
+                duration: 1.5, ease: 'none',
+              });
+            }
+          },
+        });
+      }
+
+      // ── Rich ambient particles (dots + icons) ─────────────────
+      const heroSection = el.querySelector('.hero');
+      if (heroSection) {
+        const symbols = ['✦', '⚡', '◆', '○', '+'];
+        const dotColors = ['var(--yellow)', 'var(--yellow-dark)', 'rgba(255,255,255,0.5)', 'var(--orange)'];
+        const total = 24;
+        for (let i = 0; i < total; i++) {
+          const isIcon = i >= 14;
+          const el_ = document.createElement('div');
+          el_.className = 'gsap-particle';
+          const left = 2 + Math.random() * 96;
+          const top = 5 + Math.random() * 90;
+
+          if (isIcon) {
+            const sym = symbols[i % symbols.length];
+            const size = 12 + Math.random() * 10;
+            el_.innerHTML = sym;
+            el_.style.cssText = `
+              left: ${left}%; top: ${top}%;
+              font-size: ${size}px;
+              color: ${dotColors[i % dotColors.length]};
+              opacity: ${0.1 + Math.random() * 0.15};
+              position: absolute; pointer-events: none; z-index: 0;
+              user-select: none; will-change: transform;
+              font-family: system-ui, sans-serif;
+            `;
+          } else {
+            const size = 3 + Math.random() * 5;
+            el_.style.cssText = `
+              left: ${left}%; top: ${top}%;
+              width: ${size}px; height: ${size}px;
+              border-radius: 50%;
+              background: ${dotColors[i % dotColors.length]};
+              opacity: ${0.08 + Math.random() * 0.14};
+              position: absolute; pointer-events: none; z-index: 0;
+              user-select: none; will-change: transform;
+            `;
+          }
+          heroSection.appendChild(el_);
+
+          gsap.to(el_, {
+            y: -30 - Math.random() * 50,
+            x: -25 + Math.random() * 50,
+            scale: 1.3 + Math.random() * 1,
+            rotation: isIcon ? -15 + Math.random() * 30 : 0,
+            duration: 6 + Math.random() * 6,
+            ease: 'sine.inOut',
+            yoyo: true, repeat: -1,
+            delay: Math.random() * 3,
+          });
+        }
+      }
+
+
+
+      // ── Background grid shift ──
+      const hero = el.querySelector('.hero') as HTMLElement;
+      const heroInner = el.querySelector('.hero-inner') as HTMLElement;
+      if (hero && heroInner) {
+        const onMove = (e: MouseEvent) => {
+          const rect = hero.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+          const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+          hero.style.setProperty('--bg-x', `${x * 6}px`);
+          hero.style.setProperty('--bg-y', `${y * 6}px`);
+        };
+        heroInner.addEventListener('mousemove', onMove);
+        this._heroListeners.push(
+          { el: heroInner as HTMLElement, type: 'mousemove', fn: onMove },
+        );
+      }
+
+      // ── Magnetic buttons ────────────────────────────────────────────
+      const btns = el.querySelectorAll('.hero-btn') as NodeListOf<HTMLElement>;
+      btns.forEach((btn: HTMLElement) => {
+        const onEnter = () => {
+          gsap.killTweensOf(btn);
+          gsap.to(btn, { scale: 1.06, duration: 0.3, ease: 'power2.out' });
+        };
+        const onMove = (e: MouseEvent) => {
+          const rect = btn.getBoundingClientRect();
+          const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+          const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+          const mx = (e.clientX - rect.left - rect.width / 2) * 0.3;
+          const my = (e.clientY - rect.top - rect.height / 2) * 0.3;
+          gsap.killTweensOf(btn);
+          gsap.to(btn, {
+            x: mx, y: my,
+            rotateY: nx * 8, rotateX: ny * -6,
+            duration: 0.4, ease: 'power2.out',
+          });
+        };
+        const onLeave = () => {
+          gsap.killTweensOf(btn);
+          gsap.to(btn, {
+            x: 0, y: 0, scale: 1, rotateY: 0, rotateX: 0,
+            duration: 0.4, ease: 'power2.out',
+          });
+        };
+        btn.addEventListener('mouseenter', onEnter);
+        btn.addEventListener('mousemove', onMove);
+        btn.addEventListener('mouseleave', onLeave);
+        this._heroListeners.push(
+          { el: btn, type: 'mouseenter', fn: onEnter },
+          { el: btn, type: 'mousemove', fn: onMove },
+          { el: btn, type: 'mouseleave', fn: onLeave },
+        );
+      });
+
+      // ================================================================
+      // 2. SCROLL REVEALS
+      // ================================================================
+
+      // ── Category cards ──────────────────────────────────────────────
+      gsap.to('.dept-card', {
+        scrollTrigger: { trigger: '.departments', start: 'top 82%' },
+        y: 0, opacity: 1, duration: 0.5, stagger: 0.07,
+        ease: 'power2.out',
+      });
+
+      // ── Features grid ──────────────────────────────────────────────
+      gsap.to('.feature-item', {
+        scrollTrigger: { trigger: '.features', start: 'top 82%' },
+        y: 0, opacity: 1, duration: 0.5, stagger: 0.1,
+        ease: 'power2.out',
+      });
+
+      // ── Steps ─────────────────────────────────────────────────────
+      gsap.to('.step-item', {
+        scrollTrigger: { trigger: '.steps', start: 'top 82%' },
+        y: 0, opacity: 1, duration: 0.6, stagger: 0.15,
+        ease: 'power2.out',
+      });
+
+      // ── Sell CTA ──────────────────────────────────────────────────
+      gsap.to('.sell-cta-content', {
+        scrollTrigger: { trigger: '.sell-cta', start: 'top 82%' },
+        y: 0, opacity: 1, duration: 0.7,
+        ease: 'power2.out',
+      });
+      gsap.to('.sell-cta-visual', {
+        scrollTrigger: { trigger: '.sell-cta', start: 'top 82%' },
+        scale: 1, opacity: 1, duration: 0.7, delay: 0.2,
+        ease: 'back.out(1.4)',
+      });
+
+      // ── Newsletter ────────────────────────────────────────────────
+      gsap.to('.newsletter-signup .container', {
+        scrollTrigger: { trigger: '.newsletter-signup', start: 'top 85%' },
+        y: 0, opacity: 1, duration: 0.6,
+        ease: 'power2.out',
+      });
+
+      // ── Stats counter ───────────────────────────────────────────
+      gsap.utils.toArray<HTMLElement>('.stat-value').forEach(el => {
+        const text = el.textContent || '';
+        const m = text.match(/^([\d.]+)(.*)$/);
+        if (!m) return;
+        const target = parseFloat(m[1]);
+        const suffix = m[2];
+        const obj = { val: 0 };
+
+        gsap.to(obj, {
+          val: target, duration: 2, ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el.closest('.stats-section'),
+            start: 'top 85%',
+          },
+          onUpdate: () => {
+            el.textContent = Math.floor(obj.val) + suffix;
+          },
+        });
+      });
+
+      // ── Stats items fade-in ──────────────────────────────────────
+      gsap.to('.stat-item', {
+        scrollTrigger: { trigger: '.stats-section', start: 'top 82%' },
+        y: 0, opacity: 1, duration: 0.5, stagger: 0.1,
+        ease: 'power2.out',
+      });
+
+    }, el);
+  }
+
+  private animateFeaturedProducts(): void {
+    const productCards = this.elementRef.nativeElement.querySelectorAll('.product-card');
+    if (!productCards.length) return;
+
+    gsap.set(productCards, { y: 50, opacity: 0 });
+    gsap.to(productCards, {
+      scrollTrigger: {
+        trigger: '.featured',
+        start: 'top 80%',
+      },
+      y: 0, opacity: 1, duration: 0.6, stagger: 0.12,
+      ease: 'power2.out',
+    });
+    ScrollTrigger.refresh();
   }
 
   scrollTo(id: string): void {
@@ -217,7 +512,7 @@ export class Home implements OnInit, AfterViewInit {
 
   subscribeNewsletter() {
     if (!this.newsletterEmail.trim()) return;
-    
+
     this.productService.subscribeNewsletter(this.newsletterEmail).subscribe({
       next: (res) => {
         this.newsletterSuccessMessage = res.message || 'Subscribed successfully!';

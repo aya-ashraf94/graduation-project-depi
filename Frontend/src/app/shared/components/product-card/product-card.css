@@ -53,7 +53,7 @@
 .card-variant-home .product-real-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -128,27 +128,43 @@
   text-transform: uppercase;
 }
 
+.card-variant-home .home-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 18px;
+}
+
 .card-variant-home .home-details-row {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  justify-content: space-between;
   font-family: var(--font-secondary);
   font-size: 0.7rem;
   color: color-mix(in srgb, var(--white) 40%, transparent);
   font-weight: 600;
-}
-
-.card-variant-home .home-dot {
-  color: color-mix(in srgb, var(--white) 20%, transparent);
+  margin-top: 0.2rem;
 }
 
 .card-variant-home .home-price-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 0.4rem;
-  padding-top: 0.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
   border-top: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
+}
+
+.card-variant-home .home-price-left {
+  display: flex;
+  align-items: center;
+}
+
+.card-variant-home .home-price-right {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .card-variant-home .home-price-tag {
@@ -162,18 +178,42 @@
   font-size: 0.9rem;
 }
 
-.card-variant-home .home-view-link {
+.card-variant-home .btn-home-cta {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: transparent;
+  color: var(--white);
+  border: 1.5px solid color-mix(in srgb, var(--white) 20%, transparent);
+  border-radius: var(--radius-sm);
   font-family: var(--font-primary);
-  font-size: 0.72rem;
   font-weight: 800;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--yellow) 80%, transparent);
-  transition: color 0.2s;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 0.8rem;
 }
 
-.product-card.card-variant-home:hover .home-view-link {
-  color: var(--yellow);
+.card-variant-home .btn-home-cta:hover {
+  background: var(--yellow);
+  color: var(--black);
+  border-color: var(--yellow);
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--yellow) 20%, transparent);
+}
+
+.card-variant-home .btn-home-cta:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+.card-variant-home .cta-arrow {
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
 }
 
 
@@ -654,6 +694,11 @@
   line-height: 1.1;
   cursor: pointer;
   flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.2em; /* Consistent 2-line height */
 }
 
 .card-variant-profile .card-title:hover {
@@ -681,10 +726,27 @@
   font-size: 0.75rem;
   color: var(--gray-3);
   font-weight: 600;
+  margin-top: auto; /* Push footer content to the bottom of the card */
+}
+
+.card-variant-profile .card-loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 
 .card-variant-profile .card-dot {
   color: var(--gray-2);
+  flex-shrink: 0;
+}
+
+.card-variant-profile .card-date {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .card-variant-profile .card-actions-row {

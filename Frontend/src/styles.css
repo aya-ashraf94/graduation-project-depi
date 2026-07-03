@@ -519,3 +519,32 @@ h5 {
   background: var(--surface-2);
   color: var(--dark);
 }
+
+/* ============================================================
+   TEXT SELECTION — brand match
+   ============================================================ */
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-black);
+}
+::-moz-selection {
+  background: var(--color-yellow);
+  color: var(--color-black);
+}
+
+/* ============================================================
+   CUSTOM CURSOR — hide default on desktop
+   ============================================================ */
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+  body a,
+  body button,
+  body [routerLink],
+  body input,
+  body select,
+  body textarea {
+    cursor: none;
+  }
+}

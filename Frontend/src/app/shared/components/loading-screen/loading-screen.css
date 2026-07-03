@@ -1,0 +1,70 @@
+.ls-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: var(--black, #0a0a0a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ls-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.ls-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ls-logo-box {
+  width: 52px;
+  height: 52px;
+  background: var(--yellow, #e8bd18);
+  border: 3px solid var(--white, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--black, #0a0a0a);
+}
+
+.ls-letters {
+  display: flex;
+  gap: 2px;
+}
+
+.ls-letter {
+  display: inline-block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--white, #fff);
+  letter-spacing: 0.04em;
+}
+
+.ls-tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.ls-bar {
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.ls-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--yellow, #e8bd18);
+  transform-origin: left center;
+}
