@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductSummary } from '../../../core/models/product.model';
 import { WishlistService } from '../../../core/services/wishlist.service';
+import { CompareService } from '../../../core/services/compare.service';
 import { AuthService } from '../../../core/services/auth';
 import { ImageFallbackDirective } from '../../directives/image-fallback.directive';
 import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
@@ -29,6 +30,7 @@ export class ProductCardComponent {
   readonly deleteClick = output<any>();
 
   readonly wishlistService = inject(WishlistService);
+  readonly compareService = inject(CompareService);
   readonly authService = inject(AuthService);
 
   getConditionLabel(cond: string): string {
@@ -43,6 +45,18 @@ export class ProductCardComponent {
     event.stopPropagation();
     event.preventDefault();
     this.wishlistToggle.emit(this.product());
+  }
+
+  onCompareToggle(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    const p = this.product();
+    this.compareService.toggle({
+      id: p.id,
+      thumbnail: p.thumbnail || '',
+      title: p.title || '',
+      price: p.price || 0,
+    });
   }
 
   onEditClick(event: Event): void {

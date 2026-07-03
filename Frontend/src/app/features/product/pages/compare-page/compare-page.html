@@ -1,0 +1,208 @@
+<div class="compare-page">
+  <div class="container">
+    <div class="compare-header">
+      <a routerLink="/products" class="compare-back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back to Products
+      </a>
+      <div class="compare-title-row">
+        <h1 class="compare-title">Compare Products</h1>
+        <div class="compare-title-actions">
+          <button class="compare-clear-btn" (click)="clearComparison()" title="Clear comparison">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Clear
+          </button>
+          <button class="compare-pdf-btn" (click)="downloadPdf()" [disabled]="downloading()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            {{ downloading() ? 'Generating...' : 'Download PDF' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="compare-skeleton">
+        <div class="skeleton-box" style="height: 80px;"></div>
+        <div class="skeleton-box" style="height: 300px; margin-top: 1.5rem;"></div>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="compare-error">
+        <div class="compare-error-card">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          <h2>Unable to Load Products</h2>
+          <p>Please make sure you have selected two valid products to compare.</p>
+          <a routerLink="/products" class="btn btn-primary">Browse Products</a>
+        </div>
+      </div>
+    }
+
+    @if (!loading() && !error(); as _) {
+      @let p = products();
+
+      <div #pdfContent>
+        @if (bestValues().length > 0) {
+          <div class="best-value-section">
+            <div class="best-value-header">
+              <h2>Best Value Analysis</h2>
+            </div>
+
+            <div class="best-value-badges">
+              @for (bv of bestValues(); track bv.label) {
+                <div class="best-value-badge" [class.winner-a]="bv.winnerIndex === 0" [class.winner-b]="bv.winnerIndex === 1">
+                  {{ bv.label }}
+                </div>
+              }
+            </div>
+
+            @if (recommendation()) {
+              <div class="best-value-recommendation">
+                {{ recommendation() }}
+              </div>
+            }
+          </div>
+        }
+
+      <div class="compare-table-wrapper desktop-only">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th class="compare-th-label">Feature</th>
+              <th class="compare-th-product" [class.winner-header]="bestValues().some(b => b.winnerIndex === 0)">
+                <div class="compare-th-main">Product A</div>
+                @if (p.length === 2) {
+                  <div class="compare-th-sub">{{ p[0].title.length > 30 ? (p[0].title | slice:0:30) + '...' : p[0].title }}</div>
+                }
+              </th>
+              <th class="compare-th-product" [class.winner-header]="bestValues().some(b => b.winnerIndex === 1)">
+                <div class="compare-th-main">Product B</div>
+                @if (p.length === 2) {
+                  <div class="compare-th-sub">{{ p[1].title.length > 30 ? (p[1].title | slice:0:30) + '...' : p[1].title }}</div>
+                }
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (field of staticFields; track field.key) {
+              <tr class="compare-row">
+                <td class="compare-cell-label">{{ field.label }}</td>
+
+                @if (field.key === 'image') {
+                  <td class="compare-cell-value">
+                    <img [src]="field.getValue(p[0])" [alt]="p[0].title" class="compare-image" />
+                  </td>
+                  <td class="compare-cell-value">
+                    <img [src]="field.getValue(p[1])" [alt]="p[1].title" class="compare-image" />
+                  </td>
+                } @else if (field.key === 'price') {
+                  <td class="compare-cell-value">
+                    <div class="compare-price-wrap">
+                      <span class="compare-price-current">{{ p[0].price | currencyFormat }}</span>
+                      @if (hasSale(p[0])) {
+                        <span class="compare-price-original">{{ (p[0].originalPrice || p[0].price) | currencyFormat }}</span>
+                        @if (p[0].savingsPercent) {
+                          <span class="compare-price-badge">-{{ p[0].savingsPercent }}%</span>
+                        }
+                      }
+                    </div>
+                  </td>
+                  <td class="compare-cell-value">
+                    <div class="compare-price-wrap">
+                      <span class="compare-price-current">{{ p[1].price | currencyFormat }}</span>
+                      @if (hasSale(p[1])) {
+                        <span class="compare-price-original">{{ (p[1].originalPrice || p[1].price) | currencyFormat }}</span>
+                        @if (p[1].savingsPercent) {
+                          <span class="compare-price-badge">-{{ p[1].savingsPercent }}%</span>
+                        }
+                      }
+                    </div>
+                  </td>
+                } @else if (field.key === 'description') {
+                  <td class="compare-cell-value compare-desc">{{ field.getValue(p[0]) }}</td>
+                  <td class="compare-cell-value compare-desc">{{ field.getValue(p[1]) }}</td>
+                } @else if (field.key === 'status') {
+                  <td class="compare-cell-value">
+                    <span class="status-badge-compare" [class.status-available]="p[0].status === 'available'" [class.status-sold]="p[0].status === 'sold'" [class.status-reserved]="p[0].status === 'reserved'">{{ field.getValue(p[0]) }}</span>
+                  </td>
+                  <td class="compare-cell-value">
+                    <span class="status-badge-compare" [class.status-available]="p[1].status === 'available'" [class.status-sold]="p[1].status === 'sold'" [class.status-reserved]="p[1].status === 'reserved'">{{ field.getValue(p[1]) }}</span>
+                  </td>
+                } @else {
+                  <td class="compare-cell-value">{{ field.getValue(p[0]) }}</td>
+                  <td class="compare-cell-value">{{ field.getValue(p[1]) }}</td>
+                }
+              </tr>
+            }
+
+            @if (dynamicAttributes().length > 0) {
+              <tr class="compare-section-row">
+                <td class="compare-section-cell" colspan="3">Additional Specifications</td>
+              </tr>
+              @for (attr of dynamicAttributes(); track attr.key) {
+                <tr class="compare-row">
+                  <td class="compare-cell-label">{{ attr.label }}</td>
+                  <td class="compare-cell-value">{{ attr.values[0] }}</td>
+                  <td class="compare-cell-value">{{ attr.values[1] }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+      </div>
+
+      <div class="compare-mobile mobile-only">
+        @for (product of p; track product.id; let i = $index) {
+          <div class="compare-mobile-card" [class.winner-card]="bestValues().some(b => b.winnerIndex === i)">
+            <div class="compare-mobile-card-header">
+              @if (bestValues().some(b => b.winnerIndex === i)) {
+                <span class="mobile-winner-badge">Best Value</span>
+              }
+              <h3>Product {{ i === 0 ? 'A' : 'B' }}</h3>
+              <button class="mobile-remove-btn" (click)="removeProduct(i)" title="Remove product">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="compare-mobile-image-wrap">
+              <img [src]="product.images[0]" [alt]="product.title" class="compare-mobile-image" />
+            </div>
+            <div class="compare-mobile-fields">
+              <div class="mobile-field"><span class="mobile-field-label">Title</span><span class="mobile-field-value">{{ product.title }}</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Price</span><span class="mobile-field-value mobile-price">{{ product.price | currencyFormat }}</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Category</span><span class="mobile-field-value">{{ product.categoryName || product.category }}</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Brand</span><span class="mobile-field-value">{{ product.brand || '-' }}</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Condition</span><span class="mobile-field-value">{{ getConditionLabel(product.condition) }}</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Status</span><span class="mobile-field-value"><span class="status-badge-compare" [class.status-available]="product.status === 'available'" [class.status-sold]="product.status === 'sold'" [class.status-reserved]="product.status === 'reserved'">{{ product.status.charAt(0).toUpperCase() + product.status.slice(1) }}</span></span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Seller</span><span class="mobile-field-value">{{ product.seller.firstName }} {{ product.seller.lastName }}</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Rating</span><span class="mobile-field-value">{{ product.seller.rating }}/5</span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Location</span><span class="mobile-field-value">{{ product.location || '-' }}</span></div>
+              @if (product.showContactInfo && product.phoneNumber) {
+                <div class="mobile-field"><span class="mobile-field-label">Phone</span><span class="mobile-field-value">{{ product.phoneNumber }}</span></div>
+              }
+              <div class="mobile-field"><span class="mobile-field-label">Created</span><span class="mobile-field-value">{{ product.createdAt | timeAgo }}</span></div>
+              <div class="mobile-field mobile-field-desc"><span class="mobile-field-label">Description</span><span class="mobile-field-value">{{ product.description || '-' }}</span></div>
+              @for (attr of dynamicAttributes(); track attr.key) {
+                <div class="mobile-field"><span class="mobile-field-label">{{ attr.label }}</span><span class="mobile-field-value">{{ attr.values[i] }}</span></div>
+              }
+            </div>
+            <a [routerLink]="['/products', product.id]" class="mobile-view-link">View Details →</a>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

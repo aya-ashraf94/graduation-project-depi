@@ -1,0 +1,44 @@
+@if (compareService.count() > 0 && !isCompareRoute()) {
+  <div class="compare-bar">
+    <div class="compare-bar-inner">
+      <div class="compare-bar-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        Compare Products
+      </div>
+
+      <div class="compare-bar-items">
+        @for (item of compareService.items(); track item.id; let i = $index) {
+          <div class="compare-bar-item">
+            <img [src]="item.thumbnail" [alt]="item.title" class="compare-bar-item-img" />
+            <div class="compare-bar-item-info">
+              <span class="compare-bar-item-title">{{ item.title }}</span>
+              <span class="compare-bar-item-price">{{ item.price | currencyFormat }}</span>
+            </div>
+            <button class="compare-bar-remove" (click)="compareService.remove(item.id)" title="Remove">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="compare-bar-actions">
+        <button class="compare-bar-clear" (click)="compareService.clear()" title="Clear all">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+        <button class="compare-bar-cta" (click)="compareService.navigateToCompare()" [disabled]="compareService.count() < 2">
+          Compare Now
+        </button>
+      </div>
+    </div>
+  </div>
+}

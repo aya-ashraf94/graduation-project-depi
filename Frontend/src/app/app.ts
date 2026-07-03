@@ -13,6 +13,7 @@ import { FlashSaleBannerComponent } from './shared/components/flash-sale-banner/
 import { CustomCursor } from './shared/components/custom-cursor/custom-cursor';
 import { LoadingScreen } from './shared/components/loading-screen/loading-screen';
 import { ScrollToTop } from './shared/components/scroll-to-top/scroll-to-top';
+import { CompareBarComponent } from './shared/components/compare-bar/compare-bar';
 import { OfferService } from './core/services/offer.service';
 import { FlashSaleService } from './core/services/flash-sale.service';
 import { AuthService } from './core/services/auth';
@@ -21,7 +22,7 @@ import { environment } from '../environments/environment';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, Navbar, Footer, Toast, Confirm, LuckyCat, FlashSaleBannerComponent, CustomCursor, LoadingScreen, ScrollToTop],
+  imports: [CommonModule, RouterOutlet, RouterLink, Navbar, Footer, Toast, Confirm, LuckyCat, FlashSaleBannerComponent, CustomCursor, LoadingScreen, ScrollToTop, CompareBarComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -36,6 +37,7 @@ export class App implements OnDestroy {
   isChatRoute = signal(false);
   isAdminRoute = signal(false);
   isListingFormRoute = signal(false);
+  isCompareRoute = signal(false);
   shouldShowLuckyCat = signal(false);
   shouldShowFlashBanner = signal(false);
   private _routeShowsCat = signal(false);
@@ -53,6 +55,7 @@ export class App implements OnDestroy {
       this.isChatRoute.set(url.includes('/chat'));
       this.isAdminRoute.set(url.startsWith('/admin'));
       this.isListingFormRoute.set(url.includes('/listings/edit') || url.includes('/listings/create'));
+      this.isCompareRoute.set(url.startsWith('/products/compare'));
       this.shouldShowFlashBanner.set(
         !url.includes('/auth/') && !url.startsWith('/admin')
       );

@@ -40,6 +40,11 @@ export const routes: Routes = [
       import('./features/product/pages/product-list/product-list').then((m) => m.ProductList),
   },
   {
+    path: 'products/compare',
+    loadComponent: () =>
+      import('./features/product/pages/compare-page/compare-page').then((m) => m.ComparePage),
+  },
+  {
     path: 'products/:id',
     loadComponent: () =>
       import('./features/product/pages/product-detail/product-detail').then((m) => m.ProductDetail),

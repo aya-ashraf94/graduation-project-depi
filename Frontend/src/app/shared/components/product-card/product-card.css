@@ -68,6 +68,37 @@
   gap: 0.3rem;
 }
 
+.card-variant-home .home-btn-compare {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--white);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.card-variant-home .home-btn-compare:hover {
+  transform: scale(1.1);
+  background: var(--white);
+  color: var(--black);
+}
+
+.card-variant-home .home-btn-compare.compared {
+  background: var(--info);
+  color: var(--white);
+  border-color: var(--info);
+}
+
 .card-variant-home .home-cond-badge {
   position: absolute;
   bottom: 8px;
@@ -291,6 +322,35 @@
   color: var(--gray-3);
   border: 1px solid rgba(10, 10, 10, 0.08);
   border-radius: 20px;
+}
+
+.card-variant-list .btn-compare {
+  position: absolute;
+  top: 10px;
+  right: 48px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--black);
+  box-shadow: 2px 2px 0 var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--black);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.card-variant-list .btn-compare:hover {
+  transform: scale(1.1);
+}
+
+.card-variant-list .btn-compare.compared {
+  background: var(--info-light);
+  color: var(--info);
+  border-color: var(--info);
 }
 
 .card-variant-list .btn-wishlist {
@@ -848,6 +908,35 @@
 
 .product-card-v2.card-variant-carousel:hover .card-img-v2 {
   transform: scale(1.03);
+}
+
+.card-variant-carousel .btn-compare-v2-card {
+  position: absolute;
+  top: 0.75rem;
+  right: 3.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid var(--black);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: var(--transition-smooth);
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.card-variant-carousel .btn-compare-v2-card:hover {
+  transform: scale(1.1);
+  background: var(--info-light);
+}
+
+.card-variant-carousel .btn-compare-v2-card.compared {
+  background: var(--info-light);
+  color: var(--info);
+  border-color: var(--info);
 }
 
 .card-variant-carousel .btn-wishlist-v2-card {

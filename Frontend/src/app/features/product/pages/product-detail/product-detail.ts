@@ -53,6 +53,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   activeTab: 'description' | 'specifications' | 'seller' | 'safety' = 'description';
   showLightbox = false;
   lightboxIndex = 0;
+  isZoomed = false;
+  zoomX = 50;
+  zoomY = 50;
   showOfferModal = false;
   offerAmount = 0;
   offerSuccess = '';
@@ -349,6 +352,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   setActiveImage(index: number) {
     this.activeImage = index;
+    this.isZoomed = false;
   }
 
   nextImage(event?: Event) {
@@ -358,6 +362,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     if (this.product && this.product.images.length > 0) {
       this.activeImage = (this.activeImage + 1) % this.product.images.length;
     }
+    this.isZoomed = false;
   }
 
   prevImage(event?: Event) {
@@ -367,6 +372,27 @@ export class ProductDetail implements OnInit, OnDestroy {
     if (this.product && this.product.images.length > 0) {
       this.activeImage = (this.activeImage - 1 + this.product.images.length) % this.product.images.length;
     }
+    this.isZoomed = false;
+  }
+
+  onImageMouseEnter() {
+    this.isZoomed = true;
+  }
+
+  onImageMouseMove(event: MouseEvent) {
+    const el = event.currentTarget as HTMLElement;
+    const rect = el.getBoundingClientRect();
+    let x = ((event.clientX - rect.left) / rect.width) * 100;
+    let y = ((event.clientY - rect.top) / rect.height) * 100;
+    x = Math.min(100, Math.max(0, x));
+    y = Math.min(100, Math.max(0, y));
+    this.zoomX = x;
+    this.zoomY = y;
+    this.cdr.detectChanges();
+  }
+
+  onImageMouseLeave() {
+    this.isZoomed = false;
   }
 
   executeAuthorizedAction(action: () => void): void {
