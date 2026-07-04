@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, merge, of } from 'rxjs';
+import { debounceTime, switchMap, map, catchError, takeUntil, take } from 'rxjs/operators';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
@@ -18,7 +20,7 @@ import { AuthRequiredModalComponent } from '../../../../shared/components/auth-r
   styleUrl: './search-results.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchResults implements OnInit {
+export class SearchResults implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -26,72 +28,113 @@ export class SearchResults implements OnInit {
   protected authService = inject(AuthService);
   protected wishlistService = inject(WishlistService);
 
+  private text$ = new Subject<string>();
+  private immediate$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
   showAuthModal = false;
+  filterExpanded = false;
+  loading = false;
 
   query = '';
   results: ProductSummary[] = [];
   totalResults = 0;
 
-  // Filter state
   selectedCategory: ProductCategory | '' = '';
   selectedCondition: ProductCondition | '' = '';
   sortBy: 'newest' | 'price_asc' | 'price_desc' | 'popular' = 'newest';
 
-  // Label maps for template
   readonly categoryLabels = CATEGORY_LABELS;
   readonly conditionLabels = CONDITION_LABELS;
   readonly categories = Object.keys(CATEGORY_LABELS) as ProductCategory[];
   readonly conditions = Object.keys(CONDITION_LABELS) as ProductCondition[];
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+    const search$ = merge(
+      this.text$.pipe(
+        debounceTime(300),
+        map(text => { this.query = text; return this.buildFilters(); })
+      ),
+      this.immediate$.pipe(
+        map(() => this.buildFilters())
+      )
+    );
+
+    search$.pipe(
+      switchMap(filters => {
+        this.loading = true;
+        this.cdr.markForCheck();
+        return this.productService.getProducts(filters).pipe(
+          catchError(() => of([]))
+        );
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(data => {
+      this.results = data;
+      this.totalResults = data.length;
+      this.loading = false;
+      this.cdr.markForCheck();
+    });
+
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
       this.query = params['q'] || '';
       this.selectedCategory = params['category'] || '';
       this.selectedCondition = params['condition'] || '';
       this.sortBy = params['sort'] || 'newest';
-      this.performSearch();
+      this.syncUrl();
+      this.immediate$.next();
     });
   }
 
-  performSearch(): void {
-    const filters: ProductFilters = {
-      search: this.query,
-      sortBy: this.sortBy,
-    };
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private buildFilters(): ProductFilters {
+    const filters: ProductFilters = { search: this.query, sortBy: this.sortBy };
     if (this.selectedCategory) filters.category = this.selectedCategory;
     if (this.selectedCondition) filters.condition = this.selectedCondition;
+    return filters;
+  }
 
-    // التصحيح هنا: استخدام subscribe لاستقبال البيانات
-    this.productService.getProducts(filters).subscribe({
-      next: (data) => {
-        this.results = data;
-        this.totalResults = data.length;
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Error fetching search results:', err);
-        this.results = []; // في حال حدوث خطأ، نجعل النتائج فارغة
-        this.totalResults = 0;
-        this.cdr.markForCheck();
-      }
-    });
+  private syncUrl(): void {
+    const qp: any = {};
+    if (this.query) qp.q = this.query;
+    if (this.selectedCategory) qp.category = this.selectedCategory;
+    if (this.selectedCondition) qp.condition = this.selectedCondition;
+    if (this.sortBy) qp.sort = this.sortBy;
+    this.router.navigate(['/search'], { queryParams: qp, replaceUrl: true });
+  }
+
+  onQueryChange(value: string): void {
+    this.text$.next(value);
   }
 
   applyFilters(): void {
-    const queryParams: any = {};
-    if (this.query) queryParams.q = this.query;
-    if (this.selectedCategory) queryParams.category = this.selectedCategory;
-    if (this.selectedCondition) queryParams.condition = this.selectedCondition;
-    if (this.sortBy) queryParams.sort = this.sortBy;
+    this.syncUrl();
+    this.immediate$.next();
+  }
 
-    this.router.navigate(['/search'], { queryParams });
+  toggleFilters(): void {
+    this.filterExpanded = !this.filterExpanded;
   }
 
   clearFilters(): void {
     this.selectedCategory = '';
     this.selectedCondition = '';
     this.sortBy = 'newest';
-    this.applyFilters();
+    this.syncUrl();
+    this.immediate$.next();
+  }
+
+  browseAll(): void {
+    this.query = '';
+    this.selectedCategory = '';
+    this.selectedCondition = '';
+    this.sortBy = 'newest';
+    this.router.navigate(['/search'], { replaceUrl: true });
+    this.immediate$.next();
   }
 
   toggleWishlist(productId: string, event?: any): void {

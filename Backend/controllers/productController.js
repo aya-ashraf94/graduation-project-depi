@@ -225,8 +225,11 @@ const getProducts = async (req, res) => {
         or(
           ilike(products.title, search),
           ilike(products.description, search),
+          ilike(products.location, search),
           sql`${products.dynamicAttributes}->>'brand' ILIKE ${search}`,
-          sql`${products.dynamicAttributes}->>'Brand' ILIKE ${search}`
+          sql`${products.dynamicAttributes}->>'Brand' ILIKE ${search}`,
+          sql`${products.dynamicAttributes}->>'size' ILIKE ${search}`,
+          sql`${products.dynamicAttributes}->>'Size' ILIKE ${search}`
         )
       );
     }
