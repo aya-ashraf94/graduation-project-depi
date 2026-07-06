@@ -1,1 +1,525 @@
-/* Styles are inherited from parent view encapsulation none */
+/* ============================================================
+   EDIT PROFILE MODAL — NEO-BRUTALIST
+   These styles are global (ViewEncapsulation.None).
+   ============================================================ */
+
+/* ---------- GLASSMORPHIC OVERLAY ---------- */
+.glass-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--black) 65%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(8px);
+  padding: 1.5rem;
+}
+
+.brutalist-modal-card {
+  background: var(--white);
+  border: 4px solid var(--black);
+  box-shadow: 8px 8px 0 var(--black);
+  border-radius: var(--radius-md);
+  max-width: 780px;
+  width: 100%;
+  padding: 2.25rem 2rem;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: left;
+  animation: brutalist-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes brutalist-pop {
+  from {
+    transform: scale(0.92) translate(8px, 8px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translate(0, 0);
+    opacity: 1;
+  }
+}
+
+.brutalist-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--white);
+  border: 2.5px solid var(--black);
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 2px 2px 0 var(--black);
+  color: var(--black);
+  padding: 0;
+  line-height: 1;
+}
+
+.brutalist-modal-close:hover {
+  background: var(--danger);
+  color: var(--white);
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3.5px 3.5px 0 var(--black);
+}
+
+.brutalist-modal-close:active {
+  transform: translate(0, 0);
+  box-shadow: 1px 1px 0 var(--black);
+}
+
+.modal-header-banner {
+  margin-bottom: 1.75rem;
+  text-align: center;
+  border-bottom: 2.5px solid var(--black);
+  padding-bottom: 1.25rem;
+}
+
+.brutalist-modal-title {
+  font-family: var(--font-primary);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--black);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.modal-subtitle {
+  font-family: var(--font-secondary);
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--gray-3);
+  margin: 0;
+}
+
+/* ---------- BRUTALIST BANNER ---------- */
+.brutalist-banner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  border: 3px solid var(--black);
+  box-shadow: 3px 3px 0 var(--black);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-secondary);
+  font-size: 0.9rem;
+  font-weight: 750;
+  animation: banner-slide 0.25s ease-out;
+}
+
+@keyframes banner-slide {
+  from { transform: translateY(-5px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.banner-icon-wrap {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: var(--radius-xs);
+  border: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--black);
+}
+
+.brutalist-banner-success {
+  background: var(--success-light);
+  color: var(--success-dark);
+}
+
+.brutalist-banner-success .banner-icon-wrap {
+  background: var(--success-light);
+}
+
+.brutalist-banner-error {
+  background: var(--danger-light);
+  color: var(--danger-dark);
+}
+
+.brutalist-banner-error .banner-icon-wrap {
+  background: var(--danger-light);
+}
+
+.banner-message {
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* ---------- EDIT FORM ---------- */
+.edit-form-scroll-area {
+  max-height: 65vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+  padding-right: 0.25rem;
+}
+
+.edit-form-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.edit-form-scroll-area::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-radius: 3px;
+}
+
+.edit-form-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--gray-2);
+  border-radius: 3px;
+  border: 1px solid var(--black);
+}
+
+.brutalist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  width: 100%;
+}
+
+.edit-form-section {
+  margin-bottom: 1.5rem;
+}
+
+.edit-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-primary);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--gray-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.edit-section-body {
+  padding-left: 0.25rem;
+}
+
+.form-row-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 575px) {
+  .form-row-two-cols {
+    grid-template-columns: 1fr;
+    gap: 1.35rem;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  font-weight: 850;
+  color: var(--black);
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
+.form-input,
+.form-textarea {
+  padding: 0.7rem 1.1rem;
+  border: 3px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 var(--black);
+  outline: none;
+  background: var(--white);
+  color: var(--black);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  background: var(--warning-light);
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--black);
+  border-color: var(--black);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+}
+
+.field-hint {
+  font-family: var(--font-secondary);
+  font-size: 0.75rem;
+  color: var(--gray-3);
+  margin-top: 0.15rem;
+}
+
+/* ---------- AVATAR ---------- */
+.avatar-url-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.avatar-preview-frame {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 2px solid var(--black);
+  box-shadow: 2px 2px 0 var(--black);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-preview-empty {
+  color: var(--gray-2);
+}
+
+.avatar-url-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.avatar-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.btn-upload-avatar {
+  padding: 0.5rem 1rem;
+  background: var(--white);
+  color: var(--black);
+  box-shadow: 2px 2px 0 var(--black);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  border: 2.5px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-upload-avatar:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3.5px 3.5px 0 var(--black);
+  background: var(--surface-2);
+}
+
+.btn-upload-avatar:active {
+  transform: translate(0, 0);
+  box-shadow: 1px 1px 0 var(--black);
+}
+
+/* ---------- TAGS ---------- */
+.tags-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  min-height: 2rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--yellow);
+  color: var(--black);
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  animation: chip-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes chip-pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.tag-chip-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--black);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.tag-chip-remove:hover {
+  background: var(--black);
+  color: var(--white);
+}
+
+.tags-empty-hint {
+  font-family: var(--font-secondary);
+  font-size: 0.82rem;
+  color: var(--gray-2);
+  font-style: italic;
+}
+
+.tag-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag-input-short {
+  flex: 1;
+}
+
+.btn-tag-add {
+  padding: 0.7rem 1rem;
+  background: var(--white);
+  color: var(--black);
+  box-shadow: 2px 2px 0 var(--black);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  border: 2.5px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-tag-add:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3.5px 3.5px 0 var(--black);
+  background: var(--surface-2);
+}
+
+/* ---------- FORM ACTIONS ---------- */
+.brutalist-form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  justify-content: flex-end;
+}
+
+.brutalist-btn {
+  padding: 0.75rem 1.85rem;
+  border: 3px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-size: 1.15rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel {
+  background: var(--white);
+  color: var(--black);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.btn-cancel:hover {
+  background: var(--surface-2);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--black);
+}
+
+.btn-submit {
+  background: var(--yellow);
+  color: var(--black);
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.btn-submit:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 7px 7px 0 var(--black);
+}
+
+.brutalist-btn:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.btn-submit:disabled:hover {
+  transform: none;
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.btn-saving-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2.5px solid var(--black);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 575px) {
+  .brutalist-modal-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .brutalist-modal-title {
+    font-size: 1.85rem;
+  }
+}

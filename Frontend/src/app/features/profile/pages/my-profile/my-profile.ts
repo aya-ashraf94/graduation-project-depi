@@ -392,6 +392,7 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   openEditModal() {
     this.showEditModal = true;
+    this.cdr.detectChanges();
   }
 
   closeEditModal() {
@@ -399,11 +400,29 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   shareProfile() {
-    navigator.clipboard.writeText(window.location.href);
+    const url = window.location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).catch(() => {
+        this.fallbackCopy(url);
+      });
+    } else {
+      this.fallbackCopy(url);
+    }
     this.profileSuccess.set('Profile link copied to clipboard!');
     setTimeout(() => {
       this.profileSuccess.set(null);
     }, 3000);
+  }
+
+  private fallbackCopy(text: string) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
   }
 
   isFollowing = false;
