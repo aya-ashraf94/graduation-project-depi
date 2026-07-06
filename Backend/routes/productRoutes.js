@@ -14,6 +14,9 @@ router.get('/', productController.getProducts);
 // الحصول على عدد المنتجات لكل فئة
 router.get('/counts/by-category', productController.getCategoryCounts);
 
+// Recommend products based on location
+router.get('/recommended', productController.getRecommendedProducts);
+
 // عرض منتجات يوزر معين (عشان تظهر في بروفايله)
 router.get('/user/:userId', productController.getUserProducts);
 

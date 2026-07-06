@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { User } from '../../../../core/models/user.model';
 import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth';
+import { LocationSelectorComponent } from '../../../../shared/components/location-selector/location-selector';
 
 @Component({
   selector: 'app-edit-profile-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LocationSelectorComponent],
   templateUrl: './edit-profile-modal.html',
   styleUrl: './edit-profile-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +36,9 @@ export class EditProfileModalComponent implements OnInit {
     email: '',
     phoneNumber: '',
     location: '',
+    governorate: '',
+    city: '',
+    district: '',
     bio: '',
     avatar: ''
   };
@@ -55,6 +59,9 @@ export class EditProfileModalComponent implements OnInit {
         email: u.email || '',
         phoneNumber: u.phoneNumber || '',
         location: u.location || '',
+        governorate: u.governorate || '',
+        city: u.city || '',
+        district: u.district || '',
         bio: u.bio || '',
         avatar: u.avatar || ''
       };
@@ -63,8 +70,25 @@ export class EditProfileModalComponent implements OnInit {
     }
   }
 
+  onLocationChange(loc: { governorate: string; city: string; district: string }) {
+    this.editForm.governorate = loc.governorate;
+    this.editForm.city = loc.city;
+    this.editForm.district = loc.district;
+  }
+
   closeModal() {
     this.close.emit();
+  }
+
+  get isFormValid(): boolean {
+    return !!(
+      this.editForm.firstName?.trim() &&
+      this.editForm.lastName?.trim() &&
+      this.editForm.email?.trim() &&
+      this.editForm.phoneNumber?.trim() &&
+      this.editForm.governorate?.trim() &&
+      this.editForm.city?.trim()
+    );
   }
 
   saveProfile() {
@@ -84,6 +108,9 @@ export class EditProfileModalComponent implements OnInit {
       bio: this.editForm.bio,
       location: this.editForm.location,
       phoneNumber: this.editForm.phoneNumber,
+      governorate: this.editForm.governorate,
+      city: this.editForm.city,
+      district: this.editForm.district,
       tags,
       avatar,
       email: this.editForm.email

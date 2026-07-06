@@ -52,6 +52,10 @@ export interface Product {
   phoneNumber?: string;
   showContactInfo?: boolean;
   categoryId?: string;
+  /** Structured location from seller profile */
+  sellerGovernorate?: string;
+  sellerCity?: string;
+  sellerDistrict?: string;
 
   /** Raw dynamicAttributes from the backend (preserved for edit forms) */
   rawDynamicAttributes?: Record<string, any>;
@@ -91,6 +95,10 @@ export interface ProductSummary {
   soldByNafa3ni?: boolean;
   isVerified?: boolean;
   location?: string;
+  /** Structured location from seller profile */
+  sellerGovernorate?: string;
+  sellerCity?: string;
+  sellerDistrict?: string;
 
   /** Flash sale fields */
   originalPrice?: number;

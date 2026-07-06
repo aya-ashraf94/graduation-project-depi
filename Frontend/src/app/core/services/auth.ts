@@ -136,6 +136,9 @@ export class AuthService {
       bio: u.bio || '',
       phoneNumber: u.phoneNumber || '',
       location: u.location || '',
+      governorate: u.governorate || '',
+      city: u.city || '',
+      district: u.district || '',
       tags: u.tags || [],
     };
   }

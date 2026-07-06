@@ -16,6 +16,11 @@ import {
 } from '../models/product.model';
 import { UserSummary } from '../models/user.model';
 
+function formatLocationId(id: string): string {
+  if (!id) return '';
+  return id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
@@ -45,6 +50,19 @@ export class ProductService {
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map(res => {
         const arr = res && Array.isArray(res.products) ? res.products : (Array.isArray(res) ? res : []);
+        return arr.map((p: any) => this.mapProductSummary(p));
+      })
+    );
+  }
+
+  /** Get recommended products based on user location */
+  getRecommendedProducts(governorate: string, city?: string, district?: string, limit: number = 8): Observable<ProductSummary[]> {
+    let params = new HttpParams().set('governorate', governorate).set('limit', limit.toString());
+    if (city) params = params.set('city', city);
+    if (district) params = params.set('district', district);
+    return this.http.get<any>(`${this.apiUrl}/recommended`, { params }).pipe(
+      map(res => {
+        const arr = res && Array.isArray(res.products) ? res.products : [];
         return arr.map((p: any) => this.mapProductSummary(p));
       })
     );
@@ -87,9 +105,6 @@ export class ProductService {
       dynamicAttributes,
       images: payload.images,
       categoryId: (payload as any).categoryId,
-      location: (payload as any).location || 'Cairo',
-      phoneNumber: (payload as any).phoneNumber || '0123456789',
-      showContactInfo: (payload as any).showContactInfo ?? true,
       status: (payload as any).status === 'available' ? 'active' : ((payload as any).status || 'active')
     };
 
@@ -108,10 +123,6 @@ export class ProductService {
 
       images: payload.images,
       categoryId: (payload as any).categoryId,
-
-      location: payload.location,
-      phoneNumber: payload.phoneNumber,
-      showContactInfo: payload.showContactInfo,
 
       status:
         payload.status === 'available'
@@ -228,28 +239,35 @@ export class ProductService {
       rating: 5.0,
       isVerified: false
     };
+    let sellerUser: any = null;
 
     if (p.userId && typeof p.userId === 'object') {
-      const u = p.userId;
-      const nameParts = (u.name || '').trim().split(/\s+/);
+      sellerUser = p.userId;
+      const nameParts = (sellerUser.name || '').trim().split(/\s+/);
       const firstName = nameParts[0] || 'SELLER';
       const lastName = nameParts.slice(1).join(' ') || '';
       seller = {
-        id: u._id || u.id,
+        id: sellerUser._id || sellerUser.id,
         firstName,
         lastName,
-        // avatar: u.avatar && u.avatar.startsWith('/uploads')
-        //   ? `${baseUrl}${u.avatar}`
-        //   : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
-        avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email || u.id || u._id}`,
-        rating: u.rating ?? 5.0,
-        isVerified: u.isVerified ?? false,
-        successRate: u.successRate ?? 100,
-        totalSales: u.totalSales ?? 0
+        avatar: sellerUser.avatar || `https://i.pravatar.cc/150?u=${sellerUser.email || sellerUser.id || sellerUser._id}`,
+        rating: sellerUser.rating ?? 5.0,
+        isVerified: sellerUser.isVerified ?? false,
+        successRate: sellerUser.successRate ?? 100,
+        totalSales: sellerUser.totalSales ?? 0
       };
     } else if (p.userId && typeof p.userId === 'string') {
       seller.id = p.userId;
     }
+
+    const locString = sellerUser?.governorate
+      ? (sellerUser?.district
+        ? `${formatLocationId(sellerUser.district)}, ${formatLocationId(sellerUser.city || sellerUser.governorate)}`
+        : sellerUser.city
+          ? `${formatLocationId(sellerUser.city)}, ${formatLocationId(sellerUser.governorate)}`
+          : formatLocationId(sellerUser.governorate))
+      : (p.location || '');
+    const phoneStr = sellerUser?.phoneNumber || p.phoneNumber || '';
 
     return {
       id: p.id || p._id,
@@ -263,9 +281,6 @@ export class ProductService {
       category,
       size,
       sku: (p.id || p._id || '').substring(0, 8).toUpperCase(),
-      // images: p.images && p.images.length > 0 
-      //   ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
-      //   : ['https://images.unsplash.com/photo-1551028150-64b9f398f678'],
       images: p.images && p.images.length > 0
         ? p.images.map((img: string) => img.startsWith('/uploads') ? `${baseUrl}${img}` : img)
         : [],
@@ -280,9 +295,14 @@ export class ProductService {
       soldByNafa3ni: p.soldByNafa3ni || false,
       isVerified: p.isVerified || false,
 
-      location: p.location || '',
-      phoneNumber: p.phoneNumber || '',
+      // Location and phone come from seller profile (the user object)
+      location: locString,
+      phoneNumber: phoneStr,
       showContactInfo: p.showContactInfo ?? true,
+      // Structured location data from seller
+      sellerGovernorate: sellerUser?.governorate || '',
+      sellerCity: sellerUser?.city || '',
+      sellerDistrict: sellerUser?.district || '',
       categoryId: p.categoryId,
       rawDynamicAttributes: dynamic,
 
@@ -319,7 +339,10 @@ export class ProductService {
       soldByNafa3ni: mapped.soldByNafa3ni,
       isVerified: mapped.isVerified,
       size: mapped.size,
-      location: p.location || '',
+      location: mapped.location || '',
+      sellerGovernorate: mapped.sellerGovernorate || '',
+      sellerCity: mapped.sellerCity || '',
+      sellerDistrict: mapped.sellerDistrict || '',
 
       originalPrice: mapped.originalPrice,
       salePrice: mapped.salePrice,

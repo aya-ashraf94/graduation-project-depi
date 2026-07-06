@@ -157,6 +157,9 @@ const getUserById = async (req, res) => {
       bio: users.bio,
       phoneNumber: users.phoneNumber,
       location: users.location,
+      governorate: users.governorate,
+      city: users.city,
+      district: users.district,
       tags: users.tags,
       rating: users.rating,
       totalSales: users.totalSales,
@@ -184,7 +187,7 @@ const updateProfile = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this profile" });
     }
 
-    const { firstName, lastName, email, avatar, bio, location, tags, phoneNumber } = req.body;
+    const { firstName, lastName, email, avatar, bio, location, tags, phoneNumber, governorate, city, district } = req.body;
     const updateData = {};
 
     if (firstName !== undefined || lastName !== undefined) {
@@ -202,6 +205,9 @@ const updateProfile = async (req, res) => {
     }
     if (bio !== undefined) updateData.bio = bio;
     if (location !== undefined) updateData.location = location;
+    if (governorate !== undefined) updateData.governorate = governorate;
+    if (city !== undefined) updateData.city = city;
+    if (district !== undefined) updateData.district = district;
     if (tags !== undefined) updateData.tags = tags;
     if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
 
@@ -221,6 +227,9 @@ const updateProfile = async (req, res) => {
         bio: users.bio,
         phoneNumber: users.phoneNumber,
         location: users.location,
+        governorate: users.governorate,
+        city: users.city,
+        district: users.district,
         tags: users.tags,
         rating: users.rating,
         totalSales: users.totalSales,

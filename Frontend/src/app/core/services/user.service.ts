@@ -45,7 +45,10 @@ export class UserService {
       joinedAt: u.createdAt ? new Date(u.createdAt) : new Date(),
       isVerified: u.isVerified ?? false,
       phoneNumber: u.phoneNumber || '',
-      location: u.location || 'Cairo',
+      location: u.location || '',
+      governorate: u.governorate || '',
+      city: u.city || '',
+      district: u.district || '',
       bio: u.bio || '',
       tags: u.tags || []
     };

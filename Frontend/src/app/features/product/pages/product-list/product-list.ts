@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -6,17 +6,20 @@ import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ProductSummary } from '../../../../core/models/product.model';
+import { LocationService } from '../../../../core/services/location.service';
 import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
 import { AuthRequiredModalComponent } from '../../../../shared/components/auth-required-modal/auth-required-modal';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
+import { ChangeLocationModalComponent } from '../../../../shared/components/change-location-modal/change-location-modal';
+import { LocationProximity } from '../../../../shared/components/location-badge/location-badge';
 
-type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
+type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'location';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductCardComponent, PaginationComponent, AuthRequiredModalComponent, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, ProductCardComponent, PaginationComponent, AuthRequiredModalComponent, EmptyStateComponent, ChangeLocationModalComponent],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,14 +30,28 @@ export class ProductList implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   protected authService = inject(AuthService);
   wishlistService = inject(WishlistService);
+  protected locationService = inject(LocationService);
 
   showAuthModal = false;
+  showLocationModal = false;
+
+  browsingGovernorate = '';
+  browsingCity = '';
+  browsingDistrict = '';
+  locationLabel = signal('');
+
+  locationSortEnabled = false;
+  recommendedProducts: ProductSummary[] = [];
+
+  showRecommendedSection = false;
 
   // ── Raw data ───────────────────────────────────────────────────────────
   private allProducts: ProductSummary[] = [];
 
   // ── Displayed (after filters + sort) ──────────────────────────────────
   products: ProductSummary[] = [];
+  totalCount = 0;
+  filteredCount = 0;
   isLoading = true;
 
   // ── Pagination state ───────────────────────────────────────────────────
@@ -62,9 +79,10 @@ export class ProductList implements OnInit {
     price_asc: 'PRICE: LOW TO HIGH',
     price_desc: 'PRICE: HIGH TO LOW',
     newest: 'NEWEST ARRIVALS',
+    location: 'NEAR YOU',
   };
 
-  sortKeys: SortOption[] = ['relevance', 'price_asc', 'price_desc', 'newest'];
+  sortKeys: SortOption[] = ['relevance', 'price_asc', 'price_desc', 'newest', 'location'];
 
   // Track if mobile filter panel is expanded
   mobileFiltersOpen = false;
@@ -73,9 +91,127 @@ export class ProductList implements OnInit {
     return this.sortLabels[this.selectedSort];
   }
 
+  // ── Location ───────────────────────────────────────────────────────────
+  getProximity(product: ProductSummary): LocationProximity {
+    const user = this.authService.currentUser();
+    if (!user || !this.browsingGovernorate) return 'other';
+    const pGov = product.sellerGovernorate;
+    const pCity = product.sellerCity;
+    const pDist = product.sellerDistrict;
+    if (!pGov) return 'other';
+    if (this.browsingDistrict && pDist && this.browsingDistrict === pDist) return 'same_district';
+    if (this.browsingCity && pCity && this.browsingCity === pCity) return 'same_city';
+    if (this.browsingGovernorate === pGov) return 'same_governorate';
+    return 'other';
+  }
+
+  /** Same as getProximity but suppresses 'same_governorate' for the recommended section */
+  getRecommendedProximity(product: ProductSummary): LocationProximity {
+    const prox = this.getProximity(product);
+    return prox === 'same_governorate' ? 'other' : prox;
+  }
+
+  openLocationModal(): void {
+    this.showLocationModal = true;
+  }
+
+  closeLocationModal(): void {
+    this.showLocationModal = false;
+  }
+
+  onLocationSaved(location: { governorate: string; city: string; district: string }): void {
+    this.browsingGovernorate = location.governorate;
+    this.browsingCity = location.city;
+    this.browsingDistrict = location.district;
+    this.updateLocationLabel();
+    this.applyFilters();
+    this.loadRecommendations();
+    this.closeLocationModal();
+  }
+
+  private locationLabelSeq = 0;
+
+  private updateLocationLabel(): void {
+    if (!this.browsingGovernorate) {
+      this.locationLabel.set('');
+      return;
+    }
+    const seq = ++this.locationLabelSeq;
+    this.locationService.getGovernorateName(this.browsingGovernorate).subscribe(govName => {
+      if (seq !== this.locationLabelSeq) return;
+      let label = govName || this.browsingGovernorate;
+      if (this.browsingCity) {
+        this.locationService.getCityName(this.browsingGovernorate, this.browsingCity).subscribe(cityName => {
+          if (seq !== this.locationLabelSeq) return;
+          label += `, ${cityName || this.browsingCity}`;
+          this.locationLabel.set(label);
+        });
+      } else {
+        this.locationLabel.set(label);
+      }
+    });
+  }
+
+  private locationSort(products: ProductSummary[], governorate: string, city?: string, district?: string): ProductSummary[] {
+    const score = (p: ProductSummary): number => {
+      const pGov = p.sellerGovernorate;
+      const pCity = p.sellerCity;
+      const pDist = p.sellerDistrict;
+      if (!pGov) return 0;
+      if (district && pDist && district === pDist) return 4;
+      if (city && pCity && city === pCity) return 3;
+      if (governorate === pGov) return 2;
+      return 1;
+    };
+    return products.sort((a, b) => score(b) - score(a));
+  }
+
+  private loadRecommendations(): void {
+    if (!this.browsingGovernorate) {
+      this.showRecommendedSection = false;
+      this.recommendedProducts = [];
+      return;
+    }
+    this.productService.getRecommendedProducts(
+      this.browsingGovernorate,
+      this.browsingCity || undefined,
+      this.browsingDistrict || undefined
+    ).subscribe({
+      next: (prods) => {
+        const user = this.authService.currentUser();
+        const filtered = user
+          ? prods.filter(p => p.sellerId !== user.id)
+          : prods;
+        const matching = filtered.filter(p => this.getProximity(p) !== 'other');
+        this.recommendedProducts = matching.slice(0, 8);
+        this.excludedProductIds = new Set(this.recommendedProducts.map(p => p.id));
+        this.showRecommendedSection = true;
+        this.applyFilters();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.recommendedProducts = [];
+        this.showRecommendedSection = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
-    // 1. Fetch backend categories
+    // 1. Init browsing location from user profile
+    const user = this.authService.currentUser();
+    if (user) {
+      this.browsingGovernorate = user.governorate || '';
+      this.browsingCity = user.city || '';
+      this.browsingDistrict = user.district || '';
+      this.updateLocationLabel();
+      if (this.browsingGovernorate) {
+        this.loadRecommendations();
+      }
+    }
+
+    // 2. Fetch backend categories
     this.productService.getCategories().subscribe({
       next: (cats) => {
         this.categories = cats.map(c => c.name);
@@ -189,9 +325,17 @@ export class ProductList implements OnInit {
     return [selectedCat];
   }
 
+  // ── Exclude recommended products IDs for "Other Products" ─────────────
+  private excludedProductIds = new Set<string>();
+
   // ── Apply Filters + Sort + Paginate ──────────────────────────────────
   applyFilters(): void {
     let result = [...this.allProducts];
+
+    // Exclude products already shown in the recommended section
+    if (this.excludedProductIds.size > 0) {
+      result = result.filter(p => !this.excludedProductIds.has(p.id));
+    }
 
     // Filter by category group
     if (this.selectedCategories.size > 0) {
@@ -218,10 +362,18 @@ export class ProductList implements OnInit {
       case 'price_asc': result.sort((a, b) => a.price - b.price); break;
       case 'price_desc': result.sort((a, b) => b.price - a.price); break;
       case 'newest': result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
+      case 'location': {
+        if (this.browsingGovernorate) {
+          result = this.locationSort(result, this.browsingGovernorate, this.browsingCity, this.browsingDistrict);
+        }
+        break;
+      }
       default: break; // relevance = original order
     }
 
     // Update pagination metadata
+    this.totalCount = this.recommendedProducts.length + result.length;
+    this.filteredCount = result.length;
     this.totalPages = Math.ceil(result.length / this.pageSize) || 1;
     if (this.currentPage > this.totalPages) {
       this.currentPage = this.totalPages;

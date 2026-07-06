@@ -20,6 +20,9 @@ export interface User {
   isSuspended?: boolean;
   phoneNumber?: string;
   location?: string;
+  governorate?: string;
+  city?: string;
+  district?: string;
   bio?: string;
   tags?: string[];
   reviewsCount?: number;

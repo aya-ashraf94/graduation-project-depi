@@ -51,11 +51,26 @@ export class CreateListing implements OnInit {
   phone = '';
   showContact = true;
 
+  get userLocationDisplay(): string {
+    const user = this.authService.currentUser();
+    if (!user) return 'Not set';
+    const parts: string[] = [];
+    if (user.district) parts.push(user.district);
+    if (user.city) parts.push(this.formatId(user.city));
+    if (user.governorate) parts.push(this.formatId(user.governorate));
+    return parts.length ? parts.join(', ') : 'Not set';
+  }
+
   private router = inject(Router);
   private productService = inject(ProductService);
   public authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private toastService = inject(ToastService);
+
+  private formatId(id: string): string {
+    if (!id) return '';
+    return id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
 
   ngOnInit() {
     this.fetchCategories();
@@ -126,7 +141,7 @@ export class CreateListing implements OnInit {
     // السعر مطلوب في حالة الـ fixed فقط
     const priceOk = this.pricingMode === 'trade' || (this.price !== null && this.price > 0);
     const minPriceOk = this.pricingMode === 'trade' || this.minPrice === null || this.minPrice === undefined || (this.minPrice >= 0 && this.minPrice <= (this.price || 0));
-    return priceOk && minPriceOk && this.city.trim().length > 0 && this.phone.trim().length > 0;
+    return priceOk && minPriceOk;
   }
 
   get allValid(): boolean {
@@ -278,9 +293,6 @@ export class CreateListing implements OnInit {
       conditionScore: conditionScore,
       size: this.dynamicFields['Size'] || this.dynamicFields['size'] || '',
       images: this.imageSlots().filter(img => img !== null),
-      location: this.city,
-      phoneNumber: this.phone,
-      showContactInfo: this.showContact,
       dynamicAttributes: this.dynamicFields,
     };
 
@@ -292,8 +304,13 @@ export class CreateListing implements OnInit {
       },
       error: (err) => {
         this.isPublishing.set(false);
-        console.error('Error publishing:', err);
-        this.toastService.error(err?.error?.message || 'Failed to publish product listing.');
+        if (err?.error?.needsProfileCompletion) {
+          this.toastService.error('Please complete your profile before listing a product.');
+          this.router.navigate(['/profile/me'], { queryParams: { edit: 'true' } });
+        } else {
+          console.error('Error publishing:', err);
+          this.toastService.error(err?.error?.message || 'Failed to publish product listing.');
+        }
       }
     });
   }
@@ -333,9 +350,6 @@ export class CreateListing implements OnInit {
       conditionScore: conditionScore,
       size: this.dynamicFields['Size'] || this.dynamicFields['size'] || '',
       images: this.imageSlots().filter(img => img !== null),
-      location: this.city || 'Cairo',
-      phoneNumber: this.phone || '0000000000',
-      showContactInfo: this.showContact,
       status: 'draft',
       dynamicAttributes: this.dynamicFields,
     };

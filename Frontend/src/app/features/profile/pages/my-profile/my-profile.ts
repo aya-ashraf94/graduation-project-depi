@@ -132,6 +132,21 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   isAdmin = computed(() => this.authService.isAdmin());
 
+  get userLocationDisplay(): string {
+    if (!this.user) return '';
+    if (this.user.location) return this.user.location;
+    const parts: string[] = [];
+    if (this.user.district) parts.push(this.user.district);
+    if (this.user.city) parts.push(this.formatId(this.user.city));
+    if (this.user.governorate) parts.push(this.formatId(this.user.governorate));
+    return parts.join(', ');
+  }
+
+  private formatId(id: string): string {
+    if (!id) return '';
+    return id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
   @HostListener('window:resize')
   onResize(): void {
     this.cdr.detectChanges();

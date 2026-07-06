@@ -66,6 +66,7 @@ app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/users/block", require("./routes/blockRoutes"));
 app.use("/api/flash-sales", require("./routes/flashSaleRoutes"));
+app.use("/api/locations", require("./routes/locationRoutes"));
 
 const { getPool } = require("./config/db");
 

@@ -10,6 +10,7 @@ import { CurrencyFormatPipe } from '../../pipes/currency-format.pipe';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { getConditionLabel, getConditionClass } from '../../utils/condition.utils';
 import { StatusBadgeComponent } from '../status-badge/status-badge';
+import { LocationProximity } from '../location-badge/location-badge';
 
 @Component({
   selector: 'app-product-card',
@@ -24,6 +25,7 @@ export class ProductCardComponent {
   readonly product = input.required<any>();
   readonly variant = input<'home' | 'list' | 'profile' | 'carousel'>('list');
   readonly isOwnProfile = input<boolean>(false);
+  readonly proximity = input<LocationProximity>('other');
 
   readonly wishlistToggle = output<any>();
   readonly editClick = output<any>();
@@ -39,6 +41,11 @@ export class ProductCardComponent {
 
   getConditionClass(cond: string): string {
     return getConditionClass(cond);
+  }
+
+  isOwnListing(): boolean {
+    const user = this.authService.currentUser();
+    return !!user && user.id === this.product().sellerId;
   }
 
   onWishlistToggle(event: Event): void {

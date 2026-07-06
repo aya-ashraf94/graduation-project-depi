@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../../core/services/product.service';
@@ -38,6 +39,15 @@ export class ProductDetail implements OnInit, OnDestroy {
   private flashSaleService = inject(FlashSaleService);
   private cdr = inject(ChangeDetectorRef);
   private timerService = inject(CountdownTimerService);
+  private sanitizer = inject(DomSanitizer);
+
+  get mapUrl(): SafeResourceUrl | null {
+    if (!this.product?.location) return null;
+    const q = encodeURIComponent(this.product.location + ', Egypt');
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://maps.google.com/maps?q=${q}&output=embed`
+    );
+  }
 
   product: Product | undefined;
   relatedProducts: ProductSummary[] = [];

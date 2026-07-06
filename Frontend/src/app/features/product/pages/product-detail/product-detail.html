@@ -335,21 +335,28 @@
         </div>
       </div>
 
-      <!-- Mock Visual Map/Image frame on the right -->
+      <!-- Map -->
       <div class="shipping-graphic-right">
-        <div class="mock-map-visual">
-          <div class="mock-pin"></div>
-          <!-- Mini Zoom Buttons -->
-          <div class="map-ui-controls">
-            <span class="zoom-btn">+</span>
-            <span class="zoom-btn">−</span>
+        @if (mapUrl) {
+          <iframe
+            class="map-embed"
+            [src]="mapUrl"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        } @else {
+          <div class="mock-map-visual">
+            <div class="mock-pin"></div>
+            <div class="map-ui-controls">
+              <span class="zoom-btn">+</span>
+              <span class="zoom-btn">−</span>
+            </div>
+            <div class="map-address-overlay" *ngIf="product.location">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>{{ product.location }}</span>
+            </div>
           </div>
-          <!-- Address overlay -->
-          <div class="map-address-overlay" *ngIf="product.location">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>{{ product.location }}</span>
-          </div>
-        </div>
+        }
       </div>
     </section>
 

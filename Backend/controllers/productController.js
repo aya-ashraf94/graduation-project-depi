@@ -267,6 +267,7 @@ const getProducts = async (req, res) => {
     const result = await db.select()
       .from(products)
       .where(and(...conditions))
+      .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .orderBy(orderBy)
       .offset(skip)
@@ -274,6 +275,7 @@ const getProducts = async (req, res) => {
 
     const formatted = result.map(r => ({
       ...r.products,
+      userId: r.users,
       categoryId: r.categories,
     }));
 
@@ -365,10 +367,25 @@ const getUserProducts = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    const { title, description, price, minPrice, categoryId, dynamicAttributes, images, location, phoneNumber, showContactInfo } = req.body;
+    const { title, description, price, minPrice, categoryId, dynamicAttributes, images, showContactInfo } = req.body;
 
-    if (!title || !price || !categoryId || !location || !phoneNumber) {
+    if (!title || !price || !categoryId) {
       return res.status(400).json({ message: "Please provide all required fields" });
+    }
+
+    // Check if user has completed profile (has phone number and location data)
+    const [seller] = await db.select({
+      phoneNumber: users.phoneNumber,
+      governorate: users.governorate,
+      city: users.city,
+      district: users.district,
+    }).from(users).where(eq(users.id, req.user.id)).limit(1);
+
+    if (!seller || !seller.phoneNumber || !seller.governorate) {
+      return res.status(400).json({
+        message: "Please complete your profile before listing a product.",
+        needsProfileCompletion: true,
+      });
     }
 
     if (minPrice !== undefined && minPrice !== null && minPrice !== '') {
@@ -395,8 +412,6 @@ const createProduct = async (req, res) => {
       categoryId,
       dynamicAttributes: dynamicAttributes || {},
       images: savedImages,
-      location,
-      phoneNumber,
       showContactInfo: showContactInfo ?? true,
       userId: req.user.id,
       soldByNafa3ni: req.user.role === 'admin',
@@ -475,8 +490,6 @@ const updateProduct = async (req, res) => {
     }
     if (req.body.dynamicAttributes !== undefined) allowedUpdates.dynamicAttributes = req.body.dynamicAttributes;
     allowedUpdates.images = savedImages;
-    if (req.body.location !== undefined) allowedUpdates.location = req.body.location;
-    if (req.body.phoneNumber !== undefined) allowedUpdates.phoneNumber = req.body.phoneNumber;
     if (req.body.showContactInfo !== undefined) allowedUpdates.showContactInfo = req.body.showContactInfo;
     if (req.body.status !== undefined) allowedUpdates.status = req.body.status;
     allowedUpdates.updatedAt = new Date();
@@ -546,6 +559,151 @@ const getCategoryCounts = async (req, res) => {
   }
 };
 
+const getRecommendedProducts = async (req, res) => {
+  try {
+    const { governorate, city, district } = req.query;
+
+    if (!governorate) {
+      return res.status(400).json({ message: "Governorate is required for recommendations" });
+    }
+
+    let currentUserId = null;
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      token = req.cookies?.nafa3ni_token;
+    }
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        currentUserId = decoded.id;
+      } catch (err) { }
+    }
+
+    let blockedUserIds = [];
+    if (currentUserId) {
+      const blocks = await db.select()
+        .from(userBlocks)
+        .where(
+          or(
+            eq(userBlocks.blockerId, currentUserId),
+            eq(userBlocks.blockedId, currentUserId)
+          )
+        );
+      blockedUserIds = blocks.map(b => b.blockerId === currentUserId ? b.blockedId : b.blockerId);
+    }
+
+    const conditions = [
+      ne(products.status, 'sold'),
+      ne(products.status, 'draft'),
+      ne(products.status, 'reserved'),
+    ];
+
+    if (blockedUserIds.length > 0) {
+      conditions.push(notInArray(products.userId, blockedUserIds));
+    }
+
+    if (currentUserId) {
+      conditions.push(ne(products.userId, currentUserId));
+    }
+
+    if (req.query.search) {
+      const search = `%${req.query.search}%`;
+      conditions.push(
+        or(
+          ilike(products.title, search),
+          ilike(products.description, search),
+        )
+      );
+    }
+
+    if (req.query.category) {
+      conditions.push(eq(products.categoryId, req.query.category));
+    }
+
+    if (req.query.minPrice || req.query.maxPrice) {
+      if (req.query.minPrice) conditions.push(gte(products.price, Number(req.query.minPrice)));
+      if (req.query.maxPrice) conditions.push(lte(products.price, Number(req.query.maxPrice)));
+    }
+
+    const result = await db.select()
+      .from(products)
+      .where(and(...conditions))
+      .leftJoin(users, eq(products.userId, users.id))
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .orderBy(desc(products.createdAt))
+      .limit(200);
+
+    const formatted = result.map(r => ({
+      ...r.products,
+      userId: r.users,
+      categoryId: r.categories,
+    }));
+
+    // Location-based ranking
+    const priority = { sameDistrict: [], sameCity: [], sameGovernorate: [], other: [] };
+
+    for (const product of formatted) {
+      const seller = product.userId;
+      if (!seller) {
+        priority.other.push(product);
+        continue;
+      }
+
+      const pDistrict = seller.district || '';
+      const pCity = seller.city || '';
+      const pGovernorate = seller.governorate || '';
+
+      if (district && pDistrict && pDistrict === district && pCity === city && pGovernorate === governorate) {
+        priority.sameDistrict.push(product);
+      } else if (city && pCity && pCity === city && pGovernorate === governorate) {
+        priority.sameCity.push(product);
+      } else if (pGovernorate && pGovernorate === governorate) {
+        priority.sameGovernorate.push(product);
+      } else {
+        priority.other.push(product);
+      }
+    }
+
+    // Apply sorting within each priority
+    const sortFn = getSortFunction(req.query.sortBy);
+    for (const key of Object.keys(priority)) {
+      priority[key].sort(sortFn);
+    }
+
+    // Flatten: same district first, then same city, then same governorate, then others
+    const maxResults = parseInt(req.query.limit) || 8;
+    const ordered = [
+      ...priority.sameDistrict,
+      ...priority.sameCity,
+      ...priority.sameGovernorate,
+      ...priority.other,
+    ].slice(0, maxResults);
+
+    // Apply promotions
+    const promotions = await loadActivePromotions();
+    const discounted = annotateProducts(ordered, promotions);
+
+    res.json({
+      products: discounted,
+      total: ordered.length,
+    });
+  } catch (error) {
+    console.error("Error in getRecommendedProducts:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const getSortFunction = (sortBy) => {
+  switch (sortBy) {
+    case 'price_asc': return (a, b) => a.price - b.price;
+    case 'price_desc': return (a, b) => b.price - a.price;
+    case 'popular': return (a, b) => (b.viewCount || 0) - (a.viewCount || 0);
+    case 'newest': return (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+    case 'oldest': return (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+    default: return (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+  }
+};
+
 module.exports = {
   getProducts,
   getUserProducts,
@@ -555,4 +713,5 @@ module.exports = {
   deleteProduct,
   getProductById,
   getCategoryCounts,
+  getRecommendedProducts,
 };

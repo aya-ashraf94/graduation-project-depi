@@ -303,29 +303,30 @@
         </div>
       </div>
 
-      <!-- ── LOCATION ─────────────────────────────────────────────── -->
+      <!-- ── PROFILE INFO ──────────────────────────────────────────── -->
       <div class="wiz-section">
         <div class="wiz-section-header">
           <span class="wiz-sec-tag">B</span>
-          <span class="wiz-sec-title">LOCATION &amp; CONTACT</span>
+          <span class="wiz-sec-title">CONTACT INFO</span>
         </div>
         <div class="wiz-section-body">
-
-          <div class="wiz-field">
-            <label class="wiz-label" for="w-city">CITY / AREA *</label>
-            <input id="w-city" class="wiz-input" type="text" placeholder="e.g. Cairo, Zamalek" [(ngModel)]="city" />
+          <p style="font-family: var(--font-secondary); font-size: 0.8rem; color: var(--gray-3); margin: 0 0 0.5rem;">
+            Your contact info and location from your profile will be used automatically.
+          </p>
+          <div class="wiz-field" *ngIf="authService.currentUser() as user">
+            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <span style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Phone</span>
+              <span style="font-family: var(--font-secondary); font-size: 0.9rem;">{{ user.phoneNumber || 'Not set' }}</span>
+              <span style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 0.3rem;">Location</span>
+              <span style="font-family: var(--font-secondary); font-size: 0.9rem;">
+                {{ userLocationDisplay }}
+              </span>
+            </div>
           </div>
-
-          <div class="wiz-field">
-            <label class="wiz-label" for="w-phone">WHATSAPP / PHONE</label>
-            <input id="w-phone" class="wiz-input" type="tel" placeholder="+20 1xx xxx xxxx" [(ngModel)]="phone" />
-          </div>
-
-          <div class="wiz-check-row">
+          <div class="wiz-check-row" style="margin-top: 0.75rem;">
             <input id="w-show" type="checkbox" class="wiz-checkbox" [(ngModel)]="showContact" />
             <label for="w-show" class="wiz-check-label">Show contact info publicly on listing</label>
           </div>
-
         </div>
       </div>
 
@@ -411,9 +412,6 @@
           } @else {
           <div class="wiz-preview-trade">OPEN TO TRADE</div>
           }
-          @if (city) {
-          <div class="wiz-preview-loc">📍 {{ city }}</div>
-          }
           <button class="wiz-preview-cta" type="button" disabled>CONTACT SELLER</button>
         </div>
       </div>
@@ -484,10 +482,6 @@
                 @if (pricingMode === 'fixed') { ${{ price }} }
                 @else { Open to Trade }
               </span>
-            </div>
-            <div class="wiz-sum-row">
-              <span class="wiz-sum-key">Location</span>
-              <span class="wiz-sum-val">{{ city || '—' }}</span>
             </div>
           </div>
         </div>

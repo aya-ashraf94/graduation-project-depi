@@ -106,9 +106,16 @@
                 <input type="tel" [(ngModel)]="editForm.phoneNumber" name="phoneNumber" class="form-input" placeholder="e.g. +20 100 123 4567" />
               </div>
             </div>
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label">LOCATION</label>
-              <input type="text" [(ngModel)]="editForm.location" name="location" class="form-input" placeholder="e.g. Dorms, Library, Faculty Building" />
+            <div style="margin-top: 1rem;">
+              <app-location-selector
+                governorateLabel="GOVERNORATE"
+                cityLabel="CITY"
+                districtLabel="DISTRICT / NEIGHBORHOOD"
+                [initialGovernorate]="editForm.governorate"
+                [initialCity]="editForm.city"
+                [initialDistrict]="editForm.district"
+                (locationChange)="onLocationChange($event)"
+              ></app-location-selector>
             </div>
           </div>
         </div>
@@ -147,7 +154,7 @@
         <!-- FORM ACTIONS -->
         <div class="brutalist-form-actions">
           <button type="button" class="brutalist-btn btn-cancel" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="brutalist-btn btn-submit" [disabled]="savingProfile">
+          <button type="submit" class="brutalist-btn btn-submit" [disabled]="savingProfile || !isFormValid">
             <span *ngIf="!savingProfile">Save Changes</span>
             <span *ngIf="savingProfile" class="btn-saving-spinner"></span>
           </button>
