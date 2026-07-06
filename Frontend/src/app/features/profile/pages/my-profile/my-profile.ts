@@ -9,7 +9,7 @@ import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { UserService } from '../../../../core/services/user.service';
 import { OrderService } from '../../../../core/services/order.service';
-import { CompareService, CompareHistoryEntry } from '../../../../core/services/compare.service';
+
 import { User } from '../../../../core/models/user.model';
 import { ProductSummary } from '../../../../core/models/product.model';
 import { Review } from '../../../../core/models/review.model';
@@ -40,7 +40,6 @@ export class MyProfile implements OnInit, AfterViewInit {
   private reviewService = inject(ReviewService);
   private userService = inject(UserService);
   private orderService = inject(OrderService);
-  private compareService = inject(CompareService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -62,7 +61,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   reviewedOrderIds: Set<string> = new Set();
   dismissedOrderIds: Set<string> = new Set();
   expandedOrderIds: Set<string> = new Set();
-  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'comparisons' = 'products';
+  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' = 'products';
   blockedUsers: any[] = [];
   isViewerBlocked = false;
   isPartnerBlockedByMe = false;
@@ -284,7 +283,7 @@ export class MyProfile implements OnInit, AfterViewInit {
     // Handle Tabs (reading from query params)
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked' || tab === 'comparisons') {
+      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked') {
         this.activeTab = tab;
         if (tab === 'blocked') {
           this.loadBlockedUsers();
@@ -392,17 +391,27 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   openEditModal() {
     this.showEditModal = true;
+    this.cdr.detectChanges();
   }
 
   closeEditModal() {
     this.showEditModal = false;
+    this.cdr.detectChanges();
   }
 
-  shareProfile() {
-    navigator.clipboard.writeText(window.location.href);
-    this.profileSuccess.set('Profile link copied to clipboard!');
+  async shareProfile() {
+    try {
+      if (!navigator.clipboard) {
+        throw new Error('Clipboard API not available');
+      }
+      await navigator.clipboard.writeText(window.location.href);
+      this.profileSuccess.set('Profile link copied to clipboard!');
+    } catch {
+      this.profileError.set('Failed to copy link. Please copy the URL manually.');
+    }
     setTimeout(() => {
       this.profileSuccess.set(null);
+      this.profileError.set(null);
     }, 3000);
   }
 
@@ -570,27 +579,7 @@ export class MyProfile implements OnInit, AfterViewInit {
     }
   }
 
-  compareHistory(): CompareHistoryEntry[] {
-    return this.compareService.getHistory();
-  }
-
-  openComparison(entry: CompareHistoryEntry): void {
-    this.router.navigate(['/products/compare'], { queryParams: { ids: entry.ids.join(',') } });
-  }
-
-  removeCompareEntry(event: Event, index: number): void {
-    event.stopPropagation();
-    this.compareService.removeHistoryEntry(index);
-    this.cdr.detectChanges();
-    this.toastService.success('Comparison removed from history.');
-  }
-
-  clearCompareHistory(): void {
-    this.compareService.clearHistory();
-    this.toastService.success('Comparison history cleared.');
-  }
-
-  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'comparisons'): void {
+  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked'): void {
     this.activeTab = tab;
     this.currentPage = 1; // Reset products page on tab switch
     this.showAllListingsMobile = false; // Reset slider expansion

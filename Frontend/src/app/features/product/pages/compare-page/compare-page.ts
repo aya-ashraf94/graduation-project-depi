@@ -1,14 +1,11 @@
-import { Component, inject, OnInit, OnDestroy, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { CompareService } from '../../../../core/services/compare.service';
 import { Product, ProductCondition } from '../../../../core/models/product.model';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
-import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface CompareField {
   label: string;
@@ -31,13 +28,11 @@ interface BestValue {
 @Component({
   selector: 'app-compare-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyFormatPipe, TimeAgoPipe],
+  imports: [CommonModule, RouterLink, CurrencyFormatPipe],
   templateUrl: './compare-page.html',
   styleUrl: './compare-page.css',
 })
 export class ComparePage implements OnInit, OnDestroy {
-  @ViewChild('pdfContent') pdfContent!: ElementRef<HTMLDivElement>;
-
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productService = inject(ProductService);
@@ -46,8 +41,6 @@ export class ComparePage implements OnInit, OnDestroy {
   loading = signal(true);
   error = signal(false);
   products = signal<Product[]>([]);
-  downloading = signal(false);
-
   staticFields: CompareField[] = [
     { label: 'Image', key: 'image', comparable: 'text', getValue: (p) => p.images[0] || '' },
     { label: 'Title', key: 'title', comparable: 'text', getValue: (p) => p.title },
@@ -56,11 +49,8 @@ export class ComparePage implements OnInit, OnDestroy {
     { label: 'Brand', key: 'brand', comparable: 'text', getValue: (p) => p.brand || '-' },
     { label: 'Condition', key: 'condition', comparable: 'condition', getValue: (p) => getConditionLabel(p.condition) },
     { label: 'Status', key: 'status', comparable: 'text', getValue: (p) => p.status.charAt(0).toUpperCase() + p.status.slice(1) },
-    { label: 'Seller', key: 'seller', comparable: 'text', getValue: (p) => `${p.seller.firstName} ${p.seller.lastName}`.trim() || '-' },
     { label: 'Seller Rating', key: 'sellerRating', comparable: 'rating', getValue: (p) => p.seller.rating ? `${p.seller.rating}/5` : '-' },
     { label: 'Location', key: 'location', comparable: 'text', getValue: (p) => p.location || '-' },
-    { label: 'Phone', key: 'phone', comparable: 'text', getValue: (p) => p.showContactInfo && p.phoneNumber ? p.phoneNumber : '-' },
-    { label: 'Created', key: 'createdAt', comparable: 'text', getValue: (p) => new Date(p.createdAt).toLocaleDateString() },
     { label: 'Description', key: 'description', comparable: 'text', getValue: (p) => p.description || '-' },
   ];
 
@@ -71,44 +61,6 @@ export class ComparePage implements OnInit, OnDestroy {
   private readonly conditionOrder: Record<ProductCondition, number> = {
     new_with_tags: 5, excellent: 4, good: 3, fair: 2, distressed: 1
   };
-
-  async downloadPdf(): Promise<void> {
-    if (this.downloading()) return;
-    this.downloading.set(true);
-    try {
-      const el = this.pdfContent?.nativeElement;
-      if (!el) return;
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      let heightLeft = pdfHeight;
-      let position = 0;
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save('comparison-report.pdf');
-    } catch (err) {
-      console.error('PDF generation failed:', err);
-    } finally {
-      this.downloading.set(false);
-    }
-  }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
