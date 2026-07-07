@@ -1,6 +1,6 @@
 # 🛒 Market.Arch (Nafa3ni) — Full-Stack Monorepo
 
-> A premium, full-stack campus peer-to-peer trading hub built on **Angular 21** and **Node.js/Express**, featuring a bold, high-fidelity **Neo-Brutalist** design system.
+> A premium, full-stack peer-to-peer marketplace built on **Angular 21** and **Node.js/Express**, featuring a bold, high-fidelity **Neo-Brutalist** design system.
 
 ---
 
@@ -84,7 +84,7 @@ Our frontend uses a curated **Neo-Brutalist Architectural Design System**:
 * **High Contrast Borders**: Hard-coded thick dark outlines (`3px solid var(--black)`).
 * **Flat Offset Drop Shadows**: Solid geometric shadows (`box-shadow: 4px 4px 0 var(--black)`) on cards, inputs, and buttons.
 * **Vibrant Typography**: Modern, crisp editorial text layout leveraging Outfit and Inter fonts.
-* **Active Status Feedback**: Highly interactive hover micro-animations and status badges to guide student navigation.
+* **Active Status Feedback**: Highly interactive hover micro-animations and status badges to guide navigation.
 
 ---
 
@@ -139,7 +139,7 @@ To keep the database data (especially categories, products, and default users) i
   ```
   > [!NOTE]
   > Running `db:seed` is now non-destructive! It uses a safe SQL bulk-upsert process that inserts or updates standard categories, users, and products by their primary keys without affecting other custom local data.
-* **To Generate Official Store Data**: To generate the official Nafa3ni Store admin user and populate the database with 32 premium/official campus listings across all categories, run:
+* **To Generate Official Store Data**: To generate the official Nafa3ni Store admin user and populate the database with 32 premium/official listings across all categories, run:
   ```bash
   npm run db:official
   ```
@@ -149,7 +149,7 @@ To keep the database data (especially categories, products, and default users) i
 
 ## 🔔 Wishlist & Real-Time Notification Engines
 
-Market.Arch features fully integrated, database-backed subsystems for wishlists and in-app notifications to drive campus engagement:
+Market.Arch features fully integrated, database-backed subsystems for wishlists and in-app notifications to drive user engagement:
 
 ### 1. Persistent Wishlists
 * **PostgreSQL Relational DB Storage**: Wishlist records are stored in a relational junction table (`wishlist` table) connecting users and products. Toggling items syncs to `/api/wishlist/toggle` instantly.

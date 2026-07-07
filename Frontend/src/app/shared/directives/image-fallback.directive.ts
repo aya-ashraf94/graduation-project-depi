@@ -12,7 +12,7 @@ import { Directive, ElementRef, HostListener, Input } from '@angular/core';
 })
 export class ImageFallbackDirective {
   /** Override the default fallback URL if needed */
-  @Input() fallbackSrc = 'https://placehold.co/400x400/111111/E8BD18?text=NO+IMAGE';
+  @Input() fallbackSrc = 'https://placehold.co/400x400/f0f0f0/999999?text=No+Image';
 
   constructor(private el: ElementRef<HTMLImageElement>) {}
 

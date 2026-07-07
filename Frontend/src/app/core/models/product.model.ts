@@ -80,6 +80,7 @@ export interface ProductSummary {
   id: string;
   title: string;
   brand: string;
+  description: string;
   price: number;
   minPrice?: number | null;
   condition: ProductCondition;
@@ -89,6 +90,8 @@ export interface ProductSummary {
   badge?: string;
   status: ProductStatus;
   sellerId: string;
+  sellerName?: string;
+  sellerAvatar?: string;
   createdAt: Date;
   size?: string;
   categoryName?: string;

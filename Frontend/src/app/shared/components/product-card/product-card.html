@@ -1,136 +1,182 @@
-@if (variant() === 'home') {
-  <div class="pc-home" [class.pc-sold]="product().status === 'sold'">
-    <div class="pc-home-img" [routerLink]="['/products', product().id]">
+@if (variant() === 'hero') {
+  <div class="pc-hero" [class.pc-sold]="product().status === 'sold'" [routerLink]="['/products', product().id]">
+    <div class="pc-hero-img-wrap">
       <app-status-badge [status]="product().status" variant="overlay"></app-status-badge>
-      <div class="pc-home-badges">
-        @if (product().soldByNafa3ni) { <span class="pc-badge-official">Official Store</span> }
-        @if (product().badge) { <span class="pc-badge-tag">{{ product().badge }}</span> }
-        @if (isOwnListing()) { <span class="pc-badge-own">Your Listing</span> }
+      <div class="pc-hero-badges">
+        @if (product().soldByNafa3ni) {
+          <span class="pc-badge-official">Official Store</span>
+        } @else if (product().isVerified) {
+          <span class="pc-badge-verified">Verified Seller</span>
+        } @else {
+          <span class="pc-badge-tag">{{ getConditionLabel(product().condition) }}</span>
+        }
       </div>
       <img [src]="product().thumbnail" [alt]="product().title" appImageFallback />
-      @if (compareService.count() < 2 || compareService.isCompared(product().id)) {
-        <button class="pc-home-compare" [class.compared]="compareService.isCompared(product().id)" (click)="onCompareToggle($event)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-          </svg>
-        </button>
-      }
+      <button class="pc-hero-wish" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
+        <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="pc-hero-body">
+      <div class="pc-hero-brand-row">
+        <span class="pc-hero-brand">{{ product().brand || 'Generic' }}</span>
+        <span class="pc-hero-category">{{ product().categoryName }}</span>
+      </div>
+      <h3 class="pc-hero-title">{{ product().title }}</h3>
+      
+      <div class="pc-hero-meta">
+        <span class="pc-hero-loc">📍 {{ product().location || 'Local' }}</span>
+        <span class="pc-hero-dot">•</span>
+        <span class="pc-hero-time">{{ product().createdAt | timeAgo }}</span>
+      </div>
+      
+      <div class="pc-hero-nearby-badge">
+        ⭐ Nearby Pick &bull; Close to your location
+      </div>
+
+      <div class="pc-hero-footer-row">
+        <div class="pc-hero-price">
+          @if (product().isOnSale) {
+            <span class="pc-hero-price-tag pc-sale-price">{{ product().salePrice | currencyFormat }}</span>
+            <span class="pc-orig-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+          } @else {
+            <span class="pc-hero-price-tag">{{ product().price | currencyFormat }}</span>
+          }
+        </div>
+        <span class="pc-hero-link">View Details →</span>
+      </div>
+    </div>
+  </div>
+}
+
+@if (variant() === 'home') {
+  <div class="pc-home" [class.pc-sold]="product().status === 'sold'" [class.pc-home-featured]="featured()" [routerLink]="['/products', product().id]">
+    <div class="pc-home-img">
+      <app-status-badge [status]="product().status" variant="overlay"></app-status-badge>
+      <div class="pc-home-badge">
+        @if (product().soldByNafa3ni) {
+          <span class="pc-badge-official">Official</span>
+        } @else if (product().isVerified) {
+          <span class="pc-badge-verified">Verified</span>
+        } @else {
+          <span class="pc-badge-tag">{{ getConditionLabel(product().condition) }}</span>
+        }
+      </div>
+      <img [src]="product().thumbnail" [alt]="product().title" appImageFallback />
+      <button class="pc-home-compare" [class.compared]="compareService.isCompared(product().id)" (click)="onCompareToggle($event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </button>
       <button class="pc-home-wish" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
-        <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
+        <svg width="16" height="16" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
       </button>
     </div>
     <div class="pc-home-body">
-      <div class="pc-home-head">
-        <span class="pc-home-brand">{{ product().brand || '&nbsp;' }}</span>
-        <div class="pc-home-tags">
-          @if (product().size) { <span class="pc-home-tag">{{ product().size }}</span> }
-          @if (product().categoryName) { <span class="pc-home-tag">{{ product().categoryName }}</span> }
-        </div>
-      </div>
-      <h4 class="pc-home-title" [routerLink]="['/products', product().id]">{{ product().title }}</h4>
-      <div class="pc-home-meta">
-        <span class="pc-home-loc">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-          {{ product().location || 'Local' }}
-        </span>
-        <span>{{ product().createdAt | timeAgo }}</span>
-      </div>
-      <div class="pc-home-price">
-        <div>
-          @if (product().isOnSale) {
-            <span class="pc-home-price-tag pc-sale-price">{{ product().salePrice | currencyFormat }}</span>
-          } @else {
-            <span class="pc-home-price-tag">{{ product().price | currencyFormat }}</span>
+      @if (product().categoryName && product().categoryName !== 'Other') {
+        <span class="pc-home-category">{{ product().categoryName }}</span>
+      }
+      <h4 class="pc-home-title">{{ product().title }}</h4>
+      <div class="pc-home-bottom">
+        <div class="pc-home-price-row">
+          @if (proximity() === 'same_district' || proximity() === 'same_city') {
+            <div class="pc-home-nearby-badge">📍 Nearby</div>
           }
-        </div>
-        @if (product().isOnSale) {
-          <div class="pc-home-price-right">
-            <span class="pc-orig-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
-            <span class="pc-flash-badge">-{{ product().savingsPercent || ((1 - (product().salePrice! / (product().originalPrice || product().price))) * 100) | number:'1.0-0' }}%</span>
+          <div class="pc-home-price">
+            @if (product().isOnSale) {
+              <span class="pc-home-price-tag pc-sale-price">{{ product().salePrice | currencyFormat }}</span>
+            } @else {
+              <span class="pc-home-price-tag">{{ product().price | currencyFormat }}</span>
+            }
+            @if (product().isOnSale) {
+              <span class="pc-orig-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+            }
           </div>
+        </div>
+        <div class="pc-home-meta">
+          <span class="pc-home-meta-loc">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {{ getShortLocation() }}
+          </span>
+          <span>{{ product().createdAt | timeAgo:true }}</span>
+        </div>
+          @if (featured()) {
+          <button class="pc-home-cta" (click)="$event.stopPropagation()" [routerLink]="['/products', product().id]">{{ featuredCtaLabel }}</button>
         }
       </div>
-      <button class="pc-home-cta" [routerLink]="['/products', product().id]">
-        <span>View Details</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </button>
     </div>
   </div>
 }
 
 @if (variant() === 'list') {
-  <div class="pc-list" [class.pc-sold]="product().status === 'sold'">
-    <div class="pc-list-img" [routerLink]="['/products', product().id]">
+  <div class="pc-list" [class.pc-sold]="product().status === 'sold'" [routerLink]="['/products', product().id]">
+    
+    <!-- Left Column: Image -->
+    <div class="pc-list-img-col">
       <app-status-badge [status]="product().status" variant="overlay"></app-status-badge>
-      <div class="pc-list-badges">
-        @if (product().soldByNafa3ni) { <span class="pc-badge-official">Official Store</span> }
-        @if (product().badge) { <span class="pc-badge-tag">{{ product().badge }}</span> }
-        @if (isOwnListing()) { <span class="pc-badge-own">Your Listing</span> }
+      <div class="pc-list-img-badges">
+        @if (product().soldByNafa3ni) {
+          <span class="pc-badge-official">Official</span>
+        } @else if (product().isVerified) {
+          <span class="pc-badge-verified">Verified</span>
+        } @else {
+          <span class="pc-badge-tag">{{ getConditionLabel(product().condition) }}</span>
+        }
       </div>
-      @if (compareService.count() < 2 || compareService.isCompared(product().id)) {
-        <button class="pc-list-compare" [class.compared]="compareService.isCompared(product().id)" (click)="onCompareToggle($event)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-          </svg>
-        </button>
-      }
+      <button class="pc-list-compare" [class.compared]="compareService.isCompared(product().id)" (click)="onCompareToggle($event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </button>
       <button class="pc-list-wish" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
-        <svg width="22" height="22" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
+        <svg width="16" height="16" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
       </button>
-      @if (product().thumbnail) {
-        <img [src]="product().thumbnail" [alt]="product().title" class="pc-list-img-src" />
-      } @else {
-        <div class="pc-list-img-src pc-list-img-empty">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-          </svg>
-        </div>
-      }
-      <div class="pc-list-overlay"><button class="pc-list-quick">Quick View</button></div>
+      <img [src]="product().thumbnail" [alt]="product().title" appImageFallback />
     </div>
-    <div class="pc-list-body">
-      <h3 class="pc-list-title" [routerLink]="['/products', product().id]">{{ product().title }}</h3>
-      <div class="pc-list-meta-row">
+
+    <!-- Right Column: Content -->
+    <div class="pc-list-content-col">
+      @if (product().categoryName && product().categoryName !== 'Other') {
+        <span class="pc-list-category">{{ product().categoryName }}</span>
+      }
+      <h3 class="pc-list-title">{{ product().title }}</h3>
+      @if (product().description) {
+        <p class="pc-list-desc">{{ product().description | slice:0:100 }}{{ product().description.length > 100 ? '...' : '' }}</p>
+      }
+      <div class="pc-list-bottom">
+        <div class="pc-list-seller-row">
+          <img class="pc-list-seller-avatar" [src]="product().sellerAvatar || 'https://i.pravatar.cc/150'" alt="" />
+          <span class="pc-list-seller-name">{{ product().sellerName || 'Seller' }}</span>
+        </div>
+        <div class="pc-list-price-row">
+          <div class="pc-list-price">
+            @if (product().isOnSale) {
+              <span class="pc-list-price-tag pc-sale-price">{{ product().salePrice | currencyFormat }}</span>
+              <span class="pc-orig-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
+            } @else {
+              <span class="pc-list-price-tag">{{ product().price | currencyFormat }}</span>
+            }
+          </div>
+          <button class="pc-list-wish-btn" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="wishlistService.isWishlisted(product().id) ? 'var(--danger)' : 'none'" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
         <div class="pc-list-meta">
-          <span>{{ getConditionLabel(product().condition) }}</span>
-          @if (product().conditionScore) { <span> &bull; {{ product().conditionScore }}/10</span> }
-          @if (product().size) { <span> &bull; {{ product().size }}</span> }
-        </div>
-        <div class="pc-list-price">
-          @if (product().isOnSale) {
-            <span class="pc-sale-price">{{ product().salePrice | currencyFormat }}</span>
-            <span class="pc-orig-price">{{ product().originalPrice || product().price | currencyFormat }}</span>
-            @if (product().isFlashSale) { <span class="pc-flash-badge">Sale</span> }
-          } @else {
-            {{ product().price | currencyFormat }}
-          }
+          <span class="pc-list-meta-loc">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {{ getShortLocation() }}
+          </span>
+          <span>{{ product().createdAt | timeAgo:true }}</span>
         </div>
       </div>
     </div>
-    <div class="pc-list-foot">
-      @if (product().location) {
-        <span class="pc-list-loc">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-          {{ product().location }}
-        </span>
-      }
-      <span class="pc-list-date">{{ product().createdAt | timeAgo }}</span>
-    </div>
-    @if (authService.isAdmin() && product().soldByNafa3ni) {
-      <div class="pc-list-admin" (click)="$event.stopPropagation()">
-        <a [routerLink]="['/listings/edit', product().id]" class="pc-btn-edit">Edit Listing</a>
-      </div>
-    }
   </div>
 }
 

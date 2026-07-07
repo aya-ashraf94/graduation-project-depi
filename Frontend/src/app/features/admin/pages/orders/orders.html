@@ -16,6 +16,18 @@
     </div>
   </div>
 
+  <!-- Revenue Summary Banner (all-time, not just current page) -->
+  <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 180px; border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem 1rem; background: var(--surface-2);">
+      <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--gray-3); letter-spacing: 0.05em; display: block;">All-Time Gross Revenue</span>
+      <span style="font-size: 1.2rem; font-weight: 900; color: var(--black);">{{ totalGrossRevenue() | currencyFormat }}</span>
+    </div>
+    <div style="flex: 1; min-width: 180px; border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem 1rem; background: var(--success-light);">
+      <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--success-dark); letter-spacing: 0.05em; display: block;">All-Time Platform Fees</span>
+      <span style="font-size: 1.2rem; font-weight: 900; color: var(--success-dark);">{{ totalPlatformFees() | currencyFormat }}</span>
+    </div>
+  </div>
+
   @if (isLoading() && orders().length === 0) {
     <app-admin-loader message="Loading orders..."></app-admin-loader>
   } @else if (errorMessage()) {
@@ -33,6 +45,7 @@
               <th>Buyer</th>
               <th>Seller</th>
               <th>Price</th>
+              <th>Fee</th>
               <th>Status</th>
               <th>Payment</th>
               <th>Date</th>
@@ -42,12 +55,12 @@
             @if (isLoading()) {
               <app-admin-table-skeleton
                 [rows]="5"
-                [columns]="['text', 'text', 'text', 'text', 'badge', 'text', 'text']">
+                [columns]="['text', 'text', 'text', 'text', 'text', 'badge', 'text', 'text']">
               </app-admin-table-skeleton>
             } @else if (orders().length === 0) {
               <app-empty-state
                 variant="table-row"
-                [colspan]="7"
+                [colspan]="8"
                 icon="📭"
                 title="No orders found"
                 description="No orders found matching the filter.">
@@ -78,7 +91,8 @@
                       <span class="order-party-email">{{ order.sellerId?.email || '' }}</span>
                     </div>
                   </td>
-                  <td class="order-price-cell">{{ order.price | currency:'EGP ' }}</td>
+                  <td class="order-price-cell">{{ order.price | currencyFormat }}</td>
+                  <td class="order-price-cell" style="color: var(--success-dark); font-weight: 700;">{{ order.platformFee | currencyFormat }}</td>
                   <td>
                     <select
                       class="order-status-select"

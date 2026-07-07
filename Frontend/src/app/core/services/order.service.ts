@@ -33,6 +33,8 @@ export class OrderService {
             productTitle: o.product?.title || '',
             productThumbnail: o.product?.thumbnail || '',
             price: o.price,
+            platformFee: o.platformFee,
+            totalPrice: o.totalPrice,
             status: o.status,
             counterpartyName: counterpartyName || 'Unknown',
             createdAt: o.createdAt,

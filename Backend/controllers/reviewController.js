@@ -1,5 +1,6 @@
 const db = require("../db");
-const { reviews, orders, users, notifications, products } = require("../db/schema");
+const { reviews, orders, users, products } = require("../db/schema");
+const { createNotification } = require("../utils/notifications");
 const { eq, and, desc, sql } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 
@@ -50,20 +51,12 @@ const createReview = async (req, res) => {
       comment,
     }).returning();
 
-    try {
-      const [reviewer] = await db.select({ name: users.name }).from(users).where(eq(users.id, reviewerId)).limit(1);
-      const reviewerName = reviewer ? reviewer.name : "A user";
-      await db.insert(notifications).values({
-        userId: revieweeId,
-        type: "review",
-        title: "New Review Received",
-        body: `${reviewerName} left you a ${rating}-star review.`,
-        linkedEntityId: review.id,
-        linkedRoute: "/profile/me?tab=reviews",
-      });
-    } catch (notifErr) {
-      console.error("Error triggering review notification:", notifErr);
-    }
+    const [reviewerName] = await db.select({ name: users.name }).from(users).where(eq(users.id, reviewerId)).limit(1);
+    await createNotification({
+      userId: revieweeId, type: "review", title: "New Review Received",
+      body: `${reviewerName?.name || "A user"} left you a ${rating}-star review.`,
+      linkedRoute: "/profile/me?tab=reviews", linkedEntityId: review.id,
+    });
 
     const allReviews = await db.select({ rating: reviews.rating })
       .from(reviews)

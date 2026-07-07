@@ -42,13 +42,13 @@
   </div>
 
   <!-- Search and Filter Toolbar Row -->
-  <div class="users-toolbar-row">
+  <div class="users-toolbar-row" [class.sticky-toolbar]="true">
     <div class="search-box-brutal">
       <span class="search-icon">🔍</span>
       <input 
         [formControl]="searchControl" 
         type="text" 
-        placeholder="Search users by name or email..." 
+        placeholder="Search users..." 
         aria-label="Search users"
       >
     </div>

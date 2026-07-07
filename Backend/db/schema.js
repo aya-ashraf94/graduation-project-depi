@@ -81,6 +81,7 @@ const orders = pgTable('orders', {
   categorySaleDiscount: doublePrecision('category_sale_discount').default(0),
   couponDiscount: doublePrecision('coupon_discount').default(0),
   offerAmount: doublePrecision('offer_amount'),
+  platformFee: doublePrecision('platform_fee').default(0).notNull(),
   status: text('status', { enum: ['pending', 'shipped', 'delivered', 'cancelled'] }).default('pending').notNull(),
   paymentMethod: text('payment_method').notNull(),
   shippingAddress: text('shipping_address').notNull(),

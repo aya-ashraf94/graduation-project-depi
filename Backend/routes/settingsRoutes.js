@@ -49,4 +49,46 @@ router.put('/discount', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// Get platform fee percent (public)
+router.get('/platform-fee', async (req, res) => {
+  try {
+    const [row] = await db.select().from(settings).where(eq(settings.key, 'platformFeePercent'));
+    const platformFeePercent = row ? parseFloat(row.value) : 5.0;
+    res.json({ platformFeePercent });
+  } catch (error) {
+    console.error('Error fetching platform fee:', error);
+    res.json({ platformFeePercent: 5.0 });
+  }
+});
+
+// Update platform fee percent (admin only)
+router.put('/platform-fee', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { platformFeePercent } = req.body;
+    if (platformFeePercent === undefined || isNaN(parseFloat(platformFeePercent))) {
+      return res.status(400).json({ message: 'Invalid platform fee value' });
+    }
+
+    const numericFee = parseFloat(platformFeePercent);
+    if (numericFee < 0 || numericFee > 100) {
+      return res.status(400).json({ message: 'Platform fee must be between 0 and 100' });
+    }
+
+    const [existing] = await db.select().from(settings).where(eq(settings.key, 'platformFeePercent'));
+    if (existing) {
+      await db.update(settings)
+        .set({ value: numericFee.toString() })
+        .where(eq(settings.key, 'platformFeePercent'));
+    } else {
+      await db.insert(settings)
+        .values({ key: 'platformFeePercent', value: numericFee.toString() });
+    }
+
+    res.json({ message: 'Platform fee updated successfully', platformFeePercent: numericFee });
+  } catch (error) {
+    console.error('Error updating platform fee:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

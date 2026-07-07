@@ -23,9 +23,10 @@ import { LocationProximity } from '../location-badge/location-badge';
 })
 export class ProductCardComponent {
   readonly product = input.required<any>();
-  readonly variant = input<'home' | 'list' | 'profile' | 'carousel'>('list');
+  readonly variant = input<'home' | 'list' | 'profile' | 'carousel' | 'hero'>('list');
   readonly isOwnProfile = input<boolean>(false);
   readonly proximity = input<LocationProximity>('other');
+  readonly featured = input<boolean>(false);
 
   readonly wishlistToggle = output<any>();
   readonly editClick = output<any>();
@@ -41,6 +42,13 @@ export class ProductCardComponent {
 
   getConditionClass(cond: string): string {
     return getConditionClass(cond);
+  }
+
+  getShortLocation(): string {
+    const loc = this.product().location;
+    if (!loc) return 'Local';
+    const parts = loc.split(',').map((s: string) => s.trim());
+    return parts[parts.length - 1] || 'Local';
   }
 
   isOwnListing(): boolean {
@@ -76,5 +84,12 @@ export class ProductCardComponent {
     event.stopPropagation();
     event.preventDefault();
     this.deleteClick.emit(this.product());
+  }
+
+  get featuredCtaLabel(): string {
+    const labels = ['View Deal →', 'Shop Now →', 'Explore →', 'See More →'];
+    const id = this.product().id || '';
+    const hash = id.split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
+    return labels[Math.abs(hash) % labels.length];
   }
 }

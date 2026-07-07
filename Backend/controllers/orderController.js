@@ -1,9 +1,10 @@
 const db = require("../db");
-const { orders, products, users, notifications, coupons, offers } = require("../db/schema");
+const { orders, products, users, coupons, offers } = require("../db/schema");
+const { createNotification } = require("../utils/notifications");
 const { eq, or, and, desc, sql } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { updateUserStats } = require("../utils/userStats");
-const { loadActivePromotions, calculateCheckoutPrice } = require("../utils/discountEngine");
+const { loadActivePromotions, calculateCheckoutPrice, loadPlatformFeePercent, calculatePlatformFee } = require("../utils/discountEngine");
 
 const buyer = alias(users, "buyer");
 const seller = alias(users, "seller");
@@ -49,6 +50,8 @@ const formatOrder = (row, currentUserId) => {
     categorySaleDiscount: o.categorySaleDiscount,
     couponDiscount: o.couponDiscount,
     offerAmount: o.offerAmount,
+    platformFee: o.platformFee,
+    totalPrice: (o.price || 0) + (o.platformFee || 0),
     status: o.status,
     paymentMethod: o.paymentMethod,
     shippingAddress: o.shippingAddress,
@@ -123,6 +126,10 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: couponMessage || "Invalid coupon" });
     }
 
+    // Calculate platform fee
+    const platformFeePercent = await loadPlatformFeePercent();
+    const platformFee = calculatePlatformFee(finalPrice, platformFeePercent);
+
     const [order] = await db.insert(orders).values({
       productId,
       buyerId,
@@ -133,6 +140,7 @@ const createOrder = async (req, res) => {
       categorySaleDiscount: breakdown.categorySaleDiscount,
       couponDiscount: breakdown.couponDiscount,
       offerAmount: breakdown.offerAmount,
+      platformFee,
       paymentMethod,
       shippingAddress,
       notes: notes || null,
@@ -158,13 +166,10 @@ const createOrder = async (req, res) => {
     const [buyerUser] = await db.select({ name: users.name }).from(users).where(eq(users.id, buyerId)).limit(1);
     const buyerName = buyerUser ? buyerUser.name : "A buyer";
 
-    await db.insert(notifications).values({
-      userId: sellerId,
-      type: "order_update",
-      title: "New Order Placed",
+    await createNotification({
+      userId: sellerId, type: "order_update", title: "New Order Placed",
       body: `${buyerName} placed an order for "${product.title}".`,
-      linkedEntityId: order.id,
-      linkedRoute: "/profile/me?tab=orders&view=sales",
+      linkedRoute: "/profile/me?tab=orders&view=sales", linkedEntityId: order.id,
     });
 
     const populated = await db.select()
@@ -274,39 +279,27 @@ const updateOrder = async (req, res) => {
       .where(eq(products.id, order.productId)).limit(1);
     const productTitle = product ? product.title : "item";
 
-    try {
-      if (status === "shipped") {
-        await db.insert(notifications).values({
-          userId: order.buyerId,
-          type: "order_update",
-          title: "Order Shipped",
-          body: `Your order for "${productTitle}" has been shipped!`,
-          linkedEntityId: order.id,
-          linkedRoute: "/profile/me?tab=orders&view=purchases",
-        });
-      } else if (status === "delivered") {
-        await db.insert(notifications).values({
-          userId: order.sellerId,
-          type: "order_update",
-          title: "Order Delivered",
-          body: `Your sale of "${productTitle}" has been delivered and confirmed by the buyer!`,
-          linkedEntityId: order.id,
-          linkedRoute: "/profile/me?tab=orders&view=sales",
-        });
-      } else if (status === "cancelled") {
-        const recipientId = isBuyer ? order.sellerId : order.buyerId;
-        const initiator = isBuyer ? "Buyer" : "Seller";
-        await db.insert(notifications).values({
-          userId: recipientId,
-          type: "order_update",
-          title: "Order Cancelled",
-          body: `${initiator} cancelled the order for "${productTitle}".`,
-          linkedEntityId: order.id,
-          linkedRoute: isBuyer ? "/profile/me?tab=orders&view=sales" : "/profile/me?tab=orders&view=purchases",
-        });
-      }
-    } catch (notifErr) {
-      console.error("Error triggering order notification:", notifErr);
+    if (status === "shipped") {
+      await createNotification({
+        userId: order.buyerId, type: "order_update", title: "Order Shipped",
+        body: `Your order for "${productTitle}" has been shipped!`,
+        linkedRoute: "/profile/me?tab=orders&view=purchases", linkedEntityId: order.id,
+      });
+    } else if (status === "delivered") {
+      await createNotification({
+        userId: order.sellerId, type: "order_update", title: "Order Delivered",
+        body: `Your sale of "${productTitle}" has been delivered and confirmed by the buyer!`,
+        linkedRoute: "/profile/me?tab=orders&view=sales", linkedEntityId: order.id,
+      });
+    } else if (status === "cancelled") {
+      const recipientId = isBuyer ? order.sellerId : order.buyerId;
+      const initiator = isBuyer ? "Buyer" : "Seller";
+      await createNotification({
+        userId: recipientId, type: "order_update", title: "Order Cancelled",
+        body: `${initiator} cancelled the order for "${productTitle}".`,
+        linkedRoute: isBuyer ? "/profile/me?tab=orders&view=sales" : "/profile/me?tab=orders&view=purchases",
+        linkedEntityId: order.id,
+      });
     }
 
     const populated = await db.select()

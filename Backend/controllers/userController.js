@@ -1,6 +1,7 @@
 const db = require("../db");
-const { follows, users, notifications } = require("../db/schema");
+const { follows, users } = require("../db/schema");
 const { eq, and } = require("drizzle-orm");
+const { createNotification } = require("../utils/notifications");
 
 const followUser = async (req, res) => {
   try {
@@ -36,19 +37,11 @@ const followUser = async (req, res) => {
       followingId,
     });
 
-    // Notify target user
-    try {
-      await db.insert(notifications).values({
-        userId: followingId,
-        type: "system",
-        title: "New Follower! 👤",
-        body: `${req.user.name || "A user"} started following you`,
-        linkedRoute: `/profile/${followerId}`,
-        isRead: false,
-      });
-    } catch (notifErr) {
-      console.error("Failed to notify user follow:", notifErr);
-    }
+    await createNotification({
+      userId: followingId, type: "system", title: "New Follower! 👤",
+      body: `${req.user.name || "A user"} started following you`,
+      linkedRoute: `/profile/${followerId}`,
+    });
 
     res.json({ message: "Successfully followed user" });
   } catch (error) {

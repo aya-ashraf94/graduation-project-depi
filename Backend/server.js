@@ -42,6 +42,9 @@ app.use(
   })
 );
 
+// ── Stripe webhook: must be BEFORE express.json() ──────────────
+app.post("/api/payments/webhook", express.raw({ type: "application/json" }), require("./controllers/paymentController").stripeWebhook);
+
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 app.use(express.json({ limit: "20mb" }));
@@ -67,6 +70,7 @@ app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/users/block", require("./routes/blockRoutes"));
 app.use("/api/flash-sales", require("./routes/flashSaleRoutes"));
 app.use("/api/locations", require("./routes/locationRoutes"));
+app.use("/api/payments", require("./routes/paymentRoutes"));
 
 const { getPool } = require("./config/db");
 

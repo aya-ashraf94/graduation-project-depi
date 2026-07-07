@@ -8,11 +8,20 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'timeAgo', standalone: true })
 export class TimeAgoPipe implements PipeTransform {
-  transform(value: Date | string | null | undefined): string {
+  transform(value: Date | string | null | undefined, short?: boolean): string {
     if (!value) return '';
 
     const date = value instanceof Date ? value : new Date(value);
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+    if (short) {
+      if (seconds < 60) return 'now';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+      if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d`;
+      if (seconds < 31536000) return `${Math.floor(seconds / 2592000)}mo`;
+      return `${Math.floor(seconds / 31536000)}y`;
+    }
 
     if (seconds < 60) return 'just now';
     if (seconds < 3600) {

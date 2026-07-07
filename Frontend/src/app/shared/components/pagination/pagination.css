@@ -1,1 +1,112 @@
-/* Styling is inherited from container class via ViewEncapsulation.None */
+.brutal-pagination {
+  background-color: var(--white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pag-btn {
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  padding: 0.5rem 1.25rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--white);
+  color: var(--black);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.pag-btn:hover:not(:disabled) {
+  background-color: var(--yellow);
+  border-color: var(--black);
+}
+
+.pag-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pag-info {
+  font-family: var(--font-secondary);
+  font-size: 0.9rem;
+  color: var(--gray-3);
+  text-align: center;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 2rem 0;
+}
+
+.pag-numbers {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.num-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.num-btn:hover:not(.active) {
+  background: var(--surface-2);
+  border-color: var(--black);
+}
+
+.num-btn.active {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
+@media (max-width: 640px) {
+  .brutal-pagination {
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .brutal-pagination .pag-info {
+    order: -1;
+    width: 100%;
+    font-size: 0.85rem;
+  }
+
+  .brutal-pagination .pag-btn {
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .pagination {
+    gap: 0.3rem;
+    margin: 1.5rem 0;
+  }
+
+  .num-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+}

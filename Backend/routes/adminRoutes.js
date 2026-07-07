@@ -3,8 +3,8 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 const {
-    getStats,
     getDashboard,
+    getStats,
     getUsers,
     patchUser,
     deleteUser,
@@ -32,8 +32,8 @@ const {
 router.use(authMiddleware);
 router.use(adminMiddleware);
 
-router.get("/stats", getStats);
 router.get("/dashboard", getDashboard);
+router.get("/stats", getStats);
 
 router.get("/users", getUsers);
 router.patch("/users/:id", patchUser);

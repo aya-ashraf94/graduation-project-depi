@@ -33,6 +33,10 @@ export class Dashboard implements OnInit {
   // Category sale management
   showCategorySaleModal = signal(false);
   categories = signal<any[]>([]);
+  // Platform fee management
+  showPlatformFeeModal = signal(false);
+  platformFeePercentInput = signal(0);
+  savingPlatformFee = signal(false);
   selectedCatId = signal<string>('');
   salePercent = signal<number>(0);
   saleFormStart = signal<string>('');
@@ -73,15 +77,26 @@ export class Dashboard implements OnInit {
     });
   }
 
-  private computeChart(history: { date: string; revenue: number }[]): void {
-    const max = Math.max(...history.map(h => h.revenue), 1);
+  private computeChart(history: { date: string; revenue: number; gross?: number; platformFees?: number }[]): void {
+    const max = Math.max(...history.map(h => h.gross || h.revenue), 1);
     this.maxRevenue.set(max);
-    this.barHeights.set(history.map(h => (h.revenue / max) * 100));
+    this.barHeights.set(history.map(h => ((h.gross || h.revenue) / max) * 100));
   }
 
   get latestRevenue(): number {
     const h = this.data()?.revenueHistory;
     return h && h.length > 0 ? h[h.length - 1].revenue : 0;
+  }
+
+  get latestPlatformFees(): number {
+    const h = this.data()?.revenueHistory;
+    return h && h.length > 0 ? (h[h.length - 1] as any).platformFees || 0 : 0;
+  }
+
+  get totalPlatformFees(): number {
+    const h = this.data()?.revenueHistory;
+    if (!h) return 0;
+    return h.reduce((sum, d) => sum + ((d as any).platformFees || 0), 0);
   }
 
   get revenueTrend(): number {
@@ -193,6 +208,39 @@ export class Dashboard implements OnInit {
       error: () => {
         this.toastService.error('Failed to update category sale.');
         this.savingSale.set(false);
+      }
+    });
+  }
+
+  openPlatformFeeModal(): void {
+    this.http.get<{ platformFeePercent: number }>(`${environment.apiUrl}/settings/platform-fee`).subscribe({
+      next: (res) => {
+        this.platformFeePercentInput.set(res.platformFeePercent);
+        this.showPlatformFeeModal.set(true);
+      },
+      error: () => {
+        this.platformFeePercentInput.set(3);
+        this.showPlatformFeeModal.set(true);
+      }
+    });
+  }
+
+  savePlatformFee(): void {
+    const pct = this.platformFeePercentInput();
+    if (pct < 0 || pct > 100) {
+      this.toastService.error('Fee must be between 0 and 100');
+      return;
+    }
+    this.savingPlatformFee.set(true);
+    this.http.put(`${environment.apiUrl}/settings/platform-fee`, { platformFeePercent: pct }).subscribe({
+      next: () => {
+        this.toastService.success(`✅ Platform fee set to ${pct}%`);
+        this.savingPlatformFee.set(false);
+        this.showPlatformFeeModal.set(false);
+      },
+      error: () => {
+        this.toastService.error('Failed to update platform fee');
+        this.savingPlatformFee.set(false);
       }
     });
   }

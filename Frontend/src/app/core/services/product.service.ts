@@ -216,19 +216,47 @@ export class ProductService {
     let category: ProductCategory = 'other';
     const catName = p.categoryId?.name || '';
     if (catName) {
-      const lowerCat = catName.toLowerCase();
-      if (lowerCat.includes('clothes') || lowerCat.includes('apparel')) {
-        category = 'tops';
-      } else if (lowerCat.includes('laptop') || lowerCat.includes('mobile') || lowerCat.includes('electronics')) {
-        category = 'electronics';
-      } else if (lowerCat.includes('appliance') || lowerCat.includes('furniture')) {
-        category = 'furniture';
-      } else if (lowerCat.includes('sport')) {
-        category = 'sports';
-      } else if (lowerCat.includes('book')) {
-        category = 'books';
-      }
+      const lowerCat = catName.toLowerCase().trim();
+      const CATEGORY_NAME_MAP: Record<string, ProductCategory> = {
+        'outerwear': 'outerwear',
+        'tops': 'tops',
+        'bottoms': 'bottoms',
+        'footwear': 'footwear',
+        'accessories': 'accessories',
+        'electronics': 'electronics',
+        'mobiles': 'electronics',
+        'laptops': 'electronics',
+        'electronics & gadgets': 'electronics',
+        'furniture': 'furniture',
+        'home appliances': 'furniture',
+        'furniture & home': 'furniture',
+        'books': 'books',
+        'books & media': 'books',
+        'sports & fitness': 'sports',
+        'sports': 'sports',
+        'clothes': 'tops',
+        'clothing & apparel': 'tops',
+      };
+      category = CATEGORY_NAME_MAP[lowerCat] || 'other';
     }
+
+    // Derive a display-friendly categoryName when backend name is unhelpful
+    const rawCategoryName = p.categoryId?.name || '';
+    const DERIVED_DISPLAY_NAMES: Record<ProductCategory, string> = {
+      'outerwear': 'Outerwear',
+      'tops': 'Tops',
+      'bottoms': 'Bottoms',
+      'footwear': 'Footwear',
+      'accessories': 'Accessories',
+      'electronics': 'Electronics',
+      'furniture': 'Furniture',
+      'books': 'Books',
+      'sports': 'Sports & Fitness',
+      'other': 'Other',
+    };
+    const displayCategoryName = (rawCategoryName && rawCategoryName !== 'Other')
+      ? rawCategoryName
+      : DERIVED_DISPLAY_NAMES[category] || 'Other';
 
     // seller
     let seller: UserSummary = {
@@ -291,7 +319,7 @@ export class ProductService {
       favoriteCount: p.favoriteCount || 0,
       createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
       updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date(),
-      categoryName: p.categoryId?.name || '',
+      categoryName: displayCategoryName,
       soldByNafa3ni: p.soldByNafa3ni || false,
       isVerified: p.isVerified || false,
 
@@ -325,6 +353,7 @@ export class ProductService {
       id: mapped.id,
       title: mapped.title,
       brand: mapped.brand,
+      description: mapped.description,
       price: mapped.price,
       minPrice: mapped.minPrice,
       condition: mapped.condition,
@@ -334,8 +363,12 @@ export class ProductService {
       badge: mapped.badge,
       status: mapped.status,
       sellerId: mapped.seller.id,
+      sellerName: mapped.seller.firstName && mapped.seller.lastName
+        ? `${mapped.seller.firstName} ${mapped.seller.lastName}`
+        : mapped.seller.firstName,
+      sellerAvatar: mapped.seller.avatar,
       createdAt: mapped.createdAt,
-      categoryName: p.categoryId?.name || '',
+      categoryName: mapped.categoryName,
       soldByNafa3ni: mapped.soldByNafa3ni,
       isVerified: mapped.isVerified,
       size: mapped.size,

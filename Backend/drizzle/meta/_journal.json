@@ -15,6 +15,13 @@
       "when": 1782754723629,
       "tag": "0001_absurd_marvex",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783000000000,
+      "tag": "0002_add_platform_fee",
+      "breakpoints": true
     }
   ]
 }

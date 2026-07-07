@@ -1,51 +1,10 @@
 const db = require("../db");
 const { products, categories, users, userBlocks } = require("../db/schema");
 const { eq, ilike, or, and, ne, gte, lte, inArray, notInArray, desc, asc, sql, count } = require("drizzle-orm");
-const fs = require("fs");
-const path = require("path");
-const cloudinary = require("../config/cloudinary");
 const jwt = require("jsonwebtoken");
 const { loadActivePromotions, annotateProduct, annotateProducts } = require("../utils/discountEngine");
-
-const isCloudinaryConfigured = () => {
-  return process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API_SECRET;
-};
-
-const saveBase64ImageLocally = (base64Str) => {
-  if (!base64Str) return null;
-  if (base64Str.startsWith("http") || base64Str.startsWith("/uploads")) return base64Str;
-  
-  const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  if (!matches || matches.length !== 3) {
-    throw new Error("Invalid base64 image format");
-  }
-
-  const mimeType = matches[1].toLowerCase();
-  const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp", "image/svg+xml"];
-  if (!allowedMimeTypes.includes(mimeType)) {
-    throw new Error("Disallowed file type: " + mimeType);
-  }
-
-  let extension = mimeType.split("/")[1];
-  if (extension === "svg+xml") {
-    extension = "svg";
-  }
-
-  const buffer = Buffer.from(matches[2], "base64");
-  const fileName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
-  const uploadDir = path.join(__dirname, "../public/uploads");
-  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-  fs.writeFileSync(path.join(uploadDir, fileName), buffer);
-  return `/uploads/${fileName}`;
-};
-
-const uploadBase64ToCloudinary = async (base64Str) => {
-  if (!base64Str) return null;
-  if (base64Str.startsWith("http")) return base64Str;
-  if (!isCloudinaryConfigured()) return saveBase64ImageLocally(base64Str);
-  const result = await cloudinary.uploader.upload(base64Str, { folder: "nafa3ni-products" });
-  return result.secure_url;
-};
+const { uploadBase64ToCloudinary } = require("../utils/upload");
+const { getBlockedUserIds } = require("../utils/blocks");
 
 const getProductById = async (req, res) => {
   try {
@@ -134,18 +93,7 @@ const getProducts = async (req, res) => {
       }
     }
 
-    let blockedUserIds = [];
-    if (currentUserId) {
-      const blocks = await db.select()
-        .from(userBlocks)
-        .where(
-          or(
-            eq(userBlocks.blockerId, currentUserId),
-            eq(userBlocks.blockedId, currentUserId)
-          )
-        );
-      blockedUserIds = blocks.map(b => b.blockerId === currentUserId ? b.blockedId : b.blockerId);
-    }
+    let blockedUserIds = currentUserId ? await getBlockedUserIds(currentUserId) : [];
 
     const conditions = [
       ne(products.status, 'sold'),
@@ -579,18 +527,7 @@ const getRecommendedProducts = async (req, res) => {
       } catch (err) { }
     }
 
-    let blockedUserIds = [];
-    if (currentUserId) {
-      const blocks = await db.select()
-        .from(userBlocks)
-        .where(
-          or(
-            eq(userBlocks.blockerId, currentUserId),
-            eq(userBlocks.blockedId, currentUserId)
-          )
-        );
-      blockedUserIds = blocks.map(b => b.blockerId === currentUserId ? b.blockedId : b.blockerId);
-    }
+    let blockedUserIds = currentUserId ? await getBlockedUserIds(currentUserId) : [];
 
     const conditions = [
       ne(products.status, 'sold'),

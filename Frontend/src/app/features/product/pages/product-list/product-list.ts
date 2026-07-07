@@ -32,6 +32,7 @@ export class ProductList implements OnInit {
   wishlistService = inject(WishlistService);
   protected locationService = inject(LocationService);
 
+  Math = Math;
   showAuthModal = false;
   showLocationModal = false;
 
@@ -39,11 +40,6 @@ export class ProductList implements OnInit {
   browsingCity = '';
   browsingDistrict = '';
   locationLabel = signal('');
-
-  locationSortEnabled = false;
-  recommendedProducts: ProductSummary[] = [];
-
-  showRecommendedSection = false;
 
   // ── Raw data ───────────────────────────────────────────────────────────
   private allProducts: ProductSummary[] = [];
@@ -53,6 +49,12 @@ export class ProductList implements OnInit {
   totalCount = 0;
   filteredCount = 0;
   isLoading = true;
+  viewMode: 'grid' | 'list' = 'grid';
+
+  setViewMode(mode: 'grid' | 'list'): void {
+    this.viewMode = mode;
+    this.cdr.detectChanges();
+  }
 
   // ── Pagination state ───────────────────────────────────────────────────
   currentPage = 1;
@@ -105,12 +107,6 @@ export class ProductList implements OnInit {
     return 'other';
   }
 
-  /** Same as getProximity but suppresses 'same_governorate' for the recommended section */
-  getRecommendedProximity(product: ProductSummary): LocationProximity {
-    const prox = this.getProximity(product);
-    return prox === 'same_governorate' ? 'other' : prox;
-  }
-
   openLocationModal(): void {
     this.showLocationModal = true;
   }
@@ -125,7 +121,6 @@ export class ProductList implements OnInit {
     this.browsingDistrict = location.district;
     this.updateLocationLabel();
     this.applyFilters();
-    this.loadRecommendations();
     this.closeLocationModal();
   }
 
@@ -152,6 +147,23 @@ export class ProductList implements OnInit {
     });
   }
 
+  getShortLocationLabel(): string {
+    const label = this.locationLabel();
+    if (!label) return '';
+    const parts = label.split(',');
+    if (parts.length > 1) {
+      return parts[parts.length - 1].trim(); // Get only the city part
+    }
+    return label;
+  }
+
+  hasActiveFilters(): boolean {
+    return this.selectedCategories.size > 0 ||
+           this.selectedConditions.size > 0 ||
+           this.minPrice > 0 ||
+           this.maxPrice < 100000;
+  }
+
   private locationSort(products: ProductSummary[], governorate: string, city?: string, district?: string): ProductSummary[] {
     const score = (p: ProductSummary): number => {
       const pGov = p.sellerGovernorate;
@@ -166,37 +178,6 @@ export class ProductList implements OnInit {
     return products.sort((a, b) => score(b) - score(a));
   }
 
-  private loadRecommendations(): void {
-    if (!this.browsingGovernorate) {
-      this.showRecommendedSection = false;
-      this.recommendedProducts = [];
-      return;
-    }
-    this.productService.getRecommendedProducts(
-      this.browsingGovernorate,
-      this.browsingCity || undefined,
-      this.browsingDistrict || undefined
-    ).subscribe({
-      next: (prods) => {
-        const user = this.authService.currentUser();
-        const filtered = user
-          ? prods.filter(p => p.sellerId !== user.id)
-          : prods;
-        const matching = filtered.filter(p => this.getProximity(p) !== 'other');
-        this.recommendedProducts = matching.slice(0, 8);
-        this.excludedProductIds = new Set(this.recommendedProducts.map(p => p.id));
-        this.showRecommendedSection = true;
-        this.applyFilters();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.recommendedProducts = [];
-        this.showRecommendedSection = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
   // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
     // 1. Init browsing location from user profile
@@ -207,7 +188,7 @@ export class ProductList implements OnInit {
       this.browsingDistrict = user.district || '';
       this.updateLocationLabel();
       if (this.browsingGovernorate) {
-        this.loadRecommendations();
+        this.selectedSort = 'location';
       }
     }
 
@@ -325,17 +306,12 @@ export class ProductList implements OnInit {
     return [selectedCat];
   }
 
-  // ── Exclude recommended products IDs for "Other Products" ─────────────
-  private excludedProductIds = new Set<string>();
+  // ── Filter chips state ────────────────────────────────────────────────
+  openChipDropdown: string | null = null;
 
-  // ── Apply Filters + Sort + Paginate ──────────────────────────────────
+  // ── Apply Filters + Sort + Load-more ─────────────────────────────────
   applyFilters(): void {
     let result = [...this.allProducts];
-
-    // Exclude products already shown in the recommended section
-    if (this.excludedProductIds.size > 0) {
-      result = result.filter(p => !this.excludedProductIds.has(p.id));
-    }
 
     // Filter by category group
     if (this.selectedCategories.size > 0) {
@@ -371,8 +347,8 @@ export class ProductList implements OnInit {
       default: break; // relevance = original order
     }
 
-    // Update pagination metadata
-    this.totalCount = this.recommendedProducts.length + result.length;
+    // Update metadata
+    this.totalCount = result.length;
     this.filteredCount = result.length;
     this.totalPages = Math.ceil(result.length / this.pageSize) || 1;
     if (this.currentPage > this.totalPages) {
@@ -384,12 +360,12 @@ export class ProductList implements OnInit {
       this.pagesArray.push(i);
     }
 
-    // Slice to current page
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    this.products = result.slice(startIndex, startIndex + this.pageSize);
+    // Paginate: show only the current page's items
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.products = result.slice(start, start + this.pageSize);
 
     this.sortOpen = false;
-    this.mobileFiltersOpen = false; // Auto-close drawer on apply
+    this.mobileFiltersOpen = false;
     this.cdr.detectChanges();
   }
 
@@ -414,13 +390,53 @@ export class ProductList implements OnInit {
     }
   }
 
+  // ── Filter Chips ──────────────────────────────────────────────────────
+  toggleChipDropdown(name: string): void {
+    this.openChipDropdown = this.openChipDropdown === name ? null : name;
+  }
+
+  closeChipDropdowns(): void {
+    this.openChipDropdown = null;
+  }
+
+  selectChipCategory(cat: string): void {
+    this.selectedCategories.clear();
+    this.selectedCategories.add(cat);
+    this.currentPage = 1;
+    this.openChipDropdown = null;
+    this.applyFilters();
+  }
+
+  resetCategoryFilter(): void {
+    this.selectedCategories.clear();
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  selectChipCondition(cond: string): void {
+    if (this.selectedConditions.has(cond)) {
+      this.selectedConditions.delete(cond);
+    } else {
+      this.selectedConditions.add(cond);
+    }
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  applyChipPrice(): void {
+    this.currentPage = 1;
+    this.openChipDropdown = null;
+    this.applyFilters();
+  }
+
+  // ── Reset Filters ─────────────────────────────────────────────────────
   resetFilters(): void {
     this.selectedCategories.clear();
     this.selectedConditions.clear();
     this.minPrice = 0;
     this.maxPrice = 100000;
     this.selectedSort = 'relevance';
-    this.currentPage = 1; // Reset to page 1
+    this.currentPage = 1;
     this.applyFilters();
   }
 
@@ -443,4 +459,5 @@ export class ProductList implements OnInit {
   toggleMobileFilters(): void {
     this.mobileFiltersOpen = !this.mobileFiltersOpen;
   }
+
 }

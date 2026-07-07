@@ -68,6 +68,7 @@
           </a>
         </div>
       </div>
+        
 
       <!-- Nav Columns -->
       <div class="footer-nav">
@@ -94,6 +95,7 @@
             <li><a routerLink="/listings/create">Start Selling</a></li>
             <li><a routerLink="/guidelines">Safety Tips</a></li>
             <li><a routerLink="/guidelines">Guidelines</a></li>
+            <li><a routerLink="/support" [queryParams]="{tab: 'help'}">Seller Verification</a></li>
           </ul>
         </div>
 
@@ -105,8 +107,9 @@
           <ul class="footer-col-links">
             <li><a routerLink="/contact">Contact Us</a></li>
             <li><a routerLink="/support" [queryParams]="{tab: 'help'}">FAQ</a></li>
-            <li><a routerLink="/support" [queryParams]="{tab: 'terms'}">Terms of Service</a></li>
             <li><a routerLink="/support" [queryParams]="{tab: 'privacy'}">Privacy Policy</a></li>
+            <li><a routerLink="/support" [queryParams]="{tab: 'terms'}">Terms of Service</a></li>
+            <li><a routerLink="/contact" [queryParams]="{reason: 'scam'}">Report a Scam</a></li>
           </ul>
         </div>
       </div>

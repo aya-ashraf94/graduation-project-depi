@@ -26,6 +26,7 @@ export interface DashboardData {
     totalProducts: number;
     openReports: number;
     todayRevenue: number;
+    todayPlatformFee: number;
     todayOrders: number;
     newUsers7d: number;
     pendingVerifications: number;
@@ -64,6 +65,7 @@ export interface PaginatedOrders {
   total: number;
   page: number;
   pages: number;
+  totals?: { grossRevenue: number; platformFees: number };
 }
 
 export interface AdminReport {
@@ -219,7 +221,8 @@ export class AdminService {
         orders: res.orders || [],
         total: res.total,
         page: res.page,
-        pages: res.pages
+        pages: res.pages,
+        totals: res.totals
       }))
     );
   }

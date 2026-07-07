@@ -50,10 +50,10 @@ type SupportTab = 'privacy' | 'terms' | 'help';
             <h2 class="pane-title">Privacy Policy</h2>
             <div class="legal-text">
               <h3>1. Information Collection</h3>
-              <p>We collect your university email address, name, and any information you provide when creating a listing or sending messages through our platform.</p>
+              <p>We collect your email address, name, and any information you provide when creating a listing or sending messages through our platform.</p>
               
               <h3>2. Information Usage</h3>
-              <p>Your data is used to provide and improve the Nafa3ni services, verify your student status, and facilitate communication between buyers and sellers.</p>
+              <p>Your data is used to provide and improve the Nafa3ni services and facilitate communication between buyers and sellers.</p>
               
               <h3>3. Data Sharing</h3>
               <p>We do not sell your personal data to third parties. We may share anonymized data with analytics providers to understand how our application is used.</p>
@@ -74,10 +74,10 @@ type SupportTab = 'privacy' | 'terms' | 'help';
               <p>By accessing or using the Nafa3ni marketplace, you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use our services.</p>
               
               <h3>2. User Eligibility</h3>
-              <p>To use our platform, you must be a currently enrolled student at a verified university. You are responsible for maintaining the confidentiality of your account credentials.</p>
+              <p>You must be at least 18 years old to use our platform. You are responsible for maintaining the confidentiality of your account credentials.</p>
               
               <h3>3. Limitation of Liability</h3>
-              <p>Nafa3ni simply provides a platform for students to connect. We are not responsible for the quality, safety, or legality of the items advertised, nor the truth or accuracy of the listings.</p>
+              <p>Nafa3ni simply provides a platform for users to connect. We are not responsible for the quality, safety, or legality of the items advertised, nor the truth or accuracy of the listings.</p>
               
               <h3>4. Termination</h3>
               <p>We reserve the right to suspend or terminate your account at any time for violations of these terms or our community guidelines.</p>
@@ -92,28 +92,23 @@ type SupportTab = 'privacy' | 'terms' | 'help';
             <h2 class="pane-title">Frequently Asked Questions</h2>
             <div class="faq-list">
               <div class="faq-item">
-                <div class="faq-q">Do I need a university email to join?</div>
-                <div class="faq-a">Yes, Nafa3ni is exclusively for students. You must verify your account using an active .edu email address.</div>
-              </div>
-              
-              <div class="faq-item">
                 <div class="faq-q">How do I contact a seller?</div>
-                <div class="faq-a">Click the "Contact Seller" button on any product page. You can negotiate and arrange a meeting place via our built-in chat.</div>
+                <div class="faq-a">Click the "Contact Seller" button on any product page. You can negotiate and arrange a meeting via our built-in chat.</div>
               </div>
               
               <div class="faq-item">
                 <div class="faq-q">Are there any fees for selling?</div>
-                <div class="faq-a">No, listing and selling items on Nafa3ni is completely free for students.</div>
+                <div class="faq-a">Listing items on Nafa3ni is completely free. A platform fee applies only to online card payments.</div>
               </div>
               
               <div class="faq-item">
                 <div class="faq-q">Is payment handled through the platform?</div>
-                <div class="faq-a">Currently, all payments are handled in-person between the buyer and seller. We recommend meeting in a safe, public place on campus.</div>
+                <div class="faq-a">We offer two payment methods: Cash on Delivery (pay the seller directly) and Online Card Payment (processed securely via Stripe). For online payments, a small platform fee is added to the total.</div>
               </div>
 
               <div class="faq-item">
                 <div class="faq-q">What are Flash Sales and how do they affect my listings?</div>
-                <div class="faq-a">Flash Sales are limited-time promotional campaigns managed by Nafa3ni administration to highlight student listings. If your product or its category is included in a campaign, a temporary discount percentage is applied automatically. A crossed-out reference price and a "Save X%" badge will be displayed to buyers during the campaign window. These promotional discounts do not stack with active coupon codes.</div>
+                <div class="faq-a">Flash Sales are limited-time promotional campaigns managed by Nafa3ni administration. If your product or its category is included in a campaign, a temporary discount percentage is applied automatically. A crossed-out reference price and a "Save X%" badge will be displayed to buyers during the campaign window. These promotional discounts do not stack with active coupon codes.</div>
               </div>
             </div>
             

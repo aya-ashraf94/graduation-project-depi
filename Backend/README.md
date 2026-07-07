@@ -82,7 +82,7 @@ Represented by the Mongoose model schema:
 > [!NOTE]
 > **Extended Route Controller Functions**:
 > The controller (`Backend/controllers/productController.js`) also contains implementations for:
-> * `getUserProducts` (`GET /api/products/user/:userId`) — Retrieve listings owned by a specific student.
+> * `getUserProducts` (`GET /api/products/user/:userId`) — Retrieve listings owned by a specific user.
 > * `updateProduct` (`PUT /api/products/:id`) — Modify attributes of an existing item.
 > * `deleteProduct` (`DELETE /api/products/:id`) — Permanently remove a listing from the database.
 >
@@ -157,7 +157,7 @@ npm run seed
 > Seeding is now non-destructive! Instead of deleting all documents, the script uses a bulk-upsert mechanism to add or update records based on their `_id`, keeping your other local custom test listings intact.
 
 ### 3. Generate Official Store Catalog Data
-To generate the official Nafa3ni Store admin profile and load the database with 32 premium campus listings across all categories, run:
+To generate the official Nafa3ni Store admin profile and load the database with 32 premium official listings across all categories, run:
 ```bash
 npm run generate-official
 ```

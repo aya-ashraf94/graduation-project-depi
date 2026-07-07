@@ -1,11 +1,11 @@
-# Market.Arch (Nafa3ni) — Student Marketplace Platform
+# Market.Arch (Nafa3ni) — Marketplace Platform
 > Built on **Angular 21** featuring high-fidelity **Neo-Brutalist** Architectural System Design.
 
 ![Angular](https://img.shields.io/badge/Angular-21.2-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Production_Ready-10B981?style=for-the-badge)
 
-A premium, highly secure campus peer-to-peer trading hub enabling verified students to safely buy, sell, and trade used academic equipment, electronics, furniture, and literature. Designed from the ground up to prepare for a production microservices backend integration.
+A premium, highly secure peer-to-peer marketplace enabling users to safely buy, sell, and trade equipment, electronics, furniture, and more. Designed from the ground up to prepare for a production microservices backend integration.
 
 ---
 

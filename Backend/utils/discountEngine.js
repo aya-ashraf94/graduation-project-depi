@@ -355,9 +355,34 @@ function annotateProducts(productsList, promotions) {
   return productsList.map(p => annotateProduct(p, promotions));
 }
 
+/**
+ * Load the platform fee percent from settings.
+ * Defaults to 5% if not set.
+ */
+async function loadPlatformFeePercent() {
+  try {
+    const [row] = await db.select().from(settings).where(eq(settings.key, 'platformFeePercent'));
+    if (row) {
+      const val = parseFloat(row.value);
+      if (val >= 0 && val <= 100) return val;
+    }
+  } catch (e) { /* settings table may not exist yet */ }
+  return 5; // default 5%
+}
+
+/**
+ * Calculate the platform fee for a given price.
+ */
+function calculatePlatformFee(price, platformFeePercent) {
+  const fee = price * (platformFeePercent / 100);
+  return Math.round(fee * 100) / 100; // round to cents
+}
+
 module.exports = {
   loadActivePromotions,
   annotateProduct,
   annotateProducts,
   calculateCheckoutPrice,
+  loadPlatformFeePercent,
+  calculatePlatformFee,
 };

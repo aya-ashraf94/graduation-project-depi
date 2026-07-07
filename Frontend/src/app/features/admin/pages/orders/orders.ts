@@ -8,11 +8,12 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
+import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent, CurrencyFormatPipe],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -22,6 +23,8 @@ export class Orders implements OnInit {
 
   orders = signal<any[]>([]);
   totalOrders = signal(0);
+  totalGrossRevenue = signal(0);
+  totalPlatformFees = signal(0);
   currentPage = signal(1);
   pageSize = 20;
   totalPages = signal(0);
@@ -41,6 +44,8 @@ export class Orders implements OnInit {
         this.orders.set(res.orders);
         this.totalOrders.set(res.total);
         this.totalPages.set(res.pages);
+        this.totalGrossRevenue.set(res.totals?.grossRevenue || 0);
+        this.totalPlatformFees.set(res.totals?.platformFees || 0);
         this.isLoading.set(false);
       },
       error: (err) => {

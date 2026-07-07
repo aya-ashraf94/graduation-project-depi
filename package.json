@@ -1,7 +1,7 @@
 {
   "name": "nafa3ni-monorepo",
   "version": "1.0.0",
-  "description": "Monorepo configuration for Market.Arch (Nafa3ni) student marketplace",
+  "description": "Monorepo configuration for Market.Arch (Nafa3ni) marketplace",
   "scripts": {
     "install-frontend": "npm install --prefix Frontend",
     "install-backend": "npm install --prefix Backend",

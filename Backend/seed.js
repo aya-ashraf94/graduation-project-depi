@@ -29,45 +29,29 @@ async function seedCollection(pool, table, filename, transformFn = null) {
 
   console.log(`Importing ${records.length} records for ${filename}...`);
 
-  const keys = Object.keys(table);
-  const columns = keys.filter(k => k !== 'config' && k !== 'name');
   const colNames = table._.columns;
 
   for (const record of records) {
     const values = {};
     for (const [colName, col] of Object.entries(colNames)) {
-      const mongoKey = colName === 'id' ? '_id' :
-        colName === 'userId' ? 'userId' :
-        colName === 'categoryId' ? 'categoryId' :
-        colName === 'productId' ? 'productId' :
-        colName === 'buyerId' ? 'buyerId' :
-        colName === 'sellerId' ? 'sellerId' :
-        colName === 'conversationId' ? 'conversationId' :
-        colName === 'senderId' ? 'senderId' :
-        colName === 'reviewerId' ? 'reviewerId' :
-        colName === 'revieweeId' ? 'revieweeId' :
-        colName === 'reporterId' ? 'reporterId' :
-        colName === 'orderId' ? 'orderId' :
-        colName === 'linkedEntityId' ? 'linkedEntityId' :
-        colName === 'linkedRoute' ? 'linkedRoute' :
-        colName === 'resetPasswordToken' ? 'resetPasswordToken' :
-        colName === 'resetPasswordExpires' ? 'resetPasswordExpires' :
-        colName === 'paymentMethod' ? 'paymentMethod' :
-        colName === 'shippingAddress' ? 'shippingAddress' :
-        colName === 'trackingNumber' ? 'trackingNumber' :
-        colName === 'phoneNumber' ? 'phoneNumber' :
-        colName === 'showContactInfo' ? 'showContactInfo' :
-        colName === 'soldByNafa3ni' ? 'soldByNafa3ni' :
-        colName === 'isVerified' ? 'isVerified' :
-        colName === 'isSuspended' ? 'isSuspended' :
-        colName === 'viewCount' ? 'viewCount' :
-        colName === 'totalSales' ? 'totalSales' :
-        colName === 'totalPurchases' ? 'totalPurchases' :
-        colName === 'successRate' ? 'successRate' :
-        colName === 'dynamicAttributes' ? 'dynamicAttributes' :
-        colName === 'hasOther' ? 'hasOther' :
-        colName === 'createdAt' ? 'createdAt' :
-        colName === 'updatedAt' ? 'updatedAt' : colName;
+      const MONGO_KEY_MAP = {
+        id: '_id', userId: 'userId', categoryId: 'categoryId',
+        productId: 'productId', buyerId: 'buyerId', sellerId: 'sellerId',
+        conversationId: 'conversationId', senderId: 'senderId',
+        reviewerId: 'reviewerId', revieweeId: 'revieweeId',
+        reporterId: 'reporterId', orderId: 'orderId',
+        linkedEntityId: 'linkedEntityId', linkedRoute: 'linkedRoute',
+        resetPasswordToken: 'resetPasswordToken', resetPasswordExpires: 'resetPasswordExpires',
+        paymentMethod: 'paymentMethod', shippingAddress: 'shippingAddress',
+        trackingNumber: 'trackingNumber', phoneNumber: 'phoneNumber',
+        showContactInfo: 'showContactInfo', soldByNafa3ni: 'soldByNafa3ni',
+        isVerified: 'isVerified', isSuspended: 'isSuspended',
+        viewCount: 'viewCount', totalSales: 'totalSales',
+        totalPurchases: 'totalPurchases', successRate: 'successRate',
+        dynamicAttributes: 'dynamicAttributes', hasOther: 'hasOther',
+        createdAt: 'createdAt', updatedAt: 'updatedAt',
+      };
+      const mongoKey = MONGO_KEY_MAP[colName] || colName;
 
       if (record[mongoKey] !== undefined) {
         if (colName === 'id' || colName === '_id') {
@@ -91,13 +75,6 @@ async function seedCollection(pool, table, filename, transformFn = null) {
 
     if (Object.keys(values).length > 0) {
       try {
-        const colList = Object.keys(values).map(c => `"${c.replace(/([A-Z])/g, '_$1').toLowerCase()}"`);
-        const paramList = Object.keys(values).map((_, i) => `$${i + 1}`);
-        const placeholders = {};
-        Object.keys(values).forEach((key, i) => {
-          placeholders[`$${i + 1}`] = values[key];
-        });
-
         const pgKey = (str) => str.replace(/([A-Z])/g, '_$1').toLowerCase();
         const cols = Object.keys(values).map(c => `"${pgKey(c)}"`).join(', ');
         const params = Object.keys(values).map((_, i) => `$${i + 1}`).join(', ');

@@ -1,20 +1,12 @@
 const db = require("../db");
-const { users, notifications } = require("../db/schema");
+const { users } = require("../db/schema");
 const { eq, and, gt, sql } = require("drizzle-orm");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const cloudinary = require("../config/cloudinary");
 const { updateUserStats } = require("../utils/userStats");
-
-const uploadBase64ToCloudinary = async (base64Str) => {
-  if (!base64Str) return null;
-  if (base64Str.startsWith("http")) return base64Str;
-  const result = await cloudinary.uploader.upload(base64Str, {
-    folder: "nafa3ni-avatars",
-  });
-  return result.secure_url;
-};
+const { uploadBase64ToCloudinary } = require("../utils/upload");
+const { createNotification } = require("../utils/notifications");
 
 const registerUser = async (req, res) => {
   try {
@@ -64,18 +56,13 @@ const registerUser = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    try {
-      await db.insert(notifications).values({
-        userId: user.id,
-        type: "system",
-        title: "Welcome to Nafa3ni! 🎉",
-        body: "Complete your profile to start buying and selling on campus",
-        linkedRoute: "/profile/me?edit=true",
-        isRead: false,
-      });
-    } catch (notifError) {
-      console.error("Failed to create welcome notification:", notifError);
-    }
+    await createNotification({
+      userId: user.id,
+      type: "system",
+      title: "Welcome to Nafa3ni! 🎉",
+      body: "Complete your profile to start buying and selling on Nafa3ni",
+      linkedRoute: "/profile/me?edit=true",
+    });
 
     res.status(201).json({
       message: "User Registered Successfully",
@@ -201,7 +188,7 @@ const updateProfile = async (req, res) => {
     }
     if (email !== undefined) updateData.email = email;
     if (avatar !== undefined) {
-      updateData.avatar = await uploadBase64ToCloudinary(avatar);
+      updateData.avatar = await uploadBase64ToCloudinary(avatar, "nafa3ni-avatars");
     }
     if (bio !== undefined) updateData.bio = bio;
     if (location !== undefined) updateData.location = location;

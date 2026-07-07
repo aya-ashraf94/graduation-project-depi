@@ -1,5 +1,6 @@
 const db = require("../db");
-const { reports, products, notifications, users } = require("../db/schema");
+const { reports, products, users } = require("../db/schema");
+const { createNotification } = require("../utils/notifications");
 const { eq, and } = require("drizzle-orm");
 
 const createReport = async (req, res) => {
@@ -39,13 +40,10 @@ const createReport = async (req, res) => {
       .limit(1);
 
     if (product) {
-      await db.insert(notifications).values({
-        userId: product.userId,
-        type: 'system',
-        title: 'Listing Reported',
+      await createNotification({
+        userId: product.userId, type: 'system', title: 'Listing Reported',
         body: `Your listing has been reported for: ${reason}. Our moderation team will review it.`,
-        linkedEntityId: productId,
-        linkedRoute: `/products/${productId}`,
+        linkedRoute: `/products/${productId}`, linkedEntityId: productId,
       });
     }
 

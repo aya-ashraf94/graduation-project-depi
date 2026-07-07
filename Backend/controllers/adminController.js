@@ -9,40 +9,6 @@ const seller = alias(users, "seller");
 const reporter = alias(users, "reporter");
 const productOwner = alias(users, "productOwner");
 
-const getStats = async (req, res) => {
-  try {
-    const [userCount] = await db.select({ value: count() }).from(users);
-    const [adminCount] = await db.select({ value: count() }).from(users).where(eq(users.role, 'admin'));
-    const [verifiedCount] = await db.select({ value: count() }).from(users).where(eq(users.isVerified, true));
-    const [suspendedCount] = await db.select({ value: count() }).from(users).where(eq(users.isSuspended, true));
-    
-    const [productCount] = await db.select({ value: count() }).from(products);
-    const [activeProdCount] = await db.select({ value: count() }).from(products).where(eq(products.status, 'active'));
-    const [soldProdCount] = await db.select({ value: count() }).from(products).where(eq(products.status, 'sold'));
-    const [totalProductViews] = await db.select({ value: sql`COALESCE(SUM(${products.viewCount}), 0)` }).from(products);
-
-    const [reportCount] = await db.select({ value: count() }).from(reports)
-      .where(eq(reports.status, 'pending'));
-    const [orderCount] = await db.select({ value: count() }).from(orders);
-
-    res.json({
-      totalUsers: Number(userCount.value),
-      totalAdmins: Number(adminCount.value),
-      totalVerified: Number(verifiedCount.value),
-      totalSuspended: Number(suspendedCount.value),
-      totalProducts: Number(productCount.value),
-      activeProducts: Number(activeProdCount.value),
-      soldProducts: Number(soldProdCount.value),
-      totalProductViews: Number(totalProductViews.value),
-      openReports: Number(reportCount.value),
-      totalOrders: Number(orderCount.value),
-    });
-  } catch (error) {
-    console.error("Error fetching admin stats:", error);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
 const getDashboard = async (req, res) => {
   try {
     const now = new Date();
@@ -61,6 +27,8 @@ const getDashboard = async (req, res) => {
       .where(gte(orders.createdAt, todayStart));
     const todayRevenue = await db.select({ value: sql`COALESCE(SUM(${orders.price}), 0)` }).from(orders)
       .where(and(gte(orders.createdAt, todayStart), ne(orders.status, 'cancelled')));
+    const todayPlatformFee = await db.select({ value: sql`COALESCE(SUM(${orders.platformFee}), 0)` }).from(orders)
+      .where(and(gte(orders.createdAt, todayStart), ne(orders.status, 'cancelled')));
 
     // ── New users (7 days) ────────────────────────────────────────
     const [newUsers] = await db.select({ value: count() }).from(users)
@@ -74,22 +42,24 @@ const getDashboard = async (req, res) => {
 
     // ── Revenue history (last 30 days, by day) ────────────────────
     const revenueRows = await db.execute(sql`
-      SELECT DATE(created_at) AS day, COALESCE(SUM(price), 0) AS revenue
+      SELECT DATE(created_at) AS day, COALESCE(SUM(price), 0) AS gross, COALESCE(SUM(platform_fee), 0) AS fees
       FROM orders
       WHERE created_at >= ${thirtyDaysAgo} AND status != 'cancelled'
       GROUP BY DATE(created_at)
       ORDER BY day ASC
     `);
     const revenueMap = {};
+    const feeMap = {};
     for (const row of revenueRows.rows || []) {
       const dayStr = row.day instanceof Date ? row.day.toISOString().slice(0, 10) : String(row.day).slice(0, 10);
-      revenueMap[dayStr] = Number(row.revenue);
+      revenueMap[dayStr] = Number(row.gross);
+      feeMap[dayStr] = Number(row.fees);
     }
     const revenueHistory = [];
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const key = d.toISOString().slice(0, 10);
-      revenueHistory.push({ date: key, revenue: revenueMap[key] || 0 });
+      revenueHistory.push({ date: key, gross: revenueMap[key] || 0, platformFees: feeMap[key] || 0, revenue: revenueMap[key] || 0 });
     }
 
     // ── Recent orders (last 5) ────────────────────────────────────
@@ -138,6 +108,7 @@ const getDashboard = async (req, res) => {
         totalProducts: Number(productCount.value),
         openReports: Number(reportCount.value),
         todayRevenue: Number(todayRevenue[0]?.value || 0),
+        todayPlatformFee: Number(todayPlatformFee[0]?.value || 0),
         todayOrders: Number(todayOrders[0]?.value || 0),
         newUsers7d: Number(newUsers.value),
         pendingVerifications: Number(unverifiedProducts.value) + Number(unverifiedUsers.value),
@@ -164,6 +135,39 @@ const getDashboard = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const getStats = async (req, res) => {
+  try {
+    const [userCount] = await db.select({ value: count() }).from(users);
+    const [adminCount] = await db.select({ value: count() }).from(users).where(eq(users.role, 'admin'));
+    const [verifiedCount] = await db.select({ value: count() }).from(users).where(eq(users.isVerified, true));
+    const [suspendedCount] = await db.select({ value: count() }).from(users).where(eq(users.isSuspended, true));
+
+    const [productCount] = await db.select({ value: count() }).from(products);
+    const [activeProductCount] = await db.select({ value: count() }).from(products).where(eq(products.status, 'active'));
+    const [soldProductCount] = await db.select({ value: count() }).from(products).where(eq(products.status, 'sold'));
+    const [totalProductViews] = await db.select({ value: sql`COALESCE(SUM(${products.viewCount}), 0)` }).from(products);
+
+    const [reportCount] = await db.select({ value: count() }).from(reports).where(eq(reports.status, 'pending'));
+    const [orderCount] = await db.select({ value: count() }).from(orders);
+
+    res.json({
+      totalUsers: Number(userCount.value),
+      totalAdmins: Number(adminCount.value),
+      totalVerified: Number(verifiedCount.value),
+      totalSuspended: Number(suspendedCount.value),
+      totalProducts: Number(productCount.value),
+      activeProducts: Number(activeProductCount.value),
+      soldProducts: Number(soldProductCount.value),
+      totalProductViews: Number(totalProductViews.value),
+      openReports: Number(reportCount.value),
+      totalOrders: Number(orderCount.value),
+    });
+  } catch (error) {
+    console.error("Error fetching admin stats:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -485,6 +489,11 @@ const getAllOrders = async (req, res) => {
     const [totalResult] = await db.select({ value: count() }).from(orders).where(whereClause);
     const total = Number(totalResult.value);
 
+    // All-time totals (ignoring pagination)
+    const totalsWhere = status ? and(ne(orders.status, 'cancelled'), eq(orders.status, status)) : ne(orders.status, 'cancelled');
+    const [totalRevenueResult] = await db.select({ value: sql`COALESCE(SUM(${orders.price}), 0)` }).from(orders).where(totalsWhere);
+    const [totalFeesResult] = await db.select({ value: sql`COALESCE(SUM(${orders.platformFee}), 0)` }).from(orders).where(totalsWhere);
+
     const result = await db.select()
       .from(orders)
       .where(whereClause)
@@ -497,6 +506,7 @@ const getAllOrders = async (req, res) => {
 
     const formatted = result.map(r => ({
       ...r.orders,
+      totalPrice: (r.orders.price || 0) + (r.orders.platformFee || 0),
       productId: r.products ? { id: r.products.id, title: r.products.title, thumbnail: (r.products.images || [])[0] || '', price: r.products.price } : null,
       buyerId: r.buyer ? { id: r.buyer.id, name: r.buyer.name, email: r.buyer.email } : null,
       sellerId: r.seller ? { id: r.seller.id, name: r.seller.name, email: r.seller.email } : null,
@@ -507,6 +517,10 @@ const getAllOrders = async (req, res) => {
       total,
       page,
       pages: Math.ceil(total / limit),
+      totals: {
+        grossRevenue: Number(totalRevenueResult?.value || 0),
+        platformFees: Number(totalFeesResult?.value || 0),
+      },
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -666,8 +680,8 @@ const deleteCoupon = async (req, res) => {
 };
 
 module.exports = {
-  getStats,
   getDashboard,
+  getStats,
   getUsers,
   patchUser,
   deleteUser,

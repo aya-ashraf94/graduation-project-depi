@@ -25,6 +25,8 @@ export interface Order {
   categorySaleDiscount?: number;
   couponDiscount?: number;
   offerAmount?: number;
+  platformFee?: number;
+  totalPrice?: number;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
   shippingAddress?: string;
@@ -42,6 +44,8 @@ export interface OrderSummary {
   productTitle: string;
   productThumbnail: string;
   price: number;
+  platformFee?: number;
+  totalPrice?: number;
   status: OrderStatus;
   counterpartyName: string;   // buyer sees seller name, seller sees buyer name
   createdAt: Date;
@@ -62,6 +66,7 @@ export interface CreateOrderRequest {
   shippingAddress?: string;
   notes?: string;
   couponCode?: string;
+  offerId?: string;
 }
 
 /** Payload to update order status (seller ships, buyer confirms, etc.) */

@@ -84,82 +84,31 @@
     </aside>
 
     <!-- ══ MAIN CONTENT ═════════════════════════════════════════════════ -->
-    <main class="product-main">
+    <main class="product-main" (click)="closeChipDropdowns()">
 
-      <!-- Location Header Bar -->
-      @if (authService.currentUser() && locationLabel()) {
-        <div class="location-header-bar">
-          <div class="location-bar-content" (click)="openLocationModal()">
-            <svg class="location-pin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span class="location-bar-text">{{ locationLabel() }}</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </div>
-        </div>
-      }
-
-      <!-- Total Count Bar -->
-      <div class="total-count-bar">
-        <svg class="total-count-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <path d="M9 8h6M9 12h6M9 16h4"/>
-        </svg>
-        <span class="total-count-text"><strong>{{ totalCount }}</strong> product{{ totalCount === 1 ? '' : 's' }} found</span>
-        <span class="total-count-label">All listings</span>
+      <!-- ── Header Section ── -->
+      <div class="marketplace-header-section">
+        <h1 class="toolbar-title">All Products <span class="toolbar-title-count">({{ totalCount }})</span></h1>
       </div>
 
-      <!-- Recommended For You -->
-      @if (showRecommendedSection) {
-        <section class="recommended-section">
-          <div class="recommended-header">
-            <h2 class="recommended-title">Recommended For You</h2>
-            <span class="recommended-subtitle">{{ recommendedProducts.length }} item{{ recommendedProducts.length === 1 ? '' : 's' }} near you</span>
-          </div>
-          @if (recommendedProducts.length > 0) {
-            <div class="recommended-grid">
-              @for (prod of recommendedProducts; track prod.id) {
-                <app-product-card
-                  [product]="prod"
-                  variant="home"
-                  [proximity]="getRecommendedProximity(prod)"
-                  (wishlistToggle)="toggleWishlist(prod.id, $event)"
-                ></app-product-card>
-              }
-            </div>
-          } @else {
-            <div class="recommended-empty">
-              <p>No products in your area yet.</p>
-            </div>
-          }
-        </section>
-      }
+      <!-- ── Horizontal Action Toolbar ── -->
+      <div class="marketplace-actions-toolbar">
+        <!-- Location -->
+        <div class="toolbar-location-box" (click)="openLocationModal()" title="Change Location">
+          <span class="toolbar-loc-pin">📍</span>
+          <span class="toolbar-loc-text">{{ getShortLocationLabel() || 'Select Location' }}</span>
+          <span class="toolbar-loc-arrow">▼</span>
+        </div>
 
-      <!-- All Products -->
-      <header class="inventory-header">
-        <div class="inventory-top-row">
-          <div class="header-text-main">
-            <h1 class="inventory-title">All Products</h1>
-            <p class="verified-count">{{ filteredCount }} items</p>
-          </div>
-
+        <div class="toolbar-right-group">
+          <!-- Sort Button -->
           <div class="sort-control-container">
-            <button class="btn-refine-mobile" (click)="toggleMobileFilters()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-              Refine
-            </button>
-
-            <button id="btn-sort-toggle" class="btn-sort" (click)="toggleSort()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button id="btn-sort-toggle" class="btn-sort" (click)="toggleSort()" [class.active]="sortOpen">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M4 6h16M4 12h10M4 18h7" />
               </svg>
-              {{ selectedSortLabel }}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <span class="btn-sort-text">{{ selectedSortLabel }}</span>
+              <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
@@ -176,12 +125,75 @@
               }
             </div>
           </div>
+
+          <!-- Grid/List Switch Toggles -->
+          <div class="layout-toggle-container">
+            <button class="btn-layout-toggle" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" title="Grid View">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+              </svg>
+            </button>
+            <button class="btn-layout-toggle" [class.active]="viewMode === 'list'" (click)="setViewMode('list')" title="List View">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
-      </header>
+      </div>
+
+      <!-- Filter Chips -->
+      <div class="filter-chips-row">
+        <button class="chip-btn" [class.active]="selectedCategories.size === 0" (click)="resetCategoryFilter()">All</button>
+        <div class="chip-dropdown" (click)="$event.stopPropagation()">
+          <button class="chip-btn chip-dropdown-toggle" (click)="toggleChipDropdown('category'); $event.stopPropagation()">
+            {{ selectedCategories.size === 1 ? [...selectedCategories][0] : 'Category' }}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="chip-dropdown-menu" [class.open]="openChipDropdown === 'category'" (click)="$event.stopPropagation()">
+            @for (cat of categories; track cat) {
+              <div class="chip-dropdown-item" [class.selected]="selectedCategories.has(cat)" (click)="selectChipCategory(cat)">{{ cat }}</div>
+            }
+          </div>
+        </div>
+        <div class="chip-dropdown" (click)="$event.stopPropagation()">
+          <button class="chip-btn chip-dropdown-toggle" (click)="toggleChipDropdown('price'); $event.stopPropagation()">
+            Price
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="chip-dropdown-menu chip-price-menu" [class.open]="openChipDropdown === 'price'" (click)="$event.stopPropagation()">
+            <div class="chip-price-inputs">
+              <input type="number" [(ngModel)]="minPrice" placeholder="Min" class="chip-price-field" />
+              <span>—</span>
+              <input type="number" [(ngModel)]="maxPrice" placeholder="Max" class="chip-price-field" />
+            </div>
+            <button class="chip-apply-btn" (click)="applyChipPrice()">Apply</button>
+          </div>
+        </div>
+        <div class="chip-dropdown" (click)="$event.stopPropagation()">
+          <button class="chip-btn chip-dropdown-toggle" (click)="toggleChipDropdown('condition'); $event.stopPropagation()">
+            Condition
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="chip-dropdown-menu" [class.open]="openChipDropdown === 'condition'" (click)="$event.stopPropagation()">
+            @for (cond of conditionOptions; track cond) {
+              <div class="chip-dropdown-item" [class.selected]="selectedConditions.has(cond)" (click)="selectChipCondition(cond)">{{ cond }}</div>
+            }
+          </div>
+        </div>
+      </div>
 
       <!-- Product Grid -->
-      <section class="grid-container">
-        <div class="products-grid-layout">
+      <section id="browse-section" class="grid-container">
+        <div class="products-grid-layout" [class.list-mode]="viewMode === 'list'">
 
           @if (isLoading) {
             @for (item of [1, 2, 3, 4]; track item) {
@@ -215,21 +227,27 @@
           @for (product of products; track product.id) {
             <app-product-card
               [product]="product"
-              variant="home"
+              [variant]="viewMode === 'grid' ? 'home' : 'list'"
               [proximity]="getProximity(product)"
               (wishlistToggle)="toggleWishlist(product.id, $event)"
             ></app-product-card>
           }
         </div>
 
-        <app-pagination
-          [currentPage]="currentPage"
-          [totalPages]="totalPages"
-          variant="icons"
-          (prevPage)="prevPage()"
-          (nextPage)="nextPage()"
-          (pageChange)="goToPage($event)"
-        ></app-pagination>
+        @if (!isLoading && products.length > 0 && totalPages > 1) {
+          <div class="pagination-area">
+            <span></span>
+            <app-pagination
+              [currentPage]="currentPage"
+              [totalPages]="totalPages"
+              variant="icons"
+              (prevPage)="prevPage()"
+              (nextPage)="nextPage()"
+              (pageChange)="goToPage($event)"
+            ></app-pagination>
+            <span class="pagination-info">Showing {{ (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, filteredCount) }} of {{ filteredCount }} Products</span>
+          </div>
+        }
       </section>
 
     </main>

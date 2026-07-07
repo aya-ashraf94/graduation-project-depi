@@ -18,14 +18,18 @@ async function run() {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash('nafa3nistoreadmin99', salt);
             const { rows: newUser } = await pool.query(
-                `INSERT INTO users (name, email, password, role, is_verified)
-                 VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-                ['Nafa3ni Store', 'store@nafa3ni.com', hashedPassword, 'admin', true]
+                `INSERT INTO users (name, email, password, role, is_verified, location, phone_number)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+                ['Nafa3ni Store', 'store@nafa3ni.com', hashedPassword, 'admin', true, 'Port Said, Egypt', '01012345678']
             );
             storeUser = newUser[0];
             console.log('Nafa3ni Store Admin User created successfully.');
         } else {
-            console.log('Nafa3ni Store Admin User already exists.');
+            console.log('Nafa3ni Store Admin User already exists. Ensuring location and phone number are set...');
+            await pool.query(
+                `UPDATE users SET location = $1, phone_number = $2 WHERE id = $3`,
+                ['Port Said, Egypt', '01012345678', storeUser.id]
+            );
         }
 
         // 2. Fetch categories to link IDs
@@ -56,7 +60,7 @@ async function run() {
                 categoryName: 'Furniture',
                 brand: 'NAFA3NI ARCHIVE',
                 images: ['https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=800'],
-                location: 'Main Library Campus',
+                location: 'Main Library',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -94,7 +98,7 @@ async function run() {
                 categoryName: 'Furniture',
                 brand: 'PINEWOOD',
                 images: ['https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800'],
-                location: 'Main Library Campus',
+                location: 'Main Library',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -113,7 +117,7 @@ async function run() {
                 categoryName: 'Furniture',
                 brand: 'NAFA3NI COZY',
                 images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800'],
-                location: 'Student Dorms Zone A',
+                location: 'user Dorms Zone A',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -134,7 +138,7 @@ async function run() {
                 categoryName: 'Mobiles',
                 brand: 'Apple',
                 images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -153,7 +157,7 @@ async function run() {
                 categoryName: 'Mobiles',
                 brand: 'Samsung',
                 images: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -172,7 +176,7 @@ async function run() {
                 categoryName: 'Mobiles',
                 brand: 'Other',
                 images: ['https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -186,7 +190,7 @@ async function run() {
             },
             {
                 title: 'Xiaomi Redmi Note 13 Pro 256GB',
-                description: 'Great mid-range option for students. 256GB storage, 8GB RAM, Midnight Black. 200MP camera and ultra-fast 67W charging. Factory sealed.',
+                description: 'Great mid-range option for users. 256GB storage, 8GB RAM, Midnight Black. 200MP camera and ultra-fast 67W charging. Factory sealed.',
                 price: 14500,
                 categoryName: 'Mobiles',
                 brand: 'Redmi',
@@ -294,7 +298,7 @@ async function run() {
                 categoryName: 'Clothes',
                 brand: 'NAFA3NI MERCH',
                 images: ['https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -314,7 +318,7 @@ async function run() {
                 categoryName: 'Clothes',
                 brand: 'ARCHIVE CLASSICS',
                 images: ['https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -329,12 +333,12 @@ async function run() {
             },
             {
                 title: 'Premium Multi-Pocket Cargo Pants',
-                description: 'Durable ripstop cotton cargo pants. 6 functional pockets, adjustable drawstring waist and ankles. Highly functional and stylish everyday campus wear.',
+                description: 'Durable ripstop cotton cargo pants. 6 functional pockets, adjustable drawstring waist and ankles. Highly functional and stylish everyday wear.',
                 price: 680,
                 categoryName: 'Clothes',
                 brand: 'STREETARCH',
                 images: ['https://images.unsplash.com/photo-1517423568366-8b83523034fd?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -349,12 +353,12 @@ async function run() {
             },
             {
                 title: 'University Athletics Premium Tee',
-                description: 'Athletic crewneck t-shirt made of 100% breathable combed cotton. Double-stitched seams, regular fit, minimal campus athletic print.',
+                description: 'Athletic crewneck t-shirt made of 100% breathable combed cotton. Double-stitched seams, regular fit, minimal athletic print.',
                 price: 350,
                 categoryName: 'Clothes',
                 brand: 'NAFA3NI MERCH',
                 images: ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800'],
-                location: 'Student Hub Center',
+                location: 'user Hub Center',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -425,7 +429,7 @@ async function run() {
             },
             {
                 title: 'Sony Alpha 4K Action Sports Camera',
-                description: 'High-speed action camera capable of recording 4K ultra-smooth video. Built-in stabilization, waterproof casing, and long battery life. Perfect for campus events and field work.',
+                description: 'High-speed action camera capable of recording 4K ultra-smooth video. Built-in stabilization, waterproof casing, and long battery life. Perfect for events and field work.',
                 price: 18000,
                 categoryName: 'Electronics',
                 brand: 'Sony',
@@ -450,7 +454,7 @@ async function run() {
                 categoryName: 'Home Appliances',
                 brand: 'Samsung',
                 images: ['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800'],
-                location: 'Student Dorms Zone B',
+                location: 'user Dorms Zone B',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -463,12 +467,12 @@ async function run() {
             },
             {
                 title: 'Digital Touch Solo Microwave (20L)',
-                description: 'Compact 800W microwave oven with 6 preset cooking programs and child safety lock. Glass turntable, digital LED clock. Perfect for quick heating and cooking inside a student flat.',
+                description: 'Compact 800W microwave oven with 6 preset cooking programs and child safety lock. Glass turntable, digital LED clock. Perfect for quick heating and cooking inside a user flat.',
                 price: 3900,
                 categoryName: 'Home Appliances',
                 brand: 'Samsung',
                 images: ['https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=800'],
-                location: 'Student Dorms Zone B',
+                location: 'user Dorms Zone B',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -486,7 +490,7 @@ async function run() {
                 categoryName: 'Home Appliances',
                 brand: 'Other',
                 images: ['https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800'],
-                location: 'Student Dorms Zone B',
+                location: 'user Dorms Zone B',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -504,7 +508,7 @@ async function run() {
                 categoryName: 'Home Appliances',
                 brand: 'Other',
                 images: ['https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800'],
-                location: 'Student Dorms Zone A',
+                location: 'user Dorms Zone A',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -519,12 +523,12 @@ async function run() {
             // === SPORTS & FITNESS ===
             {
                 title: 'Premium Adjustable Steel Dumbbells (Pair)',
-                description: 'Heavy duty selectorized dumbbells. Adjusts from 2kg to 24kg with a simple turn of a dial. Replaces 15 separate pairs of dumbbells, perfect space-saving gym gear for campus rooms.',
+                description: 'Heavy duty selectorized dumbbells. Adjusts from 2kg to 24kg with a simple turn of a dial. Replaces 15 separate pairs of dumbbells, perfect space-saving gym gear for rooms.',
                 price: 4900,
                 categoryName: 'Sports & Fitness',
                 brand: 'Pro-Gym',
                 images: ['https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?w=800'],
-                location: 'Student Gym Facility',
+                location: 'user Gym Facility',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -542,7 +546,7 @@ async function run() {
                 categoryName: 'Sports & Fitness',
                 brand: 'Pro-Gym',
                 images: ['https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800'],
-                location: 'Student Gym Facility',
+                location: 'user Gym Facility',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -555,12 +559,12 @@ async function run() {
             },
             {
                 title: 'High-Density Non-Slip 8mm Yoga Mat',
-                description: 'Premium eco-friendly TPE yoga mat. 8mm thick padding protects joints, dual-texture non-slip surface provides traction. Comes with a carrying strap for campus classes.',
+                description: 'Premium eco-friendly TPE yoga mat. 8mm thick padding protects joints, dual-texture non-slip surface provides traction. Comes with a carrying strap for classes.',
                 price: 450,
                 categoryName: 'Sports & Fitness',
                 brand: 'Nafa3ni Active',
                 images: ['https://images.unsplash.com/photo-1592432678016-e910b452f9a2?w=800'],
-                location: 'Student Gym Facility',
+                location: 'user Gym Facility',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -573,12 +577,12 @@ async function run() {
             },
             {
                 title: 'Urban Explorer Commuter Bicycle (21-Speed)',
-                description: 'Sturdy steel-framed urban road/trail bicycle. 21-speed twist shifters, front suspension fork, dual disc brakes. Perfect for fast commuting around the university campus and city streets.',
+                description: 'Sturdy steel-framed urban road/trail bicycle. 21-speed twist shifters, front suspension fork, dual disc brakes. Perfect for fast commuting around the university and city streets.',
                 price: 7800,
                 categoryName: 'Sports & Fitness',
                 brand: 'Pro-Gym',
                 images: ['https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800'],
-                location: 'Student Gym Facility',
+                location: 'user Gym Facility',
                 phoneNumber: '01012345678',
                 dynamicAttributes: {
                     badge: 'SOLD BY NAFA3NI',
@@ -593,7 +597,7 @@ async function run() {
             // === OTHER ===
             {
                 title: 'Premium Hardcover Drawing Sketchbook (A4)',
-                description: 'Professional grade sketchpad. 120 sheets of 160GSM acid-free sketch paper, durable hardcover binding, flat opening layout. Designed for architecture and fine arts student drafting.',
+                description: 'Professional grade sketchpad. 120 sheets of 160GSM acid-free sketch paper, durable hardcover binding, flat opening layout. Designed for architecture and fine arts user drafting.',
                 price: 280,
                 categoryName: 'Other',
                 brand: 'ARTSTUDIO',
@@ -627,7 +631,7 @@ async function run() {
             },
             {
                 title: 'Architectural Drawing Draft Board (A2)',
-                description: 'Portable architectural drawing board. Precision parallel motion rule, adjustable elevation angles, non-slip base grip. Perfect for drafting and engineering design students.',
+                description: 'Portable architectural drawing board. Precision parallel motion rule, adjustable elevation angles, non-slip base grip. Perfect for drafting and engineering design users.',
                 price: 1100,
                 categoryName: 'Other',
                 brand: 'DRAFTLINE',
@@ -691,12 +695,12 @@ async function run() {
         for (const p of productsToInsert) {
             await pool.query(
                 `INSERT INTO products
-                 (title, description, price, category_id, user_id, images, location, phone_number,
+                 (title, description, price, category_id, user_id, images,
                   show_contact_info, sold_by_nafa3ni, is_verified, dynamic_attributes)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
                 [
                     p.title, p.description || null, p.price, p.categoryId, p.userId,
-                    JSON.stringify(p.images || []), p.location, p.phoneNumber,
+                    p.images || [],
                     p.showContactInfo, p.soldByNafa3ni, p.isVerified,
                     JSON.stringify(p.dynamicAttributes || {})
                 ]

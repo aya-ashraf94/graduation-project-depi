@@ -2,6 +2,9 @@ const db = require("../db");
 const { conversations, conversationParticipants, messages, users, notifications, products, offers } = require("../db/schema");
 const { eq, and, ne, desc, inArray, sql } = require("drizzle-orm");
 const { checkAndExpireOffer } = require("./offerController");
+const { findOrCreateConversation } = require("../utils/conversations");
+const { emitMessage } = require("../utils/socket");
+const { createNotification } = require("../utils/notifications");
 
 const assertParticipant = async (userId, conversationId) => {
   const [entry] = await db.select()
@@ -24,9 +27,7 @@ const getConversations = async (req, res) => {
 
     const convIds = participantRows.map(p => p.conversationId);
 
-    if (convIds.length === 0) {
-      return res.json([]);
-    }
+    if (convIds.length === 0) return res.json([]);
 
     const convs = await db.select()
       .from(conversations)
@@ -37,9 +38,7 @@ const getConversations = async (req, res) => {
     const lastMsgIds = convs.map(c => c.conversations.lastMessageId).filter(Boolean);
     let lastMsgMap = {};
     if (lastMsgIds.length > 0) {
-      const lastMsgs = await db.select()
-        .from(messages)
-        .where(inArray(messages.id, lastMsgIds));
+      const lastMsgs = await db.select().from(messages).where(inArray(messages.id, lastMsgIds));
       lastMsgMap = Object.fromEntries(lastMsgs.map(m => [m.id, m]));
     }
 
@@ -47,16 +46,9 @@ const getConversations = async (req, res) => {
       conversationId: messages.conversationId,
       value: sql`count(*)::int`,
     }).from(messages)
-      .where(
-        and(
-          inArray(messages.conversationId, convIds),
-          ne(messages.senderId, userId),
-          ne(messages.status, 'read')
-        )
-      ).groupBy(messages.conversationId);
-    const unreadMap = Object.fromEntries(
-      unreadRows.map(r => [r.conversationId, Number(r.value)])
-    );
+      .where(and(inArray(messages.conversationId, convIds), ne(messages.senderId, userId), ne(messages.status, 'read')))
+      .groupBy(messages.conversationId);
+    const unreadMap = Object.fromEntries(unreadRows.map(r => [r.conversationId, Number(r.value)]));
 
     const allParts = await db.select()
       .from(conversationParticipants)
@@ -77,43 +69,16 @@ const getConversations = async (req, res) => {
       const participantsFormatted = parts.map(p => {
         const u = p.users;
         const nameParts = (u?.name || '').trim().split(/\s+/);
-        return {
-          id: u.id,
-          firstName: nameParts[0] || '',
-          lastName: nameParts.slice(1).join(' ') || '',
-          avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,
-          isVerified: u.isVerified || false,
-          rating: u.rating || 5.0,
-        };
+        return { id: u.id, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email}`, isVerified: u.isVerified || false, rating: u.rating || 5.0 };
       });
 
       let lastMsgData = null;
       if (conv.lastMessageId && lastMsgMap[conv.lastMessageId]) {
         const m = lastMsgMap[conv.lastMessageId];
-        lastMsgData = {
-          id: m.id,
-          conversationId: m.conversationId,
-          senderId: m.senderId,
-          content: m.content,
-          status: m.status,
-          type: m.type,
-          metadata: m.metadata,
-          sentAt: m.createdAt,
-        };
+        lastMsgData = { id: m.id, conversationId: m.conversationId, senderId: m.senderId, content: m.content, status: m.status, type: m.type, metadata: m.metadata, sentAt: m.createdAt };
       }
 
-      return {
-        id: conv.id,
-        participants: participantsFormatted,
-        productId: row.products?.id,
-        productTitle: row.products?.title,
-        productPrice: row.products?.price,
-        productOwnerId: row.products?.userId,
-        productThumbnail: (row.products?.images || [])[0],
-        lastMessage: lastMsgData,
-        unreadCount: unreadMap[conv.id] || 0,
-        updatedAt: conv.updatedAt,
-      };
+      return { id: conv.id, participants: participantsFormatted, productId: row.products?.id, productTitle: row.products?.title, productPrice: row.products?.price, productOwnerId: row.products?.userId, productThumbnail: (row.products?.images || [])[0], lastMessage: lastMsgData, unreadCount: unreadMap[conv.id] || 0, updatedAt: conv.updatedAt };
     });
 
     res.json(result);
@@ -127,15 +92,10 @@ const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
     const isParticipant = await assertParticipant(req.user.id, conversationId);
-    if (!isParticipant) {
-      return res.status(403).json({ message: "Not a participant of this conversation" });
-    }
-    const msgs = await db.select()
-      .from(messages)
-      .where(eq(messages.conversationId, conversationId))
-      .orderBy(messages.createdAt);
+    if (!isParticipant) return res.status(403).json({ message: "Not a participant of this conversation" });
 
-    // Fetch all offers for this conversation and ensure they are expired if past expiry time
+    const msgs = await db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
+
     const rawOffers = await db.select().from(offers).where(eq(offers.conversationId, conversationId));
     const activeOffersMap = {};
     for (const offer of rawOffers) {
@@ -147,24 +107,9 @@ const getMessages = async (req, res) => {
       let updatedMetadata = m.metadata;
       if (m.metadata && m.metadata.offerId && activeOffersMap[m.metadata.offerId]) {
         const liveOffer = activeOffersMap[m.metadata.offerId];
-        updatedMetadata = {
-          ...m.metadata,
-          offerStatus: liveOffer.status,
-          counterAmount: liveOffer.counterAmount,
-          expiresAt: liveOffer.expiresAt,
-          orderId: liveOffer.orderId,
-        };
+        updatedMetadata = { ...m.metadata, offerStatus: liveOffer.status, counterAmount: liveOffer.counterAmount, expiresAt: liveOffer.expiresAt, orderId: liveOffer.orderId };
       }
-      return {
-        id: m.id,
-        conversationId: m.conversationId,
-        senderId: m.senderId,
-        content: m.content,
-        status: m.status,
-        type: m.type,
-        metadata: updatedMetadata,
-        sentAt: m.createdAt,
-      };
+      return { id: m.id, conversationId: m.conversationId, senderId: m.senderId, content: m.content, status: m.status, type: m.type, metadata: updatedMetadata, sentAt: m.createdAt };
     });
 
     res.json(result);
@@ -179,75 +124,25 @@ const startConversation = async (req, res) => {
     const currentUserId = req.user.id;
     const { recipientId, productId, initialMessage } = req.body;
 
-    if (!recipientId) {
-      return res.status(400).json({ message: "Recipient ID is required" });
-    }
+    if (!recipientId) return res.status(400).json({ message: "Recipient ID is required" });
 
-    const existingParts = await db.select({ conversationId: conversationParticipants.conversationId })
-      .from(conversationParticipants)
-      .where(inArray(conversationParticipants.userId, [currentUserId, recipientId]));
-
-    const convCounts = {};
-    existingParts.forEach(p => {
-      convCounts[p.conversationId] = (convCounts[p.conversationId] || 0) + 1;
-    });
-
-    let conversationId = null;
-    for (const [cid, count] of Object.entries(convCounts)) {
-      if (count >= 2) {
-        if (productId) {
-          const [conv] = await db.select().from(conversations).where(eq(conversations.id, cid)).limit(1);
-          if (conv && conv.productId === productId) {
-            conversationId = cid;
-            break;
-          }
-        } else {
-          conversationId = cid;
-          break;
-        }
-      }
-    }
-
-    if (!conversationId) {
-      const [conv] = await db.insert(conversations).values({
-        productId: productId || null,
-      }).returning();
-
-      conversationId = conv.id;
-
-      await db.insert(conversationParticipants).values([
-        { conversationId: conv.id, userId: currentUserId },
-        { conversationId: conv.id, userId: recipientId },
-      ]);
-    }
+    const conversationId = await findOrCreateConversation(currentUserId, recipientId, productId);
 
     if (initialMessage && initialMessage.trim()) {
       const [msg] = await db.insert(messages).values({
-        conversationId,
-        senderId: currentUserId,
-        content: initialMessage,
-        status: "sent",
+        conversationId, senderId: currentUserId, content: initialMessage, status: "sent",
       }).returning();
 
-      await db.update(conversations).set({
-        lastMessageId: msg.id,
-        updatedAt: new Date(),
-      }).where(eq(conversations.id, conversationId));
+      await db.update(conversations).set({ lastMessageId: msg.id, updatedAt: new Date() })
+        .where(eq(conversations.id, conversationId));
 
-      try {
-        const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, currentUserId)).limit(1);
-        const senderName = sender ? sender.name : "A user";
-        await db.insert(notifications).values({
-          userId: recipientId,
-          type: "message",
-          title: "New Message",
-          body: `${senderName} sent you a message: "${initialMessage.substring(0, 40)}${initialMessage.length > 40 ? '...' : ''}"`,
-          linkedEntityId: conversationId,
-          linkedRoute: "/chat",
-        });
-      } catch (notifErr) {
-        console.error("Error triggering initial message notification:", notifErr);
-      }
+      const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, currentUserId)).limit(1);
+      const senderName = sender ? sender.name : "A user";
+      await createNotification({
+        userId: recipientId, type: "message", title: "New Message",
+        body: `${senderName} sent you a message: "${initialMessage.substring(0, 40)}${initialMessage.length > 40 ? '...' : ''}"`,
+        linkedRoute: "/chat", linkedEntityId: conversationId,
+      });
     }
 
     res.status(201).json({ conversationId });
@@ -262,67 +157,31 @@ const sendMessage = async (req, res) => {
     const { conversationId, content, type = 'text', metadata = null } = req.body;
     const senderId = req.user.id;
 
-    if (!conversationId || !content) {
-      return res.status(400).json({ message: "Conversation ID and content are required" });
-    }
+    if (!conversationId || !content) return res.status(400).json({ message: "Conversation ID and content are required" });
 
     const isParticipant = await assertParticipant(senderId, conversationId);
-    if (!isParticipant) {
-      return res.status(403).json({ message: "Not a participant of this conversation" });
+    if (!isParticipant) return res.status(403).json({ message: "Not a participant of this conversation" });
+
+    const [msg] = await db.insert(messages).values({ conversationId, senderId, content, status: "sent", type, metadata }).returning();
+
+    await db.update(conversations).set({ lastMessageId: msg.id, updatedAt: new Date() })
+      .where(eq(conversations.id, conversationId));
+
+    const parts = await db.select({ userId: conversationParticipants.userId })
+      .from(conversationParticipants).where(eq(conversationParticipants.conversationId, conversationId));
+    const recipientId = parts.find(p => p.userId !== senderId)?.userId;
+    if (recipientId) {
+      const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, senderId)).limit(1);
+      const senderName = sender ? sender.name : "A user";
+      await createNotification({
+        userId: recipientId, type: "message", title: "New Message",
+        body: `${senderName} sent you a message: "${content.substring(0, 40)}${content.length > 40 ? '...' : ''}"`,
+        linkedRoute: "/chat", linkedEntityId: conversationId,
+      });
     }
 
-    const [msg] = await db.insert(messages).values({
-      conversationId,
-      senderId,
-      content,
-      status: "sent",
-      type,
-      metadata,
-    }).returning();
-
-    await db.update(conversations).set({
-      lastMessageId: msg.id,
-      updatedAt: new Date(),
-    }).where(eq(conversations.id, conversationId));
-
-    try {
-      const parts = await db.select({ userId: conversationParticipants.userId })
-        .from(conversationParticipants)
-        .where(eq(conversationParticipants.conversationId, conversationId));
-
-      const recipientId = parts.find(p => p.userId !== senderId)?.userId;
-      if (recipientId) {
-        const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, senderId)).limit(1);
-        const senderName = sender ? sender.name : "A user";
-        await db.insert(notifications).values({
-          userId: recipientId,
-          type: "message",
-          title: "New Message",
-          body: `${senderName} sent you a message: "${content.substring(0, 40)}${content.length > 40 ? '...' : ''}"`,
-          linkedEntityId: conversationId,
-          linkedRoute: "/chat",
-        });
-      }
-    } catch (notifErr) {
-      console.error("Error triggering message notification:", notifErr);
-    }
-
-    const formattedMsg = {
-      id: msg.id,
-      conversationId: msg.conversationId,
-      senderId: msg.senderId,
-      content: msg.content,
-      status: msg.status,
-      type: msg.type,
-      metadata: msg.metadata,
-      sentAt: msg.createdAt,
-    };
-
-    // Emit live message event through Socket.io to conversation room
-    const io = req.app.get("io");
-    if (io) {
-      io.to(conversationId).emit("new_message", formattedMsg);
-    }
+    const formattedMsg = { id: msg.id, conversationId: msg.conversationId, senderId: msg.senderId, content: msg.content, status: msg.status, type: msg.type, metadata: msg.metadata, sentAt: msg.createdAt };
+    emitMessage(req, conversationId, formattedMsg);
 
     res.status(201).json(formattedMsg);
   } catch (error) {
@@ -337,29 +196,13 @@ const markAsRead = async (req, res) => {
     const { conversationId } = req.params;
 
     const isParticipant = await assertParticipant(userId, conversationId);
-    if (!isParticipant) {
-      return res.status(403).json({ message: "Not a participant of this conversation" });
-    }
+    if (!isParticipant) return res.status(403).json({ message: "Not a participant of this conversation" });
 
     await db.update(messages).set({ status: "read" })
-      .where(
-        and(
-          eq(messages.conversationId, conversationId),
-          ne(messages.senderId, userId),
-          ne(messages.status, 'read')
-        )
-      );
+      .where(and(eq(messages.conversationId, conversationId), ne(messages.senderId, userId), ne(messages.status, 'read')));
 
-    // Also mark notifications for this conversation as read
     await db.update(notifications).set({ isRead: true })
-      .where(
-        and(
-          eq(notifications.userId, userId),
-          eq(notifications.type, "message"),
-          eq(notifications.linkedEntityId, conversationId),
-          eq(notifications.isRead, false)
-        )
-      );
+      .where(and(eq(notifications.userId, userId), eq(notifications.type, "message"), eq(notifications.linkedEntityId, conversationId), eq(notifications.isRead, false)));
 
     res.json({ message: "Messages marked as read" });
   } catch (error) {
@@ -374,24 +217,14 @@ const deleteConversation = async (req, res) => {
     const { conversationId } = req.params;
 
     const isParticipant = await assertParticipant(userId, conversationId);
-    if (!isParticipant) {
-      return res.status(403).json({ message: "Not a participant of this conversation" });
-    }
+    if (!isParticipant) return res.status(403).json({ message: "Not a participant of this conversation" });
 
-    // Delete the participant entry for this user
     await db.delete(conversationParticipants)
-      .where(and(
-        eq(conversationParticipants.conversationId, conversationId),
-        eq(conversationParticipants.userId, userId)
-      ));
+      .where(and(eq(conversationParticipants.conversationId, conversationId), eq(conversationParticipants.userId, userId)));
 
-    // Check if there are any remaining participants in this conversation
-    const remaining = await db.select()
-      .from(conversationParticipants)
-      .where(eq(conversationParticipants.conversationId, conversationId));
+    const remaining = await db.select().from(conversationParticipants).where(eq(conversationParticipants.conversationId, conversationId));
 
     if (remaining.length === 0) {
-      // If no participants remain, delete the conversation and messages completely
       await db.delete(messages).where(eq(messages.conversationId, conversationId));
       await db.delete(conversations).where(eq(conversations.id, conversationId));
     }
@@ -403,11 +236,4 @@ const deleteConversation = async (req, res) => {
   }
 };
 
-module.exports = {
-  getConversations,
-  getMessages,
-  startConversation,
-  sendMessage,
-  markAsRead,
-  deleteConversation,
-};
+module.exports = { getConversations, getMessages, startConversation, sendMessage, markAsRead, deleteConversation };

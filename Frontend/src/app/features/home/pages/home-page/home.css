@@ -562,157 +562,37 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
-  justify-items: center;
 }
 
-.product-card {
-  background: linear-gradient(180deg, var(--dark-3) 0%, var(--dark-2) 100%);
-  border: 1.5px solid color-mix(in srgb, var(--white) 8%, transparent);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  transition: var(--transition);
-  cursor: pointer;
-  /* revealed by GSAP */
+.section-dark app-product-card {
+  display: flex;
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
+.section-dark .pc-home {
+  border-color: color-mix(in srgb, var(--yellow) 30%, transparent);
+}
+
+.section-dark .pc-home:hover {
   border-color: var(--yellow);
-  box-shadow: 0 12px 40px color-mix(in srgb, var(--yellow) 16%, transparent);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--yellow) 20%, transparent);
 }
 
-.product-img {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: var(--dark-3);
-}
-
-.product-real-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.product-card:hover .product-real-img {
-  transform: scale(1.08);
-}
-
-.product-body {
-  padding: 1rem 1.25rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.home-cond-badge {
+.section-dark .pc-home-featured .pc-home-img::after {
+  content: 'FEATURED';
   position: absolute;
-  bottom: 8px;
-  left: 8px;
-  z-index: 5;
-  border: 1.5px solid color-mix(in srgb, var(--white) 60%, transparent);
-  border-radius: 4px;
-  padding: 0.15rem 0.4rem;
-  font-family: var(--font-primary);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-}
-
-.home-cond-badge.cond-new {
-  background: color-mix(in srgb, var(--success) 85%, transparent);
-  color: var(--white);
-}
-.home-cond-badge.cond-used {
-  background: color-mix(in srgb, var(--gray-3) 85%, transparent);
-  color: var(--white);
-}
-
-.home-brand {
-  font-family: var(--font-primary);
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: color-mix(in srgb, var(--white) 40%, transparent);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.product-name {
-  font-size: 1rem;
-  color: var(--white);
-  margin: 0;
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-.home-tags-row {
-  display: flex;
-  gap: 0.3rem;
-  flex-wrap: wrap;
-}
-
-.home-tag {
-  padding: 0.1rem 0.4rem;
-  border: 1px solid color-mix(in srgb, var(--white) 15%, transparent);
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--white) 6%, transparent);
-  font-family: var(--font-primary);
-  font-weight: 700;
-  font-size: 0.6rem;
-  color: color-mix(in srgb, var(--white) 50%, transparent);
-  text-transform: uppercase;
-}
-
-.home-details-row {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: var(--font-secondary);
-  font-size: 0.7rem;
-  color: color-mix(in srgb, var(--white) 40%, transparent);
-  font-weight: 600;
-}
-
-.home-dot {
-  color: color-mix(in srgb, var(--white) 20%, transparent);
-}
-
-.home-price-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.4rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
-}
-
-.home-price-tag {
-  background: var(--yellow);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: linear-gradient(90deg, var(--yellow), #fbbf24);
   color: var(--black);
-  border: 1.5px solid var(--black);
-  border-radius: 4px;
-  padding: 0.2rem 0.5rem;
   font-family: var(--font-primary);
   font-weight: 900;
-  font-size: 0.9rem;
-}
-
-.home-view-link {
-  font-family: var(--font-primary);
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 0.25rem 0;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--yellow) 80%, transparent);
-  transition: color 0.2s;
-}
-
-.product-card:hover .home-view-link {
-  color: var(--yellow);
 }
 
 /* ===== 4. FEATURES ===== */
