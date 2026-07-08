@@ -22,6 +22,20 @@
       "when": 1783000000000,
       "tag": "0002_add_platform_fee",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783516908815,
+      "tag": "0003_aspiring_red_ghost",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783522166734,
+      "tag": "0004_odd_psynapse",
+      "breakpoints": true
     }
   ]
 }

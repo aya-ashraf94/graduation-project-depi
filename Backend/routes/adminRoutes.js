@@ -27,6 +27,10 @@ const {
     updateFlashSale,
     deleteFlashSale,
 } = require("../controllers/flashSaleController");
+const { adminGetRefundRequests, adminProcessRefund } = require("../controllers/refundController");
+const { adminSetFeaturedPrice } = require("../controllers/featuredController");
+const { adminCreateTier, adminUpdateTier, adminDeleteTier } = require("../controllers/tierController");
+const { getAutoPayoutSettings, updateAutoPayoutSettings, processAutoPayouts } = require("../controllers/payoutController");
 
 // Apply auth and admin middleware to all routes below
 router.use(authMiddleware);
@@ -59,5 +63,22 @@ router.get("/flash-sales", getAllFlashSales);
 router.post("/flash-sales", createFlashSale);
 router.patch("/flash-sales/:id", updateFlashSale);
 router.delete("/flash-sales/:id", deleteFlashSale);
+
+// Refund management
+router.get("/refunds", adminGetRefundRequests);
+router.put("/refunds/:id", adminProcessRefund);
+
+// Featured listings pricing
+router.put("/featured-prices", adminSetFeaturedPrice);
+
+// Seller tier management
+router.post("/tiers", adminCreateTier);
+router.put("/tiers/:id", adminUpdateTier);
+router.delete("/tiers/:id", adminDeleteTier);
+
+// Auto-payout settings
+router.get("/auto-payout", getAutoPayoutSettings);
+router.put("/auto-payout", updateAutoPayoutSettings);
+router.post("/auto-payout/process", processAutoPayouts);
 
 module.exports = router;

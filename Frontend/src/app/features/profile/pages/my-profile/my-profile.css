@@ -1587,6 +1587,18 @@
   box-shadow: 4.5px 4.5px 0 var(--black);
 }
 
+.btn-order-refund {
+  background: #fef3c7;
+  color: #92400e;
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.btn-order-refund:hover {
+  background: #fde68a;
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4.5px 4.5px 0 var(--black);
+}
+
 .btn-order-confirm {
   background: var(--success);
   color: var(--white);
@@ -2382,6 +2394,18 @@
   background: var(--danger);
 }
 
+.btn-card-action.btn-promote {
+  background: #ec4899;
+  color: white;
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.btn-card-action.btn-promote:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3.5px 3.5px 0 var(--black);
+  background: #db2777;
+}
+
 .btn-card-action:active {
   transform: translate(1px, 1px);
   box-shadow: 1px 1px 0 var(--black);
@@ -2927,6 +2951,307 @@
     padding: 0.25rem 1rem 0.75rem;
   }
 }
+
+/* ===== WALLET & PAYOUT SYSTEM ===== */
+.wallet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem 0;
+}
+
+.wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.wallet-card {
+  background: var(--white);
+  border: 3px solid var(--black);
+  border-radius: var(--radius-md);
+  box-shadow: 6px 6px 0 var(--black);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.wallet-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--black);
+}
+
+.tier-option {
+  border: 2px solid var(--black) !important;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tier-option:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--black);
+  background: #f8fafc;
+}
+
+.tier-option.selected {
+  background: #dbeafe;
+  border-color: #2563eb !important;
+  box-shadow: 3px 3px 0 #2563eb;
+}
+
+.wallet-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-icon {
+  font-size: 1.5rem;
+}
+
+.card-label {
+  font-family: var(--font-primary);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: var(--gray-3);
+  letter-spacing: 0.05em;
+}
+
+.card-value {
+  font-family: var(--font-primary);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--black);
+  margin-bottom: 0.5rem;
+}
+
+.card-helper {
+  font-size: 0.8rem;
+  color: var(--gray-2);
+  margin: 0;
+}
+
+/* Curated Card Highlights */
+.card-withdrawable {
+  background: var(--success-light);
+}
+.card-pending {
+  background: var(--surface-2);
+}
+.card-lifetime {
+  background: var(--yellow-light, #fffae6);
+}
+
+/* Actions Grid */
+.wallet-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 2rem;
+}
+
+@media (max-width: 992px) {
+  .wallet-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payout-form-card,
+.payout-history-card {
+  background: var(--white);
+  border: 3px solid var(--black);
+  border-radius: var(--radius-md);
+  box-shadow: 6px 6px 0 var(--black);
+  padding: 1.75rem;
+}
+
+.form-card-title {
+  font-family: var(--font-primary);
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 0 0 0.25rem 0;
+  color: var(--black);
+}
+
+.form-card-subtitle {
+  font-size: 0.85rem;
+  color: var(--gray-3);
+  margin: 0 0 1.5rem 0;
+}
+
+.form-group-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-group-v2 label {
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.neo-input,
+.neo-select,
+.neo-textarea {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  border: 3px solid var(--black);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  background: var(--white);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neo-input:focus,
+.neo-select:focus,
+.neo-textarea:focus {
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.btn-neo-action {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  background: var(--black);
+  color: var(--yellow);
+  border: 3px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--black);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-neo-action:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--black);
+  background: var(--yellow);
+  color: var(--black);
+}
+
+.btn-neo-action:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.btn-neo-action:disabled {
+  background: var(--surface-3);
+  color: var(--gray-2);
+  border-color: var(--gray-2);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Neo Table Style */
+.payouts-table-container {
+  overflow-x: auto;
+  border: 3px solid var(--black);
+  border-radius: var(--radius-sm);
+}
+
+.neo-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.neo-table th {
+  background: var(--surface-2);
+  border-bottom: 3px solid var(--black);
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem;
+  color: var(--gray-3);
+}
+
+.neo-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 2px solid var(--black);
+  font-size: 0.85rem;
+  color: var(--black);
+}
+
+.neo-table tr:last-child td {
+  border-bottom: none;
+}
+
+.method-badge {
+  background: var(--surface-3);
+  color: var(--black);
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+}
+
+/* Status Badges */
+.status-badge-v2 {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  border: 2.5px solid var(--black);
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-badge-v2.pending {
+  background: #fff8e6;
+  color: #b27b00;
+}
+
+.status-badge-v2.approved {
+  background: var(--success-light);
+  color: var(--success-dark);
+}
+
+.status-badge-v2.rejected {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.payouts-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  border: 2.5px dashed var(--gray-2);
+  border-radius: var(--radius-sm);
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.payouts-empty p {
+  font-size: 0.9rem;
+  color: var(--gray-2);
+  margin: 0;
+}
+
 
 
 

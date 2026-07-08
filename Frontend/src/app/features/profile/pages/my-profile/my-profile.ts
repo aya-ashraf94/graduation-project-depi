@@ -9,6 +9,10 @@ import { WishlistService } from '../../../../core/services/wishlist.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { UserService } from '../../../../core/services/user.service';
 import { OrderService } from '../../../../core/services/order.service';
+import { WalletService, WalletStats, PayoutRequest } from '../../../../core/services/wallet.service';
+import { RefundService } from '../../../../core/services/refund.service';
+import { FeaturedService } from '../../../../core/services/featured.service';
+import { TierService, SubscriptionInfo } from '../../../../core/services/tier.service';
 
 import { User } from '../../../../core/models/user.model';
 import { ProductSummary } from '../../../../core/models/product.model';
@@ -40,11 +44,15 @@ export class MyProfile implements OnInit, AfterViewInit {
   private reviewService = inject(ReviewService);
   private userService = inject(UserService);
   private orderService = inject(OrderService);
+  private walletService = inject(WalletService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private location = inject(Location);
   private toastService = inject(ToastService);
+  private refundService = inject(RefundService);
+  private featuredService = inject(FeaturedService);
+  private tierService = inject(TierService);
 
   @ViewChild('tabsSection') tabsSection!: ElementRef;
 
@@ -61,8 +69,43 @@ export class MyProfile implements OnInit, AfterViewInit {
   reviewedOrderIds: Set<string> = new Set();
   dismissedOrderIds: Set<string> = new Set();
   expandedOrderIds: Set<string> = new Set();
-  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' = 'products';
+  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'wallet' = 'products';
   blockedUsers: any[] = [];
+
+  // Wallet / Payout states
+  walletStats: WalletStats | null = null;
+  payoutsList: PayoutRequest[] = [];
+  payoutForm = {
+    amount: 0,
+    paymentMethod: 'bank_transfer',
+    paymentDetails: '',
+  };
+  requestingPayout = false;
+
+  // Refund state
+  showRefundModal = false;
+  selectedOrderForRefund: OrderSummary | null = null;
+  refundReason = '';
+  refundDetails = '';
+  submittingRefund = false;
+
+  // Subscription state
+  subscriptionInfo: SubscriptionInfo | null = null;
+  availableTiers: any[] = [];
+  showTierModal = false;
+  selectedTierId = '';
+  selectedBillingCycle: 'monthly' | 'yearly' = 'monthly';
+  subscribing = false;
+
+  // Featured/Promote state
+  showPromoteModal = false;
+  selectedProductForPromote: ProductSummary | null = null;
+  featuredPrices: { [key: number]: number } = { 2: 5, 7: 12, 14: 20 };
+  selectedDuration = 7;
+  promoting = false;
+  myFeaturedListings: any[] = [];
+  showMyFeatured = false;
+
   isViewerBlocked = false;
   isPartnerBlockedByMe = false;
   orderView: 'purchases' | 'sales' = 'purchases';
@@ -298,8 +341,11 @@ export class MyProfile implements OnInit, AfterViewInit {
     // Handle Tabs (reading from query params)
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked') {
+      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked' || tab === 'wallet') {
         this.activeTab = tab;
+        if (tab === 'wallet') {
+          this.loadWalletData();
+        }
         if (tab === 'blocked') {
           this.loadBlockedUsers();
         }
@@ -611,12 +657,15 @@ export class MyProfile implements OnInit, AfterViewInit {
     }
   }
 
-  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked'): void {
+  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'wallet'): void {
     this.activeTab = tab;
     this.currentPage = 1; // Reset products page on tab switch
     this.showAllListingsMobile = false; // Reset slider expansion
     if (tab === 'blocked') {
       this.loadBlockedUsers();
+    }
+    if (tab === 'wallet') {
+      this.loadWalletData();
     }
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
@@ -625,6 +674,192 @@ export class MyProfile implements OnInit, AfterViewInit {
     }).toString();
     this.location.go(url);
     this.scrollToTabsSectionDirectly();
+  }
+
+  loadWalletData() {
+    if (!this.isOwnProfile) return;
+    this.walletService.getWalletStats().subscribe({
+      next: (stats) => {
+        this.walletStats = stats;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error loading wallet stats:', err)
+    });
+    this.walletService.getPayouts().subscribe({
+      next: (list) => {
+        this.payoutsList = list;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error loading payouts:', err)
+    });
+    this.loadSubscriptionData();
+  }
+
+  submitPayoutRequest() {
+    if (!this.payoutForm.amount || this.payoutForm.amount <= 0) {
+      this.toastService.error('Please enter a valid amount');
+      return;
+    }
+    if (!this.payoutForm.paymentDetails.trim()) {
+      this.toastService.error('Please enter payout destination details');
+      return;
+    }
+    if (this.walletStats && this.payoutForm.amount > this.walletStats.balance) {
+      this.toastService.error('Insufficient balance');
+      return;
+    }
+
+    this.requestingPayout = true;
+    this.walletService.requestPayout(
+      this.payoutForm.amount,
+      this.payoutForm.paymentMethod,
+      this.payoutForm.paymentDetails
+    ).subscribe({
+      next: (res) => {
+        this.toastService.success('Payout request submitted successfully!');
+        this.payoutForm.amount = 0;
+        this.payoutForm.paymentDetails = '';
+        this.requestingPayout = false;
+        this.loadWalletData();
+      },
+      error: (err) => {
+        console.error('Error submitting payout:', err);
+        this.toastService.error(err?.error?.message || 'Failed to submit payout request');
+        this.requestingPayout = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Refund Methods ─────────────────────────────────────────────
+  openRefundModal(order: OrderSummary) {
+    this.selectedOrderForRefund = order;
+    this.refundReason = '';
+    this.refundDetails = '';
+    this.showRefundModal = true;
+  }
+
+  closeRefundModal() {
+    this.showRefundModal = false;
+    this.selectedOrderForRefund = null;
+  }
+
+  submitRefund() {
+    if (!this.selectedOrderForRefund || !this.refundReason.trim()) {
+      this.toastService.error('Please provide a reason for the refund');
+      return;
+    }
+    this.submittingRefund = true;
+    this.refundService.requestRefund(this.selectedOrderForRefund.id, this.refundReason, this.refundDetails).subscribe({
+      next: () => {
+        this.toastService.success('Refund request submitted! Admin will review it.');
+        this.closeRefundModal();
+        this.submittingRefund = false;
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to submit refund request');
+        this.submittingRefund = false;
+      }
+    });
+  }
+
+  // ── Tier/Subscription Methods ──────────────────────────────────
+  loadSubscriptionData() {
+    this.tierService.getMySubscription().subscribe({
+      next: (info) => { this.subscriptionInfo = info; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+    this.tierService.getActiveTiers().subscribe({
+      next: (tiers) => { this.availableTiers = tiers; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+  }
+
+  openTierModal() {
+    this.selectedTierId = '';
+    this.selectedBillingCycle = 'monthly';
+    this.showTierModal = true;
+  }
+
+  closeTierModal() {
+    this.showTierModal = false;
+  }
+
+  get selectedTierDetails(): any {
+    return this.availableTiers.find(t => t.id === this.selectedTierId) || null;
+  }
+
+  subscribeToTier() {
+    if (!this.selectedTierId) return;
+    this.subscribing = true;
+    this.tierService.subscribe(this.selectedTierId, this.selectedBillingCycle).subscribe({
+      next: () => {
+        this.toastService.success('Subscription activated!');
+        this.closeTierModal();
+        this.loadSubscriptionData();
+        this.loadWalletData();
+        this.subscribing = false;
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Subscription failed');
+        this.subscribing = false;
+      }
+    });
+  }
+
+  cancelSubscription() {
+    this.tierService.cancelSubscription().subscribe({
+      next: () => {
+        this.toastService.success('Subscription cancelled');
+        this.loadSubscriptionData();
+      },
+      error: (err) => this.toastService.error(err?.error?.message || 'Failed to cancel')
+    });
+  }
+
+  // ── Featured/Promote Methods ───────────────────────────────────
+  openPromoteModal(product: ProductSummary) {
+    this.selectedProductForPromote = product;
+    this.selectedDuration = 7;
+    this.promoting = false;
+    this.featuredService.getPrices().subscribe({
+      next: (prices) => { this.featuredPrices = prices; },
+      error: () => {}
+    });
+    this.showPromoteModal = true;
+  }
+
+  closePromoteModal() {
+    this.showPromoteModal = false;
+    this.selectedProductForPromote = null;
+  }
+
+  get promoteCost(): number {
+    return this.featuredPrices[this.selectedDuration] || 0;
+  }
+
+  promoteProduct() {
+    if (!this.selectedProductForPromote) return;
+    this.promoting = true;
+    this.featuredService.promoteProduct(this.selectedProductForPromote.id, this.selectedDuration).subscribe({
+      next: () => {
+        this.toastService.success(`Product promoted for ${this.selectedDuration} days!`);
+        this.closePromoteModal();
+        this.loadWalletData();
+        this.promoting = false;
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to promote product');
+        this.promoting = false;
+      }
+    });
+  }
+
+  loadMyFeatured() {
+    this.featuredService.getMyFeaturedListings().subscribe({
+      next: (list) => { this.myFeaturedListings = list; this.showMyFeatured = true; this.cdr.detectChanges(); },
+      error: () => this.toastService.error('Failed to load featured listings')
+    });
   }
 
   loadBlockedUsers() {

@@ -4,8 +4,11 @@ let pool;
 
 const getPool = () => {
   if (!pool) {
+    const rawUrl = process.env.DATABASE_URL;
+    const connectionString = rawUrl ? rawUrl.replace(/\?sslmode=\w+/, '') : rawUrl;
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString,
+      ssl: { rejectUnauthorized: false },
     });
   }
   return pool;

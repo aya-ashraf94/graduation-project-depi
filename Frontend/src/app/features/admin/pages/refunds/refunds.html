@@ -1,0 +1,140 @@
+<div class="admin-orders-container">
+  <header class="admin-topbar">
+    <div class="topbar-welcome">
+      <h2>Refund & Dispute Requests</h2>
+      <p>Review and process buyer refund requests for online payments.</p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <app-admin-loader message="Loading refund requests..."></app-admin-loader>
+  } @else if (errorMessage()) {
+    <app-admin-error-panel [message]="errorMessage()" (retry)="loadRefunds()"></app-admin-error-panel>
+  } @else {
+    <div class="orders-table-card">
+      <div class="table-card-header">
+        <div class="header-filters">
+          <div class="filter-group">
+            <label for="refund-status-filter">Filter:</label>
+            <select id="refund-status-filter" [(ngModel)]="filterStatus" class="filter-select">
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <div class="total-badge">
+          Pending: <strong>{{ refunds().filter(r => r.status === 'pending').length }}</strong>
+        </div>
+      </div>
+
+      @if (filteredRefunds.length === 0) {
+        <div class="empty-box">
+          <span class="empty-emoji">🛡️</span>
+          <p class="empty-title">No refund requests</p>
+          <p class="empty-sub">All transactions are running smoothly.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Product</th>
+                <th>Buyer</th>
+                <th>Amount</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (refund of filteredRefunds; track refund.id) {
+                <tr>
+                  <td>{{ refund.createdAt | date:'mediumDate' }}</td>
+                  <td>
+                    @if (refund.product) {
+                      <a [routerLink]="['/products', refund.product.id]" class="product-link">
+                        {{ refund.product.title || 'Product' }}
+                      </a>
+                    } @else {
+                      <span class="deleted-label">[Deleted]</span>
+                    }
+                  </td>
+                  <td>
+                    @if (refund.buyer) {
+                      <a [routerLink]="['/profile', refund.buyer.id]">{{ refund.buyer.name }}</a>
+                    } @else {
+                      <span>—</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="payout-amount">{{ refund.order?.price | currencyFormat }}</span>
+                  </td>
+                  <td>
+                    <div class="details-wrap" [title]="refund.details || refund.reason">
+                      {{ refund.reason }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge-v2" [ngClass]="refund.status">
+                      {{ getStatusLabel(refund.status) | uppercase }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (refund.status === 'pending') {
+                      <div class="actions-buttons">
+                        <button type="button" class="btn-action-brutal btn-approve" (click)="openProcessModal(refund, 'approved')">
+                          Approve
+                        </button>
+                        <button type="button" class="btn-action-brutal btn-reject" (click)="openProcessModal(refund, 'rejected')">
+                          Reject
+                        </button>
+                      </div>
+                    } @else if (refund.resolution) {
+                      <span class="processed-time">{{ refund.resolution }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (modalState().show) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ modalState().action === 'approved' ? 'Approve' : 'Reject' }} Refund</h3>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Reason:</strong> {{ modalState().refund?.reason }}</p>
+        @if (modalState().refund?.details) {
+          <p><strong>Details:</strong> {{ modalState().refund?.details }}</p>
+        }
+        <p><strong>Amount:</strong> ${{ modalState().refund?.order?.price }}</p>
+        <div class="form-group">
+          <label for="resolution">Resolution Notes (optional):</label>
+          <textarea id="resolution" [(ngModel)]="modalState().resolution" rows="3" class="form-control mt-1" placeholder="Explain the decision..."></textarea>
+        </div>
+        @if (modalState().action === 'approved') {
+          <div class="warning-box">
+            ⚠️ This will cancel the order, return the product to active listings, and deduct the amount from the seller's balance.
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+        <button class="btn-confirm" [ngClass]="modalState().action === 'approved' ? 'btn-approve' : 'btn-reject'" (click)="processRefund()">
+          {{ modalState().action === 'approved' ? '✓ Approve Refund' : '✕ Reject Refund' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

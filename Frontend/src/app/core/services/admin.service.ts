@@ -31,7 +31,7 @@ export interface DashboardData {
     newUsers7d: number;
     pendingVerifications: number;
   };
-  revenueHistory: { date: string; revenue: number }[];
+  revenueHistory: { date: string; revenue: number; gross?: number; platformFees?: number }[];
   recentOrders: {
     id: string;
     productTitle: string;
@@ -44,6 +44,8 @@ export interface DashboardData {
   topCategories: { name: string; productCount: number; percentage: number }[];
   pendingApprovals: { unverifiedProducts: number; unverifiedUsers: number };
   flashSaleStats: { activeSales: number; totalDiscountGiven: number };
+  refundStats?: { pendingRefunds: number };
+  featuredStats?: { activeFeatured: number };
 }
 
 export interface PaginatedUsers {

@@ -530,44 +530,19 @@
               <label style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--black); letter-spacing: 0.05em;">Payment Method</label>
               <div class="checkout-payment-methods">
                 <label class="pay-option" [class.active]="paymentMethod === 'cash_on_delivery'">
-                  <input type="radio" name="payMethod" value="cash_on_delivery" [(ngModel)]="paymentMethod" />
+                  <input type="radio" name="payMethod" value="cash_on_delivery" [(ngModel)]="paymentMethod" (ngModelChange)="onPaymentMethodChange($event)" />
                   <span class="pay-icon">💵</span>
                   <span class="pay-label">Cash on Delivery</span>
                 </label>
-                <label class="pay-option" [class.active]="paymentMethod === 'credit_card'">
-                  <input type="radio" name="payMethod" value="credit_card" [(ngModel)]="paymentMethod" />
+                <label class="pay-option" [class.active]="paymentMethod === 'online'">
+                  <input type="radio" name="payMethod" value="online" [(ngModel)]="paymentMethod" (ngModelChange)="onPaymentMethodChange($event)" />
                   <span class="pay-icon">💳</span>
-                  <span class="pay-label">Credit Card</span>
+                  <span class="pay-label">Pay Online (Card)</span>
                 </label>
               </div>
-            </div>
-
-            <!-- Credit Card Details -->
-            <div class="credit-card-section" [class.visible]="paymentMethod === 'credit_card'">
-              <div class="card-preview">
-                <div class="card-chip"></div>
-                <div class="card-number-display">{{ cardNumber || '•••• •••• •••• ••••' }}</div>
-                <div class="card-bottom-row">
-                  <div class="card-holder-display">
-                    <span class="card-field-label">Cardholder</span>
-                    <span class="card-field-value">{{ cardHolderName || 'Your Name' }}</span>
-                  </div>
-                  <div class="card-expiry-display">
-                    <span class="card-field-label">Expires</span>
-                    <span class="card-field-value">{{ cardExpiry || 'MM/YY' }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="card-inputs">
-                <div class="card-input-row">
-                  <input type="text" [(ngModel)]="cardNumber" name="cardNumber" placeholder="Card Number" maxlength="19" class="card-input card-input-full" (ngModelChange)="formatCardNumber()" inputmode="numeric" />
-                </div>
-                <div class="card-input-row card-input-row-3">
-                  <input type="text" [(ngModel)]="cardHolderName" name="cardHolderName" placeholder="Cardholder Name" class="card-input" />
-                  <input type="text" [(ngModel)]="cardExpiry" name="cardExpiry" placeholder="MM/YY" maxlength="5" class="card-input card-input-sm" (ngModelChange)="formatCardExpiry()" inputmode="numeric" />
-                  <input type="text" [(ngModel)]="cardCvv" name="cardCvv" placeholder="CVV" maxlength="4" class="card-input card-input-sm" inputmode="numeric" />
-                </div>
-              </div>
+              <!-- Stripe Card Element -->
+              <div *ngIf="paymentMethod === 'online'" #cardElementContainer
+                style="padding: 0.65rem; border: 1.5px solid var(--black); border-radius: 6px; background: var(--white); margin-top: 0.3rem; min-height: 40px;"></div>
             </div>
 
             <!-- Shipping Address (compact) -->
@@ -664,7 +639,7 @@
             <div style="border: 2px solid var(--black); border-radius: 8px; padding: 0.6rem 0.75rem;">
               <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1.5px solid var(--border);">
                 <span style="font-size: 0.9rem;">🔒</span>
-                <span style="font-family: var(--font-secondary); font-size: 0.65rem; color: var(--gray-3);">Secure checkout</span>
+                <span style="font-family: var(--font-secondary); font-size: 0.65rem; color: var(--gray-3);">{{ paymentMethod === 'online' ? 'Pay securely with Stripe' : 'Secure checkout' }}</span>
               </div>
               <label style="font-family: var(--font-primary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--gray-3); letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Notes</label>
               <input type="text" [(ngModel)]="orderNotes" name="orderNotes" placeholder="e.g. Call before delivery"
@@ -682,7 +657,7 @@
           <button type="submit" [disabled]="buyLoading || !shippingCity || !shippingStreet"
             style="padding: 0.7rem 2rem; background: var(--yellow); color: var(--black); border: 2px solid var(--black); border-radius: 8px; font-family: var(--font-primary); font-size: 0.85rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 4px 4px 0 var(--black); transition: all 0.12s ease; letter-spacing: 0.04em;"
             onmouseover="this.style.transform='translate(-2px,-2px)'; this.style.boxShadow='6px 6px 0 var(--black)'; this.style.background='var(--yellow-dark)'"
-            onmouseout="this.style.transform='none'; this.style.boxShadow='4px 4px 0 var(--black)'; this.style.background='var(--yellow)'">{{ buyLoading ? 'Placing Order...' : 'Place Order' }}</button>
+            onmouseout="this.style.transform='none'; this.style.boxShadow='4px 4px 0 var(--black)'; this.style.background='var(--yellow)'">{{ buyLoading ? (paymentMethod === 'online' ? 'Processing Payment...' : 'Placing Order...') : (paymentMethod === 'online' ? 'Pay with Card' : 'Place Order') }}</button>
         </div>
       </form>
     </div>

@@ -176,6 +176,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/pages/flash-sales/flash-sales').then((m) => m.AdminFlashSales),
       },
+      {
+        path: 'payouts',
+        loadComponent: () =>
+          import('./features/admin/pages/payouts/payouts').then((m) => m.AdminPayouts),
+      },
+      {
+        path: 'refunds',
+        loadComponent: () =>
+          import('./features/admin/pages/refunds/refunds').then((m) => m.AdminRefunds),
+      },
+      {
+        path: 'tiers',
+        loadComponent: () =>
+          import('./features/admin/pages/tiers/tiers').then((m) => m.AdminTiers),
+      },
     ],
   },
 

@@ -1,0 +1,169 @@
+.admin-orders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.orders-table-card {
+  background-color: var(--white);
+  border: 3px solid var(--black);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0 var(--black);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th {
+  padding: 0.85rem 1.25rem;
+  font-family: var(--font-primary);
+  font-weight: 850;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--gray-3);
+  background-color: var(--surface-2);
+  border-bottom: 3px solid var(--black);
+  letter-spacing: 0.05em;
+}
+
+.admin-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid var(--black);
+  font-size: 0.85rem;
+  color: var(--black);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge-v2 {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  border: 2px solid var(--black);
+  border-radius: 99px;
+  display: inline-flex;
+}
+
+.status-badge-v2.pending { background: #fff8e6; color: #b27b00; }
+.status-badge-v2.approved { background: var(--success-light); color: var(--success-dark); }
+.status-badge-v2.rejected { background: var(--danger-light); color: var(--danger); }
+
+.actions-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-action-brutal {
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.btn-approve {
+  background: var(--success);
+  color: var(--black);
+}
+.btn-approve:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.btn-reject {
+  background: var(--danger);
+  color: var(--white);
+}
+.btn-reject:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.empty-box { text-align: center; padding: 3rem 1rem; }
+.empty-emoji { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+.empty-title { font-size: 1.2rem; font-weight: 700; margin: 0; }
+.empty-sub { color: #666; margin: 0.25rem 0 0; }
+
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.topbar-welcome h2 {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  font-size: 1.8rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.topbar-welcome p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--gray-3);
+}
+
+.btn-primary {
+  padding: 0.5rem 1.25rem;
+  background: #2563eb;
+  color: #fff;
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 2px 2px 0 var(--black);
+  transition: all 0.1s;
+}
+
+.btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex;
+  align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-content {
+  background: #fff; border-radius: 12px; max-width: 560px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid #e5e7eb;
+}
+.modal-header h3 { margin: 0; }
+.modal-close { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #666; }
+.modal-body { padding: 1.5rem; overflow-y: auto; max-height: 60vh; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;
+}
+.btn-cancel { padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; }
+.form-group { margin-bottom: 0.75rem; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; color: #374151; }
+.form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; box-sizing: border-box; }
+.form-row { display: flex; gap: 1rem; }
+.form-row .form-group { flex: 1; }

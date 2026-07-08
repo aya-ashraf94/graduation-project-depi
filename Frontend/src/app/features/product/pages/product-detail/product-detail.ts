@@ -1,8 +1,11 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, inject, ChangeDetectorRef, signal, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
@@ -19,6 +22,8 @@ import { ProductCardComponent } from '../../../../shared/components/product-card
 import { AuthRequiredModalComponent } from '../../../../shared/components/auth-required-modal/auth-required-modal';
 import { CountdownTimerService } from '../../../../core/services/countdown-timer.service';
 
+declare const Stripe: any;
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -27,7 +32,7 @@ import { CountdownTimerService } from '../../../../core/services/countdown-timer
   styleUrl: './product-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductDetail implements OnInit, OnDestroy {
+export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -40,6 +45,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private timerService = inject(CountdownTimerService);
   private sanitizer = inject(DomSanitizer);
+  private http = inject(HttpClient);
 
   get mapUrl(): SafeResourceUrl | null {
     if (!this.product?.location) return null;
@@ -171,11 +177,11 @@ export class ProductDetail implements OnInit, OnDestroy {
   buySuccess = signal<string | null>(null);
   buyError = signal<string | null>(null);
 
-  // Credit Card fields
-  cardNumber = '';
-  cardExpiry = '';
-  cardCvv = '';
-  cardHolderName = '';
+  @ViewChild('cardElementContainer') cardElementContainer?: ElementRef;
+
+  private stripe: any = null;
+  private cardElement: any = null;
+  private elements: any = null;
 
   // Coupon State
   couponCode = '';
@@ -467,6 +473,50 @@ export class ProductDetail implements OnInit, OnDestroy {
     this.showReportModal = false;
   }
 
+  ngAfterViewInit(): void {
+    if (typeof Stripe !== 'undefined') {
+      this.stripe = Stripe(environment.stripePublishableKey);
+    }
+    if (this.paymentMethod === 'online') {
+      setTimeout(() => this.mountCardElement());
+    }
+  }
+
+  onPaymentMethodChange(method: 'cash_on_delivery' | 'online'): void {
+    this.paymentMethod = method;
+    if (method === 'online') {
+      setTimeout(() => this.mountCardElement());
+    } else {
+      this.destroyCardElement();
+    }
+  }
+
+  private mountCardElement(): void {
+    if (!this.stripe || !this.cardElementContainer) return;
+    this.destroyCardElement();
+    this.elements = this.stripe.elements();
+    this.cardElement = this.elements.create('card', {
+      style: {
+        base: {
+          fontSize: '14px',
+          fontFamily: 'Inter, sans-serif',
+          color: '#000',
+          '::placeholder': { color: '#999' }
+        }
+      }
+    });
+    this.cardElement.mount(this.cardElementContainer.nativeElement);
+    this.cdr.detectChanges();
+  }
+
+  private destroyCardElement(): void {
+    if (this.cardElement) {
+      this.cardElement.destroy();
+      this.cardElement = null;
+      this.elements = null;
+    }
+  }
+
   openBuy(): void {
     this.executeAuthorizedAction(() => {
       // Refresh product data so stale flash sale prices don't carry over
@@ -479,6 +529,7 @@ export class ProductDetail implements OnInit, OnDestroy {
         });
       }
 
+      this.destroyCardElement();
       this.showBuyModal = true;
       this.paymentMethod = 'cash_on_delivery';
       this.shippingCity = '';
@@ -489,10 +540,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       this.buyLoading = false;
       this.buySuccess.set(null);
       this.buyError.set(null);
-      this.cardNumber = '';
-      this.cardExpiry = '';
-      this.cardCvv = '';
-      this.cardHolderName = '';
 
       // Reset coupon state
       this.couponCode = '';
@@ -504,6 +551,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   }
 
   closeBuy(): void {
+    this.destroyCardElement();
     this.showBuyModal = false;
     if (this.checkoutTimerId) {
       clearInterval(this.checkoutTimerId);
@@ -528,6 +576,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyCardElement();
     if (this.checkoutTimerId) {
       clearInterval(this.checkoutTimerId);
     }
@@ -561,23 +610,6 @@ export class ProductDetail implements OnInit, OnDestroy {
     });
   }
 
-  formatCardNumber(): void {
-    const cleaned = this.cardNumber.replace(/\D/g, '');
-    const groups: string[] = [];
-    for (let i = 0; i < cleaned.length && groups.length < 4; i += 4) {
-      groups.push(cleaned.substring(i, i + 4));
-    }
-    this.cardNumber = groups.join(' ').trim();
-  }
-
-  formatCardExpiry(): void {
-    let val = this.cardExpiry.replace(/\D/g, '');
-    if (val.length >= 2) {
-      val = val.substring(0, 2) + '/' + val.substring(2, 4);
-    }
-    this.cardExpiry = val;
-  }
-
   removeCoupon(): void {
     this.couponCode = '';
     this.appliedCoupon = false;
@@ -593,48 +625,27 @@ export class ProductDetail implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.paymentMethod === 'credit_card') {
-      const num = this.cardNumber.replace(/\s/g, '');
-      if (!num || num.length < 13) {
-        this.buyError.set('Please enter a valid card number');
-        return;
-      }
-      if (!this.cardExpiry || !/^\d{2}\/\d{2}$/.test(this.cardExpiry)) {
-        this.buyError.set('Please enter a valid expiry date (MM/YY)');
-        return;
-      }
-      if (!this.cardCvv || this.cardCvv.length < 3) {
-        this.buyError.set('Please enter a valid CVV');
-        return;
-      }
-      if (!this.cardHolderName.trim()) {
-        this.buyError.set('Please enter the cardholder name');
-        return;
-      }
+    if (this.paymentMethod === 'online') {
+      this.handleOnlinePayment(addrParts);
+    } else {
+      this.handleCashOnDelivery(addrParts);
     }
+  }
 
+  private handleCashOnDelivery(addrParts: string[]): void {
     this.buyLoading = true;
     this.buyError.set(null);
     this.buySuccess.set(null);
 
     const payload: any = {
-      productId: this.product.id,
-      paymentMethod: this.paymentMethod,
+      productId: this.product!.id,
+      paymentMethod: 'cash_on_delivery',
       shippingAddress: addrParts.join(', '),
       notes: this.orderNotes,
       price: this.effectivePrice,
       couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
       offerId: this.route.snapshot.queryParams['offerId'] || undefined
     };
-
-    if (this.paymentMethod === 'credit_card') {
-      payload.cardDetails = {
-        cardNumber: this.cardNumber.replace(/\s/g, ''),
-        cardExpiry: this.cardExpiry,
-        cardCvv: this.cardCvv,
-        cardHolderName: this.cardHolderName.trim()
-      };
-    }
 
     this.orderService.createOrder(payload).subscribe({
       next: (order) => {
@@ -653,5 +664,72 @@ export class ProductDetail implements OnInit, OnDestroy {
         this.buyError.set(err?.error?.message || 'Failed to place order. Please try again.');
       }
     });
+  }
+
+  private async handleOnlinePayment(addrParts: string[]): Promise<void> {
+    this.buyLoading = true;
+    this.buyError.set(null);
+    this.buySuccess.set(null);
+
+    if (!this.stripe || !this.cardElement) {
+      this.buyLoading = false;
+      this.buyError.set('Payment system not initialized. Please try again.');
+      return;
+    }
+
+    const productId = this.product!.id;
+
+    const payload = {
+      productId,
+      shippingAddress: addrParts.join(', '),
+      notes: this.orderNotes,
+      couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
+      offerId: this.route.snapshot.queryParams['offerId'] || undefined
+    };
+
+    try {
+      const intentRes = await firstValueFrom(
+        this.http.post<{ clientSecret: string }>(`${environment.apiUrl}/payments/create-payment-intent`, payload)
+      );
+
+      const { error, paymentIntent } = await this.stripe.confirmCardPayment(intentRes.clientSecret, {
+        payment_method: { card: this.cardElement }
+      });
+
+      if (error) {
+        this.buyLoading = false;
+        this.buyError.set(error.message || 'Payment failed. Please try again.');
+        return;
+      }
+
+      if (paymentIntent.status !== 'succeeded') {
+        this.buyLoading = false;
+        this.buyError.set(`Payment ${paymentIntent.status}. Please try again.`);
+        return;
+      }
+
+      // Payment succeeded — create the order immediately
+      try {
+        await firstValueFrom(
+          this.http.post(`${environment.apiUrl}/payments/confirm-payment`, {
+            paymentIntentId: paymentIntent.id
+          })
+        );
+        this.buyLoading = false;
+        this.buySuccess.set('Payment successful! Order placed.');
+        if (this.product) {
+          this.product.status = 'sold';
+        }
+        this.offerService.activeReservation.set(null);
+        this.cdr.detectChanges();
+        setTimeout(() => this.closeBuy(), 2500);
+      } catch (err: any) {
+        this.buyLoading = false;
+        this.buyError.set(err?.error?.message || 'Order creation failed. Please contact support.');
+      }
+    } catch (err: any) {
+      this.buyLoading = false;
+      this.buyError.set(err?.message || 'Failed to process payment.');
+    }
   }
 }

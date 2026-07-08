@@ -75,6 +75,22 @@
             <span class="stats-strip-val" [class.text-red]="d.stats.pendingVerifications > 0">{{ d.stats.pendingVerifications }}</span>
           </div>
         </div>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="stats-strip-icon">🛡️</span>
+          <div>
+            <span class="stats-strip-label">Pending Refunds</span>
+            <span class="stats-strip-val" [class.text-red]="(d.refundStats?.pendingRefunds || 0) > 0">{{ d.refundStats?.pendingRefunds || 0 }}</span>
+          </div>
+        </div>
+        <div class="stats-strip-divider"></div>
+        <div class="stats-strip-item">
+          <span class="stats-strip-icon">⭐</span>
+          <div>
+            <span class="stats-strip-label">Featured Listings</span>
+            <span class="stats-strip-val">{{ d.featuredStats?.activeFeatured || 0 }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- ── DASHBOARD GRID ───────────────────────────────── -->

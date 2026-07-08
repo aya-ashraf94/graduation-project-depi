@@ -4,7 +4,7 @@ const { createNotification } = require("../utils/notifications");
 const { eq, or, and, desc, sql } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { updateUserStats } = require("../utils/userStats");
-const { loadActivePromotions, calculateCheckoutPrice, loadPlatformFeePercent, calculatePlatformFee } = require("../utils/discountEngine");
+const { loadActivePromotions, calculateCheckoutPrice, loadPlatformFeePercent, calculatePlatformFee, loadSellerEffectiveFeePercent } = require("../utils/discountEngine");
 
 const buyer = alias(users, "buyer");
 const seller = alias(users, "seller");
@@ -51,7 +51,7 @@ const formatOrder = (row, currentUserId) => {
     couponDiscount: o.couponDiscount,
     offerAmount: o.offerAmount,
     platformFee: o.platformFee,
-    totalPrice: (o.price || 0) + (o.platformFee || 0),
+    totalPrice: o.price,
     status: o.status,
     paymentMethod: o.paymentMethod,
     shippingAddress: o.shippingAddress,
@@ -126,9 +126,9 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: couponMessage || "Invalid coupon" });
     }
 
-    // Calculate platform fee
-    const platformFeePercent = await loadPlatformFeePercent();
-    const platformFee = calculatePlatformFee(finalPrice, platformFeePercent);
+    // Calculate platform fee (tier-based for online payments)
+    const platformFeePercent = paymentMethod === "cod" ? 0 : await loadSellerEffectiveFeePercent(sellerId);
+    const platformFee = paymentMethod === "cod" ? 0 : calculatePlatformFee(finalPrice, platformFeePercent);
 
     const [order] = await db.insert(orders).values({
       productId,
@@ -286,6 +286,14 @@ const updateOrder = async (req, res) => {
         linkedRoute: "/profile/me?tab=orders&view=purchases", linkedEntityId: order.id,
       });
     } else if (status === "delivered") {
+      // Credit seller's balance for online payments when order is delivered (net of platform fee)
+      if (order.status !== "delivered" && order.paymentMethod === "online") {
+        const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
+        await db.update(users)
+          .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
+          .where(eq(users.id, order.sellerId));
+      }
+
       await createNotification({
         userId: order.sellerId, type: "order_update", title: "Order Delivered",
         body: `Your sale of "${productTitle}" has been delivered and confirmed by the buyer!`,

@@ -1,10 +1,10 @@
 const db = require("../db");
-const { products, categories, users, userBlocks } = require("../db/schema");
-const { eq, ilike, or, and, ne, gte, lte, inArray, notInArray, desc, asc, sql, count } = require("drizzle-orm");
+const { products, categories, users, userBlocks, featuredListings } = require("../db/schema");
+const { eq, ilike, or, and, ne, gte, lte, gt, inArray, notInArray, desc, asc, sql, count } = require("drizzle-orm");
 const jwt = require("jsonwebtoken");
 const { loadActivePromotions, annotateProduct, annotateProducts } = require("../utils/discountEngine");
-const { uploadBase64ToCloudinary } = require("../utils/upload");
 const { getBlockedUserIds } = require("../utils/blocks");
+const { uploadBase64ToCloudinary } = require("../utils/upload");
 
 const getProductById = async (req, res) => {
   try {
@@ -221,11 +221,25 @@ const getProducts = async (req, res) => {
       .offset(skip)
       .limit(limit);
 
+    const now = new Date();
+    const activeFeatured = await db.select({ productId: featuredListings.productId })
+      .from(featuredListings)
+      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)));
+    const featuredProductIds = new Set(activeFeatured.map(f => f.productId));
+
     const formatted = result.map(r => ({
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
+      isFeatured: featuredProductIds.has(r.products.id),
     }));
+
+    // Sort: featured first, then by original order
+    formatted.sort((a, b) => {
+      if (a.isFeatured && !b.isFeatured) return -1;
+      if (!a.isFeatured && b.isFeatured) return 1;
+      return 0;
+    });
 
     // Apply active promotions (flash sales + category sales)
     const promotions = await loadActivePromotions();

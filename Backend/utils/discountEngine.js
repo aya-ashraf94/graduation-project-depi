@@ -1,5 +1,5 @@
 const db = require("../db");
-const { flashSales, products, categories, settings, coupons } = require("../db/schema");
+const { flashSales, products, categories, settings, coupons, sellerTiers, users } = require("../db/schema");
 const { eq, and, lte, gte, inArray } = require("drizzle-orm");
 
 const MAX_TOTAL_DISCOUNT_PERCENT = 50;
@@ -378,6 +378,24 @@ function calculatePlatformFee(price, platformFeePercent) {
   return Math.round(fee * 100) / 100; // round to cents
 }
 
+/**
+ * Load the effective platform fee percent for a specific seller.
+ * Considers their active seller tier override. Falls back to global setting.
+ */
+async function loadSellerEffectiveFeePercent(sellerId) {
+  try {
+    const [user] = await db.select({ tierId: users.tierId, tierExpiresAt: users.tierExpiresAt })
+      .from(users).where(eq(users.id, sellerId)).limit(1);
+    if (user && user.tierId && user.tierExpiresAt && new Date(user.tierExpiresAt) > new Date()) {
+      const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, user.tierId)).limit(1);
+      if (tier && tier.feePercent !== null && tier.feePercent >= 0) {
+        return tier.feePercent;
+      }
+    }
+  } catch (e) { /* ignore */ }
+  return loadPlatformFeePercent();
+}
+
 module.exports = {
   loadActivePromotions,
   annotateProduct,
@@ -385,4 +403,5 @@ module.exports = {
   calculateCheckoutPrice,
   loadPlatformFeePercent,
   calculatePlatformFee,
+  loadSellerEffectiveFeePercent,
 };

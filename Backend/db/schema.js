@@ -15,11 +15,14 @@ const users = pgTable('users', {
   governorate: text('governorate').default('').notNull(),
   city: text('city').default('').notNull(),
   district: text('district').default('').notNull(),
+  tierId: uuid('tier_id').references(() => sellerTiers.id, { onDelete: 'set null' }),
+  tierExpiresAt: timestamp('tier_expires_at', { mode: 'date' }),
   tags: text('tags').array().default([]).notNull(),
   rating: doublePrecision('rating').default(5.0).notNull(),
   totalSales: integer('total_sales').default(0).notNull(),
   totalPurchases: integer('total_purchases').default(0).notNull(),
   successRate: doublePrecision('success_rate').default(100).notNull(),
+  balance: doublePrecision('balance').default(0.0).notNull(),
   resetPasswordToken: text('reset_password_token'),
   resetPasswordExpires: timestamp('reset_password_expires', { mode: 'date' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
@@ -150,7 +153,7 @@ const messages = pgTable('messages', {
 const notifications = pgTable('notifications', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  type: text('type', { enum: ['order_update', 'review', 'message', 'system', 'report'] }).notNull(),
+  type: text('type', { enum: ['order_update', 'review', 'message', 'system', 'report', 'refund'] }).notNull(),
   title: text('title').notNull(),
   body: text('body').notNull(),
   isRead: boolean('is_read').default(false).notNull(),
@@ -271,6 +274,69 @@ const userBlocks = pgTable('user_blocks', {
   blockedIdx: index('blocked_idx').on(table.blockedId),
 }));
 
+const payouts = pgTable('payouts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  amount: doublePrecision('amount').notNull(),
+  status: text('status', { enum: ['pending', 'approved', 'rejected'] }).default('pending').notNull(),
+  paymentMethod: text('payment_method').notNull(),
+  paymentDetails: text('payment_details').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  payoutSellerIdx: index('payout_seller_idx').on(table.sellerId),
+}));
+
+const refundRequests = pgTable('refund_requests', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'restrict' }),
+  buyerId: uuid('buyer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reason: text('reason').notNull(),
+  details: text('details'),
+  status: text('status', { enum: ['pending', 'approved', 'rejected'] }).default('pending').notNull(),
+  resolution: text('resolution'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  refundOrderIdx: index('refund_order_idx').on(table.orderId),
+  refundBuyerIdx: index('refund_buyer_idx').on(table.buyerId),
+}));
+
+const featuredListings = pgTable('featured_listings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  sellerId: uuid('seller_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  duration: integer('duration').notNull(),
+  amountPaid: doublePrecision('amount_paid').notNull(),
+  startDate: timestamp('start_date', { mode: 'date' }).defaultNow().notNull(),
+  endDate: timestamp('end_date', { mode: 'date' }).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  featuredProductIdx: index('featured_product_idx').on(table.productId),
+  featuredSellerIdx: index('featured_seller_idx').on(table.sellerId),
+  featuredActiveIdx: index('featured_active_idx').on(table.isActive, table.endDate),
+}));
+
+const sellerTiers = pgTable('seller_tiers', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: text('name').notNull().unique(),
+  description: text('description'),
+  feePercent: doublePrecision('fee_percent'),
+  monthlyPrice: doublePrecision('monthly_price').default(0).notNull(),
+  yearlyPrice: doublePrecision('yearly_price').default(0).notNull(),
+  featuredListingsIncluded: integer('featured_listings_included').default(0).notNull(),
+  badgeLabel: text('badge_label'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+// Add tierId + tierExpiresAt to users
+// Note: pgTable doesn't support ALTER, so we define an extended version for queries
+// The actual ALTER TABLE will be done via migration script
+
 module.exports = {
   users,
   categories,
@@ -292,4 +358,8 @@ module.exports = {
   coupons,
   flashSales,
   userBlocks,
+  payouts,
+  refundRequests,
+  featuredListings,
+  sellerTiers,
 };

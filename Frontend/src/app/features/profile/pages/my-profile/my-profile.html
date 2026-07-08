@@ -232,7 +232,7 @@
               [class.active]="activeTab === 'wishlist'"
               (click)="selectTab('wishlist')"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               Wishlist
             </button>
 
@@ -245,6 +245,17 @@
              >
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                Orders
+             </button>
+
+             <!-- Wallet Tab -->
+             <button
+               *ngIf="isOwnProfile"
+               class="tab-item"
+               [class.active]="activeTab === 'wallet'"
+               (click)="selectTab('wallet')"
+             >
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+               Wallet
              </button>
 
              <!-- Blocked Tab -->
@@ -344,6 +355,14 @@
                 >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-card-action btn-promote"
+                    (click)="openPromoteModal(item)"
+                    title="Promote listing"
+                  >
+                    ⭐ Promote
                   </button>
                   <button
                     type="button"
@@ -639,6 +658,7 @@
                 <div class="right-actions-wrap">
                   <span *ngIf="order.status === 'delivered' && reviewedOrderIds.has(order.id)" class="reviewed-badge">✓ REVIEWED</span>
                   <button *ngIf="order.status === 'delivered' && !reviewedOrderIds.has(order.id)" type="button" class="btn-order btn-order-review" (click)="openReviewModal(order)">REVIEW PRODUCT</button>
+                  <button *ngIf="order.status === 'delivered' && order.paymentMethod === 'online'" type="button" class="btn-order btn-order-refund" (click)="openRefundModal(order)">REFUND</button>
                   <button *ngIf="order.status === 'shipped'"  type="button" class="btn-order btn-order-confirm" [disabled]="updatingOrders[order.id]" (click)="updateOrderStatus(order.id, 'delivered')">
                     {{ updatingOrders[order.id] === 'delivered' ? 'Updating...' : '✓ CONFIRM RECEIVED' }}
                   </button>
@@ -857,6 +877,160 @@
         </ng-template>
       </div>
 
+      <!-- TAB CONTENT: WALLET / EARNINGS -->
+      <div class="tab-content" *ngIf="activeTab === 'wallet' && isOwnProfile">
+        <div class="wallet-section">
+          <!-- Balance Summary Cards -->
+          <div class="wallet-grid">
+            <div class="wallet-card card-withdrawable">
+              <div class="wallet-card-header">
+                <span class="card-icon">💵</span>
+                <span class="card-label">Withdrawable Balance</span>
+              </div>
+              <div class="card-value">{{ (walletStats?.balance || 0) | currencyFormat }}</div>
+              <p class="card-helper">Available for instant payout request.</p>
+            </div>
+            <div class="wallet-card card-pending">
+              <div class="wallet-card-header">
+                <span class="card-icon">⏳</span>
+                <span class="card-label">Pending Earnings</span>
+              </div>
+              <div class="card-value">{{ (walletStats?.pendingBalance || 0) | currencyFormat }}</div>
+              <p class="card-helper">Funds from shipped or pending orders.</p>
+            </div>
+            <div class="wallet-card card-lifetime">
+              <div class="wallet-card-header">
+                <span class="card-icon">📈</span>
+                <span class="card-label">Lifetime Earnings</span>
+              </div>
+              <div class="card-value">{{ (walletStats?.lifetimeEarnings || 0) | currencyFormat }}</div>
+              <p class="card-helper">Your total sales earnings to date.</p>
+            </div>
+          </div>
+
+          <!-- Subscription Card -->
+          <div class="wallet-card subscription-card" style="margin-bottom: 1.5rem;">
+            <div class="wallet-card-header">
+              <span class="card-icon">🏆</span>
+              <span class="card-label">Seller Subscription</span>
+            </div>
+            @if (subscriptionInfo?.subscribed && subscriptionInfo?.tier) {
+              <div class="card-value" style="font-size: 1.2rem;">{{ subscriptionInfo?.tier?.name }}</div>
+              <p class="card-helper" style="margin-bottom: 0.5rem;">
+                {{ subscriptionInfo?.isExpired ? '⚠️ Expired' : 'Expires: ' + (subscriptionInfo?.expiresAt | date:'mediumDate') }}
+              </p>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-neo-action btn-payout" (click)="openTierModal()">Upgrade</button>
+                @if (!subscriptionInfo?.isExpired) {
+                  <button class="btn-neo-action btn-order-cancel" (click)="cancelSubscription()">Cancel</button>
+                }
+              </div>
+            } @else {
+              <p class="card-helper">You are on the Free tier.</p>
+              <button class="btn-neo-action btn-payout" (click)="openTierModal()" style="margin-top: 0.5rem;">
+                View Subscription Plans
+              </button>
+            }
+          </div>
+
+          <!-- Payout Request & History Grid -->
+          <div class="wallet-actions-grid">
+            <!-- Request Withdrawal Form -->
+            <div class="payout-form-card">
+              <h3 class="form-card-title">Withdraw Funds</h3>
+              <p class="form-card-subtitle">Request a payout to your preferred payment method.</p>
+              
+              <form (submit)="submitPayoutRequest(); $event.preventDefault()">
+                <div class="form-group-v2">
+                  <label for="payout-amount">Amount ($)</label>
+                  <input 
+                    type="number" 
+                    id="payout-amount" 
+                    name="amount" 
+                    [(ngModel)]="payoutForm.amount" 
+                    min="1" 
+                    [max]="walletStats?.balance || 0"
+                    placeholder="Enter amount to withdraw" 
+                    required 
+                    class="neo-input"
+                  />
+                </div>
+                <div class="form-group-v2">
+                  <label for="payout-method">Payment Method</label>
+                  <select 
+                    id="payout-method" 
+                    name="paymentMethod" 
+                    [(ngModel)]="payoutForm.paymentMethod" 
+                    class="neo-select"
+                  >
+                    <option value="bank_transfer">Bank Transfer (EG)</option>
+                    <option value="vodafone_cash">Vodafone Cash / Orange / Etisalat Cash</option>
+                    <option value="instapay">Instapay</option>
+                    <option value="paypal">PayPal</option>
+                  </select>
+                </div>
+                <div class="form-group-v2">
+                  <label for="payout-details">Payment Details</label>
+                  <textarea 
+                    id="payout-details" 
+                    name="paymentDetails" 
+                    [(ngModel)]="payoutForm.paymentDetails" 
+                    rows="3"
+                    placeholder="E.g., IBAN, Account Name, Mobile Number, or Instapay Address" 
+                    required 
+                    class="neo-textarea"
+                  ></textarea>
+                </div>
+                
+                <button type="submit" class="btn-neo-action btn-payout" [disabled]="requestingPayout || (walletStats?.balance || 0) <= 0">
+                  <span *ngIf="!requestingPayout">Request Payout</span>
+                  <span *ngIf="requestingPayout">Processing...</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Payout History -->
+            <div class="payout-history-card">
+              <h3 class="form-card-title">Payout History</h3>
+              <p class="form-card-subtitle">List of your recent withdrawal requests.</p>
+
+              <div class="payouts-table-container" *ngIf="payoutsList.length > 0; else noPayouts">
+                <table class="neo-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let p of payoutsList">
+                      <td>{{ p.createdAt | date:'mediumDate' }}</td>
+                      <td><strong>{{ p.amount | currencyFormat }}</strong></td>
+                      <td>
+                        <span class="method-badge">{{ p.paymentMethod | uppercase }}</span>
+                      </td>
+                      <td>
+                        <span class="status-badge-v2" [ngClass]="p.status">
+                          {{ p.status | uppercase }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ng-template #noPayouts>
+                <div class="payouts-empty">
+                  <span class="empty-icon">🪙</span>
+                  <p>You haven't requested any payouts yet.</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB CONTENT: BLOCKED USERS -->
       <div class="tab-content" *ngIf="activeTab === 'blocked' && isOwnProfile">
         <div class="blocked-section">
@@ -1055,6 +1229,143 @@
       </button>
       <button type="button" class="modal-btn-primary" (click)="deleteSelectedProduct()" style="margin: 0; padding: 10px 20px; background: var(--danger); color: var(--white); font-weight: 700; border: 2px solid var(--black); box-shadow: 2px 2px 0 var(--black); cursor: pointer;">
         Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REFUND MODAL -->
+<div class="report-overlay" *ngIf="showRefundModal" (click)="closeRefundModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 500px;">
+    <button class="modal-standard-close" (click)="closeRefundModal()">✕</button>
+    <div class="modal-standard-icon-header">
+      <div class="lock-icon-circle" style="background: #fef3c7; border-color: #f59e0b; color: #92400e;">
+        <span style="font-size: 1.5rem;">🛡️</span>
+      </div>
+      <h3 class="modal-standard-title" style="color: var(--black); font-weight: 900; text-transform: uppercase;">Request Refund</h3>
+      <p class="modal-standard-desc" style="font-size: 0.85rem;">
+        For order #{{ selectedOrderForRefund?.id?.slice(0,8) }} — ${{ selectedOrderForRefund?.price }}
+      </p>
+    </div>
+    <div style="padding: 0 1.5rem 1.5rem;">
+      <div class="form-group-v2">
+        <label>Reason *</label>
+        <select [(ngModel)]="refundReason" class="neo-select" required>
+          <option value="">Select a reason...</option>
+          <option value="item_not_as_described">Item not as described</option>
+          <option value="damaged_or_defective">Damaged or defective</option>
+          <option value="wrong_item">Wrong item received</option>
+          <option value="seller_not_responsive">Seller not responsive</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group-v2">
+        <label>Details (optional)</label>
+        <textarea [(ngModel)]="refundDetails" class="neo-textarea" rows="3" placeholder="Explain what happened..."></textarea>
+      </div>
+    </div>
+    <div class="modal-standard-footer" style="display: flex; gap: 1rem; justify-content: flex-end; padding: 0 1.5rem 1.5rem;">
+      <button type="button" class="modal-btn-secondary" (click)="closeRefundModal()" style="margin:0;">Cancel</button>
+      <button type="button" class="modal-btn-primary" (click)="submitRefund()" [disabled]="submittingRefund || !refundReason"
+        style="margin:0; background: var(--yellow); color: var(--black);">
+        {{ submittingRefund ? 'Submitting...' : 'Submit Refund Request' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TIER SUBSCRIPTION MODAL -->
+<div class="report-overlay" *ngIf="showTierModal" (click)="closeTierModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+    <button class="modal-standard-close" (click)="closeTierModal()">✕</button>
+    <div class="modal-standard-icon-header">
+      <div class="lock-icon-circle" style="background: #dbeafe; border-color: #2563eb; color: #1e40af;">
+        <span style="font-size: 1.5rem;">🏆</span>
+      </div>
+      <h3 class="modal-standard-title">Seller Subscription Plans</h3>
+      <p class="modal-standard-desc">Choose a tier to reduce fees and unlock benefits.</p>
+    </div>
+    <div style="padding: 0 1.5rem 1.5rem;">
+      @for (tier of availableTiers; track tier.id) {
+        <div class="tier-option" [class.selected]="selectedTierId === tier.id" (click)="selectedTierId = tier.id"
+          style="border: 2px solid var(--black); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; cursor: pointer; transition: all 0.15s;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="font-size: 1.1rem;">{{ tier.name }}</strong>
+              @if (tier.badgeLabel) {
+                <span style="background: var(--yellow); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-left: 0.5rem;">{{ tier.badgeLabel }}</span>
+              }
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 900;">${{ tier.monthlyPrice }}/mo</div>
+              <div style="font-size: 0.8rem; color: #666;">${{ tier.yearlyPrice }}/yr</div>
+            </div>
+          </div>
+          @if (tier.description) {
+            <p style="font-size: 0.85rem; color: #555; margin: 0.5rem 0 0;">{{ tier.description }}</p>
+          }
+          @if (tier.feePercent != null) {
+            <div style="font-size: 0.8rem; margin-top: 0.25rem;">🔹 Platform fee: <strong>{{ tier.feePercent }}%</strong> (instead of standard)</div>
+          }
+          @if (tier.featuredListingsIncluded > 0) {
+            <div style="font-size: 0.8rem;">🔹 <strong>{{ tier.featuredListingsIncluded }}</strong> free featured listing(s)/month</div>
+          }
+        </div>
+      }
+      <div class="form-group-v2" style="margin-top: 1rem;">
+        <label>Billing Cycle</label>
+        <select [(ngModel)]="selectedBillingCycle" class="neo-select">
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly (Save ~17%)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-standard-footer" style="display: flex; gap: 1rem; justify-content: flex-end; padding: 0 1.5rem 1.5rem;">
+      <button type="button" class="modal-btn-secondary" (click)="closeTierModal()" style="margin:0;">Cancel</button>
+      <button type="button" class="modal-btn-primary" (click)="subscribeToTier()" [disabled]="subscribing || !selectedTierId"
+        style="margin:0; background: var(--yellow); color: var(--black);">
+        {{ subscribing ? 'Processing...' : 'Subscribe' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMOTE MODAL -->
+<div class="report-overlay" *ngIf="showPromoteModal" (click)="closePromoteModal()">
+  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 480px;">
+    <button class="modal-standard-close" (click)="closePromoteModal()">✕</button>
+    <div class="modal-standard-icon-header">
+      <div class="lock-icon-circle" style="background: #fce7f3; border-color: #ec4899; color: #be185d;">
+        <span style="font-size: 1.5rem;">⭐</span>
+      </div>
+      <h3 class="modal-standard-title">Promote Listing</h3>
+      <p class="modal-standard-desc">
+        Boost "{{ selectedProductForPromote?.title }}" to the top of search results.
+      </p>
+    </div>
+    <div style="padding: 0 1.5rem 1.5rem;">
+      <div class="form-group-v2">
+        <label>Promotion Duration</label>
+        <select [(ngModel)]="selectedDuration" class="neo-select">
+          <option [value]="2">2 Days — ${{ featuredPrices[2] || 5 }}.00</option>
+          <option [value]="7">1 Week — ${{ featuredPrices[7] || 12 }}.00</option>
+          <option [value]="14">2 Weeks — ${{ featuredPrices[14] || 20 }}.00</option>
+        </select>
+      </div>
+      <div style="background: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 0.75rem; margin-top: 1rem;">
+        <p style="margin: 0; font-size: 0.85rem;">
+          💰 Cost: <strong>${{ promoteCost.toFixed(2) }}</strong> will be deducted from your balance.
+        </p>
+        <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: #666;">
+          Available balance: <strong>${{ walletStats?.balance?.toFixed(2) || '0.00' }}</strong>
+        </p>
+      </div>
+    </div>
+    <div class="modal-standard-footer" style="display: flex; gap: 1rem; justify-content: flex-end; padding: 0 1.5rem 1.5rem;">
+      <button type="button" class="modal-btn-secondary" (click)="closePromoteModal()" style="margin:0;">Cancel</button>
+      <button type="button" class="modal-btn-primary" (click)="promoteProduct()" [disabled]="promoting || promoteCost > (walletStats?.balance || 0)"
+        style="margin:0; background: #ec4899; color: white;">
+        {{ promoting ? 'Promoting...' : '⭐ Promote Now' }}
       </button>
     </div>
   </div>

@@ -1,5 +1,5 @@
 const db = require("../db");
-const { users, products, reports, orders, categories, coupons, flashSales, notifications, messages, conversationParticipants, reviews } = require("../db/schema");
+const { users, products, reports, orders, categories, coupons, flashSales, notifications, messages, conversationParticipants, reviews, refundRequests, featuredListings } = require("../db/schema");
 const { eq, ne, or, ilike, and, desc, count, inArray, sql, gte, lte, isNotNull } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { loadActivePromotions, annotateProducts } = require("../utils/discountEngine");
@@ -102,6 +102,20 @@ const getDashboard = async (req, res) => {
     const [totalDiscount] = await db.select({ value: sql`COALESCE(SUM(${orders.flashSaleDiscount}), 0)` }).from(orders)
       .where(and(isNotNull(orders.flashSaleDiscount), ne(orders.status, 'cancelled'), sql`${orders.flashSaleDiscount} > 0`));
 
+    // Refund + featured stats (gracefully handle missing tables)
+    let pendingRefundsCount = 0;
+    let activeFeaturedCount = 0;
+    try {
+      const [pr] = await db.select({ value: count() }).from(refundRequests)
+        .where(eq(refundRequests.status, 'pending'));
+      pendingRefundsCount = Number(pr?.value || 0);
+    } catch (e) { /* table may not exist */ }
+    try {
+      const [af] = await db.select({ value: count() }).from(featuredListings)
+        .where(and(eq(featuredListings.isActive, true), gte(featuredListings.endDate, now)));
+      activeFeaturedCount = Number(af?.value || 0);
+    } catch (e) { /* table may not exist */ }
+
     res.json({
       stats: {
         totalUsers: Number(userCount.value),
@@ -131,6 +145,12 @@ const getDashboard = async (req, res) => {
       flashSaleStats: {
         activeSales: Number(activeFlashSales.value),
         totalDiscountGiven: Number(totalDiscount?.value || 0),
+      },
+      refundStats: {
+        pendingRefunds: pendingRefundsCount,
+      },
+      featuredStats: {
+        activeFeatured: activeFeaturedCount,
       },
     });
   } catch (error) {

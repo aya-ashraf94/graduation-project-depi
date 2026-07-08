@@ -2,11 +2,11 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const {
-  createCheckoutSession,
-  getSessionStatus,
+  createPaymentIntent,
+  confirmPayment,
 } = require("../controllers/paymentController");
 
-router.post("/create-checkout-session", authMiddleware, createCheckoutSession);
-router.get("/session-status/:session_id", authMiddleware, getSessionStatus);
+router.post("/create-payment-intent", authMiddleware, createPaymentIntent);
+router.post("/confirm-payment", authMiddleware, confirmPayment);
 
 module.exports = router;
