@@ -241,11 +241,11 @@
                 <p>Set discount %, start & end dates</p>
               </div>
             </button>
-            <button (click)="openPlatformFeeModal()" class="dash-op-btn dash-op-outline">
+            <button (click)="openFeeModal()" class="dash-op-btn dash-op-outline">
               <span class="dash-op-icon">💸</span>
               <div>
-                <strong>Platform Fee Settings</strong>
-                <p>Set commission % charged per order</p>
+                <strong>Fee Settings</strong>
+                <p>Set platform & COD commission %</p>
               </div>
             </button>
           </div>
@@ -294,32 +294,42 @@
     </div>
   }
 
-  <!-- PLATFORM FEE MODAL -->
-  @if (showPlatformFeeModal()) {
+  <!-- FEE SETTINGS MODAL -->
+  @if (showFeeModal()) {
     <div class="modal-overlay">
       <div class="modal-container" (click)="$event.stopPropagation()" style="max-width: 420px;">
         <div class="panel-header">
           <div class="panel-header-titles">
-            <h3>💸 Platform Fee</h3>
-            <p class="panel-header-subtitle">Set the commission percentage charged on every order.</p>
+            <h3>💸 Fee Settings</h3>
+            <p class="panel-header-subtitle">Set commission percentages for online and COD orders.</p>
           </div>
-          <button class="modal-close-btn-header" (click)="showPlatformFeeModal.set(false)">✕</button>
+          <button class="modal-close-btn-header" (click)="showFeeModal.set(false)">✕</button>
         </div>
         <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
           <div class="form-group">
-            <label class="form-label">Commission (%)</label>
+            <label class="form-label">Online Platform Fee (%)</label>
             <div class="input-with-suffix">
               <input type="number" [ngModel]="platformFeePercentInput()" (ngModelChange)="platformFeePercentInput.set($event)" min="0" max="100" step="0.5" class="form-control" placeholder="e.g. 5" />
               <span class="input-suffix-tag">%</span>
             </div>
             <p style="font-size: 0.75rem; color: var(--gray-3); margin-top: 0.4rem;">
-              This fee is added on top of the product price. Buyer pays <strong>price + {{ platformFeePercentInput() }}%</strong>.
+              Charged on online payments. Based on seller tier.
+            </p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">COD Fee (%)</label>
+            <div class="input-with-suffix">
+              <input type="number" [ngModel]="codFeePercentInput()" (ngModelChange)="codFeePercentInput.set($event)" min="0" max="100" step="0.5" class="form-control" placeholder="e.g. 5" />
+              <span class="input-suffix-tag">%</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--gray-3); margin-top: 0.4rem;">
+              Charged on cash-on-delivery orders instead of the online fee.
             </p>
           </div>
           <div style="display: flex; gap: 0.75rem; justify-content: flex-end; border-top: 2px solid var(--border); padding-top: 1rem;">
-            <button type="button" (click)="showPlatformFeeModal.set(false)" class="btn-submit-coupon" style="flex: 0 0 auto; background: transparent; color: var(--gray-3); box-shadow: none; border-color: var(--border);">Cancel</button>
-            <button type="button" (click)="savePlatformFee()" [disabled]="savingPlatformFee()" class="btn-submit-coupon" style="flex: 0 0 auto;">
-              {{ savingPlatformFee() ? 'Saving...' : 'Save' }}
+            <button type="button" (click)="showFeeModal.set(false)" class="btn-submit-coupon" style="flex: 0 0 auto; background: transparent; color: var(--gray-3); box-shadow: none; border-color: var(--border);">Cancel</button>
+            <button type="button" (click)="saveFees()" [disabled]="savingFee()" class="btn-submit-coupon" style="flex: 0 0 auto;">
+              {{ savingFee() ? 'Saving...' : 'Save' }}
             </button>
           </div>
         </div>

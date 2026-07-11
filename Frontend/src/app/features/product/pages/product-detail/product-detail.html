@@ -27,46 +27,62 @@
              (mouseleave)="onImageMouseLeave()"
              (click)="openLightbox(activeImage)">
           <div class="card-badges-v2">
-            <span *ngIf="product.soldByNafa3ni" class="badge-official-v2">✓ Official Store</span>
-            <span *ngIf="product.badge" class="badge-tag-v2">{{ product.badge }}</span>
+            @if (product.soldByNafa3ni) {
+              <span class="badge-official-v2">✓ Official Store</span>
+            }
+            @if (product.badge) {
+              <span class="badge-tag-v2">{{ product.badge }}</span>
+            }
           </div>
 
-          <button type="button" class="gallery-nav-btn prev" *ngIf="product.images.length > 1 && !isZoomed" (click)="prevImage($event)" aria-label="Previous image">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button type="button" class="gallery-nav-btn next" *ngIf="product.images.length > 1 && !isZoomed" (click)="nextImage($event)" aria-label="Next image">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
+          @if (product.images.length > 1 && !isZoomed) {
+            <button type="button" class="gallery-nav-btn prev" (click)="prevImage($event)" aria-label="Previous image">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+          }
+          @if (product.images.length > 1 && !isZoomed) {
+            <button type="button" class="gallery-nav-btn next" (click)="nextImage($event)" aria-label="Next image">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          }
 
-          <img *ngIf="product.images && product.images.length > 0"
-               [src]="product.images[activeImage]"
-               [alt]="product.title"
-               appImageFallback
-               class="main-image-v2"
-               [class.zoomed]="isZoomed"
-               [style.transform-origin]="isZoomed ? zoomX + '% ' + zoomY + '%' : null" />
-          <div *ngIf="!product.images || product.images.length === 0" class="main-image-v2 empty-image-placeholder" style="background: var(--gray); display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
+          @if (product.images && product.images.length > 0) {
+            <img [src]="product.images[activeImage]"
+                 [alt]="product.title"
+                 appImageFallback
+                 class="main-image-v2"
+                 [class.zoomed]="isZoomed"
+                 [style.transform-origin]="isZoomed ? zoomX + '% ' + zoomY + '%' : null" />
+          }
+          @if (!product.images || product.images.length === 0) {
+            <div class="main-image-v2 empty-image-placeholder" style="background: var(--gray); display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
               <polyline points="21 15 16 10 5 21"></polyline>
             </svg>
           </div>
-          <div class="zoom-overlay-hint" *ngIf="product.images && product.images.length > 0 && !isZoomed">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            <span>Click to expand</span>
-          </div>
+          }
+          @if (product.images && product.images.length > 0 && !isZoomed) {
+            <div class="zoom-overlay-hint">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              <span>Click to expand</span>
+            </div>
+          }
         </div>
 
         <!-- Thumbnails -->
-        <div class="thumbnails-v2" *ngIf="product.images.length > 0">
-          <div class="thumb-wrap-v2"
-               *ngFor="let img of product.images; let i = index"
-               [class.active]="activeImage === i"
-               (click)="setActiveImage(i)">
-            <img [src]="img" [alt]="product.title + ' ' + i" appImageFallback class="thumb-img-v2" />
+        @if (product.images.length > 0) {
+          <div class="thumbnails-v2">
+            @for (img of product.images; track $index; let i = $index) {
+              <div class="thumb-wrap-v2"
+                   [class.active]="activeImage === i"
+                   (click)="setActiveImage(i)">
+                <img [src]="img" [alt]="product.title + ' ' + i" appImageFallback class="thumb-img-v2" />
+              </div>
+            }
           </div>
-        </div>
+        }
       </div>
 
       <!-- RIGHT: Primary Checkout & Contact Sidebar Card -->
@@ -79,7 +95,9 @@
           <div class="product-header-block-v3">
             <div class="header-left-v3">
               <h1 class="product-title-v3">{{ product.title }}</h1>
-              <div class="product-brand-v3" *ngIf="product.brand">Brand: {{ product.brand }}</div>
+              @if (product.brand) {
+                <div class="product-brand-v3">Brand: {{ product.brand }}</div>
+              }
               <div class="product-quick-specs-v3">
                 <span>{{ categoryLabel }}</span>
                 <span class="qspec-dot">•</span>
@@ -109,19 +127,21 @@
           <!-- Checkout Actions Grid -->
           <div class="actions-stack-v3">
             <!-- Edit button if listing belongs to current user -->
-            <a *ngIf="isOwner" [routerLink]="['/listings/edit', product.id]" class="btn-action-v2 btn-edit-listing-v2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-              Edit Listing
-            </a>
+            @if (isOwner) {
+              <a [routerLink]="['/listings/edit', product.id]" class="btn-action-v2 btn-edit-listing-v2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Edit Listing
+              </a>
+            }
 
-            <ng-container *ngIf="!isOwner">
-              <!-- Buy Now (Primary CTA) -->
-              <button class="btn-action-v2 btn-buy-now-v3"
-                      [disabled]="product.status === 'reserved' && negotiatedPrice() === null"
-                      (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()"
-                      *ngIf="product.status !== 'sold'">
-                Buy Now
-              </button>
+            @if (!isOwner) {
+              @if (product.status !== 'sold') {
+                <button class="btn-action-v2 btn-buy-now-v3"
+                        [disabled]="product.status === 'reserved' && negotiatedPrice() === null"
+                        (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()">
+                  Buy Now
+                </button>
+              }
 
               <div class="secondary-actions-row">
                 <!-- Chat (Secondary CTA) — disabled during flash sales -->
@@ -148,29 +168,48 @@
                   <span>{{ wishlistService.isWishlisted(product.id) ? 'Saved' : 'Save' }}</span>
                 </button>
               </div>
-            </ng-container>
+            }
 
-            <div *ngIf="product.status === 'sold'" class="sold-banner-v2">
-              Sold Out
-            </div>
+            @if (product.status === 'sold') {
+              @if (isBuyer) {
+                <div class="sold-banner-v2 purchased-banner-v2">
+                  <span>✓</span> You purchased this item
+                  @if (orderId) {
+                    <a [routerLink]="['/profile/me']" [queryParams]="{tab: 'orders'}" class="view-order-link-v2">View Order</a>
+                  }
+                </div>
+              } @else if (isOwner) {
+                <div class="sold-banner-v2">
+                  <span>•</span> You sold this item
+                </div>
+              } @else {
+                <div class="sold-banner-v2">Sold</div>
+              }
+            }
           </div>
 
           <!-- Inline Seller Badge -->
           <div class="inline-seller-card-v3">
             <div class="inline-seller-avatar">
-              <img *ngIf="product.seller.avatar" [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
-              <span *ngIf="!product.seller.avatar">{{ product.seller.firstName[0] }}</span>
+              @if (product.seller.avatar) {
+                <img [src]="product.seller.avatar" [alt]="product.seller.firstName" appImageFallback />
+              }
+              @if (!product.seller.avatar) {
+                <span>{{ product.seller.firstName[0] }}</span>
+              }
             </div>
             <div class="inline-seller-info">
               <div class="seller-identity-v3">
                 <a [routerLink]="['/profile', product.seller.id]" class="seller-link-v3">
                   {{ product.seller.firstName }} {{ product.seller.lastName }}
                 </a>
-                <span class="inline-verified" *ngIf="product.seller.isVerified || product.isVerified">
+                @if (product.seller.isVerified || product.isVerified) {
+                  <span class="inline-verified">
                   <svg class="verified-svg-icon" viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-left: 2px;">
                     <path fill="var(--info)" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.941.1-1.357.277C14.774 2.525 13.43 1.5 11.9 1.5c-1.53 0-2.87 1.025-3.517 2.287-.416-.178-.877-.277-1.357-.277C4.918 3.51 3.2 5.29 3.2 7.5c0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .941-.1 1.357-.277.647 1.262 1.987 2.287 3.517 2.287 1.53 0 2.87-1.025 3.517-2.287.416.178.877.277 1.357.277 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.72 3.39l-3.39-3.39 1.42-1.42 1.97 1.97 4.79-4.79 1.42 1.42-6.21 6.21z"/>
                   </svg>
                 </span>
+              }
               </div>
               <span class="seller-active-v3">Active today • Member since 2021</span>
             </div>
@@ -193,15 +232,17 @@
           </div>
 
           <!-- Report Link -->
-          <div class="report-listing-wrapper-v3" *ngIf="!isOwner">
-            <button class="btn-report-listing-v3" (click)="openReport()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;">
-                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-                <line x1="4" y1="22" x2="4" y2="15"></line>
-              </svg>
-              Report listing
-            </button>
-          </div>
+          @if (!isOwner) {
+            <div class="report-listing-wrapper-v3">
+              <button class="btn-report-listing-v3" (click)="openReport()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                  <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>
+                Report listing
+              </button>
+            </div>
+            }
 
         </div>
 
@@ -275,30 +316,40 @@
             <span class="spec-lbl-v3">Condition Score</span>
             <span class="spec-val-v3">{{ product.conditionScore }}/10</span>
           </div>
-          <div class="spec-row-v3" *ngIf="product.brand">
-            <span class="spec-lbl-v3">Brand</span>
-            <span class="spec-val-v3">{{ product.brand }}</span>
-          </div>
-          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['storage'] as storage">
-            <span class="spec-lbl-v3">Storage</span>
-            <span class="spec-val-v3">{{ storage }}</span>
-          </div>
-          <div class="spec-row-v3" *ngIf="product.rawDynamicAttributes?.['color'] as color">
-            <span class="spec-lbl-v3">Color</span>
-            <span class="spec-val-v3">{{ color }}</span>
-          </div>
-          <div class="spec-row-v3" *ngIf="product.size">
-            <span class="spec-lbl-v3">Size</span>
-            <span class="spec-val-v3">{{ product.size }}</span>
-          </div>
+          @if (product.brand) {
+            <div class="spec-row-v3">
+              <span class="spec-lbl-v3">Brand</span>
+              <span class="spec-val-v3">{{ product.brand }}</span>
+            </div>
+          }
+          @if (product.rawDynamicAttributes?.['storage']; as storage) {
+            <div class="spec-row-v3">
+              <span class="spec-lbl-v3">Storage</span>
+              <span class="spec-val-v3">{{ storage }}</span>
+            </div>
+          }
+          @if (product.rawDynamicAttributes?.['color']; as color) {
+            <div class="spec-row-v3">
+              <span class="spec-lbl-v3">Color</span>
+              <span class="spec-val-v3">{{ color }}</span>
+            </div>
+          }
+          @if (product.size) {
+            <div class="spec-row-v3">
+              <span class="spec-lbl-v3">Size</span>
+              <span class="spec-val-v3">{{ product.size }}</span>
+            </div>
+          }
           <div class="spec-row-v3">
             <span class="spec-lbl-v3">Listed Date</span>
             <span class="spec-val-v3">{{ product.createdAt | date:'longDate' }}</span>
           </div>
-          <div class="spec-row-v3" *ngFor="let attr of displayAttributes">
-            <span class="spec-lbl-v3">{{ attr.label }}</span>
-            <span class="spec-val-v3">{{ attr.value }}</span>
-          </div>
+          @for (attr of displayAttributes; track attr.label) {
+            <div class="spec-row-v3">
+              <span class="spec-lbl-v3">{{ attr.label }}</span>
+              <span class="spec-val-v3">{{ attr.value }}</span>
+            </div>
+          }
         </div>
       </div>
 
@@ -326,13 +377,15 @@
           </div>
         </div>
 
-        <div class="shipping-loc-footer" *ngIf="product.location">
-          <span class="loc-lbl">CURRENT LOCATION</span>
-          <div class="loc-val-row">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>{{ product.location }}</span>
-          </div>
-        </div>
+          @if (product.location) {
+            <div class="shipping-loc-footer">
+              <span class="loc-lbl">CURRENT LOCATION</span>
+              <div class="loc-val-row">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ product.location }}</span>
+              </div>
+            </div>
+          }
       </div>
 
       <!-- Map -->
@@ -351,10 +404,12 @@
               <span class="zoom-btn">+</span>
               <span class="zoom-btn">−</span>
             </div>
-            <div class="map-address-overlay" *ngIf="product.location">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span>{{ product.location }}</span>
-            </div>
+              @if (product.location) {
+                <div class="map-address-overlay">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>{{ product.location }}</span>
+                </div>
+              }
           </div>
         }
       </div>
@@ -369,12 +424,13 @@
 
       <div class="related-carousel-container-v2">
         <div class="related-carousel-track-v2">
-          <app-product-card
-            *ngFor="let item of relatedProducts"
-            [product]="item"
-            variant="carousel"
-            (wishlistToggle)="toggleWishlistCard(item.id, $event)"
-          ></app-product-card>
+          @for (item of relatedProducts; track item.id) {
+            <app-product-card
+              [product]="item"
+              variant="carousel"
+              (wishlistToggle)="toggleWishlistCard(item.id, $event)"
+            ></app-product-card>
+          }
         </div>
       </div>
     </section>
@@ -383,31 +439,39 @@
 </div>
 
 <!-- STICKY BOTTOM ACTIONS FOR MOBILE -->
-<div class="sticky-mobile-bar-v2" *ngIf="product && !isLoading">
+@if (product && !isLoading) {
+<div class="sticky-mobile-bar-v2">
   <div class="mobile-price-box-v2">
     <span class="mobile-price-val-v2">{{ isOnSale ? (salePrice | currencyFormat) : (product.price | currencyFormat) }}</span>
   </div>
-  <div class="mobile-actions-v2" *ngIf="!isOwner">
-    <button class="btn-mobile-action-v2 btn-mobile-chat-v2" (click)="startChat()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-      <span>Chat</span>
-    </button>
-    <button class="btn-mobile-action-v2 btn-mobile-buy-v2"
-            [disabled]="product.status === 'reserved' && negotiatedPrice() === null"
-            (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()"
-            *ngIf="product.status !== 'sold'">
-      <span>Buy Now</span>
-    </button>
+  @if (!isOwner) {
+    <div class="mobile-actions-v2">
+      <button class="btn-mobile-action-v2 btn-mobile-chat-v2" (click)="startChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>Chat</span>
+      </button>
+      @if (product.status !== 'sold') {
+        <button class="btn-mobile-action-v2 btn-mobile-buy-v2"
+                [disabled]="product.status === 'reserved' && negotiatedPrice() === null"
+                (click)="(product.status === 'available' || (product.status === 'reserved' && negotiatedPrice() !== null)) && openBuy()">
+          <span>Buy Now</span>
+        </button>
+      }
+    </div>
+    }
+    @if (isOwner) {
+      <div class="mobile-actions-v2">
+        <a [routerLink]="['/listings/edit', product.id]" class="btn-mobile-action-v2 btn-mobile-buy-v2">
+          <span>Edit Listing</span>
+        </a>
+      </div>
+    }
   </div>
-  <div class="mobile-actions-v2" *ngIf="isOwner">
-    <a [routerLink]="['/listings/edit', product.id]" class="btn-mobile-action-v2 btn-mobile-buy-v2">
-      <span>Edit Listing</span>
-    </a>
-  </div>
-</div>
+}
 
 <!-- FULLSCREEN IMAGE LIGHTBOX MODAL -->
-<div class="lightbox-overlay-v2" *ngIf="showLightbox" (click)="closeLightbox()">
+@if (showLightbox) {
+<div class="lightbox-overlay-v2" (click)="closeLightbox()">
   <button class="lightbox-close-v2" (click)="closeLightbox()">✕</button>
 
   <button class="lightbox-nav-v2 lightbox-prev-v2" (click)="prevLightboxImage($event)">
@@ -426,9 +490,11 @@
     {{ lightboxIndex + 1 }} / {{ product.images.length }}
   </div>
 </div>
+}
 
 <!-- MAKE OFFER MODAL -->
-<div class="report-overlay" *ngIf="showOfferModal" (click)="closeOfferModal()">
+@if (showOfferModal) {
+<div class="report-overlay" (click)="closeOfferModal()">
   <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 440px;">
     <button class="modal-standard-close" (click)="closeOfferModal()">✕</button>
     <div class="modal-standard-header" style="text-align: center;">
@@ -436,7 +502,8 @@
       <p class="modal-standard-desc">Suggest a reasonable offer price to the seller.</p>
     </div>
 
-    <div class="modal-standard-body" *ngIf="!offerSuccess">
+    @if (!offerSuccess) {
+    <div class="modal-standard-body">
       <div style="text-align: center; margin: 1rem 0;">
         <span style="font-size: 0.85rem; font-weight: 700; color: var(--gray-3); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Asking Price</span>
         <span style="font-size: 1.5rem; font-weight: 800; color: var(--dark); text-decoration: line-through;">{{ product.price | currencyFormat }}</span>
@@ -460,23 +527,28 @@
         </button>
       </div>
     </div>
+    }
 
-    <div class="modal-standard-success" *ngIf="offerSuccess">
+    @if (offerSuccess) {
+    <div class="modal-standard-success">
       <div class="success-icon-circle">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"></path></svg>
       </div>
       <h4 class="success-title">Offer Sent!</h4>
       <p class="success-desc">{{ offerSuccess }}</p>
     </div>
+    }
   </div>
 </div>
+}
 
 <!-- REPORT MODAL -->
+@if (showReportModal && product) {
 <app-report-modal
-  *ngIf="showReportModal && product"
   [productId]="product.id"
   (close)="closeReport()">
 </app-report-modal>
+}
 
 <!-- AUTH REQUIRED MODAL -->
 <app-auth-required-modal
@@ -485,7 +557,8 @@
 ></app-auth-required-modal>
 
 <!-- BUY NOW MODAL -->
-<div class="report-overlay" *ngIf="showBuyModal">
+@if (showBuyModal) {
+<div class="report-overlay" (click)="closeBuy()">
   <div class="checkout-card">
 
     <!-- ===== HEADER ===== -->
@@ -499,17 +572,22 @@
     <div class="checkout-card-body">
 
       <!-- ===== SUCCESS / ERROR BANNERS ===== -->
-      <div *ngIf="buySuccess()" style="background: var(--success-light); color: var(--success-dark); border: 2px solid var(--success); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
+      @if (buySuccess()) {
+      <div style="background: var(--success-light); color: var(--success-dark); border: 2px solid var(--success); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
         {{ buySuccess() }}
       </div>
-      <div *ngIf="buyError()" style="background: var(--danger-light); color: var(--danger-dark); border: 2px solid var(--danger); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
+      }
+      @if (buyError()) {
+      <div style="background: var(--danger-light); color: var(--danger-dark); border: 2px solid var(--danger); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-align: center; font-family: var(--font-primary); text-transform: uppercase;">
         {{ buyError() }}
       </div>
+      }
 
-      <form (ngSubmit)="submitOrder()" *ngIf="!buySuccess()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
+      @if (!buySuccess()) {
+      <form (ngSubmit)="submitOrder()" style="display: flex; flex-direction: column; gap: 1rem; width: 100%; text-align: left;">
 
-        <!-- Urgent warning banner for reserved checkout -->
-        <div *ngIf="negotiatedPrice() !== null" style="background: rgba(231, 76, 60, 0.08); color: var(--danger-dark); border: 2px dashed var(--danger); padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-primary); display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.5rem; box-sizing: border-box; width: 100%;">
+        @if (negotiatedPrice() !== null) {
+        <div style="background: rgba(231, 76, 60, 0.08); color: var(--danger-dark); border: 2px dashed var(--danger); padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-primary); display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.5rem; box-sizing: border-box; width: 100%;">
           <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <span>🤝 NEGOTIATED PRICE</span>
             <span style="font-weight: 900; font-size: 1rem; color: var(--danger-dark);">{{ negotiatedPrice() | currencyFormat }}</span>
@@ -518,7 +596,8 @@
             <span>⏳ RESERVATION COUNTDOWN:</span>
             <span style="font-weight: 900; color: var(--danger); font-family: monospace; font-size: 0.85rem;">{{ checkoutCountdown() }}</span>
           </div>
-        </div>
+          </div>
+        }
 
         <div class="checkout-columns">
 
@@ -540,9 +619,10 @@
                   <span class="pay-label">Pay Online (Card)</span>
                 </label>
               </div>
-              <!-- Stripe Card Element -->
-              <div *ngIf="paymentMethod === 'online'" #cardElementContainer
-                style="padding: 0.65rem; border: 1.5px solid var(--black); border-radius: 6px; background: var(--white); margin-top: 0.3rem; min-height: 40px;"></div>
+              @if (paymentMethod === 'online') {
+                <div #cardElementContainer
+                  style="padding: 0.65rem; border: 1.5px solid var(--black); border-radius: 6px; background: var(--white); margin-top: 0.3rem; min-height: 40px;"></div>
+              }
             </div>
 
             <!-- Shipping Address (compact) -->
@@ -570,14 +650,20 @@
                   <input type="text" [(ngModel)]="couponCode" name="couponCode" placeholder="Enter code" [disabled]="appliedCoupon"
                     style="flex: 1; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; text-transform: uppercase; box-sizing: border-box;"
                     [style.borderColor]="appliedCoupon ? 'var(--success)' : 'var(--border)'" />
-                  <button type="button" (click)="applyCoupon()" *ngIf="!appliedCoupon" [disabled]="!couponCode || isValidatingCoupon"
-                    style="padding: 0.45rem 0.85rem; background: var(--black); color: var(--white); border: 1.5px solid var(--black); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap; box-shadow: 2px 2px 0 var(--black); transition: all 0.12s ease;"
-                    onmouseover="this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)'"
-                    onmouseout="this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)'">{{ isValidatingCoupon ? '...' : 'Apply' }}</button>
-                  <button type="button" (click)="removeCoupon()" *ngIf="appliedCoupon"
-                    style="padding: 0.45rem 0.85rem; background: var(--danger-light); color: var(--danger-dark); border: 1.5px solid var(--danger); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap;">Remove</button>
+                  @if (!appliedCoupon) {
+                    <button type="button" (click)="applyCoupon()" [disabled]="!couponCode || isValidatingCoupon"
+                      style="padding: 0.45rem 0.85rem; background: var(--black); color: var(--white); border: 1.5px solid var(--black); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap; box-shadow: 2px 2px 0 var(--black); transition: all 0.12s ease;"
+                      onmouseover="this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)'"
+                      onmouseout="this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)'">{{ isValidatingCoupon ? '...' : 'Apply' }}</button>
+                    }
+                    @if (appliedCoupon) {
+                    <button type="button" (click)="removeCoupon()"
+                      style="padding: 0.45rem 0.85rem; background: var(--danger-light); color: var(--danger-dark); border: 1.5px solid var(--danger); border-radius: 6px; font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; white-space: nowrap;">Remove</button>
+                    }
                 </div>
-                <span *ngIf="couponValidationMessage" [style.color]="appliedCoupon ? 'var(--success-dark)' : 'var(--danger-dark)'" style="font-size: 0.65rem; font-weight: 600; margin-top: 1px;">{{ couponValidationMessage }}</span>
+                @if (couponValidationMessage) {
+                <span [style.color]="appliedCoupon ? 'var(--success-dark)' : 'var(--danger-dark)'" style="font-size: 0.65rem; font-weight: 600; margin-top: 1px;">{{ couponValidationMessage }}</span>
+                }
               </div>
             }
 
@@ -589,7 +675,9 @@
             <!-- Order Summary Card -->
             <div style="border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem;">
               <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1.5px solid var(--border);">
-                <img *ngIf="product.images.length" [src]="product.images[0]" alt="" style="width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1.5px solid var(--black); flex-shrink: 0;" onerror="this.style.display='none'" />
+                @if (product.images.length) {
+                  <img [src]="product.images[0]" alt="" style="width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1.5px solid var(--black); flex-shrink: 0;" onerror="this.style.display='none'" />
+                }
                 <div style="flex: 1; min-width: 0;">
                   <p style="font-family: var(--font-secondary); font-size: 0.85rem; font-weight: 700; color: var(--black); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     {{ product.title }}
@@ -624,10 +712,16 @@
                   <span style="color: var(--gray-3);">Shipping</span>
                   <span style="font-weight: 600; color: var(--gray-3);">To be agreed</span>
                 </div>
-                <div *ngIf="appliedCoupon" style="display: flex; justify-content: space-between; color: var(--success-dark); font-weight: 700;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--gray-3); border-top: 1px dashed var(--border); padding-top: 0.25rem; margin-top: 0.1rem;">
+                  <span>📦 Estimated delivery</span>
+                  <span style="font-weight: 700;">5–10 business days</span>
+                </div>
+                @if (appliedCoupon) {
+                <div style="display: flex; justify-content: space-between; color: var(--success-dark); font-weight: 700;">
                   <span>Coupon ({{ couponCode }})</span>
                   <span>-{{ couponDiscount | currencyFormat }}</span>
                 </div>
+                }
                 <div style="border-top: 1.5px solid var(--black); margin-top: 0.2rem; padding-top: 0.3rem; display: flex; justify-content: space-between; font-weight: 900; font-size: 0.9rem; color: var(--black);">
                   <span>Total</span>
                   <span>{{ (effectivePrice - (appliedCoupon ? couponDiscount : 0)) | currencyFormat }}</span>
@@ -660,9 +754,11 @@
             onmouseout="this.style.transform='none'; this.style.boxShadow='4px 4px 0 var(--black)'; this.style.background='var(--yellow)'">{{ buyLoading ? (paymentMethod === 'online' ? 'Processing Payment...' : 'Placing Order...') : (paymentMethod === 'online' ? 'Pay with Card' : 'Place Order') }}</button>
         </div>
       </form>
+      }
     </div>
   </div>
 </div>
+}
 } @else {
   <!-- SKELETON LOADING STATE -->
   @if (isLoading) {

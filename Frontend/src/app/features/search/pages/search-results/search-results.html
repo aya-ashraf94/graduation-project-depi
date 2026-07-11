@@ -3,10 +3,14 @@
 
     <!-- HEADER -->
     <div class="search-header">
-      <h1 class="search-title" *ngIf="query">
+      @if (query) {
+      <h1 class="search-title">
         Results for "<span class="highlight">{{ query }}</span>"
       </h1>
-      <h1 class="search-title" *ngIf="!query">Search</h1>
+      }
+      @if (!query) {
+      <h1 class="search-title">Search</h1>
+      }
       <p class="search-count">{{ totalResults }} item{{ totalResults !== 1 ? 's' : '' }} found</p>
     </div>
 
@@ -27,9 +31,11 @@
           placeholder="Search items, brands, categories..."
           (keyup.enter)="applyFilters()"
         />
-        <div class="search-loading" *ngIf="loading">
+        @if (loading) {
+        <div class="search-loading">
           <div class="search-spinner"></div>
         </div>
+        }
       </div>
     </div>
 
@@ -53,7 +59,9 @@
           <label class="filter-label">Category</label>
           <select class="filter-select" [(ngModel)]="selectedCategory" (change)="applyFilters()">
             <option value="">All Categories</option>
-            <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabels[cat] }}</option>
+            @for (cat of categories; track cat) {
+            <option [value]="cat">{{ categoryLabels[cat] }}</option>
+            }
           </select>
         </div>
 
@@ -61,7 +69,9 @@
           <label class="filter-label">Condition</label>
           <select class="filter-select" [(ngModel)]="selectedCondition" (change)="applyFilters()">
             <option value="">All Conditions</option>
-            <option *ngFor="let cond of conditions" [value]="cond">{{ conditionLabels[cond] }}</option>
+            @for (cond of conditions; track cond) {
+            <option [value]="cond">{{ conditionLabels[cond] }}</option>
+            }
           </select>
         </div>
 
@@ -80,8 +90,10 @@
     </div>
 
     <!-- LOADING SKELETON -->
-    <div class="results-grid results-skeleton" *ngIf="loading">
-      <div class="skeleton-card" *ngFor="let _ of [].constructor(4)">
+    @if (loading) {
+    <div class="results-grid results-skeleton">
+      @for (_ of [].constructor(4); track $index) {
+      <div class="skeleton-card">
         <div class="skeleton-img"></div>
         <div class="skeleton-body">
           <div class="skeleton-line skeleton-line-sm"></div>
@@ -89,29 +101,32 @@
           <div class="skeleton-line skeleton-line-lg"></div>
         </div>
       </div>
+      }
     </div>
+    }
 
     <!-- RESULTS GRID -->
-    <div class="results-grid" *ngIf="!loading && results.length > 0; else noResults">
+    @if (!loading && results.length > 0) {
+    <div class="results-grid">
+      @for (item of results; track item.id) {
       <app-product-card
-        *ngFor="let item of results"
         [product]="item"
         variant="list"
         (wishlistToggle)="toggleWishlist(item.id, $event)"
       ></app-product-card>
+      }
     </div>
-
-    <!-- EMPTY STATE -->
-    <ng-template #noResults>
+    } @else {
+      @if (!loading) {
       <app-empty-state
-        *ngIf="!loading"
         icon="🔍"
         title="No items found"
         description="Try adjusting your search or filters to find what you're looking for."
         ctaLabel="Browse All Items"
         (ctaClick)="browseAll()">
       </app-empty-state>
-    </ng-template>
+      }
+    }
 
   </div>
 

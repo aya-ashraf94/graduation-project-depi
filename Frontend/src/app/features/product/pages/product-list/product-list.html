@@ -216,13 +216,14 @@
             }
           }
 
-          <app-empty-state
-            *ngIf="!isLoading && products.length === 0"
-            title="No items found"
-            description="No items match your filters."
-            ctaLabel="Clear Filters"
-            (ctaClick)="resetFilters()"
-          ></app-empty-state>
+          @if (!isLoading && products.length === 0) {
+            <app-empty-state
+              title="No items found"
+              description="No items match your filters."
+              ctaLabel="Clear Filters"
+              (ctaClick)="resetFilters()"
+            ></app-empty-state>
+          }
 
           @for (product of products; track product.id) {
             <app-product-card

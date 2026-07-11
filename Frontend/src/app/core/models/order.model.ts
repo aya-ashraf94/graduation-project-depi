@@ -10,7 +10,8 @@ export type OrderStatus =
   | 'pending'
   | 'shipped'
   | 'delivered'
-  | 'cancelled';
+  | 'cancelled'
+  | 'disputed';
 
 export type PaymentMethod = 'cash_on_delivery' | 'bank_transfer' | 'online' | 'credit_card';
 
@@ -57,6 +58,10 @@ export interface OrderSummary {
   trackingNumber?: string;
   couponCode?: string;
   updatedAt?: Date;
+
+  // Runtime-only UI state (not from API)
+  _showTrackingInput?: boolean;
+  _trackingValue?: string;
 }
 
 /** Payload to create a new order (buyer clicks "Buy Now") */
@@ -81,4 +86,5 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   shipped: 'Shipped',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
+  disputed: 'Disputed',
 };

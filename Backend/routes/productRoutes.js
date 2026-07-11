@@ -26,4 +26,8 @@ router.delete('/:id', authMiddleware, productController.deleteProduct);
 //Get Product By ID
 router.get('/:id', productController.getProductById);
 
+// Reserve / release product for checkout
+router.post('/:id/reserve', authMiddleware, productController.reserveProduct);
+router.post('/:id/release', authMiddleware, productController.releaseProduct);
+
 module.exports = router;

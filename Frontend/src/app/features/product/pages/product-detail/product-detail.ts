@@ -60,6 +60,8 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   conditionLabels = CONDITION_LABELS;
   activeImage = 0;
   isOwner = false;
+  isBuyer = false;
+  orderId: string | null = null;
   showReportModal = false;
   showAuthModal = false;
   isLoading = true;
@@ -279,6 +281,26 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
 
           const currentUser = this.authService.currentUser();
           this.isOwner = currentUser?.id === product.seller.id;
+
+          if (currentUser && product.status === 'sold') {
+            const stored = localStorage.getItem(`purchased_${product.id}`);
+            if (stored) {
+              this.isBuyer = true;
+              this.orderId = stored;
+            } else {
+              this.orderService.getOrders(1, 50).subscribe({
+                next: (orders) => {
+                  const bought = orders.find(o => o.productId === product.id && o.buyerId === currentUser.id);
+                  if (bought) {
+                    this.isBuyer = true;
+                    this.orderId = bought.id;
+                    localStorage.setItem(`purchased_${product.id}`, bought.id);
+                    this.cdr.detectChanges();
+                  }
+                }
+              });
+            }
+          }
 
           if (currentUser) {
             this.offerService.getMyOffers().subscribe({
@@ -529,6 +551,17 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
         });
       }
 
+      // Soft-reserve the product
+      if (this.product && this.product.status === 'available') {
+        this.productService.reserveProduct(this.product.id).subscribe({
+          error: (err) => {
+            if (err.status === 409) {
+              this.buyError.set(err.error?.message || 'This product is no longer available');
+            }
+          }
+        });
+      }
+
       this.destroyCardElement();
       this.showBuyModal = true;
       this.paymentMethod = 'cash_on_delivery';
@@ -551,6 +584,11 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   closeBuy(): void {
+    // Release the soft-reservation
+    if (this.product && this.product.status === 'available') {
+      this.productService.releaseProduct(this.product.id).subscribe();
+    }
+
     this.destroyCardElement();
     this.showBuyModal = false;
     if (this.checkoutTimerId) {
@@ -576,6 +614,9 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.product && this.product.status === 'available') {
+      this.productService.releaseProduct(this.product.id).subscribe();
+    }
     this.destroyCardElement();
     if (this.checkoutTimerId) {
       clearInterval(this.checkoutTimerId);
@@ -642,9 +683,8 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
       paymentMethod: 'cash_on_delivery',
       shippingAddress: addrParts.join(', '),
       notes: this.orderNotes,
-      price: this.effectivePrice,
       couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
-      offerId: this.route.snapshot.queryParams['offerId'] || undefined
+      offerId: this.activeOfferId || undefined
     };
 
     this.orderService.createOrder(payload).subscribe({
@@ -653,6 +693,9 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
         this.buySuccess.set('Order placed successfully! Product is now marked as Sold.');
         if (this.product) {
           this.product.status = 'sold';
+          this.isBuyer = true;
+          this.orderId = order.id;
+          localStorage.setItem(`purchased_${this.product.id}`, order.id);
         }
         this.offerService.activeReservation.set(null);
         setTimeout(() => {
@@ -684,7 +727,7 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
       shippingAddress: addrParts.join(', '),
       notes: this.orderNotes,
       couponCode: this.appliedCoupon ? this.couponCode.trim().toUpperCase() : undefined,
-      offerId: this.route.snapshot.queryParams['offerId'] || undefined
+      offerId: this.activeOfferId || undefined
     };
 
     try {
@@ -710,8 +753,8 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
 
       // Payment succeeded — create the order immediately
       try {
-        await firstValueFrom(
-          this.http.post(`${environment.apiUrl}/payments/confirm-payment`, {
+        const confirmRes = await firstValueFrom(
+          this.http.post<any>(`${environment.apiUrl}/payments/confirm-payment`, {
             paymentIntentId: paymentIntent.id
           })
         );
@@ -719,6 +762,11 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
         this.buySuccess.set('Payment successful! Order placed.');
         if (this.product) {
           this.product.status = 'sold';
+          this.isBuyer = true;
+          this.orderId = confirmRes?.order?.id || null;
+          if (this.orderId) {
+            localStorage.setItem(`purchased_${this.product.id}`, this.orderId);
+          }
         }
         this.offerService.activeReservation.set(null);
         this.cdr.detectChanges();

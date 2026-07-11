@@ -3,6 +3,7 @@ const { refundRequests, orders, products, users } = require("../db/schema");
 const { eq, and, desc, or, sql } = require("drizzle-orm");
 const { createNotification } = require("../utils/notifications");
 const { updateUserStats } = require("../utils/userStats");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const requestRefund = async (req, res) => {
   try {
@@ -124,6 +125,15 @@ const adminProcessRefund = async (req, res) => {
 
     if (status === "approved") {
       const sellerNet = Math.max(0, (order.price || 0) - (order.platformFee || 0));
+      const [seller] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, order.sellerId)).limit(1);
+      if (!seller || seller.balance < sellerNet) {
+        await db.update(refundRequests).set({
+          status: "rejected",
+          resolution: `Rejected: seller insufficient balance (needed $${sellerNet.toFixed(2)}, had $${seller?.balance?.toFixed(2) || '0.00'})`,
+          updatedAt: new Date(),
+        }).where(eq(refundRequests.id, id));
+        return res.status(400).json({ message: `Seller balance insufficient for refund. Required: $${sellerNet.toFixed(2)}, Available: $${(seller?.balance || 0).toFixed(2)}` });
+      }
       await db.update(users).set({
         balance: sql`${users.balance} - ${sellerNet}`,
         updatedAt: new Date(),
@@ -132,6 +142,15 @@ const adminProcessRefund = async (req, res) => {
       await db.update(orders).set({ status: "cancelled", updatedAt: new Date() }).where(eq(orders.id, order.id));
 
       await db.update(products).set({ status: "active", updatedAt: new Date() }).where(eq(products.id, order.productId));
+
+      // Refund the Stripe charge for online payment orders
+      if (order.stripePaymentIntentId) {
+        try {
+          await stripe.refunds.create({ payment_intent: order.stripePaymentIntentId });
+        } catch (stripeError) {
+          console.error(`Stripe refund failed for PI ${order.stripePaymentIntentId}:`, stripeError.message);
+        }
+      }
 
       await createNotification({
         userId: refund.buyerId, type: "system", title: "Refund Approved",

@@ -1,9 +1,24 @@
 const db = require("../db");
-const { featuredListings, products, users, orders } = require("../db/schema");
-const { eq, and, gt, desc, sql } = require("drizzle-orm");
+const { featuredListings, products, users, orders, settings, sellerTiers } = require("../db/schema");
+const { eq, and, gt, gte, desc, sql } = require("drizzle-orm");
 const { createNotification } = require("../utils/notifications");
 
-const FEATURED_PRICES = { 2: 5.00, 7: 12.00, 14: 20.00 };
+const DEFAULT_FEATURED_PRICES = { 2: 5.00, 7: 12.00, 14: 20.00 };
+
+async function loadFeaturedPrices() {
+  const prices = { ...DEFAULT_FEATURED_PRICES };
+  try {
+    const rows = await db.select().from(settings)
+      .where(sql`${settings.key} LIKE 'featured_price_%'`);
+    for (const row of rows) {
+      const duration = parseInt(row.key.replace('featured_price_', ''), 10);
+      if ([2, 7, 14].includes(duration)) {
+        prices[duration] = parseFloat(row.value);
+      }
+    }
+  } catch (e) { /* settings table may not exist yet */ }
+  return prices;
+}
 
 const promoteProduct = async (req, res) => {
   try {
@@ -25,25 +40,74 @@ const promoteProduct = async (req, res) => {
       return res.status(403).json({ message: "You can only promote your own products" });
     }
 
-    const amount = FEATURED_PRICES[duration];
-    const [seller] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, sellerId)).limit(1);
-    if (!seller || seller.balance < amount) {
+    // Check for duplicate active featured listing
+    const now = new Date();
+    const [existingFeatured] = await db.select()
+      .from(featuredListings)
+      .where(and(
+        eq(featuredListings.productId, productId),
+        eq(featuredListings.sellerId, sellerId),
+        eq(featuredListings.isActive, true),
+        gt(featuredListings.endDate, now)
+      ))
+      .limit(1);
+    if (existingFeatured) {
+      return res.status(400).json({ message: "This product is already actively promoted. Wait until the current promotion expires or extend it." });
+    }
+
+    const prices = await loadFeaturedPrices();
+    let amount = prices[duration];
+
+    // Check if seller's tier grants free featured listings
+    const [sellerUser] = await db.select({
+      balance: users.balance, tierId: users.tierId, tierExpiresAt: users.tierExpiresAt,
+    }).from(users).where(eq(users.id, sellerId)).limit(1);
+    if (!sellerUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (sellerUser.tierId && sellerUser.tierExpiresAt && new Date(sellerUser.tierExpiresAt) > new Date()) {
+      const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, sellerUser.tierId)).limit(1);
+      if (tier && tier.featuredListingsIncluded > 0) {
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const [monthlyResult] = await db.select({
+          count: sql`COUNT(*)`,
+        }).from(featuredListings)
+          .where(and(
+            eq(featuredListings.sellerId, sellerId),
+            gte(featuredListings.createdAt, startOfMonth)
+          ));
+        const usedThisMonth = Number(monthlyResult?.count || 0);
+        if (usedThisMonth < tier.featuredListingsIncluded) {
+          amount = 0;
+        }
+      }
+    }
+
+    if (amount > 0 && sellerUser.balance < amount) {
       return res.status(400).json({ message: `Insufficient balance. Promotion costs $${amount.toFixed(2)}. Please top up your balance.` });
     }
 
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + duration);
 
-    await db.update(users).set({
-      balance: sql`${users.balance} - ${amount}`,
-      updatedAt: new Date(),
-    }).where(eq(users.id, sellerId));
+    if (amount > 0) {
+      await db.update(users).set({
+        balance: sql`${users.balance} - ${amount}`,
+        updatedAt: new Date(),
+      }).where(eq(users.id, sellerId));
+    }
 
     const [featured] = await db.insert(featuredListings).values({
       productId, sellerId, duration, amountPaid: amount, endDate,
     }).returning();
 
-    res.status(201).json({ message: `Product promoted for ${duration} days!`, featured });
+    const msg = amount === 0
+      ? `Product promoted for ${duration} days (free via tier benefits)!`
+      : `Product promoted for ${duration} days!`;
+    res.status(201).json({ message: msg, featured });
   } catch (error) {
     console.error("Error promoting product:", error);
     res.status(500).json({ message: "Server Error" });
@@ -51,7 +115,8 @@ const promoteProduct = async (req, res) => {
 };
 
 const getPromotionPrices = async (req, res) => {
-  res.json(FEATURED_PRICES);
+  const prices = await loadFeaturedPrices();
+  res.json(prices);
 };
 
 const getActiveFeatured = async (req, res) => {
@@ -101,8 +166,16 @@ const adminSetFeaturedPrice = async (req, res) => {
     if (![2, 7, 14].includes(duration) || !price || price < 0) {
       return res.status(400).json({ message: "Invalid duration or price" });
     }
-    FEATURED_PRICES[duration] = parseFloat(price);
-    res.json({ message: `Featured price for ${duration} days set to $${price}`, prices: FEATURED_PRICES });
+    const key = `featured_price_${duration}`;
+    const value = parseFloat(price).toString();
+    const [existing] = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+    if (existing) {
+      await db.update(settings).set({ value }).where(eq(settings.key, key));
+    } else {
+      await db.insert(settings).values({ key, value });
+    }
+    const prices = await loadFeaturedPrices();
+    res.json({ message: `Featured price for ${duration} days set to $${price}`, prices });
   } catch (error) {
     console.error("Error setting featured price:", error);
     res.status(500).json({ message: "Server Error" });

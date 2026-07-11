@@ -127,10 +127,10 @@
                   <td class="compare-cell-value compare-desc">{{ field.getValue(p[1]) }}</td>
                 } @else if (field.key === 'status') {
                   <td class="compare-cell-value">
-                    <span class="status-badge-compare" [class.status-available]="p[0].status === 'available'" [class.status-sold]="p[0].status === 'sold'" [class.status-reserved]="p[0].status === 'reserved'">{{ field.getValue(p[0]) }}</span>
+                    <span class="status-badge-compare" [class.status-available]="matchesStatus(p[0].status, 'available')" [class.status-sold]="matchesStatus(p[0].status, 'sold')" [class.status-reserved]="matchesStatus(p[0].status, 'reserved')">{{ field.getValue(p[0]) }}</span>
                   </td>
                   <td class="compare-cell-value">
-                    <span class="status-badge-compare" [class.status-available]="p[1].status === 'available'" [class.status-sold]="p[1].status === 'sold'" [class.status-reserved]="p[1].status === 'reserved'">{{ field.getValue(p[1]) }}</span>
+                    <span class="status-badge-compare" [class.status-available]="matchesStatus(p[1].status, 'available')" [class.status-sold]="matchesStatus(p[1].status, 'sold')" [class.status-reserved]="matchesStatus(p[1].status, 'reserved')">{{ field.getValue(p[1]) }}</span>
                   </td>
                 } @else {
                   <td class="compare-cell-value">{{ field.getValue(p[0]) }}</td>
@@ -179,7 +179,7 @@
               <div class="mobile-field"><span class="mobile-field-label">Category</span><span class="mobile-field-value">{{ product.categoryName || product.category }}</span></div>
               <div class="mobile-field"><span class="mobile-field-label">Brand</span><span class="mobile-field-value">{{ product.brand || '-' }}</span></div>
               <div class="mobile-field"><span class="mobile-field-label">Condition</span><span class="mobile-field-value">{{ getConditionLabel(product.condition) }}</span></div>
-              <div class="mobile-field"><span class="mobile-field-label">Status</span><span class="mobile-field-value"><span class="status-badge-compare" [class.status-available]="product.status === 'available'" [class.status-sold]="product.status === 'sold'" [class.status-reserved]="product.status === 'reserved'">{{ product.status.charAt(0).toUpperCase() + product.status.slice(1) }}</span></span></div>
+              <div class="mobile-field"><span class="mobile-field-label">Status</span><span class="mobile-field-value"><span class="status-badge-compare" [class.status-available]="matchesStatus(product.status, 'available')" [class.status-sold]="matchesStatus(product.status, 'sold')" [class.status-reserved]="matchesStatus(product.status, 'reserved')">{{ product.status.charAt(0).toUpperCase() + product.status.slice(1) }}</span></span></div>
               <div class="mobile-field"><span class="mobile-field-label">Rating</span><span class="mobile-field-value">{{ product.seller.rating }}/5</span></div>
               <div class="mobile-field"><span class="mobile-field-label">Location</span><span class="mobile-field-value">{{ product.location || '-' }}</span></div>
               <div class="mobile-field mobile-field-desc"><span class="mobile-field-label">Description</span><span class="mobile-field-value">{{ product.description || '-' }}</span></div>

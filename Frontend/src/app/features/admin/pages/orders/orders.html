@@ -70,12 +70,13 @@
                 <tr>
                   <td>
                     <div class="order-product-cell">
-                      <div class="order-product-thumb" *ngIf="order.productId?.thumbnail; else noThumb">
-                        <img [src]="order.productId.thumbnail" [alt]="order.productId.title" />
-                      </div>
-                      <ng-template #noThumb>
+                      @if (order.productId?.thumbnail) {
+                        <div class="order-product-thumb">
+                          <img [src]="order.productId.thumbnail" [alt]="order.productId.title" />
+                        </div>
+                      } @else {
                         <div class="order-product-thumb placeholder">📦</div>
-                      </ng-template>
+                      }
                       <span class="order-product-title">{{ order.productId?.title || 'Unknown' }}</span>
                     </div>
                   </td>

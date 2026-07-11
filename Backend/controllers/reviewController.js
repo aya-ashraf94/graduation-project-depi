@@ -30,6 +30,10 @@ const createReview = async (req, res) => {
       return res.status(403).json({ message: "You are not involved in this transaction" });
     }
 
+    if (order.status !== "delivered") {
+      return res.status(400).json({ message: "You can only review delivered orders" });
+    }
+
     const productId = order.productId;
     const revieweeId = (reviewerId === order.buyerId) ? order.sellerId : order.buyerId;
 
@@ -58,16 +62,15 @@ const createReview = async (req, res) => {
       linkedRoute: "/profile/me?tab=reviews", linkedEntityId: review.id,
     });
 
-    const allReviews = await db.select({ rating: reviews.rating })
-      .from(reviews)
+    const [stats] = await db.select({
+      avg: sql`AVG(${reviews.rating})`,
+      count: sql`COUNT(*)`,
+    }).from(reviews)
       .where(eq(reviews.revieweeId, revieweeId));
-
-    const sum = allReviews.reduce((acc, r) => acc + r.rating, 0);
-    const averageRating = allReviews.length > 0 ? (sum / allReviews.length) : 5.0;
-    const roundedRating = Math.round(averageRating * 10) / 10;
+    const averageRating = Number(stats.count) > 0 ? Math.round(Number(stats.avg) * 10) / 10 : 5.0;
 
     await db.update(users).set({
-      rating: roundedRating,
+      rating: averageRating,
       updatedAt: new Date(),
     }).where(eq(users.id, revieweeId));
 
@@ -90,6 +93,7 @@ const getReviewsForUser = async (req, res) => {
 
     const formatted = result.map(r => ({
       ...r.reviews,
+      orderId: r.reviews.orderId,
       reviewerId: r.reviewer ? { id: r.reviewer.id, name: r.reviewer.name, email: r.reviewer.email, avatar: r.reviewer.avatar || `https://i.pravatar.cc/150?u=${r.reviewer.email}` } : null,
       productId: r.products ? { id: r.products.id, title: r.products.title, price: r.products.price, thumbnail: (r.products.images || [])[0] } : null,
     }));
@@ -108,11 +112,14 @@ const getReviewsByUser = async (req, res) => {
       .from(reviews)
       .where(eq(reviews.reviewerId, userId))
       .leftJoin(reviewee, eq(reviews.revieweeId, reviewee.id))
+      .leftJoin(products, eq(reviews.productId, products.id))
       .orderBy(desc(reviews.createdAt));
 
     const formatted = result.map(r => ({
       ...r.reviews,
+      orderId: r.reviews.orderId,
       revieweeId: r.reviewee ? { id: r.reviewee.id, name: r.reviewee.name, email: r.reviewee.email, avatar: r.reviewee.avatar || `https://i.pravatar.cc/150?u=${r.reviewee.email}` } : null,
+      productId: r.products ? { id: r.products.id, title: r.products.title, price: r.products.price, thumbnail: (r.products.images || [])[0] } : null,
     }));
 
     res.json(formatted);

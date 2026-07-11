@@ -104,9 +104,12 @@
   
   /* Borders & Shadows */
   --border-width: 1.5px;
+  --border-width-thick: 2px;
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --shadow-brutal: 4px 4px 0 var(--black);
   --shadow-brutal-hover: 6px 6px 0 var(--black);
+  --shadow-brutal-sm: 2px 2px 0 var(--black);
+  --shadow-brutal-sm-hover: 3px 3px 0 var(--black);
   --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.04);
   --shadow-heavy: 0 16px 36px rgba(0, 0, 0, 0.08);
   --shadow-dropdown: 0 10px 30px rgba(0, 0, 0, 0.12);

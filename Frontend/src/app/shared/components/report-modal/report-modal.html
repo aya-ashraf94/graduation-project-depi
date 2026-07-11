@@ -15,28 +15,37 @@
       </div>
     }
 
-    <div class="brutal-modal-body" *ngIf="!reportSubmitted()">
+    @if (!reportSubmitted()) {
+    <div class="brutal-modal-body">
       <div class="brutal-modal-options">
-        <label class="brutal-modal-option" [class.active]="reportReason() === r" *ngFor="let r of ['Misleading description', 'Counterfeit item', 'Inappropriate content', 'Scam / fraud', 'Other']">
+        @for (r of ['Misleading description', 'Counterfeit item', 'Inappropriate content', 'Scam / fraud', 'Other']; track $index) {
+        <label class="brutal-modal-option" [class.active]="reportReason() === r">
           <input type="radio" name="reason" [value]="r" (click)="reportReason.set(r)" [checked]="reportReason() === r" />
           <span>{{ r }}</span>
         </label>
+        }
       </div>
 
       <!-- Conditional explanation field if 'Other' is selected -->
-      <div class="report-details-container" *ngIf="reportReason() === 'Other'">
+      @if (reportReason() === 'Other') {
+      <div class="report-details-container">
         <label class="details-label">Please explain your reason:</label>
         <textarea class="details-textarea" [ngModel]="reportDetails()" (ngModelChange)="reportDetails.set($event)" placeholder="Tell us more about the issue..."></textarea>
       </div>
+      }
 
       <div class="brutal-modal-footer">
         <button class="brutal-btn-submit" [disabled]="submittingReport() || !reportReason() || (reportReason() === 'Other' && !reportDetails().trim())" (click)="submitReport()">
-          <span class="spinner-micro" *ngIf="submittingReport()"></span>
+          @if (submittingReport()) {
+          <span class="spinner-micro"></span>
+          }
           <span>{{ submittingReport() ? 'Submitting...' : 'Submit Report' }}</span>
         </button>
       </div>
     </div>
-    <div class="brutal-modal-success" *ngIf="reportSubmitted()">
+    }
+    @if (reportSubmitted()) {
+    <div class="brutal-modal-success">
       <div class="success-icon-box">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success-dark)" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>
       </div>
@@ -44,5 +53,6 @@
       <p class="brutal-success-desc">Thank you for helping keep our community safe. Our moderation team will review this listing shortly.</p>
       <button class="brutal-btn-done" (click)="closeModal(true)">Done</button>
     </div>
+    }
   </div>
 </div>

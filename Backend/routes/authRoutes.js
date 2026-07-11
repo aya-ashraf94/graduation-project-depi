@@ -9,7 +9,9 @@ const {
   updateProfile,
   forgotPassword,
   resetPassword,
-  validateResetToken
+  validateResetToken,
+  refreshToken,
+  logout,
 } = require('../controllers/authController');
 
 const passwordResetLimiter = rateLimit({
@@ -26,6 +28,8 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/user/:id', getUserById);
 router.put('/user/:id', authMiddleware, updateProfile);
+router.post('/refresh-token', refreshToken);
+router.post('/logout', logout);
 router.post('/forgot-password', passwordResetLimiter, forgotPassword);
 router.post('/reset-password', passwordResetLimiter, resetPassword);
 router.post('/validate-reset-token', passwordResetLimiter, validateResetToken);

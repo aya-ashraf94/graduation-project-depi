@@ -1,37 +1,46 @@
-<!-- SKELETON TABLE ROWS -->
-<tr class="table-row-skeleton" *ngFor="let row of rowsArray()">
-  <td *ngFor="let col of columns()">
-    <ng-container [ngSwitch]="col">
-      <!-- avatar style column -->
-      <div *ngSwitchCase="'avatar'" class="user-profile-cell" style="display: flex; gap: 0.75rem; align-items: center;">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-text-block">
-          <div class="skeleton-line name"></div>
-          <div class="skeleton-line sub"></div>
-        </div>
-      </div>
-      
-      <!-- thumb style column (listings) -->
-      <div *ngSwitchCase="'thumb'" class="product-cell-skeleton" style="display: flex; gap: 0.75rem; align-items: center;">
-        <div class="skeleton-thumb"></div>
-        <div class="skeleton-text-block">
-          <div class="skeleton-line title"></div>
-          <div class="skeleton-line sub"></div>
-          <div class="skeleton-line sub-meta"></div>
-        </div>
-      </div>
+@for (row of rowsArray(); track $index) {
+  <tr class="table-row-skeleton">
+    @for (col of columns(); track $index) {
+      <td>
+        @switch (col) {
+          @case ('avatar') {
+            <div class="user-profile-cell" style="display: flex; gap: 0.75rem; align-items: center;">
+              <div class="skeleton-avatar"></div>
+              <div class="skeleton-text-block">
+                <div class="skeleton-line name"></div>
+                <div class="skeleton-line sub"></div>
+              </div>
+            </div>
+          }
+          
+          @case ('thumb') {
+            <div class="product-cell-skeleton" style="display: flex; gap: 0.75rem; align-items: center;">
+              <div class="skeleton-thumb"></div>
+              <div class="skeleton-text-block">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line sub"></div>
+                <div class="skeleton-line sub-meta"></div>
+              </div>
+            </div>
+          }
 
-      <!-- text column -->
-      <div *ngSwitchCase="'text'" class="skeleton-line text"></div>
+          @case ('text') {
+            <div class="skeleton-line text"></div>
+          }
 
-      <!-- number/short text column -->
-      <div *ngSwitchCase="'number'" class="skeleton-line number"></div>
+          @case ('number') {
+            <div class="skeleton-line number"></div>
+          }
 
-      <!-- badge column -->
-      <div *ngSwitchCase="'badge'" class="skeleton-badge"></div>
+          @case ('badge') {
+            <div class="skeleton-badge"></div>
+          }
 
-      <!-- actions column -->
-      <div *ngSwitchCase="'actions'" class="skeleton-actions"></div>
-    </ng-container>
-  </td>
-</tr>
+          @case ('actions') {
+            <div class="skeleton-actions"></div>
+          }
+        }
+      </td>
+    }
+  </tr>
+}

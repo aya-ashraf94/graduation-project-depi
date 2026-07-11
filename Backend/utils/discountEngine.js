@@ -1,8 +1,12 @@
 const db = require("../db");
-const { flashSales, products, categories, settings, coupons, sellerTiers, users } = require("../db/schema");
-const { eq, and, lte, gte, inArray } = require("drizzle-orm");
+const { flashSales, products, categories, coupons, sellerTiers, users, orders } = require("../db/schema");
+const { eq, and, lte, gte, inArray, sql } = require("drizzle-orm");
 
 const MAX_TOTAL_DISCOUNT_PERCENT = 50;
+
+const PROMOS_CACHE_TTL = 60 * 1000; // 60 seconds
+let promotionsCache = null;
+let promotionsCacheTime = 0;
 
 /**
  * Load all active promotions from the database.
@@ -14,6 +18,10 @@ const MAX_TOTAL_DISCOUNT_PERCENT = 50;
  */
 async function loadActivePromotions() {
   const now = new Date();
+  const nowMs = now.getTime();
+  if (promotionsCache && (nowMs - promotionsCacheTime) < PROMOS_CACHE_TTL) {
+    return promotionsCache;
+  }
 
   // ── Active flash sales ──────────────────────────────────────────
   const activeFlashSales = await db.select()
@@ -40,24 +48,38 @@ async function loadActivePromotions() {
   }
 
   if (!hasGlobalFlashSale) {
-    // Build product-level map from category and product scoped sales
     const allProductIds = new Set();
+    const categoryScopeSales = activeFlashSales.filter(s => s.scopeType === "category" && s.scopeId);
+    const productScopeSales = activeFlashSales.filter(s => s.scopeType === "product" && s.scopeId);
 
-    for (const sale of activeFlashSales) {
-      let targetIds = [];
-      if (sale.scopeType === "category" && sale.scopeId) {
-        const catProducts = await db.select({ id: products.id })
-          .from(products)
-          .where(eq(products.categoryId, sale.scopeId));
-        targetIds = catProducts.map(p => p.id);
-      } else if (sale.scopeType === "product" && sale.scopeId) {
-        targetIds = [sale.scopeId];
+    // Batch all category-scoped sales into a single query
+    if (categoryScopeSales.length > 0) {
+      const catIds = [...new Set(categoryScopeSales.map(s => s.scopeId))];
+      const catProducts = await db.select({ id: products.id, categoryId: products.categoryId })
+        .from(products)
+        .where(inArray(products.categoryId, catIds));
+      const catProductMap = {};
+      for (const cp of catProducts) {
+        if (!catProductMap[cp.categoryId]) catProductMap[cp.categoryId] = [];
+        catProductMap[cp.categoryId].push(cp.id);
       }
-      for (const pid of targetIds) {
-        allProductIds.add(pid);
-        if (!flashDiscounts[pid] || sale.discountPercent > flashDiscounts[pid].percent) {
-          flashDiscounts[pid] = { percent: sale.discountPercent, name: sale.name };
+      for (const sale of categoryScopeSales) {
+        const targetIds = catProductMap[sale.scopeId] || [];
+        for (const pid of targetIds) {
+          allProductIds.add(pid);
+          if (!flashDiscounts[pid] || sale.discountPercent > flashDiscounts[pid].percent) {
+            flashDiscounts[pid] = { percent: sale.discountPercent, name: sale.name };
+          }
         }
+      }
+    }
+
+    // Product-scoped sales need no batch (one product per sale)
+    for (const sale of productScopeSales) {
+      const pid = sale.scopeId;
+      allProductIds.add(pid);
+      if (!flashDiscounts[pid] || sale.discountPercent > flashDiscounts[pid].percent) {
+        flashDiscounts[pid] = { percent: sale.discountPercent, name: sale.name };
       }
     }
   }
@@ -79,31 +101,18 @@ async function loadActivePromotions() {
     }
   }
 
-  // ── Global platform discount (settings table) ───────────────────
-  let globalDiscount = null;
-  let globalDiscountName = null;
-  try {
-    const [row] = await db.select().from(settings).where(eq(settings.key, 'discount'));
-    if (row) {
-      const val = parseFloat(row.value);
-      if (val > 0 && val <= 100) {
-        globalDiscount = val;
-        globalDiscountName = 'Platform Discount';
-      }
-    }
-  } catch (e) {
-    // settings table may not exist yet
-  }
-
-  return {
+  const result = {
     flashDiscounts,
     hasGlobalFlashSale,
     globalFlashSalePercent,
     globalFlashSaleName,
     activeCategorySales,
-    globalDiscount,
-    globalDiscountName,
   };
+
+  promotionsCache = result;
+  promotionsCacheTime = nowMs;
+
+  return result;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -147,7 +156,7 @@ function _getCategorySalePrice(product, promotions) {
 
   const catSale = promotions.activeCategorySales[catId];
   const price = Number(product.price);
-  let salePrice = Math.round(price * (1 - catSale.percent / 100));
+  let salePrice = +(price * (1 - catSale.percent / 100)).toFixed(2);
   const minP = product.minPrice !== null && product.minPrice !== undefined ? Number(product.minPrice) : null;
 
   if (minP !== null) {
@@ -169,7 +178,7 @@ function _bestDisplayPrice(product, promotions) {
   let best = null;
 
   if (flash && catSale) {
-    best = flash.price <= catSale.price ? flash : catSale;
+    best = flash; // flash sale overrides category discount
   } else if (flash) {
     best = flash;
   } else if (catSale) {
@@ -216,10 +225,10 @@ function _bestDisplayPrice(product, promotions) {
  * Calculate the price for an order (with coupon + optional offer).
  *
  * Returns { finalPrice, valid, breakdown: { originalPrice, flashSaleDiscount,
- *   categorySaleDiscount, offerAmount, couponDiscount, totalDiscount },
+ *   categorySaleDiscount, globalDiscount, offerAmount, couponDiscount, totalDiscount },
  *   couponValid, couponMessage, appliedRules }
  */
-async function calculateCheckoutPrice(product, promotions, { couponCode, offerAmount } = {}) {
+async function calculateCheckoutPrice(product, promotions, { couponCode, offerAmount, buyerId } = {}) {
   const originalPrice = Number(product.price);
   const breakdown = {
     originalPrice,
@@ -261,6 +270,9 @@ async function calculateCheckoutPrice(product, promotions, { couponCode, offerAm
   if (offerAmount !== null && offerAmount !== undefined && offerAmount > 0) {
     basePrice = Number(offerAmount);
     breakdown.offerAmount = Number(offerAmount);
+    // Reset discounts from steps 1/1b since offer overrides them
+    breakdown.flashSaleDiscount = 0;
+    breakdown.categorySaleDiscount = 0;
     appliedRules.push({
       type: 'offer',
       name: 'Negotiated Offer',
@@ -277,18 +289,39 @@ async function calculateCheckoutPrice(product, promotions, { couponCode, offerAm
     const code = couponCode.trim().toUpperCase();
     const [coupon] = await db.select().from(coupons).where(eq(coupons.code, code)).limit(1);
 
+    let rejectReason = null;
+
+    // Backend enforcement: no coupon on flash sale items
+    if (!rejectReason && display.isFlashSale) {
+      rejectReason = 'Coupons are not available for flash sale items';
+    }
     if (!coupon) {
-      couponValid = false;
-      couponMessage = 'Coupon code not found';
+      rejectReason = 'Coupon code not found';
     } else if (!coupon.isActive) {
-      couponValid = false;
-      couponMessage = 'Coupon is inactive';
+      rejectReason = 'Coupon is inactive';
     } else if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
-      couponValid = false;
-      couponMessage = 'Coupon has expired';
+      rejectReason = 'Coupon has expired';
     } else if (coupon.maxUses !== null && coupon.usedCount >= coupon.maxUses) {
+      rejectReason = 'Coupon usage limit reached';
+    } else if (coupon.minimumOrderValue !== null && basePrice < coupon.minimumOrderValue) {
+      rejectReason = `Minimum order value of $${coupon.minimumOrderValue.toFixed(2)} required for this coupon`;
+    } else if (coupon.maxPerUser !== null && buyerId) {
+      const [usageResult] = await db.select({
+        count: sql`COUNT(*)`,
+      }).from(orders)
+        .where(and(
+          eq(orders.buyerId, buyerId),
+          eq(orders.couponCode, code)
+        ));
+      const userUsageCount = Number(usageResult?.count || 0);
+      if (userUsageCount >= coupon.maxPerUser) {
+        rejectReason = 'You have reached the usage limit for this coupon';
+      }
+    }
+
+    if (rejectReason) {
       couponValid = false;
-      couponMessage = 'Coupon usage limit reached';
+      couponMessage = rejectReason;
     } else {
       couponValid = true;
       let discount = 0;

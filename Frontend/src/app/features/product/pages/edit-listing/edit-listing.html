@@ -1,5 +1,7 @@
-<div class="edit-page fade-in" *ngIf="!isLoading && product; else checkLoading">
-  <div class="container" *ngIf="isOwner; else notOwner">
+@if (!isLoading && product) {
+<div class="edit-page fade-in">
+  @if (isOwner) {
+  <div class="container">
 
     <div class="edit-header">
       <div class="section-label">— EDIT LISTING</div>
@@ -12,14 +14,20 @@
 
         <!-- LEFT: Images -->
         <div class="edit-images-col">
-          <div class="image-strip" *ngIf="images.length">
-            <div class="image-strip-card" *ngFor="let image of images; let i = index">
+          @if (images.length) {
+          <div class="image-strip">
+            @for (image of images; track $index; let i = $index) {
+            <div class="image-strip-card">
               <img [src]="image" alt="Product Image">
               <button type="button" class="delete-image-btn" (click)="removeImage(i)">✕</button>
             </div>
+            }
           </div>
+          }
           <input type="file" multiple accept="image/*" (change)="onImagesSelected($event)" />
-          <span class="field-hint" *ngIf="images.length === 0 && formError()" style="color:var(--danger);font-size:0.7rem;font-weight:600;">{{ formError() }}</span>
+          @if (images.length === 0 && formError()) {
+          <span class="field-hint" style="color:var(--danger);font-size:0.7rem;font-weight:600;">{{ formError() }}</span>
+          }
         </div>
 
         <!-- RIGHT: Fields -->
@@ -29,14 +37,18 @@
             <!-- Title -->
             <div class="field-group">
               <input id="edit-title" class="field-input field-input--lg" formControlName="title" placeholder="Title" />
-              <span class="field-error" *ngIf="fieldError('title')">{{ fieldError('title') }}</span>
+              @if (fieldError('title')) {
+              <span class="field-error">{{ fieldError('title') }}</span>
+              }
             </div>
 
             <!-- Description -->
             <div class="field-group">
               <textarea id="edit-desc" class="field-textarea" formControlName="description"
                 placeholder="Describe your item..." rows="2"></textarea>
-              <span class="field-error" *ngIf="fieldError('description')">{{ fieldError('description') }}</span>
+              @if (fieldError('description')) {
+              <span class="field-error">{{ fieldError('description') }}</span>
+              }
             </div>
 
             <!-- Field Grid (2 columns) -->
@@ -44,13 +56,17 @@
               <div class="field-group">
                 <label class="field-label" for="edit-price">PRICE ($)</label>
                 <input id="edit-price" class="field-input" type="number" formControlName="price" placeholder="0.00" min="0" step="0.01" />
-                <span class="field-error" *ngIf="fieldError('price')">{{ fieldError('price') }}</span>
+                @if (fieldError('price')) {
+                <span class="field-error">{{ fieldError('price') }}</span>
+                }
               </div>
 
               <div class="field-group">
                 <label class="field-label" for="edit-min-price">MINIMUM PRICE ($)</label>
                 <input id="edit-min-price" class="field-input" type="number" formControlName="minPrice" placeholder="No limit" min="0" step="0.01" />
-                <span class="field-error" *ngIf="fieldError('minPrice')">{{ fieldError('minPrice') }}</span>
+                @if (fieldError('minPrice')) {
+                <span class="field-error">{{ fieldError('minPrice') }}</span>
+                }
                 <span class="wiz-hint" style="font-size: 0.72rem; color: var(--gray-3); margin-top: 0.2rem; display: block;">Protects your item from promotional flash sale discounts below this price.</span>
               </div>
 
@@ -58,15 +74,20 @@
                 <label class="field-label" for="edit-category">CATEGORY</label>
                 <select id="edit-category" class="field-select" formControlName="categoryId" (change)="onCategoryChange($event)">
                   <option value="" disabled>Select a category</option>
-                  <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                  @for (cat of categories; track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                  }
                 </select>
-                <span class="field-error" *ngIf="fieldError('categoryId')">{{ fieldError('categoryId') }}</span>
+                @if (fieldError('categoryId')) {
+                <span class="field-error">{{ fieldError('categoryId') }}</span>
+                }
               </div>
 
               <div class="field-group">
                 <label class="field-label">STATUS</label>
                 <div class="status-options">
-                  <button type="button" *ngFor="let s of statuses" class="status-btn"
+                  @for (s of statuses; track s) {
+                  <button type="button" class="status-btn"
                     [class.active]="f['status'].value === s"
                     [class.status-available]="s === 'available'"
                     [class.status-reserved]="s === 'reserved'"
@@ -75,6 +96,7 @@
                     (click)="f['status'].setValue(s); f['status'].markAsTouched()">
                     {{ s | uppercase }}
                   </button>
+                  }
                 </div>
               </div>
 
@@ -145,7 +167,9 @@
             </label>
 
             <!-- Error Banner -->
-            <div class="form-error-banner" *ngIf="formError()">{{ formError() }}</div>
+            @if (formError()) {
+            <div class="form-error-banner">{{ formError() }}</div>
+            }
 
             <!-- Hidden submit for Enter key -->
             <button type="submit" style="display:none"></button>
@@ -156,7 +180,8 @@
     </div>
 
     <!-- ACTION BUTTONS -->
-    <div class="edit-actions" *ngIf="!isLoading">
+    @if (!isLoading) {
+    <div class="edit-actions">
       <div class="edit-actions-left">
         <button class="edit-btn edit-btn--save" (click)="saveChanges()" [disabled]="saving() || form.invalid">
           {{ saving() ? 'SAVING...' : 'SAVE CHANGES' }}
@@ -165,10 +190,16 @@
       </div>
       <button class="edit-btn edit-btn--delete" (click)="deleteListing()">Delete listing</button>
     </div>
+    }
   </div>
+  } @else {
+  <div class="container not-owner-msg">
+    <p>You are not authorized to edit this listing.</p>
+    <a routerLink="/products" class="btn btn-outline">BROWSE PRODUCTS</a>
+  </div>
+  }
 </div>
-
-<ng-template #checkLoading>
+} @else {
   <div class="container" style="pointer-events: none; opacity: 0.85; padding-top: 1.5rem;">
     <div class="edit-header" style="margin-bottom: 2rem;">
       <div class="skeleton-box" style="width: 8rem; height: 1rem; margin-bottom: 0.5rem;"></div>
@@ -192,11 +223,4 @@
       </div>
     </div>
   </div>
-</ng-template>
-
-<ng-template #notOwner>
-  <div class="container not-owner-msg">
-    <p>You are not authorized to edit this listing.</p>
-    <a routerLink="/products" class="btn btn-outline">BROWSE PRODUCTS</a>
-  </div>
-</ng-template>
+}

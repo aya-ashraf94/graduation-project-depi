@@ -15,18 +15,19 @@ export class OrderService {
   private apiUrl = `${environment.apiUrl}/orders`;
 
   /** GET ALL ORDERS FOR CURRENT USER (purchases and sales) */
-  getOrders(): Observable<OrderSummary[]> {
-    return this.http.get<any[]>(this.apiUrl).pipe(
-      map(orders => {
+  getOrders(page = 1, limit = 20): Observable<OrderSummary[]> {
+    return this.http.get<any>(`${this.apiUrl}?page=${page}&limit=${limit}`).pipe(
+      map(response => {
+        const orders = response.orders || response;
         const currentUser = JSON.parse(localStorage.getItem('nafa3ni_user') || '{}');
         const currentUserId = currentUser.id || currentUser._id;
-        
-        return orders.map(o => {
+
+        return (Array.isArray(orders) ? orders : []).map(o => {
           const isBuyer = o.buyer?.id === currentUserId;
-          const counterpartyName = isBuyer 
+          const counterpartyName = isBuyer
             ? `${o.seller?.firstName || ''} ${o.seller?.lastName || ''}`.trim()
             : `${o.buyer?.firstName || ''} ${o.buyer?.lastName || ''}`.trim();
-            
+
           return {
             id: o.id,
             productId: o.product?.id || '',
@@ -75,6 +76,11 @@ export class OrderService {
     discountValue: number;
   }> {
     return this.http.post<any>(`${this.apiUrl}/validate-coupon`, { code, productId });
+  }
+
+  /** DISPUTE ORDER (seller only) */
+  disputeOrder(id: string, reason: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/dispute`, { reason });
   }
 
   /** GET RANDOM ACTIVE COUPON FOR SCRATCH CARD GAME */

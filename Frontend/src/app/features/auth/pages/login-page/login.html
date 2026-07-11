@@ -56,7 +56,8 @@
 </app-auth-layout>
 
 <!-- FORGOT PASSWORD MODAL -->
-<div class="report-overlay" *ngIf="showForgotModal()" (click)="closeForgotModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem;">
+@if (showForgotModal()) {
+<div class="report-overlay" (click)="closeForgotModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.25rem;">
   <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
     <button class="modal-standard-close" (click)="closeForgotModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
 
@@ -91,9 +92,11 @@
             required
             style="font-family: var(--font-secondary); font-size: 0.95rem; padding: 0.625rem 0.875rem; border: 2px solid var(--black); border-radius: var(--radius-sm); box-shadow: 2px 2px 0 var(--black); outline: none; background: var(--white); color: var(--black);"
           />
-          <button *ngIf="manualToken && manualToken.trim()" type="button" (click)="verifyAndOpenReset()" style="width: 100%; text-align: center; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; background: var(--yellow); border: 2px solid var(--black); padding: 8px; border-radius: var(--radius-xs); box-shadow: 2px 2px 0 var(--black); cursor: pointer; font-family: var(--font-primary); margin-top: 0.5rem; color: var(--black);">
+          @if (manualToken && manualToken.trim()) {
+          <button type="button" (click)="verifyAndOpenReset()" style="width: 100%; text-align: center; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; background: var(--yellow); border: 2px solid var(--black); padding: 8px; border-radius: var(--radius-xs); box-shadow: 2px 2px 0 var(--black); cursor: pointer; font-family: var(--font-primary); margin-top: 0.5rem; color: var(--black);">
             🔑 OPEN RESET PASSWORD FORM
           </button>
+        }
         </div>
       </div>
     } @else {
@@ -114,9 +117,11 @@
     }
   </div>
 </div>
+}
 
 <!-- RESET PASSWORD MODAL -->
-<div class="report-overlay" *ngIf="showResetModal()" (click)="closeResetModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 1.25rem;">
+@if (showResetModal()) {
+<div class="report-overlay" (click)="closeResetModal()" style="position: fixed; inset: 0; background: color-mix(in srgb, var(--black) 60%, transparent); display: flex; align-items: center; justify-content: center; z-index: 1001; padding: 1.25rem;">
   <div class="modal-standard-card" (click)="$event.stopPropagation()" style="background: var(--white); border: 3px solid var(--black); border-radius: var(--radius-md); max-width: 450px; width: 100%; box-shadow: 6px 6px 0 var(--black); padding: 2rem; position: relative;">
     <button class="modal-standard-close" (click)="closeResetModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.25rem; font-weight: 700; cursor: pointer;">✕</button>
 
@@ -175,3 +180,4 @@
     }
   </div>
 </div>
+}

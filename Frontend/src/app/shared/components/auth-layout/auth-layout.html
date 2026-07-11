@@ -5,8 +5,12 @@
     <div class="split-left">
       <div class="auth-header">
         <div class="brand-tag">NAFA3NI</div>
-        <h2 class="auth-title" *ngIf="title()">{{ title() }}</h2>
-        <p class="auth-desc" *ngIf="subtitle()">{{ subtitle() }}</p>
+        @if (title()) {
+          <h2 class="auth-title">{{ title() }}</h2>
+        }
+        @if (subtitle()) {
+          <p class="auth-desc">{{ subtitle() }}</p>
+        }
       </div>
 
       <ng-content></ng-content>

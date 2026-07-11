@@ -44,6 +44,7 @@ app.use(
 
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
@@ -201,9 +202,42 @@ io.on("connection", (socket) => {
 // Attach io to app so controller routes can trigger socket events on message insertion
 app.set("io", io);
 
-// ── Flash Sale Notification Checker ─────────────────────────────────────
+// ── Scheduled Tasks ────────────────────────────────────────────────────
 const { checkAndNotifyFlashSales } = require("./controllers/flashSaleController");
-setInterval(() => checkAndNotifyFlashSales(io), 60 * 1000); // Every minute
+const { processTierRenewals } = require("./controllers/tierController");
+const { processExpiredOffers } = require("./controllers/offerController");
+const { processAutoPayouts } = require("./controllers/payoutController");
+
+setInterval(() => checkAndNotifyFlashSales(io), 60 * 1000); // Every minute — flash sales
+setInterval(() => processExpiredOffers(), 60 * 1000); // Every minute — offer expiry
+setInterval(() => processTierRenewals(), 60 * 60 * 1000); // Every hour — tier renewals & notifications
+setInterval(async () => {
+  try {
+    const result = await processAutoPayouts();
+    if (result && result.processed !== undefined) {
+      console.log(`[AutoPayout] Processed ${result.processed} payout(s)`);
+    }
+  } catch (e) {
+    console.error("[AutoPayout] Scheduler error:", e.message);
+  }
+}, 60 * 60 * 1000); // Every hour — auto-payouts
+
+// Cleanup expired reservations every 2 minutes
+const { cleanupExpiredReservations } = require("./controllers/productController");
+setInterval(cleanupExpiredReservations, 2 * 60 * 1000);
+
+// Auto-confirm delivery for orders shipped more than 14 days ago
+const { autoConfirmDelivery } = require("./controllers/orderController");
+setInterval(async () => {
+  try {
+    const result = await autoConfirmDelivery();
+    if (result && result.confirmed !== undefined) {
+      console.log(`[AutoConfirm] Auto-confirmed ${result.confirmed} order(s) as delivered`);
+    }
+  } catch (e) {
+    console.error("[AutoConfirm] Scheduler error:", e.message);
+  }
+}, 15 * 60 * 1000); // Every 15 minutes
 
 server.listen(PORT, () => {
   console.log(`Server Running On Port ${PORT}`);

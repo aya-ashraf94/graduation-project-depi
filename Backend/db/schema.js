@@ -17,6 +17,8 @@ const users = pgTable('users', {
   district: text('district').default('').notNull(),
   tierId: uuid('tier_id').references(() => sellerTiers.id, { onDelete: 'set null' }),
   tierExpiresAt: timestamp('tier_expires_at', { mode: 'date' }),
+  autoRenew: boolean('auto_renew').default(false).notNull(),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
   tags: text('tags').array().default([]).notNull(),
   rating: doublePrecision('rating').default(5.0).notNull(),
   totalSales: integer('total_sales').default(0).notNull(),
@@ -63,6 +65,8 @@ const products = pgTable('products', {
   soldByNafa3ni: boolean('sold_by_nafa3ni').default(false).notNull(),
   isVerified: boolean('is_verified').default(false).notNull(),
   status: text('status', { enum: ['active', 'reserved', 'sold', 'draft'] }).default('active').notNull(),
+  reservedAt: timestamp('reserved_at', { mode: 'date' }),
+  reservedBy: uuid('reserved_by'),
   viewCount: integer('view_count').default(0).notNull(),
   favoriteCount: integer('favorite_count').default(0).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
@@ -92,12 +96,14 @@ const orders = pgTable('orders', {
   trackingNumber: text('tracking_number'),
   couponCode: text('coupon_code'),
   offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'set null' }),
+  stripePaymentIntentId: text('stripe_payment_intent_id'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
   orderProductIdx: index('order_product_idx').on(table.productId),
   orderBuyerIdx: index('order_buyer_idx').on(table.buyerId),
   orderSellerIdx: index('order_seller_idx').on(table.sellerId),
+  orderBuyerCouponIdx: index('order_buyer_coupon_idx').on(table.buyerId, table.couponCode),
 }));
 
 const reviews = pgTable('reviews', {
@@ -245,6 +251,8 @@ const coupons = pgTable('coupons', {
   maxUses: integer('max_uses'),
   usedCount: integer('used_count').default(0).notNull(),
   maxPerUser: integer('max_per_user'),
+  minimumOrderValue: doublePrecision('minimum_order_value'),
+  deletedAt: timestamp('deleted_at', { mode: 'date' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -333,9 +341,18 @@ const sellerTiers = pgTable('seller_tiers', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
-// Add tierId + tierExpiresAt to users
-// Note: pgTable doesn't support ALTER, so we define an extended version for queries
-// The actual ALTER TABLE will be done via migration script
+const refreshTokens = pgTable('refresh_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull(),
+  expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
+  revoked: boolean('revoked').default(false).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  refreshTokenUserIdx: index('refresh_token_user_idx').on(table.userId),
+  refreshTokenHashIdx: index('refresh_token_hash_idx').on(table.tokenHash),
+}));
 
 module.exports = {
   users,
@@ -362,4 +379,5 @@ module.exports = {
   refundRequests,
   featuredListings,
   sellerTiers,
+  refreshTokens,
 };

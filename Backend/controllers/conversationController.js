@@ -5,6 +5,7 @@ const { checkAndExpireOffer } = require("./offerController");
 const { findOrCreateConversation } = require("../utils/conversations");
 const { emitMessage } = require("../utils/socket");
 const { createNotification } = require("../utils/notifications");
+const { loadActivePromotions } = require("../utils/discountEngine");
 
 const assertParticipant = async (userId, conversationId) => {
   const [entry] = await db.select()
@@ -125,6 +126,17 @@ const startConversation = async (req, res) => {
     const { recipientId, productId, initialMessage } = req.body;
 
     if (!recipientId) return res.status(400).json({ message: "Recipient ID is required" });
+
+    // Backend enforcement: no chat on flash sale items
+    if (productId) {
+      const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+      if (product) {
+        const promotions = await loadActivePromotions();
+        if (promotions.hasGlobalFlashSale || promotions.flashDiscounts[productId]) {
+          return res.status(400).json({ message: "Chat is not available for flash sale items" });
+        }
+      }
+    }
 
     const conversationId = await findOrCreateConversation(currentUserId, recipientId, productId);
 

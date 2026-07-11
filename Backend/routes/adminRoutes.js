@@ -28,6 +28,7 @@ const {
     deleteFlashSale,
 } = require("../controllers/flashSaleController");
 const { adminGetRefundRequests, adminProcessRefund } = require("../controllers/refundController");
+const { resolveDispute } = require("../controllers/orderController");
 const { adminSetFeaturedPrice } = require("../controllers/featuredController");
 const { adminCreateTier, adminUpdateTier, adminDeleteTier } = require("../controllers/tierController");
 const { getAutoPayoutSettings, updateAutoPayoutSettings, processAutoPayouts } = require("../controllers/payoutController");
@@ -53,6 +54,7 @@ router.delete("/reports/:id", deleteReport);
 
 router.get("/orders", getAllOrders);
 router.patch("/orders/:id/status", updateOrderStatus);
+router.post("/orders/:id/resolve-dispute", resolveDispute);
 
 router.get("/coupons", getCoupons);
 router.post("/coupons", createCoupon);

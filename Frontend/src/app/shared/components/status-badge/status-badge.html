@@ -1,15 +1,15 @@
-<ng-container [ngSwitch]="variant()">
-  <!-- 1. CARD IMG OVERLAY VARIANT -->
-  <ng-container *ngSwitchCase="'overlay'">
-    <div class="card-status-overlay" *ngIf="status().toLowerCase() === 'sold' || status().toLowerCase() === 'reserved' || status().toLowerCase() === 'draft'">
-      <span class="status-overlay-tag" [class.sold-tag]="status().toLowerCase() === 'sold'" [class.reserved-tag]="status().toLowerCase() === 'reserved'" [class.draft-tag]="status().toLowerCase() === 'draft'">
-        {{ status() | uppercase }}
-      </span>
-    </div>
-  </ng-container>
+@switch (variant()) {
+  @case ('overlay') {
+    @if (status().toLowerCase() === 'sold' || status().toLowerCase() === 'reserved' || status().toLowerCase() === 'draft') {
+      <div class="card-status-overlay">
+        <span class="status-overlay-tag" [class.sold-tag]="status().toLowerCase() === 'sold'" [class.reserved-tag]="status().toLowerCase() === 'reserved'" [class.draft-tag]="status().toLowerCase() === 'draft'">
+          {{ status() | uppercase }}
+        </span>
+      </div>
+    }
+  }
 
-  <!-- 2. STANDARD PILL VARIANT -->
-  <ng-container *ngSwitchDefault>
+  @default {
     <span class="status-pill" [ngClass]="{
       'status-available': status().toLowerCase() === 'available' || status().toLowerCase() === 'active',
       'status-sold': status().toLowerCase() === 'sold',
@@ -20,5 +20,5 @@
     }">
       {{ status() | uppercase }}
     </span>
-  </ng-container>
-</ng-container>
+  }
+}

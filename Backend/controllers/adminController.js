@@ -601,6 +601,12 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    if (status === "cancelled") {
+      await db.update(products)
+        .set({ status: "active", updatedAt: new Date() })
+        .where(eq(products.id, order.productId));
+    }
+
     res.json({ message: "Order status updated successfully", order });
   } catch (error) {
     console.error("Error updating order status:", error);
@@ -620,7 +626,7 @@ const getCoupons = async (req, res) => {
 
 const createCoupon = async (req, res) => {
   try {
-    let { code, discountType, discountValue, expiryDate, maxUses, maxPerUser } = req.body;
+    let { code, discountType, discountValue, expiryDate, maxUses, maxPerUser, minimumOrderValue } = req.body;
     if (!code || !discountValue) {
       return res.status(400).json({ message: "Coupon code and discount value are required" });
     }
@@ -645,6 +651,7 @@ const createCoupon = async (req, res) => {
       expiryDate: expiryDate ? new Date(expiryDate) : null,
       maxUses: maxUses ? parseInt(maxUses) : null,
       maxPerUser: maxPerUser ? parseInt(maxPerUser) : null,
+      minimumOrderValue: minimumOrderValue !== undefined ? parseFloat(minimumOrderValue) : null,
       usedCount: 0,
       isActive: true
     }).returning();
@@ -659,7 +666,7 @@ const createCoupon = async (req, res) => {
 const patchCoupon = async (req, res) => {
   try {
     const { id } = req.params;
-    const { discountType, discountValue, expiryDate, isActive, maxUses, maxPerUser } = req.body;
+    const { discountType, discountValue, expiryDate, isActive, maxUses, maxPerUser, minimumOrderValue } = req.body;
     
     const updateData = { updatedAt: new Date() };
     if (isActive !== undefined) updateData.isActive = isActive;
@@ -668,6 +675,16 @@ const patchCoupon = async (req, res) => {
     if (expiryDate !== undefined) updateData.expiryDate = expiryDate ? new Date(expiryDate) : null;
     if (maxUses !== undefined) updateData.maxUses = parseInt(maxUses);
     if (maxPerUser !== undefined) updateData.maxPerUser = parseInt(maxPerUser);
+    if (minimumOrderValue !== undefined) updateData.minimumOrderValue = parseFloat(minimumOrderValue);
+
+    // Auto-extend expiry when enabling an expired coupon without sending a new date
+    if (isActive === true && expiryDate === undefined) {
+      const [existing] = await db.select({ expiryDate: coupons.expiryDate })
+        .from(coupons).where(eq(coupons.id, id)).limit(1);
+      if (existing && existing.expiryDate && new Date(existing.expiryDate) < new Date()) {
+        updateData.expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      }
+    }
     
     const [coupon] = await db.update(coupons)
       .set(updateData)
@@ -688,11 +705,14 @@ const patchCoupon = async (req, res) => {
 const deleteCoupon = async (req, res) => {
   try {
     const { id } = req.params;
-    const [coupon] = await db.delete(coupons).where(eq(coupons.id, id)).returning();
+    const [coupon] = await db.update(coupons)
+      .set({ isActive: false, deletedAt: new Date(), updatedAt: new Date() })
+      .where(eq(coupons.id, id))
+      .returning();
     if (!coupon) {
       return res.status(404).json({ message: "Coupon not found" });
     }
-    res.json({ message: "Coupon deleted successfully", coupon });
+    res.json({ message: "Coupon soft-deleted successfully", coupon });
   } catch (error) {
     console.error("Error deleting coupon:", error);
     res.status(500).json({ message: "Server Error" });

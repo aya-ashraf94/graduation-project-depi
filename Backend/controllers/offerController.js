@@ -1,6 +1,6 @@
 const db = require("../db");
 const { offers, products, notifications, conversations, conversationParticipants, messages, users, orders } = require("../db/schema");
-const { eq, and, or, desc } = require("drizzle-orm");
+const { eq, and, or, desc, sql } = require("drizzle-orm");
 const { findOrCreateConversation } = require("../utils/conversations");
 const { emitMessage, emitToConversation } = require("../utils/socket");
 const { createNotification } = require("../utils/notifications");
@@ -296,4 +296,26 @@ const counterOffer = async (req, res) => {
   }
 };
 
-module.exports = { makeOffer, getOffers, getOffer, acceptOffer, rejectOffer, counterOffer, checkAndExpireOffer };
+const processExpiredOffers = async () => {
+  try {
+    const now = new Date();
+    const expiredOffers = await db.select()
+      .from(offers)
+      .where(and(
+        eq(offers.status, "accepted"),
+        sql`expires_at IS NOT NULL AND expires_at < ${now}`
+      ));
+
+    for (const offer of expiredOffers) {
+      await checkAndExpireOffer(offer);
+    }
+
+    if (expiredOffers.length > 0) {
+      console.log(`[OfferExpiry] Expired ${expiredOffers.length} offer(s)`);
+    }
+  } catch (error) {
+    console.error("[OfferExpiry] Scheduler error:", error.message);
+  }
+};
+
+module.exports = { makeOffer, getOffers, getOffer, acceptOffer, rejectOffer, counterOffer, checkAndExpireOffer, processExpiredOffers };

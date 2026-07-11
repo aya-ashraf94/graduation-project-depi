@@ -8,15 +8,6 @@ const { uploadBase64ToCloudinary } = require("../utils/upload");
 
 const getProductById = async (req, res) => {
   try {
-    const [product] = await db.update(products)
-      .set({ viewCount: sql`${products.viewCount} + 1`, updatedAt: new Date() })
-      .where(eq(products.id, req.params.id))
-      .returning();
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
     // Extract token optionally to get logged in user ID
     let currentUserId = null;
     let token = req.header('Authorization')?.replace('Bearer ', '');
@@ -32,7 +23,18 @@ const getProductById = async (req, res) => {
       }
     }
 
-    if (product && currentUserId) {
+    // Auto-release expired reservations
+    await cleanupExpiredReservations();
+
+    // Read product first — do NOT increment viewCount yet
+    const [product] = await db.select().from(products).where(eq(products.id, req.params.id)).limit(1);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Block check before any mutations
+    if (currentUserId) {
       const [blockRelation] = await db.select()
         .from(userBlocks)
         .where(
@@ -47,16 +49,17 @@ const getProductById = async (req, res) => {
       }
     }
 
+    // Increment viewCount after block check
+    await db.update(products)
+      .set({ viewCount: sql`${products.viewCount} + 1`, updatedAt: new Date() })
+      .where(eq(products.id, req.params.id));
+
     const result = await db.select()
       .from(products)
       .where(eq(products.id, req.params.id))
       .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .limit(1);
-
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Product not found" });
-    }
 
     const row = result[0];
     const data = {
@@ -78,6 +81,8 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
+    await cleanupExpiredReservations();
+
     // Extract token optionally to get logged in user ID
     let currentUserId = null;
     let token = req.header('Authorization')?.replace('Bearer ', '');
@@ -212,34 +217,32 @@ const getProducts = async (req, res) => {
     
     const total = Number(totalCountRow.value);
 
+    const now = new Date();
+    const activeFeaturedRows = await db.select({ productId: featuredListings.productId })
+      .from(featuredListings)
+      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)));
+    const featuredProductIds = activeFeaturedRows.map(f => f.productId);
+    const featuredSet = new Set(featuredProductIds);
+
     const result = await db.select()
       .from(products)
       .where(and(...conditions))
       .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .orderBy(orderBy)
+      .orderBy(
+        featuredProductIds.length > 0
+          ? sql`CASE WHEN ${products.id} IN (${sql.join(featuredProductIds.map(id => sql`${id}`), sql`, `)}) THEN 0 ELSE 1 END, ${orderBy}`
+          : orderBy
+      )
       .offset(skip)
       .limit(limit);
-
-    const now = new Date();
-    const activeFeatured = await db.select({ productId: featuredListings.productId })
-      .from(featuredListings)
-      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)));
-    const featuredProductIds = new Set(activeFeatured.map(f => f.productId));
 
     const formatted = result.map(r => ({
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
-      isFeatured: featuredProductIds.has(r.products.id),
+      isFeatured: featuredSet.has(r.products.id),
     }));
-
-    // Sort: featured first, then by original order
-    formatted.sort((a, b) => {
-      if (a.isFeatured && !b.isFeatured) return -1;
-      if (!a.isFeatured && b.isFeatured) return 1;
-      return 0;
-    });
 
     // Apply active promotions (flash sales + category sales)
     const promotions = await loadActivePromotions();
@@ -655,6 +658,80 @@ const getSortFunction = (sortBy) => {
   }
 };
 
+const reserveProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const now = new Date();
+    const reserveDuration = 10 * 60 * 1000; // 10 minutes
+
+    const updateResult = await db.execute(sql`
+      UPDATE products
+      SET status = 'reserved',
+          reserved_at = ${now},
+          reserved_by = ${userId},
+          updated_at = ${now}
+      WHERE id = ${id}
+        AND status = 'active'
+        AND user_id != ${userId}
+      RETURNING id, status, reserved_at, reserved_by
+    `);
+
+    const rows = updateResult.rows || [];
+    if (rows.length === 0) {
+      const [product] = await db.select({ status: products.status }).from(products).where(eq(products.id, id)).limit(1);
+      if (!product) return res.status(404).json({ message: "Product not found" });
+      return res.status(409).json({ message: product.status === 'reserved' ? 'Product is currently reserved' : 'Product is already sold' });
+    }
+
+    res.json({ message: "Product reserved", reservedUntil: new Date(now.getTime() + reserveDuration) });
+  } catch (error) {
+    console.error("Error reserving product:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const releaseProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await db.execute(sql`
+      UPDATE products
+      SET status = 'active',
+          reserved_at = NULL,
+          reserved_by = NULL,
+          updated_at = NOW()
+      WHERE id = ${id}
+        AND status = 'reserved'
+    `);
+
+    res.json({ message: "Product released" });
+  } catch (error) {
+    console.error("Error releasing product:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// Cleanup expired reservations (call periodically or inline)
+const cleanupExpiredReservations = async () => {
+  try {
+    const cutoff = new Date(Date.now() - 10 * 60 * 1000);
+    await db.execute(sql`
+      UPDATE products
+      SET status = 'active',
+          reserved_at = NULL,
+          reserved_by = NULL,
+          updated_at = NOW()
+      WHERE status = 'reserved'
+        AND reserved_at IS NOT NULL
+        AND reserved_at < ${cutoff}
+    `);
+  } catch (e) {
+    console.error("Error cleaning up reservations:", e.message);
+  }
+};
+
 module.exports = {
   getProducts,
   getUserProducts,
@@ -665,4 +742,7 @@ module.exports = {
   getProductById,
   getCategoryCounts,
   getRecommendedProducts,
+  reserveProduct,
+  releaseProduct,
+  cleanupExpiredReservations,
 };

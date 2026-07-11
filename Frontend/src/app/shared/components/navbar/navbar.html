@@ -134,7 +134,9 @@
               <div class="notif-list">
                 @for (notif of notifications(); track notif.id) {
                   <div class="notif-item" [class.unread]="!notif.isRead" (click)="onNotifClick(notif)">
-                    <div class="notif-dot" *ngIf="!notif.isRead"></div>
+                    @if (!notif.isRead) {
+                      <div class="notif-dot"></div>
+                    }
                     <div class="notif-body">
                       <div class="notif-title">{{ notif.title }}</div>
                       <div class="notif-text">{{ notif.body }}</div>

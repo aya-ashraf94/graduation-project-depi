@@ -140,11 +140,13 @@
   <div class="container">
     <div class="section-label">Core Categories</div>
     <div class="departments-grid">
-      <div class="dept-card" *ngFor="let dept of departments" [routerLink]="['/products']" [queryParams]="{ category: getDbCategoryName(dept.name) }">
-        <div class="dept-icon" [innerHTML]="toSafeHtml(dept.icon)"></div>
-        <h3 class="dept-name">{{ dept.name }}</h3>
-        <span class="dept-count">{{ dept.count }}</span>
-      </div>
+      @for (dept of departments; track $index) {
+        <div class="dept-card" [routerLink]="['/products']" [queryParams]="{ category: getDbCategoryName(dept.name) }">
+          <div class="dept-icon" [innerHTML]="toSafeHtml(dept.icon)"></div>
+          <h3 class="dept-name">{{ dept.name }}</h3>
+          <span class="dept-count">{{ dept.count }}</span>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -162,12 +164,13 @@
       </button>
     </div>
     <div class="products-grid">
-      <app-product-card
-        *ngFor="let product of featuredProducts"
-        [product]="product"
-        variant="home"
-        [featured]="true"
-      ></app-product-card>
+      @for (product of featuredProducts; track $index) {
+        <app-product-card
+          [product]="product"
+          variant="home"
+          [featured]="true"
+        ></app-product-card>
+      }
     </div>
   </div>
 </section>
@@ -176,13 +179,15 @@
 <section class="section features">
   <div class="container">
     <div class="features-grid">
-      <div class="feature-item" *ngFor="let f of features">
-        <div class="feature-icon" [innerHTML]="toSafeHtml(f.icon)"></div>
-        <div>
-          <h4 class="feature-title">{{ f.title }}</h4>
-          <p class="feature-desc">{{ f.desc }}</p>
+      @for (f of features; track $index) {
+        <div class="feature-item">
+          <div class="feature-icon" [innerHTML]="toSafeHtml(f.icon)"></div>
+          <div>
+            <h4 class="feature-title">{{ f.title }}</h4>
+            <p class="feature-desc">{{ f.desc }}</p>
+          </div>
         </div>
-      </div>
+      }
     </div>
   </div>
 </section>
@@ -191,10 +196,12 @@
 <section class="section-sm stats-section">
   <div class="container">
     <div class="stats-grid">
-      <div class="stat-item" *ngFor="let stat of stats" [class.stat-highlight]="stat.highlight">
-        <div class="stat-value">{{ stat.value }}</div>
-        <div class="stat-label">{{ stat.label }}</div>
-      </div>
+      @for (stat of stats; track $index) {
+        <div class="stat-item" [class.stat-highlight]="stat.highlight">
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -205,15 +212,16 @@
     <div class="section-label">Process</div>
     <h2 class="section-title steps-title">Three Steps to Trade</h2>
     <div class="steps-grid">
-      <div class="step-item"
-        *ngFor="let step of steps; let i = index"
-        [class.step-featured]="i === 1"
-      >
-        <div class="step-num">0{{ i + 1 }}</div>
-        <h3 class="step-title">{{ step.title }}</h3>
-        <p class="step-desc">{{ step.desc }}</p>
-        <div class="step-icon" [innerHTML]="toSafeHtml(step.icon)"></div>
-      </div>
+      @for (step of steps; track $index; let i = $index) {
+        <div class="step-item"
+          [class.step-featured]="i === 1"
+        >
+          <div class="step-num">0{{ i + 1 }}</div>
+          <h3 class="step-title">{{ step.title }}</h3>
+          <p class="step-desc">{{ step.desc }}</p>
+          <div class="step-icon" [innerHTML]="toSafeHtml(step.icon)"></div>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -242,13 +250,17 @@
       </button>
     </form>
 
-    <div *ngIf="newsletterSuccessMessage" style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-top: 1.5rem; display: inline-block;">
-      {{ newsletterSuccessMessage }}
-    </div>
+    @if (newsletterSuccessMessage) {
+      <div style="background: var(--success); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-top: 1.5rem; display: inline-block;">
+        {{ newsletterSuccessMessage }}
+      </div>
+    }
 
-    <div *ngIf="newsletterErrorMessage" style="background: var(--danger); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-top: 1.5rem; display: inline-block;">
-      {{ newsletterErrorMessage }}
-    </div>
+    @if (newsletterErrorMessage) {
+      <div style="background: var(--danger); color: var(--black); border: 2px solid var(--black); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-family: var(--font-secondary); font-size: 0.9rem; font-weight: 700; box-shadow: 2px 2px 0 var(--black); margin-top: 1.5rem; display: inline-block;">
+        {{ newsletterErrorMessage }}
+      </div>
+    }
   </div>
 </section>
 

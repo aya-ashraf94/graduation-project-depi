@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../../../core/services/product.service';
 import { CompareService } from '../../../../core/services/compare.service';
-import { Product, ProductCondition } from '../../../../core/models/product.model';
+import { Product, ProductCondition, ProductStatus } from '../../../../core/models/product.model';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
 
@@ -232,5 +232,9 @@ export class ComparePage implements OnInit, OnDestroy {
 
   hasSale(product: Product): boolean {
     return !!(product.isOnSale || product.isFlashSale);
+  }
+
+  matchesStatus(status: ProductStatus, expected: string): boolean {
+    return status === expected;
   }
 }

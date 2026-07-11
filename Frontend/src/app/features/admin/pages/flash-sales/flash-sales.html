@@ -166,189 +166,195 @@
           <span class="guide-title-text">💡 Guide & Tips</span>
           <span class="guide-arrow-icon">{{ showGuide() ? '▲' : '▼' }}</span>
         </button>
-        <div class="guide-content-panel" *ngIf="showGuide()">
-          <ul>
-            <li>Flash Sales are active only during the specified start and end date range.</li>
-            <li>Use specific categories or individual products to restrict campaign scopes.</li>
-            <li>Discounts override existing listing prices but cannot stack with coupon codes.</li>
-          </ul>
-        </div>
+        @if (showGuide()) {
+          <div class="guide-content-panel">
+            <ul>
+              <li>Flash Sales are active only during the specified start and end date range.</li>
+              <li>Use specific categories or individual products to restrict campaign scopes.</li>
+              <li>Discounts override existing listing prices but cannot stack with coupon codes.</li>
+            </ul>
+          </div>
+        }
       </div>
 
     </div>
   }
 
   <!-- MODAL CAMPAIGN FORM DIALOG -->
-  <div class="modal-overlay" *ngIf="showForm()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="panel-header">
-        <div class="panel-header-titles">
-          <h3>{{ editingId() ? 'Edit Flash Sale' : 'Create Flash Sale' }}</h3>
-          <p class="panel-header-subtitle">Set up limited-time store discount campaigns.</p>
-        </div>
-        <button class="modal-close-btn-header" (click)="cancelForm()">✕</button>
-      </div>
-      <div class="panel-body">
-        <form (ngSubmit)="submitForm()" class="create-campaign-form">
-          <!-- Campaign Name -->
-          <div class="form-group">
-            <label class="form-label">Campaign Name *</label>
-            <div class="input-with-prefix-icon">
-              <span class="input-icon-label">🏷️</span>
-              <input type="text" 
-                     [(ngModel)]="formModel.name" 
-                     name="name" 
-                     placeholder="e.g. Summer Flash Sale" 
-                     required
-                     class="form-control" />
-            </div>
+  @if (showForm()) {
+    <div class="modal-overlay">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="panel-header">
+          <div class="panel-header-titles">
+            <h3>{{ editingId() ? 'Edit Flash Sale' : 'Create Flash Sale' }}</h3>
+            <p class="panel-header-subtitle">Set up limited-time store discount campaigns.</p>
           </div>
-
-          <!-- Discount and Scope side-by-side -->
-          <div class="form-row-grid">
-            <!-- Discount Percent -->
+          <button class="modal-close-btn-header" (click)="cancelForm()">✕</button>
+        </div>
+        <div class="panel-body">
+          <form (ngSubmit)="submitForm()" class="create-campaign-form">
+            <!-- Campaign Name -->
             <div class="form-group">
-              <label class="form-label">Discount (%) *</label>
-              <div class="input-with-suffix">
-                <input type="number" 
-                       [(ngModel)]="formModel.discountPercent" 
-                       name="discountPercent" 
-                       min="1" 
-                       max="100" 
+              <label class="form-label">Campaign Name *</label>
+              <div class="input-with-prefix-icon">
+                <span class="input-icon-label">🏷️</span>
+                <input type="text" 
+                       [(ngModel)]="formModel.name" 
+                       name="name" 
+                       placeholder="e.g. Summer Flash Sale" 
                        required
                        class="form-control" />
-                <span class="input-suffix-tag">%</span>
               </div>
             </div>
 
-            <!-- Custom Scope Selection Widget -->
-            <div class="form-group">
-              <label class="form-label">Campaign Scope *</label>
-              <div class="custom-select-container" (click)="toggleScopeDropdown()" [class.dropdown-active]="isScopeDropdownOpen()">
-                <div class="custom-select-selected">
-                  <span>
-                    {{ formModel.scopeType === 'all' ? 'All Products' : formModel.scopeType === 'category' ? 'Category' : 'Product' }}
-                  </span>
-                  <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </div>
-                <div class="custom-select-dropdown" *ngIf="isScopeDropdownOpen()">
-                  <div class="custom-select-option" (click)="selectScopeType('all'); $event.stopPropagation()">
-                    All Products
-                  </div>
-                  <div class="custom-select-option" (click)="selectScopeType('category'); $event.stopPropagation()">
-                    Specific Category
-                  </div>
-                  <div class="custom-select-option" (click)="selectScopeType('product'); $event.stopPropagation()">
-                    Specific Product
-                  </div>
+            <!-- Discount and Scope side-by-side -->
+            <div class="form-row-grid">
+              <!-- Discount Percent -->
+              <div class="form-group">
+                <label class="form-label">Discount (%) *</label>
+                <div class="input-with-suffix">
+                  <input type="number" 
+                         [(ngModel)]="formModel.discountPercent" 
+                         name="discountPercent" 
+                         min="1" 
+                         max="100" 
+                         required
+                         class="form-control" />
+                  <span class="input-suffix-tag">%</span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Scope Context Selection (Category / Product) -->
-          @if (formModel.scopeType === 'category') {
+              <!-- Custom Scope Selection Widget -->
+              <div class="form-group">
+                <label class="form-label">Campaign Scope *</label>
+                <div class="custom-select-container" (click)="toggleScopeDropdown()" [class.dropdown-active]="isScopeDropdownOpen()">
+                  <div class="custom-select-selected">
+                    <span>
+                      {{ formModel.scopeType === 'all' ? 'All Products' : formModel.scopeType === 'category' ? 'Category' : 'Product' }}
+                    </span>
+                    <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                  @if (isScopeDropdownOpen()) {
+                    <div class="custom-select-dropdown">
+                      <div class="custom-select-option" (click)="selectScopeType('all'); $event.stopPropagation()">
+                        All Products
+                      </div>
+                      <div class="custom-select-option" (click)="selectScopeType('category'); $event.stopPropagation()">
+                        Specific Category
+                      </div>
+                      <div class="custom-select-option" (click)="selectScopeType('product'); $event.stopPropagation()">
+                        Specific Product
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Scope Context Selection (Category / Product) -->
+            @if (formModel.scopeType === 'category') {
+              <div class="form-group">
+                <label class="form-label">Select Category *</label>
+                <select [(ngModel)]="formModel.scopeId" name="scopeId" class="form-control" required>
+                  <option value="">— Choose Category —</option>
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            @if (formModel.scopeType === 'product') {
+              <div class="form-group">
+                <label class="form-label">Search & Select Product *</label>
+                <div class="input-with-prefix-icon" style="margin-bottom: 0.5rem;">
+                  <span class="input-icon-label">🔎</span>
+                  <input type="text" 
+                         placeholder="Type to search products..." 
+                         (input)="searchProducts($event)"
+                         class="form-control" />
+                </div>
+                <select [(ngModel)]="formModel.scopeId" name="scopeId" class="form-control" required>
+                  <option value="">— Select Product —</option>
+                  @for (p of products(); track p.id) {
+                    <option [value]="p.id">{{ p.title }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <!-- Start Date & Time Side-by-Side -->
             <div class="form-group">
-              <label class="form-label">Select Category *</label>
-              <select [(ngModel)]="formModel.scopeId" name="scopeId" class="form-control" required>
-                <option value="">— Choose Category —</option>
-                @for (cat of categories(); track cat.id) {
-                  <option [value]="cat.id">{{ cat.name }}</option>
-                }
-              </select>
+              <label class="form-label">Start Date & Time *</label>
+              <div class="form-row-grid">
+                <div class="input-with-prefix-icon">
+                  <span class="input-icon-label">📅</span>
+                  <input type="date" 
+                         [(ngModel)]="startDateVal" 
+                         name="startDateVal" 
+                         required 
+                         class="form-control" />
+                </div>
+                <div class="input-with-prefix-icon">
+                  <span class="input-icon-label">⏰</span>
+                  <input type="time" 
+                         [(ngModel)]="startTimeVal" 
+                         name="startTimeVal" 
+                         required 
+                         class="form-control" />
+                </div>
+              </div>
             </div>
-          }
 
-          @if (formModel.scopeType === 'product') {
+            <!-- End Date & Time Side-by-Side -->
             <div class="form-group">
-              <label class="form-label">Search & Select Product *</label>
-              <div class="input-with-prefix-icon" style="margin-bottom: 0.5rem;">
-                <span class="input-icon-label">🔎</span>
-                <input type="text" 
-                       placeholder="Type to search products..." 
-                       (input)="searchProducts($event)"
-                       class="form-control" />
-              </div>
-              <select [(ngModel)]="formModel.scopeId" name="scopeId" class="form-control" required>
-                <option value="">— Select Product —</option>
-                @for (p of products(); track p.id) {
-                  <option [value]="p.id">{{ p.title }}</option>
-                }
-              </select>
-            </div>
-          }
-
-          <!-- Start Date & Time Side-by-Side -->
-          <div class="form-group">
-            <label class="form-label">Start Date & Time *</label>
-            <div class="form-row-grid">
-              <div class="input-with-prefix-icon">
-                <span class="input-icon-label">📅</span>
-                <input type="date" 
-                       [(ngModel)]="startDateVal" 
-                       name="startDateVal" 
-                       required 
-                       class="form-control" />
-              </div>
-              <div class="input-with-prefix-icon">
-                <span class="input-icon-label">⏰</span>
-                <input type="time" 
-                       [(ngModel)]="startTimeVal" 
-                       name="startTimeVal" 
-                       required 
-                       class="form-control" />
+              <label class="form-label">End Date & Time *</label>
+              <div class="form-row-grid">
+                <div class="input-with-prefix-icon">
+                  <span class="input-icon-label">📅</span>
+                  <input type="date" 
+                         [(ngModel)]="endDateVal" 
+                         name="endDateVal" 
+                         required 
+                         class="form-control" />
+                </div>
+                <div class="input-with-prefix-icon">
+                  <span class="input-icon-label">⏰</span>
+                  <input type="time" 
+                         [(ngModel)]="endTimeVal" 
+                         name="endTimeVal" 
+                         required 
+                         class="form-control" />
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- End Date & Time Side-by-Side -->
-          <div class="form-group">
-            <label class="form-label">End Date & Time *</label>
-            <div class="form-row-grid">
-              <div class="input-with-prefix-icon">
-                <span class="input-icon-label">📅</span>
-                <input type="date" 
-                       [(ngModel)]="endDateVal" 
-                       name="endDateVal" 
-                       required 
+            <!-- Notification settings -->
+            <div class="form-group">
+              <label class="form-label">Notify Users Before End (minutes)</label>
+              <div class="input-with-suffix">
+                <input type="number" 
+                       [(ngModel)]="formModel.notifyBeforeMinutes" 
+                       name="notifyBeforeMinutes" 
+                       min="1" 
                        class="form-control" />
-              </div>
-              <div class="input-with-prefix-icon">
-                <span class="input-icon-label">⏰</span>
-                <input type="time" 
-                       [(ngModel)]="endTimeVal" 
-                       name="endTimeVal" 
-                       required 
-                       class="form-control" />
+                <span class="input-suffix-tag">min</span>
               </div>
             </div>
-          </div>
 
-          <!-- Notification settings -->
-          <div class="form-group">
-            <label class="form-label">Notify Users Before End (minutes)</label>
-            <div class="input-with-suffix">
-              <input type="number" 
-                     [(ngModel)]="formModel.notifyBeforeMinutes" 
-                     name="notifyBeforeMinutes" 
-                     min="1" 
-                     class="form-control" />
-              <span class="input-suffix-tag">min</span>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <button type="submit" 
-                  [disabled]="isSubmitting()"
-                  class="btn-submit-coupon op-yellow">
-            {{ isSubmitting() ? 'Saving...' : editingId() ? 'Update Campaign' : 'Create Campaign' }}
-          </button>
-        </form>
+            <!-- Actions -->
+            <button type="submit" 
+                    [disabled]="isSubmitting()"
+                    class="btn-submit-coupon op-yellow">
+              {{ isSubmitting() ? 'Saving...' : editingId() ? 'Update Campaign' : 'Create Campaign' }}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- FLOATING ACTION BUTTON (FAB) FOR MOBILE -->
   <button (click)="openCreateForm()" class="fab-create-btn" title="Create Campaign">➕</button>

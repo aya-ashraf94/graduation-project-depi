@@ -4,7 +4,7 @@
 // If the image fails to load, it shows a placeholder.
 // ============================================================
 
-import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input, inject } from '@angular/core';
 
 @Directive({
   selector: '[appImageFallback]',
@@ -14,7 +14,7 @@ export class ImageFallbackDirective {
   /** Override the default fallback URL if needed */
   @Input() fallbackSrc = 'https://placehold.co/400x400/f0f0f0/999999?text=No+Image';
 
-  constructor(private el: ElementRef<HTMLImageElement>) {}
+  private el = inject(ElementRef<HTMLImageElement>);
 
   @HostListener('error')
   onError(): void {

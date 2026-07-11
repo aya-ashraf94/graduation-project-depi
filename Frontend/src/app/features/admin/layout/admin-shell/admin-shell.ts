@@ -21,6 +21,21 @@ export class AdminShell implements OnInit {
   isMobileMenuOpen = signal(false);
   showGuide = signal(false);
 
+  openSection = signal<string | null>('mgmt');
+
+  isMgmtActive(): boolean {
+    const url = this.router.url;
+    return url.includes('/admin/users') || url.includes('/admin/listings') || url.includes('/admin/reports');
+  }
+  isCommerceActive(): boolean {
+    const url = this.router.url;
+    return url.includes('/admin/orders') || url.includes('/admin/coupons') || url.includes('/admin/flash-sales') || url.includes('/admin/refunds');
+  }
+  isFinanceActive(): boolean {
+    const url = this.router.url;
+    return url.includes('/admin/payouts') || url.includes('/admin/tiers');
+  }
+
   ngOnInit(): void {
     this.adminService.refreshPendingCount();
   }

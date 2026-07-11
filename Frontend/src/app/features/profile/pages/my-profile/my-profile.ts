@@ -65,8 +65,19 @@ export class MyProfile implements OnInit, AfterViewInit {
   myListings: ProductSummary[] = [];
   wishlistItems: ProductSummary[] = [];
   reviews: Review[] = [];
+  reviewsByOrderId: Map<string, any> = new Map();
   myOrders: OrderSummary[] = [];
   reviewedOrderIds: Set<string> = new Set();
+  myRefundRequests: any[] = [];
+  showDisputeModal = false;
+  selectedOrderForDispute: OrderSummary | null = null;
+  disputeReason = '';
+  submittingDispute = false;
+  showRateBuyerModal = false;
+  selectedOrderForRateBuyer: OrderSummary | null = null;
+  buyerRating = 5;
+  buyerReviewComment = '';
+  submittingBuyerRating = false;
   dismissedOrderIds: Set<string> = new Set();
   expandedOrderIds: Set<string> = new Set();
   activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'wallet' = 'products';
@@ -322,6 +333,7 @@ export class MyProfile implements OnInit, AfterViewInit {
           this.loadWishlist();
           this.reviewService.getReviewsForUser(currentUser.id).subscribe(revs => {
             this.reviews = this.formatReviews(revs);
+            this.reviewsByOrderId = new Map(revs.filter((r: any) => r.orderId).map((r: any) => [r.orderId, r]));
             this.cdr.detectChanges();
           });
           this.orderService.getOrders().subscribe(orders => {
@@ -330,6 +342,10 @@ export class MyProfile implements OnInit, AfterViewInit {
           });
           this.reviewService.getReviewsByUser(currentUser.id).subscribe(written => {
             this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
+            this.cdr.detectChanges();
+          });
+          this.refundService.getMyRefundRequests().subscribe(refs => {
+            this.myRefundRequests = refs;
             this.cdr.detectChanges();
           });
         } else {
@@ -589,7 +605,13 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.updatingOrders[orderId] = status;
     this.cdr.detectChanges();
 
-    this.orderService.updateOrder(orderId, { status }).subscribe({
+    const order = this.myOrders.find((o: any) => o.id === orderId);
+    const payload: any = { status };
+    if (status === 'shipped' && order?._trackingValue) {
+      payload.trackingNumber = order._trackingValue;
+    }
+
+    this.orderService.updateOrder(orderId, payload).subscribe({
       next: (updated) => {
         // Refresh orders list
         this.orderService.getOrders().subscribe({
@@ -759,6 +781,99 @@ export class MyProfile implements OnInit, AfterViewInit {
       error: (err) => {
         this.toastService.error(err?.error?.message || 'Failed to submit refund request');
         this.submittingRefund = false;
+      }
+    });
+  }
+
+  // ── Refund Status Helper ──────────────────────────────────────
+  getRefundForOrder(orderId: string): any {
+    return this.myRefundRequests.find((r: any) => r.orderId === orderId);
+  }
+
+  // ── Auto-Confirm Countdown ────────────────────────────────────
+  getAutoConfirmDaysRemaining(order: any): number {
+    if (order.status !== 'shipped') return 0;
+    const shippedAt = order.updatedAt ? new Date(order.updatedAt) : new Date();
+    const elapsed = Date.now() - shippedAt.getTime();
+    const remaining = Math.ceil((14 * 24 * 60 * 60 * 1000 - elapsed) / (24 * 60 * 60 * 1000));
+    return Math.max(0, remaining);
+  }
+
+  // ── Dispute Methods ────────────────────────────────────────────
+  openDisputeModal(order: OrderSummary) {
+    this.selectedOrderForDispute = order;
+    this.disputeReason = '';
+    this.showDisputeModal = true;
+  }
+
+  closeDisputeModal() {
+    this.showDisputeModal = false;
+    this.selectedOrderForDispute = null;
+  }
+
+  submitDispute() {
+    if (!this.selectedOrderForDispute || !this.disputeReason.trim()) {
+      this.toastService.error('Please provide a reason for the dispute');
+      return;
+    }
+    this.submittingDispute = true;
+    this.orderService.disputeOrder(this.selectedOrderForDispute.id, this.disputeReason).subscribe({
+      next: () => {
+        this.toastService.success('Dispute submitted. Admin will review the case.');
+        this.closeDisputeModal();
+        this.submittingDispute = false;
+        // Refresh orders
+        this.orderService.getOrders().subscribe(orders => {
+          this.myOrders = orders;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to submit dispute');
+        this.submittingDispute = false;
+      }
+    });
+  }
+
+  // ── Rate Buyer Methods ────────────────────────────────────────
+  openRateBuyerModal(order: OrderSummary) {
+    this.selectedOrderForRateBuyer = order;
+    this.buyerRating = 5;
+    this.buyerReviewComment = '';
+    this.showRateBuyerModal = true;
+  }
+
+  closeRateBuyerModal() {
+    this.showRateBuyerModal = false;
+    this.selectedOrderForRateBuyer = null;
+  }
+
+  submitBuyerRating() {
+    if (!this.selectedOrderForRateBuyer || !this.buyerReviewComment.trim()) {
+      this.toastService.error('Please provide a comment');
+      return;
+    }
+    this.submittingBuyerRating = true;
+    this.reviewService.createReview({
+      orderId: this.selectedOrderForRateBuyer.id,
+      rating: this.buyerRating,
+      comment: this.buyerReviewComment,
+    }).subscribe({
+      next: () => {
+        this.toastService.success('Buyer rating submitted!');
+        this.closeRateBuyerModal();
+        this.submittingBuyerRating = false;
+        // Refresh written reviews to mark as reviewed
+        if (this.user?.id) {
+          this.reviewService.getReviewsByUser(this.user.id).subscribe(written => {
+            this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
+            this.cdr.detectChanges();
+          });
+        }
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to submit rating');
+        this.submittingBuyerRating = false;
       }
     });
   }

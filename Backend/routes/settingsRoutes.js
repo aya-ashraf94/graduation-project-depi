@@ -91,4 +91,46 @@ router.put('/platform-fee', authMiddleware, adminMiddleware, async (req, res) =>
   }
 });
 
+// Get COD fee percent (public)
+router.get('/cod-fee', async (req, res) => {
+  try {
+    const [row] = await db.select().from(settings).where(eq(settings.key, 'codFeePercent'));
+    const codFeePercent = row ? parseFloat(row.value) : 0;
+    res.json({ codFeePercent });
+  } catch (error) {
+    console.error('Error fetching COD fee:', error);
+    res.json({ codFeePercent: 0 });
+  }
+});
+
+// Update COD fee percent (admin only)
+router.put('/cod-fee', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { codFeePercent } = req.body;
+    if (codFeePercent === undefined || isNaN(parseFloat(codFeePercent))) {
+      return res.status(400).json({ message: 'Invalid COD fee value' });
+    }
+
+    const numericFee = parseFloat(codFeePercent);
+    if (numericFee < 0 || numericFee > 100) {
+      return res.status(400).json({ message: 'COD fee must be between 0 and 100' });
+    }
+
+    const [existing] = await db.select().from(settings).where(eq(settings.key, 'codFeePercent'));
+    if (existing) {
+      await db.update(settings)
+        .set({ value: numericFee.toString() })
+        .where(eq(settings.key, 'codFeePercent'));
+    } else {
+      await db.insert(settings)
+        .values({ key: 'codFeePercent', value: numericFee.toString() });
+    }
+
+    res.json({ message: 'COD fee updated successfully', codFeePercent: numericFee });
+  } catch (error) {
+    console.error('Error updating COD fee:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

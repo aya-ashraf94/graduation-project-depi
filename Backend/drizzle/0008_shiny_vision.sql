@@ -1,0 +1,1 @@
+ALTER TABLE "refresh_tokens" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;

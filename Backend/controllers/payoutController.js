@@ -247,7 +247,9 @@ const processAutoPayouts = async (req, res) => {
     const [row] = await db.select().from(settings).where(eq(settings.key, 'autoPayoutDays'));
     const days = row ? parseInt(row.value) : AUTO_PAYOUT_DAYS_DEFAULT;
     if (days <= 0) {
-      return res.json({ message: "Auto-payout is disabled", processed: 0 });
+      const result = { message: "Auto-payout is disabled", processed: 0 };
+      if (res) return res.json(result);
+      return result;
     }
 
     const cutoff = new Date();
@@ -268,10 +270,12 @@ const processAutoPayouts = async (req, res) => {
       processed++;
     }
 
-    res.json({ message: `Auto-processed ${processed} payout(s)`, processed });
+    const result = { message: `Auto-processed ${processed} payout(s)`, processed };
+    if (res) return res.json(result);
+    return result;
   } catch (error) {
     console.error("Error processing auto-payouts:", error);
-    res.status(500).json({ message: "Server Error" });
+    if (res) res.status(500).json({ message: "Server Error" });
   }
 };
 

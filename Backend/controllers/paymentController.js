@@ -11,45 +11,60 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
  * Shared logic to create an order from PaymentIntent metadata.
  * Used by the webhook. Idempotent — safe to call multiple times.
  */
-const createOrderFromMetadata = async (meta) => {
-  const existing = await db.select({ id: orders.id }).from(orders)
-    .where(and(
-      eq(orders.productId, meta.productId),
-      eq(orders.buyerId, meta.buyerId),
-      eq(orders.paymentMethod, "online"),
-    )).limit(1);
+const createOrderFromMetadata = async (meta, paymentIntentId) => {
+  const code = meta.couponCode ? meta.couponCode.trim().toUpperCase() : null;
 
-  if (existing.length > 0) {
-    const [order] = await db.select().from(orders).where(eq(orders.id, existing[0].id)).limit(1);
-    return order;
-  }
+  const order = await db.transaction(async (tx) => {
+    // Idempotency check INSIDE the transaction with FOR UPDATE to prevent race conditions
+    if (paymentIntentId) {
+      const existing = await tx.execute(sql`SELECT id FROM orders WHERE stripe_payment_intent_id = ${paymentIntentId} LIMIT 1 FOR UPDATE`);
+      const existingRows = existing.rows || existing;
+      if (existingRows.length > 0) {
+        const [found] = await tx.select().from(orders).where(eq(orders.id, existingRows[0].id)).limit(1);
+        return found;
+      }
+    }
 
-  const [order] = await db.insert(orders).values({
-    productId: meta.productId,
-    buyerId: meta.buyerId,
-    sellerId: meta.sellerId,
-    price: parseFloat(meta.finalPrice),
-    originalPrice: parseFloat(meta.originalPrice),
-    flashSaleDiscount: parseFloat(meta.flashSaleDiscount),
-    categorySaleDiscount: parseFloat(meta.categorySaleDiscount),
-    couponDiscount: parseFloat(meta.couponDiscount),
-    offerAmount: meta.offerAmount ? parseFloat(meta.offerAmount) : null,
-    platformFee: parseFloat(meta.platformFee),
-    paymentMethod: "online",
-    shippingAddress: meta.shippingAddress,
-    notes: meta.notes || null,
-    couponCode: meta.couponCode || null,
-    offerId: meta.offerId || null,
-  }).returning();
+    if (code) {
+      await tx.execute(sql`SELECT 1 FROM coupons WHERE code = ${code} FOR UPDATE`);
+    }
 
-  await db.update(products).set({ status: "sold", updatedAt: new Date() })
-    .where(eq(products.id, meta.productId));
+    const [o] = await tx.insert(orders).values({
+      productId: meta.productId,
+      buyerId: meta.buyerId,
+      sellerId: meta.sellerId,
+      price: parseFloat(meta.finalPrice),
+      originalPrice: parseFloat(meta.originalPrice),
+      flashSaleDiscount: parseFloat(meta.flashSaleDiscount),
+      categorySaleDiscount: parseFloat(meta.categorySaleDiscount),
+      couponDiscount: parseFloat(meta.couponDiscount),
+      offerAmount: meta.offerAmount ? parseFloat(meta.offerAmount) : null,
+      platformFee: parseFloat(meta.platformFee),
+      paymentMethod: "online",
+      shippingAddress: meta.shippingAddress,
+      notes: meta.notes || null,
+      couponCode: code,
+      offerId: meta.offerId || null,
+      stripePaymentIntentId: paymentIntentId || null,
+    }).returning();
 
-  if (meta.couponCode) {
-    await db.update(coupons)
-      .set({ usedCount: sql`${coupons.usedCount} + 1`, updatedAt: new Date() })
-      .where(eq(coupons.code, meta.couponCode));
-  }
+    await tx.update(products).set({ status: "sold", updatedAt: new Date() })
+      .where(eq(products.id, meta.productId));
+
+    if (code) {
+      await tx.update(coupons)
+        .set({ usedCount: sql`${coupons.usedCount} + 1`, updatedAt: new Date() })
+        .where(eq(coupons.code, code));
+    }
+
+    if (meta.offerId) {
+      await tx.update(offers)
+        .set({ status: "expired", updatedAt: new Date() })
+        .where(eq(offers.id, meta.offerId));
+    }
+
+    return o;
+  });
 
   await updateUserStats(meta.buyerId);
   await updateUserStats(meta.sellerId);
@@ -112,7 +127,7 @@ const createPaymentIntent = async (req, res) => {
     const { finalPrice, breakdown, couponValid, couponMessage } = await calculateCheckoutPrice(
       product,
       promotions,
-      { couponCode: couponCode || null, offerAmount }
+      { couponCode: couponCode || null, offerAmount, buyerId }
     );
 
     if (couponCode && !couponValid) {
@@ -182,7 +197,7 @@ const confirmPayment = async (req, res) => {
       return res.status(400).json({ message: "Missing payment metadata" });
     }
 
-    const order = await createOrderFromMetadata(meta);
+    const order = await createOrderFromMetadata(meta, paymentIntentId);
     console.log(`Order ${order.id} created from PaymentIntent ${paymentIntentId}`);
     res.json({ order });
   } catch (error) {
@@ -191,7 +206,41 @@ const confirmPayment = async (req, res) => {
   }
 };
 
+const handleWebhook = async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error("Stripe webhook signature verification failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object;
+    const meta = paymentIntent.metadata;
+
+    if (!meta || !meta.productId) {
+      console.error("Webhook: PaymentIntent missing metadata — cannot create order", paymentIntent.id);
+      return res.status(200).json({ received: true }); // acknowledge Stripe but skip
+    }
+
+    try {
+      const order = await createOrderFromMetadata(meta, paymentIntent.id);
+      console.log(`Webhook: Order ${order.id} created/reused from PaymentIntent ${paymentIntent.id}`);
+    } catch (err) {
+      console.error("Webhook: Failed to create order from PaymentIntent:", err.message);
+      return res.status(500).send("Server Error");
+    }
+  }
+
+  res.json({ received: true });
+};
+
 module.exports = {
   createPaymentIntent,
   confirmPayment,
+  createOrderFromMetadata,
+  handleWebhook,
 };

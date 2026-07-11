@@ -7,20 +7,25 @@
     </div>
 
     <!-- Loading state -->
-    <div class="game-body-loading" *ngIf="loading()">
-      <div class="spinner"></div>
-      <p>Preparing your lucky card...</p>
-    </div>
+    @if (loading()) {
+      <div class="game-body-loading">
+        <div class="spinner"></div>
+        <p>Preparing your lucky card...</p>
+      </div>
+    }
 
     <!-- Error state -->
-    <div class="game-body-error" *ngIf="!loading() && errorMsg()">
-      <div class="error-icon">⚠️</div>
-      <p class="error-text">{{ errorMsg() }}</p>
-      <button class="btn btn-primary" (click)="loadCoupon()">Try Again</button>
-    </div>
+    @if (!loading() && errorMsg()) {
+      <div class="game-body-error">
+        <div class="error-icon">⚠️</div>
+        <p class="error-text">{{ errorMsg() }}</p>
+        <button class="btn btn-primary" (click)="loadCoupon()">Try Again</button>
+      </div>
+    }
 
     <!-- Main Game Play Area -->
-    <div class="game-play-area" *ngIf="!loading() && !errorMsg()">
+    @if (!loading() && !errorMsg()) {
+      <div class="game-play-area">
       
       <!-- Scratch Container -->
       <div class="scratch-card-wrapper" [class.success-shake]="revealed()">
@@ -31,18 +36,30 @@
           <div class="coupon-content">
             <span class="badge">WINNER</span>
             <div class="discount-display">
-              <span class="value">{{ discountValue() }}</span>
-              <span class="type">{{ discountType() === 'percentage' ? '%' : '$' }} OFF</span>
+              @if (discountType() === 'percentage') {
+                <span class="value">{{ discountValue() }}%</span>
+                <span class="type">OFF</span>
+              } @else {
+                <span class="type">$</span>
+                <span class="value">{{ discountValue() }}</span>
+                <span class="type">OFF</span>
+              }
             </div>
             <div class="code-wrapper" (click)="copyToClipboard()" title="Click to copy code">
               <span class="code">{{ couponCode() }}</span>
               <button class="copy-icon-btn">
-                <svg *ngIf="!copied()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                <svg *ngIf="copied()" class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="success" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                @if (!copied()) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                }
+                @if (copied()) {
+                  <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="success" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                }
               </button>
             </div>
             <p class="coupon-note">Click code to copy and apply at checkout</p>
-            <p class="coupon-expiry" *ngIf="expiryDate()">Expires: {{ expiryDate() | date:'mediumDate' }}</p>
+            @if (expiryDate()) {
+              <p class="coupon-expiry">Expires: {{ expiryDate() | date:'mediumDate' }}</p>
+            }
           </div>
         </div>
 
@@ -62,32 +79,40 @@
       </div>
 
       <!-- Scratch Progress Bar -->
-      <div class="progress-container" *ngIf="!revealed()">
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" [style.width.%]="progress()"></div>
+      @if (!revealed()) {
+        <div class="progress-container">
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" [style.width.%]="progress()"></div>
+          </div>
+          <div class="progress-text">Scratched: {{ progress() }}%</div>
         </div>
-        <div class="progress-text">Scratched: {{ progress() }}%</div>
-      </div>
+      }
 
       <!-- Success Screen -->
-      <div class="success-actions" *ngIf="revealed()">
-        <div class="success-msg">🎉 Code Revealed Successfully!</div>
-        <div class="action-buttons">
-          <button class="btn btn-primary" (click)="copyToClipboard()">
-            {{ copied() ? 'Copied!' : 'Copy Coupon Code' }}
-          </button>
-          <button class="btn btn-outline" (click)="loadCoupon()">
-            Try Another Card
-          </button>
+      @if (revealed()) {
+        <div class="success-actions">
+          <div class="success-msg">🎉 Code Revealed Successfully!</div>
+          <div class="action-buttons">
+            <button class="btn btn-primary" (click)="copyToClipboard()">
+              {{ copied() ? 'Copied!' : 'Copy Coupon Code' }}
+            </button>
+            <button class="btn btn-outline" (click)="loadCoupon()">
+              Try Another Card
+            </button>
+          </div>
         </div>
-      </div>
-
+      }
     </div>
+    }
 
     <!-- Instructions / Footer -->
     <div class="game-footer">
-      <button *ngIf="isModal" class="btn btn-outline btn-close-game" (click)="closeCard.emit()">Close Game</button>
-      <a *ngIf="!isModal" routerLink="/" class="back-link">← Back to Marketplace</a>
+      @if (isModal) {
+        <button class="btn btn-outline btn-close-game" (click)="closeCard.emit()">Close Game</button>
+      }
+      @if (!isModal) {
+        <a routerLink="/" class="back-link">← Back to Marketplace</a>
+      }
     </div>
   </div>
 </div>

@@ -64,6 +64,18 @@ export class Coupons implements OnInit {
   showCreateModal = signal(false);
   isDropdownOpen = signal(false);
 
+  // Edit Modal
+  showEditModal = signal(false);
+  isEditDropdownOpen = signal(false);
+  editCouponData: any = null;
+  editDiscountType = 'percentage';
+  editDiscountValue: number | null = null;
+  editExpiryDate = '';
+  editMaxUses: number | null = null;
+  editMaxPerUser: number | null = null;
+  editMinOrderValue: number | null = null;
+  editIsActive = true;
+
   ngOnInit(): void {
     this.loadCoupons();
   }
@@ -152,7 +164,70 @@ export class Coupons implements OnInit {
       },
       error: (err) => {
         console.error('Failed to toggle coupon:', err);
-        this.toastService.error('Failed to toggle coupon status.');
+        this.toastService.error(err?.error?.message || 'Failed to toggle coupon status.');
+      }
+    });
+  }
+
+  editCoupon(coupon: any): void {
+    this.editCouponData = coupon;
+    this.editDiscountType = coupon.discountType || 'percentage';
+    this.editDiscountValue = coupon.discountValue;
+    this.editExpiryDate = coupon.expiryDate ? coupon.expiryDate.split('T')[0] : '';
+    this.editMaxUses = coupon.maxUses;
+    this.editMaxPerUser = coupon.maxPerUser;
+    this.editMinOrderValue = coupon.minimumOrderValue;
+    this.editIsActive = coupon.isActive;
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.editCouponData = null;
+  }
+
+  toggleEditDropdown(): void {
+    this.isEditDropdownOpen.update(v => !v);
+  }
+
+  selectEditDiscountType(type: string): void {
+    this.editDiscountType = type;
+    this.isEditDropdownOpen.set(false);
+  }
+
+  saveEditCoupon(): void {
+    if (!this.editCouponData) return;
+    if (this.editDiscountValue === null || this.editDiscountValue <= 0) {
+      this.toastService.error('Discount value must be greater than 0');
+      return;
+    }
+    if (this.editDiscountType === 'percentage' && this.editDiscountValue > 100) {
+      this.toastService.error('Percentage discount cannot exceed 100%');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const payload: any = {
+      discountType: this.editDiscountType,
+      discountValue: this.editDiscountValue,
+      isActive: this.editIsActive,
+    };
+    if (this.editExpiryDate) payload.expiryDate = this.editExpiryDate;
+    if (this.editMaxUses !== null) payload.maxUses = this.editMaxUses;
+    if (this.editMaxPerUser !== null) payload.maxPerUser = this.editMaxPerUser;
+    if (this.editMinOrderValue !== null) payload.minimumOrderValue = this.editMinOrderValue;
+
+    this.adminService.patchCoupon(this.editCouponData.id, payload).subscribe({
+      next: (updated) => {
+        this.toastService.success(`Coupon ${this.editCouponData.code} updated.`);
+        this.couponsList.update(list => list.map(c => c.id === this.editCouponData.id ? updated : c));
+        this.isSubmitting = false;
+        this.closeEditModal();
+      },
+      error: (err) => {
+        console.error('Failed to update coupon:', err);
+        this.toastService.error(err?.error?.message || 'Failed to update coupon.');
+        this.isSubmitting = false;
       }
     });
   }

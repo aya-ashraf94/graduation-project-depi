@@ -1,5 +1,5 @@
 const db = require("../db");
-const { users } = require("../db/schema");
+const { users, refreshTokens } = require("../db/schema");
 const { eq, and, gt, sql } = require("drizzle-orm");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -7,6 +7,50 @@ const crypto = require("crypto");
 const { updateUserStats } = require("../utils/userStats");
 const { uploadBase64ToCloudinary } = require("../utils/upload");
 const { createNotification } = require("../utils/notifications");
+
+const ACCESS_TOKEN_EXPIRY = "1h";
+const REFRESH_TOKEN_EXPIRY_DAYS = 30;
+
+const generateAccessToken = (user) => {
+  return jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: ACCESS_TOKEN_EXPIRY }
+  );
+};
+
+const generateRefreshToken = async (userId) => {
+  const rawToken = crypto.randomBytes(40).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+
+  await db.insert(refreshTokens).values({
+    userId,
+    tokenHash,
+    expiresAt,
+  });
+
+  return rawToken;
+};
+
+const setTokenCookies = (res, accessToken, refreshToken) => {
+  res.cookie("nafa3ni_token", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 60 * 60 * 1000, // 1 hour
+  });
+
+  if (refreshToken) {
+    res.cookie("nafa3ni_refresh", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/auth",
+      maxAge: REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
+    });
+  }
+};
 
 const registerUser = async (req, res) => {
   try {
@@ -43,18 +87,9 @@ const registerUser = async (req, res) => {
 
     const { password: _, ...userObj } = user;
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.cookie("nafa3ni_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    const accessToken = generateAccessToken(user);
+    const refreshToken = await generateRefreshToken(user.id);
+    setTokenCookies(res, accessToken, refreshToken);
 
     await createNotification({
       userId: user.id,
@@ -67,7 +102,8 @@ const registerUser = async (req, res) => {
     res.status(201).json({
       message: "User Registered Successfully",
       user: userObj,
-      token,
+      token: accessToken,
+      refreshToken,
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -103,24 +139,16 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.cookie("nafa3ni_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    const accessToken = generateAccessToken(user);
+    const refreshToken = await generateRefreshToken(user.id);
+    setTokenCookies(res, accessToken, refreshToken);
 
     const { password: _, ...userObj } = user;
 
     res.json({
       message: "Login Success",
-      token,
+      token: accessToken,
+      refreshToken,
       user: userObj,
     });
   } catch (error) {
@@ -350,6 +378,81 @@ const validateResetToken = async (req, res) => {
   }
 };
 
+const refreshToken = async (req, res) => {
+  try {
+    const rawToken = req.body.refreshToken || req.cookies?.nafa3ni_refresh;
+    if (!rawToken) {
+      return res.status(401).json({ message: "Refresh token is required" });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    const [stored] = await db.select()
+      .from(refreshTokens)
+      .where(and(
+        eq(refreshTokens.tokenHash, tokenHash),
+        eq(refreshTokens.revoked, false),
+        gt(refreshTokens.expiresAt, new Date())
+      ))
+      .limit(1);
+
+    if (!stored) {
+      return res.status(401).json({ message: "Invalid or expired refresh token" });
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.id, stored.userId)).limit(1);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    if (user.isSuspended) {
+      return res.status(403).json({ message: "Your account is suspended" });
+    }
+
+    // Revoke old refresh token (rotation)
+    await db.update(refreshTokens)
+      .set({ revoked: true, updatedAt: new Date() })
+      .where(eq(refreshTokens.id, stored.id));
+
+    const accessToken = generateAccessToken(user);
+    const newRefreshToken = await generateRefreshToken(user.id);
+    setTokenCookies(res, accessToken, newRefreshToken);
+
+    const { password: _, ...userObj } = user;
+
+    res.json({
+      message: "Token refreshed successfully",
+      token: accessToken,
+      refreshToken: newRefreshToken,
+      user: userObj,
+    });
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    const rawToken = req.body.refreshToken || req.cookies?.nafa3ni_refresh;
+
+    if (rawToken) {
+      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      await db.update(refreshTokens)
+        .set({ revoked: true, updatedAt: new Date() })
+        .where(eq(refreshTokens.tokenHash, tokenHash));
+    }
+
+    res.clearCookie("nafa3ni_token");
+    res.clearCookie("nafa3ni_refresh", { path: "/api/auth" });
+
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Error logging out:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -358,4 +461,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   validateResetToken,
+  refreshToken,
+  logout,
 };

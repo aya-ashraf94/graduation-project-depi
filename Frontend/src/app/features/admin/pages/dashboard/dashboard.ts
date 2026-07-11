@@ -33,10 +33,11 @@ export class Dashboard implements OnInit {
   // Category sale management
   showCategorySaleModal = signal(false);
   categories = signal<any[]>([]);
-  // Platform fee management
-  showPlatformFeeModal = signal(false);
+  // Fee management
+  showFeeModal = signal(false);
   platformFeePercentInput = signal(0);
-  savingPlatformFee = signal(false);
+  codFeePercentInput = signal(0);
+  savingFee = signal(false);
   selectedCatId = signal<string>('');
   salePercent = signal<number>(0);
   saleFormStart = signal<string>('');
@@ -212,35 +213,51 @@ export class Dashboard implements OnInit {
     });
   }
 
-  openPlatformFeeModal(): void {
+  openFeeModal(): void {
     this.http.get<{ platformFeePercent: number }>(`${environment.apiUrl}/settings/platform-fee`).subscribe({
       next: (res) => {
         this.platformFeePercentInput.set(res.platformFeePercent);
-        this.showPlatformFeeModal.set(true);
       },
       error: () => {
         this.platformFeePercentInput.set(3);
-        this.showPlatformFeeModal.set(true);
       }
     });
+    this.http.get<{ codFeePercent: number }>(`${environment.apiUrl}/settings/cod-fee`).subscribe({
+      next: (res) => {
+        this.codFeePercentInput.set(res.codFeePercent);
+      },
+      error: () => {
+        this.codFeePercentInput.set(0);
+      }
+    });
+    this.showFeeModal.set(true);
   }
 
-  savePlatformFee(): void {
-    const pct = this.platformFeePercentInput();
-    if (pct < 0 || pct > 100) {
-      this.toastService.error('Fee must be between 0 and 100');
+  saveFees(): void {
+    const pf = this.platformFeePercentInput();
+    const cf = this.codFeePercentInput();
+    if (pf < 0 || pf > 100 || cf < 0 || cf > 100) {
+      this.toastService.error('Fees must be between 0 and 100');
       return;
     }
-    this.savingPlatformFee.set(true);
-    this.http.put(`${environment.apiUrl}/settings/platform-fee`, { platformFeePercent: pct }).subscribe({
+    this.savingFee.set(true);
+    this.http.put(`${environment.apiUrl}/settings/platform-fee`, { platformFeePercent: pf }).subscribe({
       next: () => {
-        this.toastService.success(`✅ Platform fee set to ${pct}%`);
-        this.savingPlatformFee.set(false);
-        this.showPlatformFeeModal.set(false);
+        this.http.put(`${environment.apiUrl}/settings/cod-fee`, { codFeePercent: cf }).subscribe({
+          next: () => {
+            this.toastService.success(`✅ Platform fee: ${pf}% | COD fee: ${cf}%`);
+            this.savingFee.set(false);
+            this.showFeeModal.set(false);
+          },
+          error: () => {
+            this.toastService.error('Failed to update COD fee');
+            this.savingFee.set(false);
+          }
+        });
       },
       error: () => {
         this.toastService.error('Failed to update platform fee');
-        this.savingPlatformFee.set(false);
+        this.savingFee.set(false);
       }
     });
   }

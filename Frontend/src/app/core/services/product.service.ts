@@ -162,9 +162,19 @@ export class ProductService {
     );
   }
 
+  /** Reserve product for checkout (10-min soft lock) */
+  reserveProduct(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/reserve`, {});
+  }
+
+  /** Release product reservation */
+  releaseProduct(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/release`, {});
+  }
+
   /** Delete product */
-  deleteProduct(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  deleteProduct(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   /** Get all categories from backend */

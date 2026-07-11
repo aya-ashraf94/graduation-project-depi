@@ -1280,6 +1280,31 @@
   align-items: center;
 }
 
+.order-card-earnings {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.earnings-label {
+  color: var(--gray-3);
+  font-family: var(--font-secondary);
+}
+
+.earnings-value {
+  font-family: var(--font-primary);
+  font-weight: 900;
+  color: var(--success-dark, #155724);
+}
+
+.earnings-fee {
+  color: var(--gray-3);
+  font-size: 0.7rem;
+  font-family: var(--font-secondary);
+}
+
 .order-card-price-tag {
   align-self: flex-start;
   background: var(--yellow);
@@ -1521,6 +1546,148 @@
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.tracking-display {
+  font-size: 0.85rem;
+  color: var(--info);
+  background: var(--gray-light);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gray);
+}
+
+.tracking-input-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tracking-input {
+  padding: 6px 10px;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-secondary);
+  font-size: 0.85rem;
+  width: 180px;
+  outline: none;
+}
+
+.btn-order-cancel-sm {
+  background: none;
+  border: 2px solid var(--black);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.details-col-full {
+  flex: 1 1 100%;
+  min-width: 100%;
+}
+
+.seller-review-content {
+  background: var(--gray-light);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gray);
+}
+
+.seller-review-stars {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.seller-review-stars .star {
+  color: var(--gray);
+  font-size: 1.1rem;
+}
+
+.seller-review-stars .star.filled {
+  color: #f59e0b;
+}
+
+.seller-review-comment {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.seller-review-bar {
+  background: #fffbeb !important;
+  border-color: #fbbf24 !important;
+}
+
+.auto-confirm-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  width: 100%;
+  text-align: right;
+  padding: 2px 0;
+}
+
+.btn-order-danger {
+  padding: 8px 14px;
+  border: 2px solid #dc2626;
+  border-radius: var(--radius-sm);
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-order-danger:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.star-rating-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-rating-star {
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: color 0.15s ease;
+  user-select: none;
+}
+
+.star-rating-star.active {
+  color: #f59e0b;
+}
+
+.star-rating-star:hover {
+  color: #fbbf24;
+}
+
+.star-rating-label {
+  margin-left: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.filter-pill-danger {
+  border-color: #f59e0b !important;
+  color: #92400e !important;
+}
+.filter-pill-danger.active {
+  background: #f59e0b !important;
+  color: white !important;
+  border-color: #f59e0b !important;
+}
+
+.order-disputed-panel {
+  margin-top: 0.5rem !important;
 }
 
 .pulse-dot {

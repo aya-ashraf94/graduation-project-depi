@@ -1,0 +1,1 @@
+CREATE INDEX "order_buyer_coupon_idx" ON "orders" USING btree ("buyer_id","coupon_code");

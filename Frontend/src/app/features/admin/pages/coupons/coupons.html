@@ -78,10 +78,12 @@
       <div class="coupons-grid-wrapper">
         @if (isLoading()) {
           <div class="skeleton-grid">
-            <div class="skeleton-ticket-card" *ngFor="let i of [1,2,3,4]">
-              <div class="skeleton-stub"></div>
-              <div class="skeleton-body"></div>
-            </div>
+            @for (i of [1,2,3,4]; track $index) {
+              <div class="skeleton-ticket-card">
+                <div class="skeleton-stub"></div>
+                <div class="skeleton-body"></div>
+              </div>
+            }
           </div>
         } @else if (filteredCouponsList().length === 0) {
           <app-empty-state
@@ -132,6 +134,9 @@
                               [class]="coupon.isActive ? 'btn-status-toggle active-state' : 'btn-status-toggle disabled-state'">
                         {{ coupon.isActive ? 'Disable' : 'Enable' }}
                       </button>
+                      <button (click)="editCoupon(coupon)" class="btn-edit-coupon" title="Edit Coupon">
+                        ✏️
+                      </button>
                       <button (click)="deleteCoupon(coupon)" class="btn-delete-coupon" title="Delete Coupon">
                         🗑️
                       </button>
@@ -151,129 +156,229 @@
           <span class="guide-title-text">💡 Guide & Tips</span>
           <span class="guide-arrow-icon">{{ showGuide() ? '▲' : '▼' }}</span>
         </button>
-        <div class="guide-content-panel" *ngIf="showGuide()">
-          <ul>
-            <li>Active coupons are immediately valid for customer checkout orders.</li>
-            <li>Expired coupons are ignored during checkouts but retained for order histories.</li>
-            <li>Use the top search box to instantly search by code name.</li>
-          </ul>
-        </div>
+        @if (showGuide()) {
+          <div class="guide-content-panel">
+            <ul>
+              <li>Active coupons are immediately valid for customer checkout orders.</li>
+              <li>Expired coupons are ignored during checkouts but retained for order histories.</li>
+              <li>Use the top search box to instantly search by code name.</li>
+            </ul>
+          </div>
+        }
       </div>
 
     </div>
   }
 
   <!-- CREATE NEW COUPON MODAL DIALOG -->
-  <div class="modal-overlay" *ngIf="showCreateModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="panel-header">
-        <div class="panel-header-titles">
-          <h3>Create New Coupon</h3>
-          <p class="panel-header-subtitle">Create discounts for customers.</p>
-        </div>
-        <button class="modal-close-btn-header" (click)="showCreateModal.set(false)">✕</button>
-      </div>
-      <div class="panel-body">
-        <form (ngSubmit)="createCoupon()" #couponForm="ngForm" class="create-coupon-form">
-          <!-- Coupon Code Input -->
-          <div class="form-group">
-            <label class="form-label">Coupon Code</label>
-            <div class="input-with-prefix-icon">
-              <span class="input-icon-label">🏷️</span>
-              <input type="text" 
-                     [(ngModel)]="newCode" 
-                     name="code" 
-                     placeholder="e.g. MEGA20" 
-                     required
-                     class="form-control uppercase-input" />
-            </div>
+  @if (showCreateModal()) {
+    <div class="modal-overlay">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="panel-header">
+          <div class="panel-header-titles">
+            <h3>Create New Coupon</h3>
+            <p class="panel-header-subtitle">Create discounts for customers.</p>
           </div>
-
-          <!-- Type and Value Side-by-Side Grid Row -->
-          <div class="form-row-grid">
-            <!-- Custom Styled Discount Type Dropdown Select -->
+          <button class="modal-close-btn-header" (click)="showCreateModal.set(false)">✕</button>
+        </div>
+        <div class="panel-body">
+          <form (ngSubmit)="createCoupon()" #couponForm="ngForm" class="create-coupon-form">
+            <!-- Coupon Code Input -->
             <div class="form-group">
-              <label class="form-label">Discount Type</label>
-              <div class="custom-select-container" (click)="toggleDropdown()" [class.dropdown-active]="isDropdownOpen()">
-                <div class="custom-select-selected">
-                  <span>{{ newDiscountType === 'percentage' ? 'Percentage (%)' : 'Fixed ($)' }}</span>
-                  <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
+              <label class="form-label">Coupon Code</label>
+              <div class="input-with-prefix-icon">
+                <span class="input-icon-label">🏷️</span>
+                <input type="text" 
+                       [(ngModel)]="newCode" 
+                       name="code" 
+                       placeholder="e.g. MEGA20" 
+                       required
+                       class="form-control uppercase-input" />
+              </div>
+            </div>
+
+            <!-- Type and Value Side-by-Side Grid Row -->
+            <div class="form-row-grid">
+              <!-- Custom Styled Discount Type Dropdown Select -->
+              <div class="form-group">
+                <label class="form-label">Discount Type</label>
+                <div class="custom-select-container" (click)="toggleDropdown()" [class.dropdown-active]="isDropdownOpen()">
+                  <div class="custom-select-selected">
+                    <span>{{ newDiscountType === 'percentage' ? 'Percentage (%)' : 'Fixed ($)' }}</span>
+                    <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                  @if (isDropdownOpen()) {
+                    <div class="custom-select-dropdown">
+                      <div class="custom-select-option" (click)="selectDiscountType('percentage'); $event.stopPropagation()">
+                        Percentage (%)
+                      </div>
+                      <div class="custom-select-option" (click)="selectDiscountType('fixed'); $event.stopPropagation()">
+                        Fixed ($)
+                      </div>
+                    </div>
+                  }
                 </div>
-                <div class="custom-select-dropdown" *ngIf="isDropdownOpen()">
-                  <div class="custom-select-option" (click)="selectDiscountType('percentage'); $event.stopPropagation()">
-                    Percentage (%)
-                  </div>
-                  <div class="custom-select-option" (click)="selectDiscountType('fixed'); $event.stopPropagation()">
-                    Fixed ($)
-                  </div>
+              </div>
+
+              <!-- Discount Value Input -->
+              <div class="form-group">
+                <label class="form-label">Discount Value</label>
+                <div class="input-with-suffix">
+                  <input type="number" 
+                         [(ngModel)]="newDiscountValue" 
+                         name="discountValue" 
+                         placeholder="e.g. 15" 
+                         required
+                         min="1"
+                         class="form-control" />
+                  <span class="input-suffix-tag">
+                    {{ newDiscountType === 'percentage' ? '%' : '$' }}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <!-- Discount Value Input -->
+            <!-- Expiry Date Input -->
             <div class="form-group">
-              <label class="form-label">Discount Value</label>
-              <div class="input-with-suffix">
+              <label class="form-label">Expiry Date (Optional)</label>
+              <div class="input-with-prefix-icon">
+                <span class="input-icon-label">📅</span>
+                <input type="date" 
+                       [(ngModel)]="newExpiryDate" 
+                       name="expiryDate" 
+                       class="form-control date-input" />
+              </div>
+            </div>
+
+            <!-- Max Uses and Max Per User Side-by-Side Grid Row -->
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label class="form-label">Max Total Uses</label>
                 <input type="number" 
-                       [(ngModel)]="newDiscountValue" 
-                       name="discountValue" 
-                       placeholder="e.g. 15" 
-                       required
+                       [(ngModel)]="newMaxUses" 
+                       name="maxUses" 
+                       placeholder="e.g. 100" 
                        min="1"
                        class="form-control" />
-                <span class="input-suffix-tag">
-                  {{ newDiscountType === 'percentage' ? '%' : '$' }}
-                </span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max Uses / User</label>
+                <input type="number" 
+                       [(ngModel)]="newMaxPerUser" 
+                       name="maxPerUser" 
+                       placeholder="e.g. 1" 
+                       min="1"
+                       class="form-control" />
               </div>
             </div>
-          </div>
 
-          <!-- Expiry Date Input -->
-          <div class="form-group">
-            <label class="form-label">Expiry Date (Optional)</label>
-            <div class="input-with-prefix-icon">
-              <span class="input-icon-label">📅</span>
-              <input type="date" 
-                     [(ngModel)]="newExpiryDate" 
-                     name="expiryDate" 
-                     class="form-control date-input" />
-            </div>
-          </div>
-
-          <!-- Max Uses and Max Per User Side-by-Side Grid Row -->
-          <div class="form-row-grid">
-            <div class="form-group">
-              <label class="form-label">Max Total Uses</label>
-              <input type="number" 
-                     [(ngModel)]="newMaxUses" 
-                     name="maxUses" 
-                     placeholder="e.g. 100" 
-                     min="1"
-                     class="form-control" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Max Uses / User</label>
-              <input type="number" 
-                     [(ngModel)]="newMaxPerUser" 
-                     name="maxPerUser" 
-                     placeholder="e.g. 1" 
-                     min="1"
-                     class="form-control" />
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <button type="submit" 
-                  [disabled]="isSubmitting"
-                  class="btn-submit-coupon op-yellow">
-            {{ isSubmitting ? 'Creating...' : 'Create Coupon' }}
-          </button>
-        </form>
+            <!-- Submit Button -->
+            <button type="submit" 
+                    [disabled]="isSubmitting"
+                    class="btn-submit-coupon op-yellow">
+              {{ isSubmitting ? 'Creating...' : 'Create Coupon' }}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
+  }
+
+  <!-- EDIT COUPON MODAL DIALOG -->
+  @if (showEditModal()) {
+    <div class="modal-overlay">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="panel-header">
+          <div class="panel-header-titles">
+            <h3>Edit Coupon: {{ editCouponData?.code }}</h3>
+            <p class="panel-header-subtitle">Update discount code settings.</p>
+          </div>
+          <button class="modal-close-btn-header" (click)="closeEditModal()">✕</button>
+        </div>
+        <div class="panel-body">
+          <form (ngSubmit)="saveEditCoupon()" #editCouponForm="ngForm" class="create-coupon-form">
+            <!-- Type and Value Side-by-Side Grid Row -->
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label class="form-label">Discount Type</label>
+                <div class="custom-select-container" (click)="toggleEditDropdown()" [class.dropdown-active]="isEditDropdownOpen()">
+                  <div class="custom-select-selected">
+                    <span>{{ editDiscountType === 'percentage' ? 'Percentage (%)' : 'Fixed ($)' }}</span>
+                    <svg class="custom-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                  @if (isEditDropdownOpen()) {
+                    <div class="custom-select-dropdown">
+                      <div class="custom-select-option" (click)="selectEditDiscountType('percentage'); $event.stopPropagation()">
+                        Percentage (%)
+                      </div>
+                      <div class="custom-select-option" (click)="selectEditDiscountType('fixed'); $event.stopPropagation()">
+                        Fixed ($)
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Discount Value</label>
+                <div class="input-with-suffix">
+                  <input type="number" [(ngModel)]="editDiscountValue" name="editDiscountValue" placeholder="e.g. 15" required min="1" class="form-control" />
+                  <span class="input-suffix-tag">{{ editDiscountType === 'percentage' ? '%' : '$' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Expiry Date Input -->
+            <div class="form-group">
+              <label class="form-label">Expiry Date</label>
+              <div class="input-with-prefix-icon">
+                <span class="input-icon-label">📅</span>
+                <input type="date" [(ngModel)]="editExpiryDate" name="editExpiryDate" class="form-control date-input" />
+              </div>
+            </div>
+
+            <!-- Max Uses and Max Per User Side-by-Side Grid Row -->
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label class="form-label">Max Total Uses</label>
+                <input type="number" [(ngModel)]="editMaxUses" name="editMaxUses" placeholder="e.g. 100" min="1" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max Uses / User</label>
+                <input type="number" [(ngModel)]="editMaxPerUser" name="editMaxPerUser" placeholder="e.g. 1" min="1" class="form-control" />
+              </div>
+            </div>
+
+            <!-- Min Order Value -->
+            <div class="form-group">
+              <label class="form-label">Minimum Order Value ($)</label>
+              <input type="number" [(ngModel)]="editMinOrderValue" name="editMinOrderValue" placeholder="e.g. 20" min="0" step="0.01" class="form-control" />
+            </div>
+
+            <!-- Status Toggle -->
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <div class="status-toggle-row">
+                <label class="toggle-switch-label">
+                  <input type="checkbox" [(ngModel)]="editIsActive" name="editIsActive" class="toggle-switch-input" />
+                  <span class="toggle-switch-slider"></span>
+                  <span class="toggle-switch-text">{{ editIsActive ? 'Active' : 'Disabled' }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" [disabled]="isSubmitting" class="btn-submit-coupon op-yellow">
+              {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- FLOATING ACTION BUTTON (FAB) FOR MOBILE -->
   <button (click)="showCreateModal.set(true)" class="fab-create-btn" title="Create Coupon">➕</button>

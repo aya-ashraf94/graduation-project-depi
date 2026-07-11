@@ -1978,6 +1978,46 @@
   stroke: var(--black);
 }
 
+/* ── Sold / Purchased Banner ── */
+.sold-banner-v2 {
+  width: 100%;
+  height: 3.5rem;
+  background: var(--surface-2);
+  color: var(--gray-3);
+  border: 3px solid var(--gray-2);
+  border-radius: 12px;
+  font-family: var(--font-primary);
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.purchased-banner-v2 {
+  background: var(--success-light, #d4edda);
+  color: var(--success-dark, #155724);
+  border-color: var(--success, #28a745);
+  font-size: 1rem;
+  gap: 0.35rem;
+}
+
+.view-order-link-v2 {
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: none;
+  color: var(--info);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.view-order-link-v2:hover {
+  color: var(--info-dark);
+}
+
 .report-listing-wrapper-v3 {
   display: flex;
   justify-content: center;

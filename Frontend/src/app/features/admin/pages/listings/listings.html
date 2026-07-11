@@ -112,24 +112,16 @@
                           alt="Product thumbnail"
                           class="product-thumbnail"
                         />
-                        <!-- Badges overlay -->
-                        <div
-                          class="product-badge-overlay"
-                          *ngIf="product.soldByNafa3ni || product.isVerified"
-                        >
-                          <span
-                            *ngIf="product.soldByNafa3ni"
-                            class="badge-store-micro"
-                            title="Official Store Product"
-                            >Official</span
-                          >
-                          <span
-                            *ngIf="product.isVerified"
-                            class="badge-verified-micro"
-                            title="Verified Product"
-                            >Verified</span
-                          >
-                        </div>
+                        @if (product.soldByNafa3ni || product.isVerified) {
+                          <div class="product-badge-overlay">
+                            @if (product.soldByNafa3ni) {
+                              <span class="badge-store-micro" title="Official Store Product">Official</span>
+                            }
+                            @if (product.isVerified) {
+                              <span class="badge-verified-micro" title="Verified Product">Verified</span>
+                            }
+                          </div>
+                        }
                       </div>
                       <div class="product-info-text">
                         <a [routerLink]="['/products', product.id]" class="product-link">
@@ -141,22 +133,16 @@
                         >
                         <span class="product-seller-meta">
                           by
-                          <a
-                            *ngIf="product.seller; else anonSeller"
-                            [routerLink]="['/profile', product.seller.id]"
-                            class="seller-link-micro"
-                          >
-                            {{ product.seller.firstName }} {{ product.seller.lastName }}
-                          </a>
-                          <ng-template #anonSeller
-                            ><span class="system-tag">Anonymous</span></ng-template
-                          >
-                          <span
-                            *ngIf="product.seller.isVerified"
-                            class="seller-verified-check"
-                            title="Verified Seller"
-                            >✓</span
-                          >
+                          @if (product.seller) {
+                            <a [routerLink]="['/profile', product.seller.id]" class="seller-link-micro">
+                              {{ product.seller.firstName }} {{ product.seller.lastName }}
+                            </a>
+                          } @else {
+                            <span class="system-tag">Anonymous</span>
+                          }
+                          @if (product.seller.isVerified) {
+                            <span class="seller-verified-check" title="Verified Seller">✓</span>
+                          }
                           <span class="meta-views-divider">|</span>
                           <span class="views-micro">👁️ {{ product.viewCount }} views</span>
                         </span>

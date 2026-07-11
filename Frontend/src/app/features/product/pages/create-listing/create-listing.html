@@ -313,7 +313,8 @@
           <p style="font-family: var(--font-secondary); font-size: 0.8rem; color: var(--gray-3); margin: 0 0 0.5rem;">
             Your contact info and location from your profile will be used automatically.
           </p>
-          <div class="wiz-field" *ngIf="authService.currentUser() as user">
+          @if (authService.currentUser(); as user) {
+          <div class="wiz-field">
             <div style="display: flex; flex-direction: column; gap: 0.3rem;">
               <span style="font-family: var(--font-primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Phone</span>
               <span style="font-family: var(--font-secondary); font-size: 0.9rem;">{{ user.phoneNumber || 'Not set' }}</span>
@@ -323,6 +324,7 @@
               </span>
             </div>
           </div>
+          }
           <div class="wiz-check-row" style="margin-top: 0.75rem;">
             <input id="w-show" type="checkbox" class="wiz-checkbox" [(ngModel)]="showContact" />
             <label for="w-show" class="wiz-check-label">Show contact info publicly on listing</label>
@@ -497,12 +499,16 @@
           </p>
           <button id="btn-save-draft" class="wiz-btn wiz-btn-draft" (click)="saveDraft()" type="button"
             [disabled]="isPublishing() || isSavingDraft()">
-            <span *ngIf="isSavingDraft()" class="btn-spinner"></span>
+            @if (isSavingDraft()) {
+            <span class="btn-spinner"></span>
+            }
             {{ isSavingDraft() ? 'SAVING DRAFT...' : 'SAVE AS DRAFT' }}
           </button>
           <button id="btn-publish" class="wiz-btn wiz-btn-publish" (click)="publish()" type="button"
             [disabled]="!allValid || isPublishing() || isSavingDraft()">
-            <span *ngIf="isPublishing()" class="btn-spinner"></span>
+            @if (isPublishing()) {
+            <span class="btn-spinner"></span>
+            }
             {{ isPublishing() ? 'PUBLISHING...' : 'PUBLISH LISTING →' }}
           </button>
         </div>

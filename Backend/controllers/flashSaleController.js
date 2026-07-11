@@ -5,10 +5,15 @@ const { eq, and, gte, lte, or, desc, count, isNull, inArray } = require("drizzle
 // ── Admin: Get all flash sales ─────────────────────────────────────────────
 const getAllFlashSales = async (req, res) => {
   try {
+    const now = new Date();
     const result = await db.select()
       .from(flashSales)
       .orderBy(desc(flashSales.createdAt));
-    res.json(result);
+    const annotated = result.map(sale => ({
+      ...sale,
+      isCurrentlyActive: sale.startDate <= now && sale.endDate >= now,
+    }));
+    res.json(annotated);
   } catch (error) {
     console.error("Error fetching flash sales:", error);
     res.status(500).json({ message: "Server Error" });
@@ -41,6 +46,23 @@ const createFlashSale = async (req, res) => {
 
     if ((scopeType === "category" || scopeType === "product") && !scopeId) {
       return res.status(400).json({ message: `Scope ID required for ${scopeType} scope` });
+    }
+
+    // Prevent overlapping active flash sales for the same scope
+    const overlapping = await db.select({ id: flashSales.id })
+      .from(flashSales)
+      .where(and(
+        eq(flashSales.isActive, true),
+        eq(flashSales.scopeType, scopeType || "all"),
+        scopeType !== "all" && scopeId ? eq(flashSales.scopeId, scopeId) : sql`TRUE`,
+        sql`${start} < ${flashSales.endDate} AND ${end} > ${flashSales.startDate}`
+      ))
+      .limit(1);
+
+    if (overlapping.length > 0) {
+      return res.status(400).json({
+        message: `An overlapping active ${scopeType || "global"} flash sale already exists for this period.`
+      });
     }
 
     const [sale] = await db.insert(flashSales).values({
@@ -123,20 +145,28 @@ const getActiveFlashSales = async (req, res) => {
       ))
       .orderBy(desc(flashSales.createdAt));
 
-    // Attach scope names for display
-    const enriched = await Promise.all(result.map(async (sale) => {
+    // Attach scope names for display (batched to avoid N+1)
+    const categoryIds = result.filter(s => s.scopeType === "category" && s.scopeId).map(s => s.scopeId);
+    const productIds = result.filter(s => s.scopeType === "product" && s.scopeId).map(s => s.scopeId);
+
+    const [catRows, prodRows] = await Promise.all([
+      categoryIds.length > 0
+        ? db.select({ id: categories.id, name: categories.name }).from(categories).where(inArray(categories.id, categoryIds))
+        : Promise.resolve([]),
+      productIds.length > 0
+        ? db.select({ id: products.id, title: products.title }).from(products).where(inArray(products.id, productIds))
+        : Promise.resolve([]),
+    ]);
+
+    const catMap = Object.fromEntries(catRows.map(c => [c.id, c.name]));
+    const prodMap = Object.fromEntries(prodRows.map(p => [p.id, p.title]));
+
+    const enriched = result.map(sale => {
       let scopeName = null;
-      if (sale.scopeType === "category" && sale.scopeId) {
-        const [cat] = await db.select({ name: categories.name })
-          .from(categories).where(eq(categories.id, sale.scopeId)).limit(1);
-        scopeName = cat?.name || null;
-      } else if (sale.scopeType === "product" && sale.scopeId) {
-        const [prod] = await db.select({ title: products.title })
-          .from(products).where(eq(products.id, sale.scopeId)).limit(1);
-        scopeName = prod?.title || null;
-      }
+      if (sale.scopeType === "category" && sale.scopeId) scopeName = catMap[sale.scopeId] || null;
+      else if (sale.scopeType === "product" && sale.scopeId) scopeName = prodMap[sale.scopeId] || null;
       return { ...sale, scopeName };
-    }));
+    });
 
     res.json(enriched);
   } catch (error) {

@@ -1,7 +1,8 @@
 <!-- =========================================================================
      AUTH REQUIRED MODAL COMPONENT TEMPLATE
      ========================================================================= -->
-<div class="report-overlay brutal-overlay" *ngIf="isOpen()" (click)="onClose()">
+@if (isOpen()) {
+<div class="report-overlay brutal-overlay" (click)="onClose()">
   <div class="modal-standard-card brutal-modal-card" (click)="$event.stopPropagation()">
     <button class="modal-standard-close brutal-modal-close" (click)="onClose()">✕</button>
     
@@ -24,3 +25,4 @@
     </div>
   </div>
 </div>
+}

@@ -46,7 +46,8 @@ type SupportTab = 'privacy' | 'terms' | 'help';
         <div class="support-content-box">
           
           <!-- PRIVACY POLICY -->
-          <div *ngIf="activeTab() === 'privacy'" class="content-pane fade-in">
+          @if (activeTab() === 'privacy') {
+            <div class="content-pane fade-in">
             <h2 class="pane-title">Privacy Policy</h2>
             <div class="legal-text">
               <h3>1. Information Collection</h3>
@@ -65,9 +66,11 @@ type SupportTab = 'privacy' | 'terms' | 'help';
               <p>You have the right to request access to the data we hold about you, or to request the permanent deletion of your account and associated data.</p>
             </div>
           </div>
+          }
 
           <!-- TERMS & CONDITIONS -->
-          <div *ngIf="activeTab() === 'terms'" class="content-pane fade-in">
+          @if (activeTab() === 'terms') {
+            <div class="content-pane fade-in">
             <h2 class="pane-title">Terms of Service</h2>
             <div class="legal-text">
               <h3>1. Acceptance of Terms</h3>
@@ -86,9 +89,11 @@ type SupportTab = 'privacy' | 'terms' | 'help';
               <p>Nafa3ni administration may select specific listings, categories, or all items for temporary Flash Sale campaigns. During the campaign window, listing prices are dynamically modified. Normal listing prices will be automatically restored once the campaign expires. Sellers agree that their listed items are subject to these promotional events.</p>
             </div>
           </div>
+          }
 
           <!-- HELP CENTER (FAQ) -->
-          <div *ngIf="activeTab() === 'help'" class="content-pane fade-in">
+          @if (activeTab() === 'help') {
+            <div class="content-pane fade-in">
             <h2 class="pane-title">Frequently Asked Questions</h2>
             <div class="faq-list">
               <div class="faq-item">
@@ -116,6 +121,7 @@ type SupportTab = 'privacy' | 'terms' | 'help';
               <p>Still need help? <a routerLink="/contact">Contact Support Team</a></p>
             </div>
           </div>
+          }
 
         </div>
       </div>
