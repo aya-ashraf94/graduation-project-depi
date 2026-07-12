@@ -11,7 +11,6 @@ import { PaginationService } from '../../../../shared/services/pagination.servic
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
-import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { exportToCsv } from '../../../../shared/utils/csv-export.utils';
@@ -22,7 +21,7 @@ type SortKey = 'price' | 'date' | 'status' | 'buyer' | 'seller' | 'fee';
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent, CurrencyFormatPipe],
+  imports: [CommonModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminLoaderComponent, CurrencyFormatPipe],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
   changeDetection: ChangeDetectionStrategy.OnPush
