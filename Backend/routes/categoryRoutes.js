@@ -49,6 +49,46 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { name, attributes } = req.body;
+    if (name !== undefined) {
+      const [updated] = await db.update(categories)
+        .set({ name })
+        .where(eq(categories.id, req.params.id))
+        .returning();
+      if (!updated) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+    }
+
+    if (attributes !== undefined) {
+      await db.delete(categoryAttributes).where(eq(categoryAttributes.categoryId, req.params.id));
+      if (attributes.length > 0) {
+        await db.insert(categoryAttributes).values(
+          attributes.map(attr => ({
+            categoryId: req.params.id,
+            name: attr.name,
+            type: attr.type,
+            options: attr.options || [],
+            required: attr.required !== undefined ? attr.required : true,
+            hasOther: attr.hasOther || false,
+          }))
+        );
+      }
+    }
+
+    const [cat] = await db.select().from(categories).where(eq(categories.id, req.params.id));
+    const attrs = await db.select()
+      .from(categoryAttributes)
+      .where(eq(categoryAttributes.categoryId, req.params.id));
+
+    res.json({ ...cat, attributes: attrs });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 router.put('/:id/sale', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { discountPercent, saleStart, saleEnd } = req.body;

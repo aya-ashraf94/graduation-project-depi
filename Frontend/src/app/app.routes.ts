@@ -197,6 +197,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/pages/tiers/tiers').then((m) => m.AdminTiers),
       },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/admin/pages/categories/categories').then((m) => m.AdminCategories),
+      },
+      {
+        path: 'subscriptions',
+        loadComponent: () =>
+          import('./features/admin/pages/subscriptions/subscriptions').then((m) => m.Subscriptions),
+      },
+      {
+        path: 'featured-listings',
+        loadComponent: () =>
+          import('./features/admin/pages/featured-listings/featured-listings').then((m) => m.FeaturedListings),
+      },
     ],
   },
 

@@ -264,12 +264,29 @@ const getUsers = async (req, res) => {
 const patchUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isVerified, role, isSuspended } = req.body;
+    const { isVerified, role, isSuspended, name, email, phoneNumber, location, bio } = req.body;
 
     const updateData = { updatedAt: new Date() };
     if (isVerified !== undefined) updateData.isVerified = isVerified;
-    if (role !== undefined) updateData.role = role;
     if (isSuspended !== undefined) updateData.isSuspended = isSuspended;
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+    if (location !== undefined) updateData.location = location;
+    if (bio !== undefined) updateData.bio = bio;
+
+    // Prevent admin from changing own role or suspending self
+    if (role !== undefined) {
+      if (req.user.id === id) {
+        return res.status(400).json({ message: "You cannot change your own role." });
+      }
+      updateData.role = role;
+    }
+
+    // Prevent admin from suspending own account
+    if (isSuspended === true && req.user.id === id) {
+      return res.status(400).json({ message: "You cannot suspend your own account." });
+    }
 
     const [user] = await db.update(users)
       .set(updateData)
@@ -473,13 +490,22 @@ const deleteAnyProduct = async (req, res) => {
 
 const getReports = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [totalResult] = await db.select({ value: count() }).from(reports)
+      .where(eq(reports.status, 'pending'));
+
     const result = await db.select()
       .from(reports)
       .where(eq(reports.status, 'pending'))
       .leftJoin(products, eq(reports.productId, products.id))
       .leftJoin(reporter, eq(reports.reporterId, reporter.id))
       .leftJoin(productOwner, eq(products.userId, productOwner.id))
-      .orderBy(desc(reports.createdAt));
+      .orderBy(desc(reports.createdAt))
+      .offset(skip)
+      .limit(limit);
 
     const formatted = result.map(r => ({
       ...r.reports,
@@ -490,7 +516,12 @@ const getReports = async (req, res) => {
       reporterId: r.reporter ? { id: r.reporter.id, name: r.reporter.name, email: r.reporter.email } : null,
     }));
 
-    res.json(formatted);
+    res.json({
+      reports: formatted,
+      total: Number(totalResult.value),
+      page,
+      pages: Math.ceil(Number(totalResult.value) / limit),
+    });
   } catch (error) {
     console.error("Error fetching reports:", error);
     res.status(500).json({ message: "Server Error" });

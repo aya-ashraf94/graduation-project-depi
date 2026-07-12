@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +33,13 @@ export class Dashboard implements OnInit {
   // Category sale management
   showCategorySaleModal = signal(false);
   categories = signal<any[]>([]);
+  // Announcement broadcast
+  showAnnounceModal = signal(false);
+  announceTitle = '';
+  announceBody = '';
+  announceTarget = 'all';
+  savingAnnounce = signal(false);
+
   // Fee management
   showFeeModal = signal(false);
   platformFeePercentInput = signal(0);
@@ -54,9 +61,27 @@ export class Dashboard implements OnInit {
   // Chart sizing
   maxRevenue = signal(0);
   barHeights = signal<number[]>([]);
+  // Health check
+  dbConnected = signal(true);
+  apiOnline = signal(true);
+  appVersion = signal('2.0.0');
 
   ngOnInit(): void {
     this.loadData();
+    this.checkHealth();
+  }
+
+  private checkHealth(): void {
+    this.http.get<{ status: string; database: string }>(`${environment.apiUrl}/health`).subscribe({
+      next: (h) => {
+        this.dbConnected.set(h.database === 'connected');
+        this.apiOnline.set(h.status === 'healthy');
+      },
+      error: () => {
+        this.dbConnected.set(false);
+        this.apiOnline.set(false);
+      }
+    });
   }
 
   loadData(): void {
@@ -91,13 +116,13 @@ export class Dashboard implements OnInit {
 
   get latestPlatformFees(): number {
     const h = this.data()?.revenueHistory;
-    return h && h.length > 0 ? (h[h.length - 1] as any).platformFees || 0 : 0;
+    return h && h.length > 0 ? h[h.length - 1].platformFees : 0;
   }
 
   get totalPlatformFees(): number {
     const h = this.data()?.revenueHistory;
     if (!h) return 0;
-    return h.reduce((sum, d) => sum + ((d as any).platformFees || 0), 0);
+    return h.reduce((sum, d) => sum + d.platformFees, 0);
   }
 
   get revenueTrend(): number {
@@ -213,24 +238,53 @@ export class Dashboard implements OnInit {
     });
   }
 
+  openAnnounceModal(): void {
+    this.announceTitle = '';
+    this.announceBody = '';
+    this.announceTarget = 'all';
+    this.showAnnounceModal.set(true);
+  }
+
+  sendAnnouncement(): void {
+    if (!this.announceTitle.trim() || !this.announceBody.trim()) {
+      this.toastService.error('Title and body are required.');
+      return;
+    }
+    this.savingAnnounce.set(true);
+    this.http.post(`${environment.apiUrl}/admin/notifications/broadcast`, {
+      title: this.announceTitle.trim(),
+      body: this.announceBody.trim(),
+      type: 'system',
+      targetRole: this.announceTarget,
+    }).subscribe({
+      next: (res: any) => {
+        this.toastService.success(res.message || 'Announcement sent!');
+        this.savingAnnounce.set(false);
+        this.showAnnounceModal.set(false);
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to send announcement.');
+        this.savingAnnounce.set(false);
+      }
+    });
+  }
+
   openFeeModal(): void {
-    this.http.get<{ platformFeePercent: number }>(`${environment.apiUrl}/settings/platform-fee`).subscribe({
-      next: (res) => {
-        this.platformFeePercentInput.set(res.platformFeePercent);
+    forkJoin([
+      this.http.get<{ platformFeePercent: number }>(`${environment.apiUrl}/settings/platform-fee`),
+      this.http.get<{ codFeePercent: number }>(`${environment.apiUrl}/settings/cod-fee`)
+    ]).subscribe({
+      next: ([pfRes, codRes]) => {
+        this.platformFeePercentInput.set(pfRes.platformFeePercent);
+        this.codFeePercentInput.set(codRes.codFeePercent);
+        this.showFeeModal.set(true);
       },
       error: () => {
         this.platformFeePercentInput.set(3);
-      }
-    });
-    this.http.get<{ codFeePercent: number }>(`${environment.apiUrl}/settings/cod-fee`).subscribe({
-      next: (res) => {
-        this.codFeePercentInput.set(res.codFeePercent);
-      },
-      error: () => {
         this.codFeePercentInput.set(0);
+        this.showFeeModal.set(true);
       }
     });
-    this.showFeeModal.set(true);
   }
 
   saveFees(): void {
@@ -241,22 +295,17 @@ export class Dashboard implements OnInit {
       return;
     }
     this.savingFee.set(true);
-    this.http.put(`${environment.apiUrl}/settings/platform-fee`, { platformFeePercent: pf }).subscribe({
+    forkJoin([
+      this.http.put(`${environment.apiUrl}/settings/platform-fee`, { platformFeePercent: pf }),
+      this.http.put(`${environment.apiUrl}/settings/cod-fee`, { codFeePercent: cf })
+    ]).subscribe({
       next: () => {
-        this.http.put(`${environment.apiUrl}/settings/cod-fee`, { codFeePercent: cf }).subscribe({
-          next: () => {
-            this.toastService.success(`✅ Platform fee: ${pf}% | COD fee: ${cf}%`);
-            this.savingFee.set(false);
-            this.showFeeModal.set(false);
-          },
-          error: () => {
-            this.toastService.error('Failed to update COD fee');
-            this.savingFee.set(false);
-          }
-        });
+        this.toastService.success(`Platform fee: ${pf}% | COD fee: ${cf}%`);
+        this.savingFee.set(false);
+        this.showFeeModal.set(false);
       },
       error: () => {
-        this.toastService.error('Failed to update platform fee');
+        this.toastService.error('Failed to update fees.');
         this.savingFee.set(false);
       }
     });
@@ -298,6 +347,21 @@ export class Dashboard implements OnInit {
 
   private formatJustTime(d: Date): string {
     return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.showFeeModal.set(false);
+    this.showCategorySaleModal.set(false);
+    this.showAnnounceModal.set(false);
+  }
+
+  @HostListener('document:keydown.control.enter')
+  onCtrlEnter(): void {
+    if (this.showFeeModal()) this.saveFees();
+    else if (this.showAnnounceModal()) this.sendAnnouncement();
+    else if (this.showCategorySaleModal()) this.saveCategorySale();
   }
 
   dismissReport(id: string): void {

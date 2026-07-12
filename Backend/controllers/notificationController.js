@@ -1,5 +1,5 @@
 const db = require("../db");
-const { notifications } = require("../db/schema");
+const { notifications, users } = require("../db/schema");
 const { eq, and, desc } = require("drizzle-orm");
 
 const getNotifications = async (req, res) => {
@@ -91,9 +91,44 @@ const deleteNotification = async (req, res) => {
   }
 };
 
+const broadcastNotification = async (req, res) => {
+  try {
+    const { title, body, type, targetRole } = req.body;
+    if (!title || !body) {
+      return res.status(400).json({ message: "Title and body are required" });
+    }
+
+    const whereClause = targetRole && targetRole !== 'all'
+      ? eq(users.role, targetRole)
+      : undefined;
+
+    const allUsers = await db.select({ id: users.id }).from(users).where(whereClause);
+
+    if (allUsers.length === 0) {
+      return res.status(404).json({ message: "No users found for the specified target" });
+    }
+
+    const values = allUsers.map(u => ({
+      userId: u.id,
+      type: type || 'system',
+      title,
+      body,
+      isRead: false,
+    }));
+
+    await db.insert(notifications).values(values);
+
+    res.json({ message: `Notification broadcast to ${allUsers.length} users` });
+  } catch (error) {
+    console.error("Error broadcasting notification:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getNotifications,
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  broadcastNotification,
 };

@@ -32,6 +32,9 @@ const { resolveDispute } = require("../controllers/orderController");
 const { adminSetFeaturedPrice } = require("../controllers/featuredController");
 const { adminCreateTier, adminUpdateTier, adminDeleteTier } = require("../controllers/tierController");
 const { getAutoPayoutSettings, updateAutoPayoutSettings, processAutoPayouts } = require("../controllers/payoutController");
+const { broadcastNotification } = require("../controllers/notificationController");
+const { getSubscriptionTransactions } = require("../controllers/tierController");
+const { adminGetAllFeaturedListings } = require("../controllers/featuredController");
 
 // Apply auth and admin middleware to all routes below
 router.use(authMiddleware);
@@ -82,5 +85,14 @@ router.delete("/tiers/:id", adminDeleteTier);
 router.get("/auto-payout", getAutoPayoutSettings);
 router.put("/auto-payout", updateAutoPayoutSettings);
 router.post("/auto-payout/process", processAutoPayouts);
+
+// Broadcast notification
+router.post("/notifications/broadcast", broadcastNotification);
+
+// Subscription transactions
+router.get("/subscription-transactions", getSubscriptionTransactions);
+
+// Featured listings
+router.get("/featured-listings", adminGetAllFeaturedListings);
 
 module.exports = router;

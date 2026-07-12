@@ -1,6 +1,6 @@
 const db = require("../db");
 const { sellerTiers, users, subscriptionTransactions } = require("../db/schema");
-const { eq, and, desc, lte, gte, sql } = require("drizzle-orm");
+const { eq, and, or, desc, lte, gte, ilike, sql } = require("drizzle-orm");
 const { createNotification } = require("../utils/notifications");
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -581,4 +581,105 @@ const processTierRenewals = async () => {
   }
 };
 
-module.exports = { getTiers, getActiveTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, subscribeToTier, getMySubscription, cancelSubscription, toggleAutoRenew, processTierRenewals, createSubscriptionPaymentIntent, confirmSubscriptionPayment };
+const getSubscriptionTransactions = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    const search = req.query.search || '';
+    const tierFilter = req.query.tier || '';
+    const statusFilter = req.query.status || '';
+    const dateFrom = req.query.dateFrom || '';
+    const dateTo = req.query.dateTo || '';
+
+    const conditions = [];
+
+    if (search) {
+      conditions.push(
+        or(
+          ilike(users.firstName, `%${search}%`),
+          ilike(users.lastName, `%${search}%`),
+          ilike(users.email, `%${search}%`),
+          ilike(sql`${users.firstName} || ' ' || ${users.lastName}`, `%${search}%`),
+        )
+      );
+    }
+    if (tierFilter) {
+      conditions.push(eq(subscriptionTransactions.tierName, tierFilter));
+    }
+    if (statusFilter) {
+      conditions.push(eq(subscriptionTransactions.status, statusFilter));
+    }
+    if (dateFrom) {
+      conditions.push(gte(subscriptionTransactions.createdAt, new Date(dateFrom)));
+    }
+    if (dateTo) {
+      conditions.push(lte(subscriptionTransactions.createdAt, new Date(dateTo)));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Return distinct tier names for the filter dropdown
+    const tiersRaw = await db.selectDistinct({ tierName: subscriptionTransactions.tierName })
+      .from(subscriptionTransactions)
+      .orderBy(subscriptionTransactions.tierName);
+
+    // Summary stats across all matching records
+    const [summary] = await db.select({
+      totalRevenue: sql`coalesce(sum(case when ${subscriptionTransactions.status} = 'completed' then ${subscriptionTransactions.amount} else 0 end), 0)`,
+      totalRefunds: sql`coalesce(sum(case when ${subscriptionTransactions.status} = 'refunded' then ${subscriptionTransactions.amount} else 0 end), 0)`,
+      activeSubscriptions: sql`coalesce(count(distinct case when ${subscriptionTransactions.status} = 'completed' then ${subscriptionTransactions.userId} end), 0)`,
+    }).from(subscriptionTransactions)
+      .leftJoin(users, eq(subscriptionTransactions.userId, users.id))
+      .where(whereClause);
+
+    // Count for pagination
+    const [{ count }] = await db.select({ count: sql`count(*)` })
+      .from(subscriptionTransactions)
+      .leftJoin(users, eq(subscriptionTransactions.userId, users.id))
+      .where(whereClause);
+    const total = parseInt(count, 10);
+
+    const rows = await db.select({
+      transaction: subscriptionTransactions,
+      user: users,
+    })
+      .from(subscriptionTransactions)
+      .leftJoin(users, eq(subscriptionTransactions.userId, users.id))
+      .where(whereClause)
+      .orderBy(desc(subscriptionTransactions.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    const data = rows.map(r => ({
+      id: r.transaction.id,
+      userId: r.transaction.userId,
+      tierId: r.transaction.tierId,
+      tierName: r.transaction.tierName,
+      amount: r.transaction.amount,
+      billingCycle: r.transaction.billingCycle,
+      status: r.transaction.status,
+      createdAt: r.transaction.createdAt,
+      user: r.user ? { id: r.user.id, name: r.user.name, email: r.user.email, avatar: r.user.avatar } : null,
+    }));
+
+    res.json({
+      transactions: data,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      summary: {
+        activeSubscriptions: parseInt(summary.activeSubscriptions, 10),
+        totalRevenue: parseFloat(summary.totalRevenue),
+        totalRefunds: parseFloat(summary.totalRefunds),
+      },
+      tiers: tiersRaw.map(t => t.tierName),
+    });
+  } catch (error) {
+    console.error("Error fetching subscription transactions:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { getTiers, getActiveTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, subscribeToTier, getMySubscription, cancelSubscription, toggleAutoRenew, processTierRenewals, createSubscriptionPaymentIntent, confirmSubscriptionPayment, getSubscriptionTransactions };

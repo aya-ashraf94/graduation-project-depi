@@ -1,132 +1,212 @@
-<div class="orders-page-container">
-  <div class="page-header-actions">
-    <div class="title-section">
+<div class="orders-page">
+  <!-- HEADER -->
+  <div class="orders-top">
+    <div class="orders-top-left">
       <h1>Orders</h1>
-      <p>View and manage all orders placed on the platform.</p>
+      <span class="orders-count">{{ totalOrders() }} total</span>
     </div>
-    <div class="filter-group">
-      <label class="filter-label">Filter by status:</label>
-      <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()" class="filter-select">
-        <option value="">All Orders</option>
-        <option value="pending">Pending</option>
-        <option value="shipped">Shipped</option>
-        <option value="delivered">Delivered</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
+    <div class="orders-top-bar">
+      <div class="orders-search">
+        <span class="orders-search-icon">🔍</span>
+        <input type="text" class="orders-search-input" placeholder="Search ID, product, buyer, seller…"
+          [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onSearchInput()" />
+        @if (searchQuery()) { <button class="orders-search-clear" (click)="searchQuery.set('')">✕</button> }
+      </div>
+      <button class="orders-btn orders-btn-export" (click)="exportCsv()">📥 Export CSV</button>
     </div>
   </div>
 
-  <!-- Revenue Summary Banner (all-time, not just current page) -->
-  <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 180px; border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem 1rem; background: var(--surface-2);">
-      <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--gray-3); letter-spacing: 0.05em; display: block;">All-Time Gross Revenue</span>
-      <span style="font-size: 1.2rem; font-weight: 900; color: var(--black);">{{ totalGrossRevenue() | currencyFormat }}</span>
+  <!-- META STRIP -->
+  <div class="orders-meta">
+    <div class="orders-meta-strip">
+      <div class="orders-meta-item">
+        <span class="orders-meta-icon">💰</span>
+        <div>
+          <span class="orders-meta-label">Revenue</span>
+          <span class="orders-meta-value">{{ totalGrossRevenue() | currencyFormat }}</span>
+        </div>
+      </div>
+      <div class="orders-meta-divider"></div>
+      <div class="orders-meta-item">
+        <span class="orders-meta-icon">💳</span>
+        <div>
+          <span class="orders-meta-label">Platform Fees</span>
+          <span class="orders-meta-value">{{ totalPlatformFees() | currencyFormat }}</span>
+        </div>
+      </div>
     </div>
-    <div style="flex: 1; min-width: 180px; border: 2px solid var(--black); border-radius: 8px; padding: 0.75rem 1rem; background: var(--success-light);">
-      <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--success-dark); letter-spacing: 0.05em; display: block;">All-Time Platform Fees</span>
-      <span style="font-size: 1.2rem; font-weight: 900; color: var(--success-dark);">{{ totalPlatformFees() | currencyFormat }}</span>
+    <div class="orders-chips">
+      <button class="orders-chip" [class.active]="!statusFilter()" (click)="setFilter('')">All</button>
+      @for (s of statusOptions; track s) {
+        <button class="orders-chip" [class.active]="statusFilter() === s"
+          [class.pending]="s==='pending'" [class.shipped]="s==='shipped'"
+          [class.delivered]="s==='delivered'" [class.cancelled]="s==='cancelled'" [class.disputed]="s==='disputed'"
+          (click)="setFilter(s)">{{ getStatusLabel(s) }}</button>
+      }
     </div>
   </div>
 
   @if (isLoading() && orders().length === 0) {
     <app-admin-loader message="Loading orders..."></app-admin-loader>
   } @else if (errorMessage()) {
-    <app-admin-error-panel
-      [message]="errorMessage()"
-      (retry)="loadOrders()">
-    </app-admin-error-panel>
+    <app-admin-error-panel [message]="errorMessage()" (retry)="loadOrders()"></app-admin-error-panel>
   } @else {
-    <div class="admin-table-card">
-      <div class="table-container">
-        <table class="admin-data-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Buyer</th>
-              <th>Seller</th>
-              <th>Price</th>
-              <th>Fee</th>
-              <th>Status</th>
-              <th>Payment</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (isLoading()) {
-              <app-admin-table-skeleton
-                [rows]="5"
-                [columns]="['text', 'text', 'text', 'text', 'text', 'badge', 'text', 'text']">
-              </app-admin-table-skeleton>
-            } @else if (orders().length === 0) {
-              <app-empty-state
-                variant="table-row"
-                [colspan]="8"
-                icon="📭"
-                title="No orders found"
-                description="No orders found matching the filter.">
-              </app-empty-state>
-            } @else {
-              @for (order of orders(); track order.id) {
-                <tr>
-                  <td>
-                    <div class="order-product-cell">
-                      @if (order.productId?.thumbnail) {
-                        <div class="order-product-thumb">
-                          <img [src]="order.productId.thumbnail" [alt]="order.productId.title" />
-                        </div>
-                      } @else {
-                        <div class="order-product-thumb placeholder">📦</div>
-                      }
-                      <span class="order-product-title">{{ order.productId?.title || 'Unknown' }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="order-party">
-                      <span class="order-party-name">{{ order.buyerId?.name || 'Deleted User' }}</span>
-                      <span class="order-party-email">{{ order.buyerId?.email || '' }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="order-party">
-                      <span class="order-party-name">{{ order.sellerId?.name || 'Deleted User' }}</span>
-                      <span class="order-party-email">{{ order.sellerId?.email || '' }}</span>
-                    </div>
-                  </td>
-                  <td class="order-price-cell">{{ order.price | currencyFormat }}</td>
-                  <td class="order-price-cell" style="color: var(--success-dark); font-weight: 700;">{{ order.platformFee | currencyFormat }}</td>
-                  <td>
-                    <select
-                      class="order-status-select"
-                      [class]="getStatusClass(order.status)"
-                      [value]="order.status"
-                      (change)="updateStatus(order.id, $any($event.target).value)"
-                    >
-                      @for (opt of statusOptions; track opt) {
-                        <option [value]="opt" [selected]="order.status === opt">
-                          {{ getStatusLabel(opt) }}
-                        </option>
-                      }
-                    </select>
-                  </td>
-                  <td class="order-payment-cell">{{ getPaymentLabel(order.paymentMethod) }}</td>
-                  <td class="order-date-cell">{{ order.createdAt | date:'mediumDate' }}</td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
+    <!-- ORDER CARDS -->
+    <div class="orders-list" [class.is-loading]="isLoading()">
+      @if (filteredOrders().length === 0 && !isLoading()) {
+        <div class="orders-empty">
+          <app-empty-state variant="table-row" icon="📭" title="No orders found"
+            description="No orders match the current search or filter."></app-empty-state>
+        </div>
+      }
+      @for (order of filteredOrders(); track order.id) {
+        <div class="order-card" [style.animation-delay]="$index * 0.04 + 's'" [class.expanded]="expandedOrderId() === order.id"
+          [class.disputed]="order.status === 'disputed'" (click)="toggleExpand(order.id)">
+
+          <!-- Card top: summary row -->
+          <div class="order-card-main">
+            <div class="order-card-left">
+              <div class="order-card-id">
+                <span class="order-id-label">Order</span>
+                <span class="order-id-value">#{{ order.id ? order.id.slice(-8) : '---' }}</span>
+              </div>
+              <div class="order-card-product">
+                @if (order.productId?.thumbnail) {
+                  <img class="order-card-img" [src]="order.productId.thumbnail" [alt]="order.productId.title" />
+                } @else {
+                  <div class="order-card-img order-card-img-ph">📦</div>
+                }
+                <div class="order-card-product-info">
+                  <span class="order-card-product-name">{{ order.productId?.title || 'Unknown' }}</span>
+                  <span class="order-card-product-date">{{ order.createdAt | date:'MMM d, yyyy · h:mm a' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="order-card-middle">
+              <div class="order-card-party">
+                <span class="order-party-role">Buyer</span>
+                <span class="order-party-name">{{ order.buyerId?.name || 'Deleted' }}</span>
+              </div>
+              <div class="order-card-party">
+                <span class="order-party-role">Shop</span>
+                <span class="order-party-name">{{ order.sellerId?.name || 'Deleted' }}</span>
+              </div>
+            </div>
+
+            <div class="order-card-right">
+              <div class="order-card-amount">
+                <span class="order-card-price">{{ order.price | currencyFormat }}</span>
+                <span class="order-card-fee">fee {{ order.platformFee | currencyFormat }}</span>
+              </div>
+              <div class="order-card-status-area">
+                <select class="order-card-status"
+                  [class.pending]="order.status==='pending'" [class.shipped]="order.status==='shipped'"
+                  [class.delivered]="order.status==='delivered'" [class.cancelled]="order.status==='cancelled'"
+                  [class.disputed]="order.status==='disputed'"
+                  [value]="order.status"
+                  (change)="updateStatus(order.id, $any($event.target).value); $event.stopPropagation()"
+                  (click)="$event.stopPropagation()">
+                  @for (opt of statusOptions; track opt) {
+                    <option [value]="opt" [selected]="order.status===opt">{{ getStatusLabel(opt) }}</option>
+                  }
+                </select>
+                <span class="order-card-payment">{{ getPaymentLabel(order.paymentMethod) }}</span>
+              </div>
+            </div>
+
+            <div class="order-card-expand-icon">
+              <span class="order-expand-arrow" [class.open]="expandedOrderId() === order.id">▶</span>
+            </div>
+          </div>
+
+          <!-- Expanded detail -->
+          @if (expandedOrderId() === order.id) {
+            <div class="order-card-detail">
+              <div class="order-detail-grid">
+                <div class="order-detail-col">
+                  <h5>Price Breakdown</h5>
+                  <dl>
+                    <dt>Original Price</dt><dd>{{ order.originalPrice || order.price | currencyFormat }}</dd>
+                    @if (order.flashSaleDiscount) { <dt>Flash Sale</dt><dd class="neg">-{{ order.flashSaleDiscount | currencyFormat }}</dd> }
+                    @if (order.categorySaleDiscount) { <dt>Category Sale</dt><dd class="neg">-{{ order.categorySaleDiscount | currencyFormat }}</dd> }
+                    @if (order.couponDiscount) { <dt>Coupon</dt><dd class="neg">-{{ order.couponDiscount | currencyFormat }}</dd> }
+                    @if (order.offerAmount) { <dt>Offer Amount</dt><dd>{{ order.offerAmount | currencyFormat }}</dd> }
+                    <dt>Platform Fee</dt><dd>{{ order.platformFee | currencyFormat }}</dd>
+                    <dt class="total-label">Total Charged</dt><dd class="total-val">{{ order.totalPrice || order.price + (order.platformFee || 0) | currencyFormat }}</dd>
+                  </dl>
+                </div>
+                <div class="order-detail-col">
+                  <h5>Shipping &amp; Payment</h5>
+                  <dl>
+                    <dt>Method</dt><dd>{{ getPaymentLabel(order.paymentMethod) }}</dd>
+                    @if (order.shippingAddress) { <dt>Address</dt><dd>{{ order.shippingAddress }}</dd> }
+                    @if (order.trackingNumber) { <dt>Tracking</dt><dd><code>{{ order.trackingNumber }}</code></dd> }
+                    @if (order.notes) { <dt>Notes</dt><dd>{{ order.notes }}</dd> }
+                    @if (order.couponCode) { <dt>Coupon</dt><dd><code>{{ order.couponCode }}</code></dd> }
+                  </dl>
+                </div>
+                <div class="order-detail-col">
+                  <h5>Actions</h5>
+                  @if (order.status === 'disputed') {
+                    <div class="dispute-alert">⚠️ This order is disputed</div>
+                  }
+                  <button class="dispute-btn" (click)="$event.stopPropagation(); openDisputeModal(order.id)">
+                    ⚖️ Resolve Dispute
+                  </button>
+                </div>
+              </div>
+              <div class="order-detail-close" (click)="$event.stopPropagation(); toggleExpand(order.id)">▲ Close</div>
+            </div>
+          }
+        </div>
+      }
     </div>
 
-    <app-pagination
-      [currentPage]="currentPage()"
-      [totalPages]="totalPages()"
-      [totalItems]="totalOrders()"
-      label="orders"
-      variant="text"
-      [isLoading]="isLoading()"
-      (prevPage)="prevPage()"
-      (nextPage)="nextPage()"
-    ></app-pagination>
+    <app-pagination [currentPage]="pagination.currentPage()" [totalPages]="pagination.totalPages()" [totalItems]="totalOrders()"
+      label="orders" variant="icons" [isLoading]="isLoading()"
+      (prevPage)="prevPage()" (nextPage)="nextPage()" (pageChange)="goToPage($event)"></app-pagination>
   }
 </div>
+
+<!-- DISPUTE MODAL -->
+@if (showDisputeModal()) {
+  <div class="orders-modal-overlay" (click)="closeDisputeModal()">
+    <div class="orders-modal" (click)="$event.stopPropagation()">
+      <div class="orders-modal-header">
+        <div>
+          <h3>⚖️ Resolve Dispute</h3>
+          <p>Decide who is at fault.</p>
+        </div>
+        <button class="orders-modal-close" (click)="closeDisputeModal()">✕</button>
+      </div>
+      <div class="orders-modal-body">
+        <div class="orders-resolve-group">
+          <label class="orders-resolve-card" [class.active]="disputeResolution() === 'seller_fault'">
+            <input type="radio" name="resolution" value="seller_fault"
+              [checked]="disputeResolution() === 'seller_fault'"
+              (change)="disputeResolution.set('seller_fault')" />
+            <div class="orders-resolve-content">
+              <strong>Seller at Fault</strong>
+              <span>Refunds buyer from seller balance — order cancelled, product reactivated</span>
+            </div>
+          </label>
+          <label class="orders-resolve-card" [class.active]="disputeResolution() === 'buyer_fault'">
+            <input type="radio" name="resolution" value="buyer_fault"
+              [checked]="disputeResolution() === 'buyer_fault'"
+              (change)="disputeResolution.set('buyer_fault')" />
+            <div class="orders-resolve-content">
+              <strong>Buyer at Fault</strong>
+              <span>Releases payment to seller — order marked as delivered</span>
+            </div>
+          </label>
+        </div>
+        <div class="orders-modal-actions">
+          <button (click)="closeDisputeModal()" class="orders-btn orders-btn-ghost">Cancel</button>
+          <button (click)="resolveDispute()" [disabled]="savingDispute()"
+            class="orders-btn orders-btn-primary">{{ savingDispute() ? 'Resolving…' : 'Resolve Dispute' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

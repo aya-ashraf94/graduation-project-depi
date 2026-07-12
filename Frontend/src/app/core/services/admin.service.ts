@@ -31,7 +31,7 @@ export interface DashboardData {
     newUsers7d: number;
     pendingVerifications: number;
   };
-  revenueHistory: { date: string; revenue: number; gross?: number; platformFees?: number }[];
+  revenueHistory: { date: string; revenue: number; gross: number; platformFees: number }[];
   recentOrders: {
     id: string;
     productTitle: string;
@@ -92,6 +92,13 @@ export interface AdminReport {
   createdAt: string | Date;
 }
 
+export interface PaginatedReports {
+  reports: AdminReport[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
@@ -143,7 +150,7 @@ export class AdminService {
     );
   }
 
-  patchUser(id: string, payload: { isVerified?: boolean; role?: string; isSuspended?: boolean }): Observable<User> {
+  patchUser(id: string, payload: { isVerified?: boolean; role?: string; isSuspended?: boolean; name?: string; email?: string; phoneNumber?: string; location?: string; bio?: string }): Observable<User> {
     return this.http.patch<any>(`${this.apiUrl}/users/${id}`, payload).pipe(
       map(u => this.mapUser(u))
     );
@@ -199,8 +206,11 @@ export class AdminService {
     return this.http.patch<any>(`${this.apiUrl}/orders/${id}/status`, { status });
   }
 
-  getReports(): Observable<AdminReport[]> {
-    return this.http.get<AdminReport[]>(`${this.apiUrl}/reports`);
+  getReports(page: number = 1, limit: number = 20): Observable<PaginatedReports> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    return this.http.get<PaginatedReports>(`${this.apiUrl}/reports`, { params });
   }
 
   resolveReport(id: string): Observable<any> {

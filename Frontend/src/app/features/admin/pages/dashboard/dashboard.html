@@ -6,20 +6,20 @@
     </div>
     <div class="system-status-strip">
       <div class="sys-status-item">
-        <span class="sys-status-dot sys-dot-ok"></span>
+        <span class="sys-status-dot" [class.sys-dot-ok]="dbConnected()" [class.sys-dot-err]="!dbConnected()"></span>
         <span class="sys-status-label">Database:</span>
-        <span class="sys-status-val">Connected</span>
+        <span class="sys-status-val">{{ dbConnected() ? 'Connected' : 'Disconnected' }}</span>
       </div>
       <div class="sys-status-divider"></div>
       <div class="sys-status-item">
-        <span class="sys-status-dot sys-dot-ok"></span>
+        <span class="sys-status-dot" [class.sys-dot-ok]="apiOnline()" [class.sys-dot-err]="!apiOnline()"></span>
         <span class="sys-status-label">API:</span>
-        <span class="sys-status-val">Online</span>
+        <span class="sys-status-val">{{ apiOnline() ? 'Online' : 'Offline' }}</span>
       </div>
       <div class="sys-status-divider"></div>
       <div class="sys-status-item">
         <span class="sys-status-label">Version:</span>
-        <span class="sys-status-val">2.0.0</span>
+        <span class="sys-status-val">{{ appVersion() }}</span>
       </div>
     </div>
   </header>
@@ -248,6 +248,13 @@
                 <p>Set platform & COD commission %</p>
               </div>
             </button>
+            <button (click)="openAnnounceModal()" class="dash-op-btn dash-op-yellow">
+              <span class="dash-op-icon">📢</span>
+              <div>
+                <strong>Send Announcement</strong>
+                <p>Broadcast a notification to all users</p>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -272,18 +279,18 @@
 
         <!-- Guide & Tips Card (moved from sidebar) -->
         <div class="dash-card card-guide">
-          <div class="dash-card-header" (click)="showGuide.set(!showGuide())" style="cursor: pointer;">
+          <div class="dash-card-header clickable-header" (click)="showGuide.set(!showGuide())">
             <h3>💡 Guide & Tips</h3>
-            <span class="dash-card-link" style="text-decoration: none; cursor: pointer;">{{ showGuide() ? 'Hide ▲' : 'Show ▼' }}</span>
+            <span class="dash-card-link clickable-link">{{ showGuide() ? 'Hide ▲' : 'Show ▼' }}</span>
           </div>
           @if (showGuide()) {
             <div class="dash-card-body">
-              <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.8rem; color: var(--gray-3); line-height: 1.6; font-family: var(--font-secondary); list-style-type: disc;">
-                <li style="margin-bottom: 0.5rem;">The revenue chart shows the last 30 days of sales performance.</li>
-                <li style="margin-bottom: 0.5rem;">Review pending approvals regularly to keep the marketplace healthy.</li>
-                <li style="margin-bottom: 0.5rem;">Use Quick Operations to create products, manage users, or set category sales.</li>
-                <li style="margin-bottom: 0.5rem;">Flash sales override category sales for overlapping products.</li>
-                <li style="margin-bottom: 0.5rem;">Coupons are order-level — they stack on top of item discounts (capped at 50%).</li>
+              <ul class="guide-list">
+                <li>The revenue chart shows the last 30 days of sales performance.</li>
+                <li>Review pending approvals regularly to keep the marketplace healthy.</li>
+                <li>Use Quick Operations to create products, manage users, or set category sales.</li>
+                <li>Flash sales override category sales for overlapping products.</li>
+                <li>Coupons are order-level — they stack on top of item discounts (capped at 50%).</li>
               </ul>
             </div>
           }
@@ -297,7 +304,7 @@
   <!-- FEE SETTINGS MODAL -->
   @if (showFeeModal()) {
     <div class="modal-overlay">
-      <div class="modal-container" (click)="$event.stopPropagation()" style="max-width: 420px;">
+      <div class="modal-container fee-modal" (click)="$event.stopPropagation()">
         <div class="panel-header">
           <div class="panel-header-titles">
             <h3>💸 Fee Settings</h3>
@@ -305,14 +312,14 @@
           </div>
           <button class="modal-close-btn-header" (click)="showFeeModal.set(false)">✕</button>
         </div>
-        <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="panel-body fee-modal-body">
           <div class="form-group">
             <label class="form-label">Online Platform Fee (%)</label>
             <div class="input-with-suffix">
               <input type="number" [ngModel]="platformFeePercentInput()" (ngModelChange)="platformFeePercentInput.set($event)" min="0" max="100" step="0.5" class="form-control" placeholder="e.g. 5" />
               <span class="input-suffix-tag">%</span>
             </div>
-            <p style="font-size: 0.75rem; color: var(--gray-3); margin-top: 0.4rem;">
+            <p class="hint-text">
               Charged on online payments. Based on seller tier.
             </p>
           </div>
@@ -322,13 +329,13 @@
               <input type="number" [ngModel]="codFeePercentInput()" (ngModelChange)="codFeePercentInput.set($event)" min="0" max="100" step="0.5" class="form-control" placeholder="e.g. 5" />
               <span class="input-suffix-tag">%</span>
             </div>
-            <p style="font-size: 0.75rem; color: var(--gray-3); margin-top: 0.4rem;">
+            <p class="hint-text">
               Charged on cash-on-delivery orders instead of the online fee.
             </p>
           </div>
-          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; border-top: 2px solid var(--border); padding-top: 1rem;">
-            <button type="button" (click)="showFeeModal.set(false)" class="btn-submit-coupon" style="flex: 0 0 auto; background: transparent; color: var(--gray-3); box-shadow: none; border-color: var(--border);">Cancel</button>
-            <button type="button" (click)="saveFees()" [disabled]="savingFee()" class="btn-submit-coupon" style="flex: 0 0 auto;">
+          <div class="modal-footer-row">
+            <button type="button" (click)="showFeeModal.set(false)" class="btn-modal-cancel">Cancel</button>
+            <button type="button" (click)="saveFees()" [disabled]="savingFee()" class="btn-submit-coupon btn-modal-submit">
               {{ savingFee() ? 'Saving...' : 'Save' }}
             </button>
           </div>
@@ -350,15 +357,15 @@
         </div>
         <div class="panel-body modal-two-col-layout">
           @if (categories().length === 0) {
-            <p style="font-size: 0.8rem; color: var(--gray-3); grid-column: 1 / -1; text-align: center; padding: 2rem;">No categories loaded.</p>
+            <p class="empty-state-text">No categories loaded.</p>
           } @else {
             <!-- LEFT COLUMN: Active Category Sales -->
             <div class="modal-col-left">
-              <span class="cs-label" style="display: block; margin-bottom: 0.75rem; font-weight: 900; font-size: 0.75rem; color: var(--black); text-transform: uppercase; letter-spacing: 0.03em;">🔥 Active Category Sales</span>
+              <span class="cs-label">🔥 Active Category Sales</span>
               
               <div class="active-category-sales-box">
                 @if (hasActiveCategorySales) {
-                  <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                  <div class="flex-col-gap-sm">
                     @for (cat of categories(); track cat.id) {
                       @if (cat.discountPercent) {
                         <div class="active-sale-row">
@@ -381,7 +388,7 @@
 
             <!-- RIGHT COLUMN: Create / Edit Sale Form -->
             <div class="modal-col-right">
-              <span class="cs-label" style="display: block; margin-bottom: 0.75rem; font-weight: 900; font-size: 0.75rem; color: var(--black); text-transform: uppercase; letter-spacing: 0.03em;">📝 Create / Edit Sale</span>
+              <span class="cs-label">📝 Create / Edit Sale</span>
               
               <form (ngSubmit)="saveCategorySale()" class="create-campaign-form">
                 <!-- Field 1: Category Selector -->
@@ -417,7 +424,7 @@
 
                 <!-- Active Sale Status Banner -->
                 @if (selectedCategory && isCategoryOnSale) {
-                  <div style="background: var(--success-light); color: var(--success-dark); border: 2px solid var(--success); padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-align: center; margin-bottom: 0.75rem;">
+                  <div class="sale-banner">
                     🔥 Sale Active — {{ selectedCategory.discountPercent }}% off all {{ selectedCategory.name }}
                   </div>
                 }
@@ -437,11 +444,11 @@
                   <div class="form-row-grid">
                     <div class="input-with-prefix-icon">
                       <span class="input-icon-label">📅</span>
-                      <input type="date" [ngModel]="saleStartDateVal()" (ngModelChange)="saleStartDateVal.set($event)" name="startDateVal" [disabled]="!selectedCatId()" class="form-control" style="padding-left: 2.85rem;" />
+                      <input type="date" [ngModel]="saleStartDateVal()" (ngModelChange)="saleStartDateVal.set($event)" name="startDateVal" [disabled]="!selectedCatId()" class="form-control input-icon-pad" />
                     </div>
                     <div class="input-with-prefix-icon">
                       <span class="input-icon-label">⏰</span>
-                      <input type="time" [ngModel]="saleStartTimeVal()" (ngModelChange)="saleStartTimeVal.set($event)" name="startTimeVal" [disabled]="!selectedCatId()" class="form-control" style="padding-left: 2.85rem;" />
+                      <input type="time" [ngModel]="saleStartTimeVal()" (ngModelChange)="saleStartTimeVal.set($event)" name="startTimeVal" [disabled]="!selectedCatId()" class="form-control input-icon-pad" />
                     </div>
                   </div>
                 </div>
@@ -452,33 +459,72 @@
                   <div class="form-row-grid">
                     <div class="input-with-prefix-icon">
                       <span class="input-icon-label">📅</span>
-                      <input type="date" [ngModel]="saleEndDateVal()" (ngModelChange)="saleEndDateVal.set($event)" name="endDateVal" [disabled]="!selectedCatId()" class="form-control" style="padding-left: 2.85rem;" />
+                      <input type="date" [ngModel]="saleEndDateVal()" (ngModelChange)="saleEndDateVal.set($event)" name="endDateVal" [disabled]="!selectedCatId()" class="form-control input-icon-pad" />
                     </div>
                     <div class="input-with-prefix-icon">
                       <span class="input-icon-label">⏰</span>
-                      <input type="time" [ngModel]="saleEndTimeVal()" (ngModelChange)="saleEndTimeVal.set($event)" name="endTimeVal" [disabled]="!selectedCatId()" class="form-control" style="padding-left: 2.85rem;" />
+                      <input type="time" [ngModel]="saleEndTimeVal()" (ngModelChange)="saleEndTimeVal.set($event)" name="endTimeVal" [disabled]="!selectedCatId()" class="form-control input-icon-pad" />
                     </div>
                   </div>
                 </div>
 
-                <p style="font-size: 0.75rem; color: var(--gray-3); line-height: 1.45; margin: 0.25rem 0;" [class.opacity-50]="!selectedCatId()">
+                <p class="sale-description" [class.opacity-50]="!selectedCatId()">
                   Customers will see discounted prices for <strong>{{ selectedCategory?.name || 'selected category' }}</strong> during the selected sale period.
                 </p>
 
                 <!-- Modal Footer Actions -->
-                <div style="display: flex; gap: 0.75rem; margin-top: 1rem; width: 100%;">
+                <div class="sale-footer-actions">
                   @if (selectedCategory && selectedCategory.discountPercent) {
-                    <button type="button" (click)="clearCategorySale()" [disabled]="savingSale()" class="btn-submit-coupon" style="flex: 1; background-color: var(--danger-dark); color: white; border-color: var(--black); margin-top: 0.75rem;">
+                    <button type="button" (click)="clearCategorySale()" [disabled]="savingSale()" class="btn-submit-coupon btn-danger-action">
                       Clear Sale
                     </button>
                   }
-                  <button type="submit" [disabled]="savingSale() || !selectedCatId()" class="btn-submit-coupon" style="flex: 1;">
+                  <button type="submit" [disabled]="savingSale() || !selectedCatId()" class="btn-submit-coupon btn-primary-action">
                     {{ savingSale() ? 'Saving...' : 'Save Settings' }}
                   </button>
                 </div>
               </form>
             </div>
           }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ANNOUNCEMENT MODAL -->
+  @if (showAnnounceModal()) {
+    <div class="modal-overlay">
+      <div class="modal-container announce-modal" (click)="$event.stopPropagation()">
+        <div class="panel-header">
+          <div class="panel-header-titles">
+            <h3>📢 Send Announcement</h3>
+            <p class="panel-header-subtitle">Broadcast a notification to platform users.</p>
+          </div>
+          <button class="modal-close-btn-header" (click)="showAnnounceModal.set(false)">✕</button>
+        </div>
+        <div class="panel-body announce-body">
+          <div class="form-group">
+            <label class="form-label">Target Audience</label>
+            <select [(ngModel)]="announceTarget" class="form-control">
+              <option value="all">All Users</option>
+              <option value="user">Buyers Only</option>
+              <option value="admin">Admins Only</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" [(ngModel)]="announceTitle" class="form-control" placeholder="e.g. Platform Maintenance" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea [(ngModel)]="announceBody" class="form-control" rows="4" placeholder="Enter your announcement message..."></textarea>
+          </div>
+          <div class="announce-footer">
+            <button type="button" (click)="showAnnounceModal.set(false)" class="btn-cancel-ghost">Cancel</button>
+            <button type="button" (click)="sendAnnouncement()" [disabled]="savingAnnounce()" class="btn-submit-coupon">
+              {{ savingAnnounce() ? 'Sending...' : 'Send to All' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

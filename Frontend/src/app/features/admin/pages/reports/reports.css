@@ -401,6 +401,22 @@
   border-radius: var(--radius-sm);
 }
 
+/* ── Loading transition ──────────────────────────────── */
+.report-list {
+  transition: opacity 0.2s ease;
+}
+.report-list.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.report-card {
+  animation: reportFadeIn 0.3s ease both;
+}
+@keyframes reportFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .sk-block {
   background: linear-gradient(90deg, var(--border) 0%, var(--surface-2) 40%, var(--border) 80%);
   background-size: 400px 100%;

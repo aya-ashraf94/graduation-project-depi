@@ -20,9 +20,9 @@
       <p class="empty-sub">No pending moderation reports.</p>
     </div>
   } @else {
-    <div class="report-list">
-      @for (report of paginatedReports(); track report.id) {
-        <div class="report-card" [class.expanded]="expandedDetails().has(report.id)">
+    <div class="report-list" [class.is-loading]="isLoading()">
+      @for (report of reports(); track report.id; let idx = $index) {
+        <div class="report-card" [style.animation-delay]="idx * 0.04 + 's'" [class.expanded]="expandedDetails().has(report.id)">
           <!-- Top row: product title + reason badge -->
           <div class="card-top">
             <div class="listing-block">
@@ -97,12 +97,11 @@
     </div>
 
     <!-- Pagination -->
-    @if (reports().length > pageSize) {
-      <div class="pag-bar">
-        <button class="pag-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">← Prev</button>
-        <span class="pag-info">Page {{ currentPage() }} / {{ totalPages }} <span class="pag-total">({{ reports().length }})</span></span>
-        <button class="pag-btn" [disabled]="currentPage() === totalPages" (click)="goToPage(currentPage() + 1)">Next →</button>
-      </div>
-    }
+    <app-pagination
+      [currentPage]="pagination.currentPage()"
+      [totalPages]="pagination.totalPages()"
+      [totalItems]="pagination.totalItems()"
+      (pageChange)="goToPage($event)">
+    </app-pagination>
   }
 </div>

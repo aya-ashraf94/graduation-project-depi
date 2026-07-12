@@ -29,7 +29,7 @@ export class AdminShell implements OnInit {
   }
   isCommerceActive(): boolean {
     const url = this.router.url;
-    return url.includes('/admin/orders') || url.includes('/admin/coupons') || url.includes('/admin/flash-sales') || url.includes('/admin/refunds');
+    return url.includes('/admin/orders') || url.includes('/admin/coupons') || url.includes('/admin/flash-sales') || url.includes('/admin/refunds') || url.includes('/admin/categories');
   }
   isFinanceActive(): boolean {
     const url = this.router.url;

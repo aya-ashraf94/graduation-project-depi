@@ -1,0 +1,154 @@
+<div class="feat-page">
+
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <div class="feat-header">
+    <div class="feat-header-left">
+      <h1>Featured Listings</h1>
+      <span class="feat-count">{{ pagination.totalItems() }} promotions</span>
+    </div>
+    <button type="button" class="feat-export-btn" (click)="exportCsv()" [disabled]="featured().length === 0">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+  </div>
+
+  @if (isLoading() && featured().length === 0) {
+    <app-admin-loader message="Loading featured listings..."></app-admin-loader>
+  } @else if (errorMessage()) {
+    <app-admin-error-panel [message]="errorMessage()" (retry)="load()"></app-admin-error-panel>
+  } @else {
+    <!-- ── Summary Cards ──────────────────────────────────── -->
+    <div class="feat-summary">
+      <div class="feat-summary-card">
+        <div class="feat-summary-icon active-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div>
+          <span class="feat-summary-value">{{ summary().activePromotions }}</span>
+          <span class="feat-summary-label">Active</span>
+        </div>
+      </div>
+      <div class="feat-summary-card">
+        <div class="feat-summary-icon total-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div>
+          <span class="feat-summary-value">{{ summary().totalPromotions }}</span>
+          <span class="feat-summary-label">Total</span>
+        </div>
+      </div>
+      <div class="feat-summary-card">
+        <div class="feat-summary-icon revenue-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+          <span class="feat-summary-value">{{ summary().totalRevenue | currencyFormat }}</span>
+          <span class="feat-summary-label">Revenue</span>
+        </div>
+      </div>
+      <div class="feat-summary-card">
+        <div class="feat-summary-icon rate-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <span class="feat-summary-value">{{ activeRate }}</span>
+          <span class="feat-summary-label">Active Rate</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Filters ──────────────────────────────────────── -->
+    <div class="feat-filters">
+      <div class="feat-filter-search">
+        <svg class="feat-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="feat-search-input" placeholder="Search seller, email, or product..." [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" />
+      </div>
+      <div class="feat-filter-selects">
+        <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); applyFilter()" class="feat-filter-select">
+          <option value="">All Statuses</option>
+          @for (s of statusOptions; track s) {
+            <option [value]="s">{{ s | titlecase }}</option>
+          }
+        </select>
+        <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); applyFilter()" class="feat-filter-date" title="From date" />
+        <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); applyFilter()" class="feat-filter-date" title="To date" />
+        @if (searchQuery() || statusFilter() || dateFrom() || dateTo()) {
+          <button type="button" class="feat-clear-btn" (click)="clearFilters()">Clear</button>
+        }
+      </div>
+    </div>
+
+    <!-- ── Table ─────────────────────────────────────────── -->
+    <div class="feat-table-card" [class.is-loading]="isLoading()">
+      <table class="feat-table">
+        <thead>
+          <tr>
+            <th class="col-product">Product</th>
+            <th class="col-seller">Seller</th>
+            <th class="col-duration">Duration</th>
+            <th class="col-amount">Paid</th>
+            <th class="col-period">Period</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (featured().length === 0) {
+            <tr><td colspan="6" class="feat-empty">No featured listings match your filters.</td></tr>
+          }
+          @for (f of featured(); track f.id; let idx = $index) {
+            <tr class="feat-row" [style.animation-delay]="idx * 0.04 + 's'">
+              <td class="col-product">
+                <div class="feat-product-cell">
+                  @if (f.product?.thumbnail) {
+                    <img class="feat-product-img" [src]="f.product.thumbnail" [alt]="f.product.title" />
+                  } @else {
+                    <div class="feat-product-img feat-product-img-ph">📦</div>
+                  }
+                  <span class="feat-product-name">{{ f.product?.title || 'Unknown' }}</span>
+                </div>
+              </td>
+              <td class="col-seller">
+                <div class="feat-user-cell">
+                  @if (f.seller?.avatar) {
+                    <img class="feat-avatar-img" [src]="f.seller.avatar" [alt]="(f.seller.name || 'Seller') + ' avatar'" />
+                  } @else {
+                    <div class="feat-avatar" [class.deleted]="!f.seller">
+                      {{ f.seller ? initials(f.seller.name) : '??' }}
+                    </div>
+                  }
+                  <div class="feat-user-info">
+                    <span class="feat-user-name" [class.deleted]="!f.seller">
+                      {{ f.seller ? (f.seller.name || 'Unknown Seller') : 'Deleted' }}
+                      @if (!f.seller) {
+                        <span class="feat-user-deleted-icon" title="Account deleted">&#9888;</span>
+                      }
+                    </span>
+                    <span class="feat-user-email">{{ f.seller?.email || 'Account removed' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="col-duration">{{ f.duration }} days</td>
+              <td class="col-amount feat-cell-num">{{ f.amountPaid | currencyFormat }}</td>
+              <td class="col-period feat-cell-muted">
+                {{ f.startDate | date:'MMM d' }} &ndash; {{ f.endDate | date:'MMM d, yyyy' }}
+              </td>
+              <td class="col-status">
+                <span class="feat-badge" [class.active]="f.isActive" [class.expired]="!f.isActive">
+                  {{ f.isActive ? 'Active' : 'Expired' }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Pagination ────────────────────────────────────── -->
+    <app-pagination
+      [currentPage]="pagination.currentPage()" [totalPages]="pagination.totalPages()"
+      [totalItems]="pagination.totalItems()" label="promotions"
+      variant="icons" [isLoading]="isLoading()"
+      (prevPage)="prevPage()" (nextPage)="nextPage()" (pageChange)="goToPage($event)">
+    </app-pagination>
+  }
+</div>

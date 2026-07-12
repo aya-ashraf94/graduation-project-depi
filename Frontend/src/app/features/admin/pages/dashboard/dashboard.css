@@ -68,6 +68,11 @@
   box-shadow: 0 0 3px var(--success);
 }
 
+.sys-dot-err {
+  background: var(--danger);
+  box-shadow: 0 0 3px var(--danger);
+}
+
 .sys-status-label {
   color: var(--gray-3);
   font-weight: 600;
@@ -1030,4 +1035,83 @@ input[type="datetime-local"].form-control {
     padding-right: 0;
     padding-bottom: 1.25rem;
   }
+}
+
+/* ── Reusable utility classes ───────────────────────────── */
+.guide-list {
+  margin: 0; padding-left: 1.25rem; font-size: 0.8rem;
+  color: var(--gray-3); line-height: 1.6; font-family: var(--font-secondary), serif;
+  list-style-type: disc;
+}
+.guide-list li { margin-bottom: 0.5rem; }
+.clickable-header { cursor: pointer; }
+.clickable-link { text-decoration: none; cursor: pointer; }
+
+.fee-modal { max-width: 420px; }
+.fee-modal-body { display: flex; flex-direction: column; gap: 1rem; }
+.hint-text {
+  font-size: 0.75rem; color: var(--gray-3); margin-top: 0.4rem;
+}
+.modal-footer-row {
+  display: flex; gap: 0.75rem; justify-content: flex-end;
+  border-top: 2px solid var(--border); padding-top: 1rem;
+}
+.btn-modal-cancel {
+  flex: 0 0 auto; background: transparent; color: var(--gray-3);
+  box-shadow: none; border-color: var(--border);
+  padding: 0.45rem 1rem; font-family: var(--font-primary), sans-serif;
+  font-weight: 800; font-size: 0.78rem; text-transform: uppercase;
+  border: 2px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition);
+}
+.btn-modal-cancel:hover { border-color: var(--gray-3); color: var(--black); }
+.btn-modal-submit { flex: 0 0 auto; }
+
+.empty-state-text {
+  font-size: 0.8rem; color: var(--gray-3);
+  grid-column: 1 / -1; text-align: center; padding: 2rem;
+}
+.cs-label {
+  display: block; margin-bottom: 0.75rem; font-weight: 900;
+  font-size: 0.75rem; color: var(--black);
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.sale-banner {
+  background: var(--success-light); color: var(--success-dark);
+  border: 2px solid var(--success); padding: 0.4rem 0.75rem;
+  border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+  text-align: center; margin-bottom: 0.75rem;
+}
+.input-icon-pad { padding-left: 2.85rem; }
+.sale-description {
+  font-size: 0.75rem; color: var(--gray-3);
+  line-height: 1.45; margin: 0.25rem 0;
+}
+.sale-footer-actions {
+  display: flex; gap: 0.75rem; margin-top: 1rem; width: 100%;
+}
+.btn-danger-action {
+  flex: 1; background-color: var(--danger-dark); color: white;
+  border-color: var(--black); margin-top: 0.75rem;
+}
+.btn-primary-action { flex: 1; }
+.flex-col-gap-sm { display: flex; flex-direction: column; gap: 0.6rem; }
+
+/* ── Announcement modal ─────────────────────────────────── */
+.announce-modal { max-width: 500px; }
+.announce-body { display: flex; flex-direction: column; gap: 1rem; }
+.announce-footer {
+  display: flex; gap: 0.75rem; justify-content: flex-end;
+  border-top: 2px solid var(--border); padding-top: 1rem;
+}
+.btn-cancel-ghost {
+  flex: 0 0 auto; background: transparent;
+  color: var(--gray-3); box-shadow: none; border-color: var(--border);
+  padding: 0.45rem 1rem; font-family: var(--font-primary), sans-serif;
+  font-weight: 800; font-size: 0.78rem; text-transform: uppercase;
+  border: 2px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition);
+}
+.btn-cancel-ghost:hover {
+  border-color: var(--gray-3); color: var(--black);
 }

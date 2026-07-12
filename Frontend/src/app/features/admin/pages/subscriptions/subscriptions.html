@@ -1,0 +1,157 @@
+<div class="subs-page">
+
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <div class="subs-header">
+    <div class="subs-header-left">
+      <h1>Subscriptions</h1>
+      <span class="subs-count">{{ pagination.totalItems() }} transactions</span>
+    </div>
+    <button type="button" class="subs-export-btn" (click)="exportCsv()" [disabled]="transactions().length === 0">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+  </div>
+
+  @if (isLoading() && transactions().length === 0) {
+    <app-admin-loader message="Loading subscriptions..."></app-admin-loader>
+  } @else if (errorMessage()) {
+    <app-admin-error-panel [message]="errorMessage()" (retry)="load()"></app-admin-error-panel>
+  } @else {
+    <!-- ── Summary Cards ──────────────────────────────────── -->
+    <div class="subs-summary">
+      <div class="subs-summary-card">
+        <div class="subs-summary-icon active-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <span class="subs-summary-value">{{ summary().activeSubscriptions }}</span>
+          <span class="subs-summary-label">Active</span>
+        </div>
+      </div>
+      <div class="subs-summary-card">
+        <div class="subs-summary-icon revenue-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+          <span class="subs-summary-value">{{ summary().totalRevenue | currencyFormat }}</span>
+          <span class="subs-summary-label">Revenue</span>
+        </div>
+      </div>
+      <div class="subs-summary-card">
+        <div class="subs-summary-icon mrr-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <span class="subs-summary-value">{{ mrr | currencyFormat }}</span>
+          <span class="subs-summary-label">MRR</span>
+        </div>
+      </div>
+      <div class="subs-summary-card">
+        <div class="subs-summary-icon refund-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </div>
+        <div>
+          <span class="subs-summary-value">{{ summary().totalRefunds | currencyFormat }}</span>
+          <span class="subs-summary-label">Refunds</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Filters ──────────────────────────────────────── -->
+    <div class="subs-filters">
+      <div class="subs-filter-search">
+        <svg class="subs-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="subs-search-input" placeholder="Search user or email..." [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" />
+      </div>
+
+      <div class="subs-filter-selects">
+        <select [ngModel]="tierFilter()" (ngModelChange)="tierFilter.set($event); applyFilter()" class="subs-filter-select">
+          <option value="">All Tiers</option>
+          @for (t of tiers(); track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+
+        <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); applyFilter()" class="subs-filter-select">
+          <option value="">All Statuses</option>
+          @for (s of statusOptions; track s) {
+            <option [value]="s">{{ s | titlecase }}</option>
+          }
+        </select>
+
+        <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); applyFilter()" class="subs-filter-date" title="From date" />
+        <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); applyFilter()" class="subs-filter-date" title="To date" />
+
+        @if (searchQuery() || tierFilter() || statusFilter() || dateFrom() || dateTo()) {
+          <button type="button" class="subs-clear-btn" (click)="clearFilters()">Clear</button>
+        }
+      </div>
+    </div>
+
+    <!-- ── Table ─────────────────────────────────────────── -->
+    <div class="subs-table-card" [class.is-loading]="isLoading()">
+      <table class="subs-table">
+        <thead>
+          <tr>
+            <th class="col-user">User</th>
+            <th class="col-tier">Tier</th>
+            <th class="col-amount">Amount</th>
+            <th class="col-cycle">Cycle</th>
+            <th class="col-status">Status</th>
+            <th class="col-date">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (transactions().length === 0) {
+            <tr><td colspan="6" class="subs-empty">No transactions match your filters.</td></tr>
+          }
+          @for (t of transactions(); track t.id; let idx = $index) {
+            <tr class="subs-row" [style.animation-delay]="idx * 0.04 + 's'">
+              <td class="col-user">
+                <div class="subs-user-cell">
+                  @if (t.user?.avatar) {
+                    <img class="subs-avatar-img" [src]="t.user.avatar" [alt]="(t.user.name || 'User') + ' avatar'" />
+                  } @else {
+                    <div class="subs-avatar" [class.deleted]="!t.user">
+                      {{ t.user ? initials(t.user.name) : '??' }}
+                    </div>
+                  }
+                  <div class="subs-user-info">
+                    <span class="subs-user-name" [class.deleted]="!t.user">
+                      {{ t.user ? (t.user.name || 'Unknown User') : 'Deleted User' }}
+                      @if (!t.user) {
+                        <span class="subs-user-deleted-icon" title="Account deleted">&#9888;</span>
+                      }
+                    </span>
+                    <span class="subs-user-email">{{ t.user?.email || 'Account removed' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="col-tier">
+                <span class="subs-tier-badge" [class.premium]="t.tierName === 'Premium' || t.tierName === 'Pro'" [class.basic]="t.tierName === 'Basic' || t.tierName === 'Free'">
+                  {{ t.tierName }}
+                </span>
+              </td>
+              <td class="col-amount subs-cell-num">{{ t.amount | currencyFormat }}</td>
+              <td class="col-cycle">{{ t.billingCycle }}</td>
+              <td class="col-status">
+                <span class="subs-status" [class.completed]="t.status === 'completed'" [class.failed]="t.status === 'failed'" [class.refunded]="t.status === 'refunded'" [class.pending]="t.status === 'pending'">
+                  {{ t.status }}
+                </span>
+              </td>
+              <td class="col-date subs-cell-muted">{{ t.createdAt | date:'MMM d, yyyy' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Pagination ────────────────────────────────────── -->
+    <app-pagination
+      [currentPage]="pagination.currentPage()" [totalPages]="pagination.totalPages()"
+      [totalItems]="pagination.totalItems()" label="transactions"
+      variant="icons" [isLoading]="isLoading()"
+      (prevPage)="prevPage()" (nextPage)="nextPage()" (pageChange)="goToPage($event)">
+    </app-pagination>
+  }
+</div>

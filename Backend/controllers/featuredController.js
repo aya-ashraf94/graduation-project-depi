@@ -1,6 +1,6 @@
 const db = require("../db");
 const { featuredListings, products, users, orders, settings, sellerTiers } = require("../db/schema");
-const { eq, and, gt, gte, desc, sql } = require("drizzle-orm");
+const { eq, and, or, gt, gte, lte, desc, ilike, sql } = require("drizzle-orm");
 const { createNotification } = require("../utils/notifications");
 
 const DEFAULT_FEATURED_PRICES = { 2: 5.00, 7: 12.00, 14: 20.00 };
@@ -226,4 +226,94 @@ const getRemainingFeaturedQuota = async (req, res) => {
   }
 };
 
-module.exports = { promoteProduct, getPromotionPrices, getActiveFeatured, getMyFeaturedListings, adminSetFeaturedPrice, getRemainingFeaturedQuota };
+const adminGetAllFeaturedListings = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    const search = req.query.search || '';
+    const statusFilter = req.query.status || '';
+    const dateFrom = req.query.dateFrom || '';
+    const dateTo = req.query.dateTo || '';
+
+    const conditions = [];
+
+    if (search) {
+      conditions.push(
+        or(
+          ilike(users.name, `%${search}%`),
+          ilike(users.email, `%${search}%`),
+          ilike(products.title, `%${search}%`),
+        )
+      );
+    }
+    if (statusFilter === 'active') {
+      conditions.push(eq(featuredListings.isActive, true));
+    } else if (statusFilter === 'expired') {
+      conditions.push(eq(featuredListings.isActive, false));
+    }
+    if (dateFrom) {
+      conditions.push(gte(featuredListings.createdAt, new Date(dateFrom)));
+    }
+    if (dateTo) {
+      conditions.push(lte(featuredListings.createdAt, new Date(dateTo)));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Summary
+    const [summary] = await db.select({
+      totalRevenue: sql`coalesce(sum(${featuredListings.amountPaid}), 0)`,
+      activePromotions: sql`coalesce(count(case when ${featuredListings.isActive} = true then 1 end), 0)`,
+      totalPromotions: sql`count(*)`,
+    }).from(featuredListings)
+      .leftJoin(products, eq(featuredListings.productId, products.id))
+      .leftJoin(users, eq(featuredListings.sellerId, users.id))
+      .where(whereClause);
+
+    // Count for pagination
+    const [{ count }] = await db.select({ count: sql`count(*)` })
+      .from(featuredListings)
+      .leftJoin(products, eq(featuredListings.productId, products.id))
+      .leftJoin(users, eq(featuredListings.sellerId, users.id))
+      .where(whereClause);
+    const total = parseInt(count, 10);
+
+    const rows = await db.select({
+      featured: featuredListings,
+      product: products,
+      seller: users,
+    })
+      .from(featuredListings)
+      .leftJoin(products, eq(featuredListings.productId, products.id))
+      .leftJoin(users, eq(featuredListings.sellerId, users.id))
+      .where(whereClause)
+      .orderBy(desc(featuredListings.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    const data = rows.map(r => ({
+      ...r.featured,
+      product: r.product ? { id: r.product.id, title: r.product.title, thumbnail: (r.product.images || [])[0], price: r.product.price } : null,
+      seller: r.seller ? { id: r.seller.id, name: r.seller.name, email: r.seller.email, avatar: r.seller.avatar } : null,
+    }));
+
+    res.json({
+      featured: data,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      summary: {
+        totalRevenue: parseFloat(summary.totalRevenue),
+        activePromotions: parseInt(summary.activePromotions, 10),
+        totalPromotions: parseInt(summary.totalPromotions, 10),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching all featured listings:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { promoteProduct, getPromotionPrices, getActiveFeatured, getMyFeaturedListings, adminSetFeaturedPrice, getRemainingFeaturedQuota, adminGetAllFeaturedListings };

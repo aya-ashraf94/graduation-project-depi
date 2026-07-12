@@ -1,0 +1,106 @@
+<div class="categories-page">
+  <div class="page-head">
+    <div>
+      <h1>Categories</h1>
+      <p class="page-desc">Manage marketplace categories and their dynamic attributes.</p>
+    </div>
+    <button class="btn-create" (click)="openCreateModal()">+ New Category</button>
+  </div>
+
+  @if (isLoading()) {
+    <app-admin-loader message="Loading categories..."></app-admin-loader>
+  } @else if (errorMessage()) {
+    <app-admin-error-panel [message]="errorMessage()" (retry)="loadCategories()"></app-admin-error-panel>
+  } @else if (categories().length === 0) {
+    <div class="empty-box">
+      <p class="empty-title">No categories yet</p>
+      <p class="empty-sub">Create your first category to organize marketplace listings.</p>
+    </div>
+  } @else {
+    <div class="cat-grid">
+      @for (cat of categories(); track cat.id) {
+        <div class="cat-card">
+          <div class="cat-card-header">
+            <span class="cat-name">{{ cat.name }}</span>
+            <span class="cat-count">{{ cat.attributes?.length || 0 }} attributes</span>
+          </div>
+          @if (cat.attributes && cat.attributes.length > 0) {
+            <div class="cat-attrs">
+              @for (attr of cat.attributes.slice(0, 4); track attr.id) {
+                <span class="attr-chip">{{ attr.name }}</span>
+              }
+              @if (cat.attributes.length > 4) {
+                <span class="attr-chip attr-more">+{{ cat.attributes.length - 4 }} more</span>
+              }
+            </div>
+          }
+          @if (cat.discountPercent) {
+            <div class="cat-sale-badge">{{ cat.discountPercent }}% OFF</div>
+          }
+          <div class="cat-card-actions">
+            <button class="cat-action edit" (click)="openEditModal(cat)">Edit</button>
+            <button class="cat-action delete" (click)="deleteCategory(cat.id, cat.name)">Delete</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showModal()) {
+  <div class="modal-overlay">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="panel-header">
+        <div class="panel-header-titles">
+          <h3>{{ editingCat() ? 'Edit Category' : 'New Category' }}</h3>
+          <p class="panel-header-subtitle">{{ editingCat() ? 'Update category name and attributes.' : 'Create a new category for marketplace listings.' }}</p>
+        </div>
+        <button class="modal-close-btn-header" (click)="closeModal()">✕</button>
+      </div>
+      <div class="panel-body">
+        <form (ngSubmit)="saveCategory()" class="cat-form">
+          <div class="form-group">
+            <label class="form-label">Category Name</label>
+            <input type="text" [(ngModel)]="formName" name="catName" class="form-control" placeholder="e.g. Electronics" required />
+          </div>
+
+          <div class="form-group">
+            <div class="attrs-header">
+              <label class="form-label">Dynamic Attributes</label>
+              <button type="button" class="btn-add-attr" (click)="addAttribute()">+ Add Attribute</button>
+            </div>
+            @if (formAttributes.length === 0) {
+              <p class="attrs-empty">No attributes defined. Buyers will fill these when creating a listing.</p>
+            }
+            @for (attr of formAttributes; track trackByIndex($index); let i = $index) {
+              <div class="attr-row">
+                <input type="text" [(ngModel)]="attr.name" [name]="'attrName' + i" class="form-control attr-input" placeholder="Attribute name" />
+                <select [(ngModel)]="attr.type" [name]="'attrType' + i" class="form-control attr-type-select">
+                  <option value="text">Text</option>
+                  <option value="select">Select</option>
+                  <option value="radio">Radio</option>
+                </select>
+                @if (attr.type === 'select' || attr.type === 'radio') {
+                  <input type="text" [(ngModel)]="attr.options" [name]="'attrOpts' + i" class="form-control attr-options" placeholder="Option1, Option2, ..." />
+                }
+                <label class="attr-checkbox">
+                  <input type="checkbox" [(ngModel)]="attr.required" [name]="'attrReq' + i" />
+                  Required
+                </label>
+                <button type="button" class="attr-remove" (click)="removeAttribute(i)" title="Remove attribute">✕</button>
+              </div>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" [disabled]="saving()" class="btn-save">
+              {{ saving() ? 'Saving...' : editingCat() ? 'Update Category' : 'Create Category' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

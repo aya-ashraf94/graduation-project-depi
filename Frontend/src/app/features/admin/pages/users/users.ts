@@ -1,13 +1,15 @@
-import { Component, signal, inject, OnInit, computed, effect, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, signal, inject, OnInit, computed, effect, DestroyRef, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminService, AdminStats } from '../../../../core/services/admin.service';
 import { User } from '../../../../core/models/user.model';
 import { AuthService } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { PaginationService } from '../../../../shared/services/pagination.service';
 
 import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
@@ -15,11 +17,12 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminTableSkeletonComponent } from '../../../../shared/components/admin-table-skeleton/admin-table-skeleton';
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
+import { exportToCsv } from '../../../../shared/utils/csv-export.utils';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, UserAvatarComponent, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule, UserAvatarComponent, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, AdminLoaderComponent],
   templateUrl: './users.html',
   styleUrl: './users.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -29,12 +32,11 @@ export class Users implements OnInit {
   protected authService = inject(AuthService);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
+  private destroyRef = inject(DestroyRef);
+  protected pagination = inject(PaginationService);
 
   users = signal<User[]>([]);
   totalUsers = signal(0);
-  currentPage = signal(1);
-  pageSize = 10;
-  totalPages = signal(0);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
   stats = signal<AdminStats | null>(null);
@@ -45,6 +47,62 @@ export class Users implements OnInit {
   statusControl = new FormControl('all');
   verifiedControl = new FormControl('all');
   activeMetric = signal<string | null>(null);
+
+  // Inline edit modal
+  showEditModal = signal(false);
+  editingUser = signal<User | null>(null);
+  editFirstName = '';
+  editLastName = '';
+  editEmail = '';
+  editPhone = '';
+  editLocation = '';
+  editBio = '';
+  savingEdit = signal(false);
+
+  openEditModal(user: User): void {
+    this.editingUser.set(user);
+    this.editFirstName = user.firstName;
+    this.editLastName = user.lastName;
+    this.editEmail = user.email;
+    this.editPhone = user.phoneNumber || '';
+    this.editLocation = user.location || '';
+    this.editBio = user.bio || '';
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.editingUser.set(null);
+  }
+
+  saveEditUser(): void {
+    const user = this.editingUser();
+    if (!user) return;
+    if (!this.editFirstName.trim() || !this.editEmail.trim()) {
+      this.toastService.error('First name and email are required.');
+      return;
+    }
+
+    this.savingEdit.set(true);
+    this.adminService.patchUser(user.id, {
+      name: `${this.editFirstName.trim()} ${this.editLastName.trim()}`,
+      email: this.editEmail.trim(),
+      phoneNumber: this.editPhone.trim(),
+      location: this.editLocation.trim(),
+      bio: this.editBio.trim(),
+    } as any).subscribe({
+      next: () => {
+        this.toastService.success('User updated successfully.');
+        this.savingEdit.set(false);
+        this.closeEditModal();
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to update user.');
+        this.savingEdit.set(false);
+      }
+    });
+  }
 
   toggleUserDropdown(userId: string, event: Event): void {
     event.stopPropagation();
@@ -60,28 +118,38 @@ export class Users implements OnInit {
     this.activeDropdownUserId.set(null);
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.showEditModal.set(false);
+  }
+
   ngOnInit(): void {
     // Setup search listener with debounce
     this.searchControl.valueChanges.pipe(
       debounceTime(350),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
-      this.currentPage.set(1);
+      this.pagination.goToPage(1);
       this.loadUsers();
     });
 
-    this.roleControl.valueChanges.subscribe(() => {
-      this.currentPage.set(1);
+    this.roleControl.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.pagination.goToPage(1);
       this.loadUsers();
     });
 
-    this.statusControl.valueChanges.subscribe(() => {
-      this.currentPage.set(1);
+    this.statusControl.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.pagination.goToPage(1);
       this.loadUsers();
     });
 
     this.verifiedControl.valueChanges.subscribe(() => {
-      this.currentPage.set(1);
+      this.pagination.goToPage(1);
       this.loadUsers();
     });
 
@@ -104,7 +172,7 @@ export class Users implements OnInit {
     const statusVal = this.statusControl.value || 'all';
     const verifiedVal = this.verifiedControl.value || 'all';
 
-    this.adminService.getUsers(this.currentPage(), this.pageSize, {
+    this.adminService.getUsers(this.pagination.currentPage(), this.pagination.pageSize(), {
       search: searchVal,
       role: roleVal,
       status: statusVal,
@@ -113,7 +181,7 @@ export class Users implements OnInit {
       next: (res) => {
         this.users.set(res.users);
         this.totalUsers.set(res.total);
-        this.totalPages.set(res.pages);
+        this.pagination.setResult(res.total, res.pages);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -125,22 +193,18 @@ export class Users implements OnInit {
   }
 
   nextPage(): void {
-    if (this.currentPage() < this.totalPages()) {
-      this.currentPage.update(p => p + 1);
-      this.loadUsers();
-    }
+    this.pagination.nextPage();
+    this.loadUsers();
   }
 
   prevPage(): void {
-    if (this.currentPage() > 1) {
-      this.currentPage.update(p => p - 1);
-      this.loadUsers();
-    }
+    this.pagination.prevPage();
+    this.loadUsers();
   }
 
   setMetricFilter(metric: string | null): void {
     this.activeMetric.set(metric);
-    this.currentPage.set(1);
+    this.pagination.goToPage(1);
     switch (metric) {
       case 'total':
         this.roleControl.setValue('all', { emitEvent: false });
@@ -211,6 +275,10 @@ export class Users implements OnInit {
   }
 
   toggleRole(user: User): void {
+    if (user.id === this.authService.currentUser()?.id) {
+      this.toastService.error('You cannot change your own role.');
+      return;
+    }
     const nextRole = user.role === 'admin' ? 'user' : 'admin';
     const msg = `Are you sure you want to change role of ${user.firstName} ${user.lastName} to ${nextRole.toUpperCase()}?`;
     
@@ -231,6 +299,19 @@ export class Users implements OnInit {
         });
       }
     });
+  }
+
+  exportCsv(): void {
+    const headers = ['Name', 'Email', 'Role', 'Verified', 'Suspended', 'Joined'];
+    const data = this.users().map(u => [
+      `${u.firstName} ${u.lastName}`,
+      u.email,
+      u.role,
+      u.isVerified ? 'Yes' : 'No',
+      u.isSuspended ? 'Yes' : 'No',
+      u.joinedAt ? new Date(u.joinedAt).toLocaleDateString() : '',
+    ]);
+    exportToCsv('users', [headers, ...data]);
   }
 
   deleteUser(user: User): void {

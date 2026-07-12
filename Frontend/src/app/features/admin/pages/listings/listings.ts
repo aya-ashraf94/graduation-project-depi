@@ -1,13 +1,16 @@
 import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
 import { AdminService, AdminStats } from '../../../../core/services/admin.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { Product } from '../../../../core/models/product.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { PaginationService } from '../../../../shared/services/pagination.service';
 import { getConditionLabel, getConditionClass } from '../../../../shared/utils/condition.utils';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
@@ -19,7 +22,7 @@ import { StatusBadgeComponent } from '../../../../shared/components/status-badge
 @Component({
   selector: 'app-admin-listings',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, StatusBadgeComponent, AdminLoaderComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule, PaginationComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminTableSkeletonComponent, StatusBadgeComponent, AdminLoaderComponent],
   templateUrl: './listings.html',
   styleUrl: './listings.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,16 +30,28 @@ import { StatusBadgeComponent } from '../../../../shared/components/status-badge
 export class Listings implements OnInit {
   private adminService = inject(AdminService);
   private productService = inject(ProductService);
+  private http = inject(HttpClient);
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
   private route = inject(ActivatedRoute);
+  protected pagination = inject(PaginationService);
+
+  // Inline edit modal
+  showEditModal = signal(false);
+  editingProduct = signal<Product | null>(null);
+  editTitle = '';
+  editDescription = '';
+  editPrice = 0;
+  editMinPrice = 0;
+  editCategoryId = '';
+  editStatus = '';
+  savingEdit = signal(false);
+  categoriesForEdit: { id: string; name: string }[] = [];
+  readonly editStatusOptions = ['active', 'reserved', 'sold', 'draft'];
 
   products = signal<Product[]>([]);
   totalProducts = signal(0);
-  currentPage = signal(1);
-  pageSize = 10;
-  totalPages = signal(0);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
   stats = signal<AdminStats | null>(null);
@@ -64,7 +79,7 @@ export class Listings implements OnInit {
     });
 
     this.filterForm.valueChanges.subscribe(() => {
-      this.currentPage.set(1);
+      this.pagination.goToPage(1);
       this.loadListings();
     });
 
@@ -72,7 +87,7 @@ export class Listings implements OnInit {
       debounceTime(350),
       distinctUntilChanged()
     ).subscribe(() => {
-      this.currentPage.set(1);
+      this.pagination.goToPage(1);
       this.loadListings();
     });
 
@@ -125,7 +140,7 @@ export class Listings implements OnInit {
   setMetricFilter(metric: string | null): void {
     this.activeMetric.set(metric);
     this.activeVerified.set(null);
-    this.currentPage.set(1);
+    this.pagination.goToPage(1);
     switch (metric) {
       case 'total':
         this.filterForm.patchValue({ status: '', category: '' }, { emitEvent: false });
@@ -153,11 +168,11 @@ export class Listings implements OnInit {
       verified: this.activeVerified() || undefined
     };
 
-    this.adminService.getAllProducts(this.currentPage(), this.pageSize, filters).subscribe({
+    this.adminService.getAllProducts(this.pagination.currentPage(), this.pagination.pageSize(), filters).subscribe({
       next: (res) => {
         this.products.set(res.products);
         this.totalProducts.set(res.total);
-        this.totalPages.set(res.pages);
+        this.pagination.setResult(res.total, res.pages);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -169,17 +184,68 @@ export class Listings implements OnInit {
   }
 
   nextPage(): void {
-    if (this.currentPage() < this.totalPages()) {
-      this.currentPage.update(p => p + 1);
-      this.loadListings();
-    }
+    this.pagination.nextPage();
+    this.loadListings();
   }
 
   prevPage(): void {
-    if (this.currentPage() > 1) {
-      this.currentPage.update(p => p - 1);
-      this.loadListings();
+    this.pagination.prevPage();
+    this.loadListings();
+  }
+
+  openEditModal(product: Product): void {
+    this.editingProduct.set(product);
+    this.editTitle = product.title;
+    this.editDescription = product.description;
+    this.editPrice = product.price;
+    this.editMinPrice = product.minPrice || 0;
+    this.editCategoryId = product.categoryId || '';
+    this.editStatus = product.status;
+    this.showEditModal.set(true);
+
+    if (this.categoriesForEdit.length === 0) {
+      this.productService.getCategories().subscribe({
+        next: (cats) => this.categoriesForEdit = cats.map((c: any) => ({ id: c.id, name: c.name })),
+        error: () => {}
+      });
     }
+  }
+
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.editingProduct.set(null);
+  }
+
+  saveEdit(): void {
+    const prod = this.editingProduct();
+    if (!prod) return;
+    if (!this.editTitle.trim()) {
+      this.toastService.error('Title is required.');
+      return;
+    }
+
+    this.savingEdit.set(true);
+    const payload: any = {
+      title: this.editTitle.trim(),
+      description: this.editDescription,
+      price: this.editPrice,
+      minPrice: this.editMinPrice > 0 ? this.editMinPrice : null,
+      categoryId: this.editCategoryId || null,
+      status: this.editStatus,
+    };
+
+    this.http.put(`${environment.apiUrl}/products/${prod.id}`, payload).subscribe({
+      next: () => {
+        this.toastService.success('Product updated successfully.');
+        this.savingEdit.set(false);
+        this.closeEditModal();
+        this.loadListings();
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || 'Failed to update product.');
+        this.savingEdit.set(false);
+      }
+    });
   }
 
   getConditionLabel(condition: string): string {
