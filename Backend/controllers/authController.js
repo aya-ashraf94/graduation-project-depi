@@ -176,6 +176,7 @@ const getUserById = async (req, res) => {
       city: users.city,
       district: users.district,
       tags: users.tags,
+      trustBadge: users.trustBadge,
       rating: users.rating,
       totalSales: users.totalSales,
       totalPurchases: users.totalPurchases,

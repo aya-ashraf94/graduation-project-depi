@@ -66,6 +66,7 @@ const getProductById = async (req, res) => {
       ...row.products,
       userId: row.users,
       categoryId: row.categories,
+      trustBadge: row.users?.trustBadge || null,
     };
 
     // Apply active promotions (flash sales + category sales)
@@ -241,6 +242,7 @@ const getProducts = async (req, res) => {
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
+      trustBadge: r.users?.trustBadge || null,
       isFeatured: featuredSet.has(r.products.id),
     }));
 
@@ -272,6 +274,7 @@ const getMyProducts = async (req, res) => {
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
+      trustBadge: r.users?.trustBadge || null,
     }));
 
     // Apply active promotions (flash sales + category sales)
@@ -317,6 +320,7 @@ const getUserProducts = async (req, res) => {
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
+      trustBadge: r.users?.trustBadge || null,
     }));
 
     // Apply active promotions (flash sales + category sales)
@@ -591,6 +595,7 @@ const getRecommendedProducts = async (req, res) => {
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
+      trustBadge: r.users?.trustBadge || null,
     }));
 
     // Location-based ranking

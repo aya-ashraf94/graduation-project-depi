@@ -1,0 +1,396 @@
+<div class="earnings-page">
+  <div class="container">
+
+    <!-- Header -->
+    <header class="earnings-header">
+      <div>
+        <h1 class="earnings-title">Earnings</h1>
+        <p class="earnings-subtitle">Track your sales, manage payouts, and view your seller subscription.</p>
+      </div>
+      <a routerLink="/profile/me" class="btn-back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Profile
+      </a>
+    </header>
+
+    @if (isLoading) {
+      <div class="loading-skeleton">
+        <div class="skeleton-box" style="height: 120px;"></div>
+        <div class="skeleton-box" style="height: 200px; margin-top: 1rem;"></div>
+      </div>
+    } @else {
+      <!-- ── Stats Bar ── -->
+      <div class="stats-bar">
+        <div class="stat-card stat-withdrawable">
+          <span class="stat-label">Withdrawable Balance</span>
+          <span class="stat-value">{{ (walletStats?.balance || 0) | currencyFormat }}</span>
+          <span class="stat-hint">Available for payout</span>
+        </div>
+        <div class="stat-card stat-pending">
+          <span class="stat-label">Pending</span>
+          <span class="stat-value">{{ (walletStats?.pendingBalance || 0) | currencyFormat }}</span>
+          <span class="stat-hint">From shipped orders</span>
+        </div>
+        <div class="stat-card stat-lifetime">
+          <span class="stat-label">Lifetime Earnings</span>
+          <span class="stat-value">{{ (walletStats?.lifetimeEarnings || 0) | currencyFormat }}</span>
+          <span class="stat-hint">All-time net earnings</span>
+        </div>
+      </div>
+
+      <!-- ── Subscription Bar ── -->
+      <div class="subscription-bar">
+        <div class="sub-info">
+          <span class="sub-icon">🏆</span>
+          <div>
+            @if (subscriptionInfo?.subscribed && subscriptionInfo?.tier) {
+              <strong>{{ subscriptionInfo?.tier?.name }}</strong>
+              @if (subscriptionInfo?.expiresAt) {
+                <span class="sub-expiry">
+                  @if (subscriptionInfo?.isExpired) {
+                    ⚠️ Expired
+                  } @else if (subscriptionInfo?.cancelAtPeriodEnd) {
+                    🔴 Cancelled — ends {{ subscriptionInfo?.expiresAt | date:'mediumDate' }}
+                  } @else {
+                    Expires {{ subscriptionInfo?.expiresAt | date:'mediumDate' }}
+                  }
+                </span>
+              }
+              @if (subscriptionInfo?.autoRenew && !subscriptionInfo?.cancelAtPeriodEnd) {
+                <span class="sub-renew-badge">Auto-renew on</span>
+              }
+            } @else {
+              <strong>Free Tier</strong>
+              <span class="sub-expiry">Lower platform fees with a paid plan</span>
+            }
+          </div>
+        </div>
+        <div class="sub-actions">
+          @if (subscriptionInfo?.subscribed && !subscriptionInfo?.isExpired) {
+            @if (subscriptionInfo?.cancelAtPeriodEnd) {
+              <button class="btn-sub btn-sub-primary" (click)="openReactivateModal()">Re-activate</button>
+              <button class="btn-sub" (click)="openTierModal()">Change Plan</button>
+            } @else {
+              <button class="btn-sub" (click)="openCancelModal()">Cancel</button>
+              <button class="btn-sub btn-sub-primary" (click)="openTierModal()">Change Plan</button>
+            }
+          } @else {
+            <button class="btn-sub btn-sub-primary" (click)="openTierModal()">View Plans</button>
+          }
+        </div>
+      </div>
+
+      <!-- ── Main Content Grid ── -->
+      <div class="earnings-grid">
+
+        <!-- Left: Transaction History -->
+        <div class="transactions-card">
+          <h2 class="section-title">Transaction History</h2>
+          <p class="section-subtitle">Orders and subscription payments that affected your balance.</p>
+
+          @if (walletStats?.recentTransactions && walletStats!.recentTransactions.length > 0) {
+            <div class="transaction-list">
+              @for (tx of walletStats!.recentTransactions; track tx.id) {
+                <div class="transaction-row">
+                  <div class="tx-thumb">
+                    @if (tx.type === 'refund') {
+                      <div class="tx-thumb-placeholder tx-refund-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                      </div>
+                    } @else if (tx.type === 'subscription') {
+                      <div class="tx-thumb-placeholder tx-sub-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      </div>
+                    } @else if (tx.productThumbnail) {
+                      <img [src]="tx.productThumbnail" alt="" />
+                    } @else {
+                      <div class="tx-thumb-placeholder">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      </div>
+                    }
+                  </div>
+                  <div class="tx-info">
+                    <span class="tx-title">{{ tx.productTitle }}</span>
+                    <span class="tx-meta">{{ tx.createdAt | date:'mediumDate' }} · {{ tx.type === 'refund' ? 'Refund' : (tx.type === 'subscription' ? 'Subscription' : (tx.paymentMethod === 'online' ? 'Card' : 'COD')) }}</span>
+                  </div>
+                  <div class="tx-amounts">
+                    <span class="tx-net" [class.tx-net-negative]="tx.type === 'subscription'" [class.tx-net-positive]="tx.type === 'refund'">{{ tx.netEarnings | currencyFormat }}</span>
+                    @if (tx.platformFee > 0) {
+                      <span class="tx-fee">Fee: -{{ tx.platformFee | currencyFormat }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-transactions">
+              <span class="empty-icon">📦</span>
+              <p>No transactions yet. Start selling to see your earnings here!</p>
+            </div>
+          }
+        </div>
+
+        <!-- Right: Payout Tools -->
+        <div class="payout-card">
+          <h2 class="section-title">Withdraw Funds</h2>
+          <p class="section-subtitle">Request a payout to your preferred method.</p>
+
+          <form (submit)="submitPayoutRequest(); $event.preventDefault()">
+            <div class="form-group">
+              <label for="payout-amount">Amount ($)</label>
+              <input type="number" id="payout-amount" name="amount" [(ngModel)]="payoutForm.amount"
+                min="1" [max]="walletStats?.balance || 0" placeholder="Enter amount" required class="neo-input" />
+            </div>
+            <div class="form-group">
+              <label for="payout-method">Payment Method</label>
+              <select id="payout-method" name="paymentMethod" [(ngModel)]="payoutForm.paymentMethod" class="neo-select">
+                <option value="bank_transfer">Bank Transfer (EG)</option>
+                <option value="vodafone_cash">Vodafone Cash / Orange / Etisalat Cash</option>
+                <option value="instapay">Instapay</option>
+                <option value="paypal">PayPal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="payout-details">Payment Details</label>
+              <textarea id="payout-details" name="paymentDetails" [(ngModel)]="payoutForm.paymentDetails"
+                rows="3" placeholder="IBAN, account name, mobile number, or Instapay address" required class="neo-textarea"></textarea>
+            </div>
+            <button type="submit" class="btn-payout" [disabled]="requestingPayout || (walletStats?.balance || 0) <= 0">
+              {{ requestingPayout ? 'Processing...' : 'Request Payout' }}
+            </button>
+          </form>
+
+          <!-- Payout History -->
+          <div class="payout-history" style="margin-top: 1.5rem;">
+            <h3 class="section-title" style="font-size: 0.95rem;">Payout History</h3>
+            @if (payoutsList.length > 0) {
+              <div class="payout-list">
+                @for (p of payoutsList; track p.id) {
+                  <div class="payout-row">
+                    <div class="payout-info">
+                      <span class="payout-amount">{{ p.amount | currencyFormat }}</span>
+                      <span class="payout-method">{{ getPaymentLabel(p.paymentMethod) }}</span>
+                    </div>
+                    <span class="payout-date">{{ p.createdAt | date:'mediumDate' }}</span>
+                    <span class="payout-status {{ p.status }}">{{ p.status | uppercase }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-hint">No payouts requested yet.</p>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+</div>
+
+<!-- TIER MODAL -->
+@if (showTierModal) {
+  <div class="brutal-modal-overlay" (click)="closeTierModal()">
+    <div class="brutal-modal-card" (click)="$event.stopPropagation()">
+      <div class="brutal-modal-header">
+        <div class="brutal-modal-header-left">
+          <span class="brutal-modal-icon">🏆</span>
+          <div>
+            <h3>Choose Your Seller Plan</h3>
+            <p class="brutal-modal-header-sub">Sell faster with lower fees and monthly promotion credits.</p>
+          </div>
+        </div>
+        <button class="brutal-modal-close" (click)="closeTierModal()">✕</button>
+      </div>
+      <div class="brutal-modal-body">
+        <div class="billing-toggle">
+          <button class="bill-btn" [class.active]="selectedBillingCycle === 'monthly'" (click)="selectedBillingCycle = 'monthly'">Monthly</button>
+          <button class="bill-btn" [class.active]="selectedBillingCycle === 'yearly'" (click)="selectedBillingCycle = 'yearly'">Yearly <span class="bill-save">Save ~17%</span></button>
+        </div>
+
+        <div class="tier-grid">
+          @for (tier of paidTiers; track tier.id) {
+            @let colors = tierColors[tier.name] || tierColors['Free'];
+            @let price = tierPrice(tier);
+            @let isCurrent = isCurrentTier(tier);
+            @let savings = savingsVsFree(tier);
+
+            <div class="tier-card"
+              [style.background]="colors.bg"
+              [style.--card-border]="selectedTierId === tier.id ? colors.accent : colors.border"
+              [class.selected]="selectedTierId === tier.id"
+              [class.current-tier]="isCurrent"
+              (click)="selectedTierId = tier.id">
+
+              <div class="tier-card-header">
+                <span class="tier-icon">{{ colors.icon }}</span>
+                <div>
+                  <h4 class="tier-name">{{ tier.name }}</h4>
+                  @if (isCurrent) {
+                    <span class="tier-current-badge">Current Plan</span>
+                  }
+                </div>
+                <div class="tier-pricing">
+                  <span class="tier-price">${{ price }}</span>
+                  <span class="tier-period">/{{ selectedBillingCycle === 'monthly' ? 'mo' : 'yr' }}</span>
+                </div>
+              </div>
+
+              <div class="tier-features">
+                @if (tier.feePercent != null) {
+                  <div class="tier-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" [style.color]="colors.accent" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span><strong>{{ tier.feePercent }}%</strong> platform fee</span>
+                  </div>
+                } @else {
+                  <div class="tier-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Standard <strong>8%</strong> platform fee</span>
+                  </div>
+                }
+              @if (tier.monthlyPromotionCredits > 0) {
+                <div class="tier-feature">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" [style.color]="colors.accent" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span><strong>${{ tier.monthlyPromotionCredits }}</strong> in monthly promotion credits</span>
+                </div>
+              }
+                @if (tier.badgeLabel) {
+                  <div class="tier-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" [style.color]="colors.accent" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Badge: <strong>{{ tier.badgeLabel }}</strong></span>
+                  </div>
+                }
+                @if (tier.description) {
+                  <div class="tier-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" [style.color]="colors.accent" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>{{ tier.description }}</span>
+                  </div>
+                }
+                @if (savings) {
+                  <div class="tier-savings-badge">{{ savings }}</div>
+                }
+              </div>
+
+              @if (tier.name !== 'Free' && selectedBillingCycle === 'yearly') {
+                <div class="tier-yearly-note">
+                  ${{ tier.yearlyPrice }} billed annually — save ${{ (tier.monthlyPrice * 12 - tier.yearlyPrice).toFixed(2) }}
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (showCardPayment && clientSecret) {
+          <div class="form-group">
+            <label>Card Details</label>
+            <div #cardElement class="stripe-card-element"></div>
+            <div class="brutal-modal-footer">
+              <button class="brutal-btn brutal-btn-secondary" (click)="showCardPayment = false; subscribing = false">Back</button>
+              <button class="brutal-btn brutal-btn-primary" [disabled]="subscribing" (click)="confirmCardPayment()">
+                {{ subscribing ? 'Processing...' : 'Pay & Subscribe' }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="brutal-modal-footer">
+            <button class="brutal-btn brutal-btn-secondary" (click)="closeTierModal()">Cancel</button>
+            <button class="brutal-btn brutal-btn-primary" [disabled]="!selectedTierId || subscribing" (click)="subscribeToTier()">
+              {{ subscribing ? 'Processing...' : 'Subscribe' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- CANCEL CONFIRMATION MODAL -->
+@if (showCancelModal) {
+  <div class="brutal-modal-overlay" (click)="closeCancelModal()">
+    <div class="brutal-modal-card" (click)="$event.stopPropagation()" style="max-width: 430px;">
+      <div class="brutal-modal-header">
+        <div class="brutal-modal-header-left">
+          <span class="brutal-modal-icon">⚠️</span>
+          <div>
+            <h3>Cancel Subscription?</h3>
+            <p class="brutal-modal-header-sub">This will immediately cancel your plan and issue a prorated refund.</p>
+          </div>
+        </div>
+        <button class="brutal-modal-close" (click)="closeCancelModal()">✕</button>
+      </div>
+      <div class="brutal-modal-body">
+        <div class="confirm-details">
+          <div class="confirm-row">
+            <span class="confirm-label">Plan</span>
+            <span class="confirm-value"><strong>{{ subscriptionInfo?.tier?.name }}</strong></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Status</span>
+            <span class="confirm-value">Active until {{ cancelDate }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Auto-renew</span>
+            <span class="confirm-value">{{ subscriptionInfo?.autoRenew ? 'On' : 'Off' }}</span>
+          </div>
+        </div>
+
+        <div class="confirm-notice">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <strong>Your plan will be cancelled immediately.</strong>
+            You'll revert to the Free tier (8% fee). A <strong>prorated refund</strong> for unused days will be credited back — via Stripe if paid by card, or to your wallet balance.
+          </div>
+        </div>
+
+        <div class="brutal-modal-footer">
+          <button class="brutal-btn brutal-btn-secondary" (click)="closeCancelModal()">Keep My Plan</button>
+          <button class="brutal-btn brutal-btn-danger" (click)="confirmCancel()" [disabled]="subscribing">
+            {{ subscribing ? 'Processing...' : 'Confirm Cancel & Refund' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- RE-ACTIVATE MODAL -->
+@if (showReactivateModal) {
+  <div class="brutal-modal-overlay" (click)="closeReactivateModal()">
+    <div class="brutal-modal-card" (click)="$event.stopPropagation()" style="max-width: 430px;">
+      <div class="brutal-modal-header">
+        <div class="brutal-modal-header-left">
+          <span class="brutal-modal-icon">🔄</span>
+          <div>
+            <h3>Re-activate Subscription?</h3>
+            <p class="brutal-modal-header-sub">Your subscription will continue past the current end date.</p>
+          </div>
+        </div>
+        <button class="brutal-modal-close" (click)="closeReactivateModal()">✕</button>
+      </div>
+      <div class="brutal-modal-body">
+        <div class="confirm-details">
+          <div class="confirm-row">
+            <span class="confirm-label">Plan</span>
+            <span class="confirm-value"><strong>{{ subscriptionInfo?.tier?.name }}</strong></span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Currently ends</span>
+            <span class="confirm-value">{{ cancelDate }}</span>
+          </div>
+        </div>
+
+        <div class="confirm-notice confirm-notice-green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <strong>Your subscription will continue past {{ cancelDate }}.</strong>
+            Auto-renew will be turned back on, and you'll keep your {{ subscriptionInfo?.tier?.name }} benefits, fees, and features.
+          </div>
+        </div>
+
+        <div class="brutal-modal-footer">
+          <button class="brutal-btn brutal-btn-secondary" (click)="closeReactivateModal()">No, thanks</button>
+          <button class="brutal-btn brutal-btn-primary" (click)="confirmReactivate()">Re-activate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

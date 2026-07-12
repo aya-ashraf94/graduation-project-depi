@@ -53,11 +53,11 @@ router.put('/discount', authMiddleware, adminMiddleware, async (req, res) => {
 router.get('/platform-fee', async (req, res) => {
   try {
     const [row] = await db.select().from(settings).where(eq(settings.key, 'platformFeePercent'));
-    const platformFeePercent = row ? parseFloat(row.value) : 5.0;
+    const platformFeePercent = row ? parseFloat(row.value) : 8.0;
     res.json({ platformFeePercent });
   } catch (error) {
     console.error('Error fetching platform fee:', error);
-    res.json({ platformFeePercent: 5.0 });
+    res.json({ platformFeePercent: 8.0 });
   }
 });
 

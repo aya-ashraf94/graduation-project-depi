@@ -1,6 +1,7 @@
 const db = require("../db");
-const { payouts, users, orders, settings } = require("../db/schema");
+const { payouts, users, orders, products, settings, subscriptionTransactions, sellerTiers } = require("../db/schema");
 const { eq, and, desc, sql, lte } = require("drizzle-orm");
+const { alias } = require("drizzle-orm/pg-core");
 const { createNotification } = require("../utils/notifications");
 
 const AUTO_PAYOUT_DAYS_DEFAULT = 3;
@@ -83,7 +84,7 @@ const getWalletStats = async (req, res) => {
     const [user] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, sellerId)).limit(1);
     const balance = user ? user.balance : 0;
 
-    // Pending balance (orders shipped/pending, online payment only, net of platform fee)
+    // Pending balance (orders shipped/pending, net of platform fee)
     const [pendingResult] = await db.select({
       value: sql`COALESCE(SUM(${orders.price} - ${orders.platformFee}), 0)`
     }).from(orders)
@@ -94,7 +95,19 @@ const getWalletStats = async (req, res) => {
       ));
     const pendingBalance = Number(pendingResult?.value || 0);
 
-    // Lifetime earnings (all-time delivered orders, online payment only, net of platform fee)
+    // Lifetime COD fees deducted from seller wallet
+    const [codFeesResult] = await db.select({
+      value: sql`COALESCE(SUM(${orders.platformFee}), 0)`
+    }).from(orders)
+      .where(and(
+        eq(orders.sellerId, sellerId),
+        eq(orders.paymentMethod, "cash_on_delivery"),
+        eq(orders.status, "delivered")
+      ));
+    const totalCodFeesDeducted = Number(codFeesResult?.value || 0);
+
+    // Lifetime earnings (all-time delivered online orders, net of platform fee)
+    // Total effective earnings = online net earnings + COD fees deducted (negative)
     const [earningsResult] = await db.select({
       value: sql`COALESCE(SUM(${orders.price} - ${orders.platformFee}), 0)`
     }).from(orders)
@@ -103,12 +116,80 @@ const getWalletStats = async (req, res) => {
         eq(orders.paymentMethod, "online"),
         eq(orders.status, "delivered")
       ));
-    const lifetimeEarnings = Number(earningsResult?.value || 0);
+    const lifetimeEarnings = Number(earningsResult?.value || 0) - totalCodFeesDeducted;
+
+    // Recent transactions (last 20 delivered/paid orders for this seller)
+    const recentOrders = await db.select({
+      id: orders.id,
+      price: orders.price,
+      platformFee: orders.platformFee,
+      status: orders.status,
+      paymentMethod: orders.paymentMethod,
+      createdAt: orders.createdAt,
+      productTitle: products.title,
+      productThumbnail: products.images,
+    }).from(orders)
+      .leftJoin(products, eq(orders.productId, products.id))
+      .where(and(
+        eq(orders.sellerId, sellerId),
+        sql`${orders.status} IN ('delivered', 'shipped', 'pending')`
+      ))
+      .orderBy(desc(orders.createdAt))
+      .limit(20);
+
+    // Recent subscription transactions
+    const recentSubTx = await db.select({
+      id: subscriptionTransactions.id,
+      amount: subscriptionTransactions.amount,
+      billingCycle: subscriptionTransactions.billingCycle,
+      status: subscriptionTransactions.status,
+      tierName: subscriptionTransactions.tierName,
+      createdAt: subscriptionTransactions.createdAt,
+    }).from(subscriptionTransactions)
+      .where(eq(subscriptionTransactions.userId, sellerId))
+      .orderBy(desc(subscriptionTransactions.createdAt))
+      .limit(20);
+
+    const subTransactions = recentSubTx.map(s => {
+      const isRefund = s.status === 'refunded';
+      return {
+        id: s.id,
+        productTitle: isRefund ? `Refund — ${s.tierName} (${s.billingCycle})` : `${s.tierName} (${s.billingCycle})`,
+        productThumbnail: '',
+        amount: s.amount,
+        platformFee: 0,
+        netEarnings: isRefund ? Math.abs(s.amount) : -s.amount,
+        status: s.status,
+        paymentMethod: 'card',
+        createdAt: s.createdAt,
+        type: isRefund ? 'refund' : 'subscription',
+      };
+    });
+
+    const orderTransactions = recentOrders.map(o => ({
+      id: o.id,
+      productTitle: o.productTitle || 'Unknown Product',
+      productThumbnail: (o.productThumbnail || [])[0] || '',
+      amount: o.price,
+      platformFee: o.platformFee || 0,
+      netEarnings: (o.price || 0) - (o.platformFee || 0),
+      status: o.status,
+      paymentMethod: o.paymentMethod,
+      createdAt: o.createdAt,
+      type: 'order',
+    }));
+
+    // Merge and sort by most recent
+    const recentTransactions = [...orderTransactions, ...subTransactions]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 20);
 
     res.json({
       balance,
       pendingBalance,
       lifetimeEarnings,
+      totalCodFeesDeducted,
+      recentTransactions,
     });
   } catch (error) {
     console.error("Error getting wallet stats:", error);

@@ -11,6 +11,8 @@ export interface SellerTier {
   monthlyPrice: number;
   yearlyPrice: number;
   featuredListingsIncluded: number;
+  freeFeaturedDuration?: number;
+  monthlyPromotionCredits: number;
   badgeLabel?: string;
   isActive: boolean;
   createdAt: string;
@@ -22,6 +24,8 @@ export interface SubscriptionInfo {
   tier?: SellerTier;
   expiresAt?: string;
   isExpired?: boolean;
+  autoRenew?: boolean;
+  cancelAtPeriodEnd?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -45,8 +49,24 @@ export class TierService {
     return this.http.get<SubscriptionInfo>(`${this.apiUrl}/my`, { withCredentials: true });
   }
 
-  cancelSubscription(): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/cancel`, { withCredentials: true });
+  cancelSubscription(atPeriodEnd = true): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/cancel`, { atPeriodEnd }, { withCredentials: true });
+  }
+
+  toggleAutoRenew(autoRenew: boolean): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/auto-renew`, { autoRenew }, { withCredentials: true });
+  }
+
+  createSubscriptionPaymentIntent(tierId: string, billingCycle: 'monthly' | 'yearly'): Observable<{ clientSecret: string }> {
+    return this.http.post<{ clientSecret: string }>(
+      `${this.apiUrl}/create-subscription-payment-intent`,
+      { tierId, billingCycle },
+      { withCredentials: true }
+    );
+  }
+
+  confirmSubscriptionPayment(paymentIntentId: string, tierId: string, billingCycle: 'monthly' | 'yearly', autoRenew = false): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/confirm-subscription`, { paymentIntentId, tierId, billingCycle, autoRenew }, { withCredentials: true });
   }
 
   // Admin

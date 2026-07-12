@@ -23,11 +23,13 @@ async function loadFeaturedPrices() {
 const promoteProduct = async (req, res) => {
   try {
     const sellerId = req.user.id;
-    const { productId, duration } = req.body;
+    const { productId } = req.body;
+    let { duration } = req.body;
 
     if (!productId || !duration) {
       return res.status(400).json({ message: "Product ID and duration are required" });
     }
+    duration = parseInt(duration, 10);
     if (![2, 7, 14].includes(duration)) {
       return res.status(400).json({ message: "Duration must be 2, 7, or 14 days" });
     }
@@ -58,7 +60,7 @@ const promoteProduct = async (req, res) => {
     const prices = await loadFeaturedPrices();
     let amount = prices[duration];
 
-    // Check if seller's tier grants free featured listings
+    // Check if seller's tier grants promotion credits
     const [sellerUser] = await db.select({
       balance: users.balance, tierId: users.tierId, tierExpiresAt: users.tierExpiresAt,
     }).from(users).where(eq(users.id, sellerId)).limit(1);
@@ -68,19 +70,21 @@ const promoteProduct = async (req, res) => {
 
     if (sellerUser.tierId && sellerUser.tierExpiresAt && new Date(sellerUser.tierExpiresAt) > new Date()) {
       const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, sellerUser.tierId)).limit(1);
-      if (tier && tier.featuredListingsIncluded > 0) {
+      if (tier && (tier.monthlyPromotionCredits || 0) > 0) {
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
-        const [monthlyResult] = await db.select({
-          count: sql`COUNT(*)`,
-        }).from(featuredListings)
+        // Sum the value of all promotions covered by credits this month
+        const freePromos = await db.select()
+          .from(featuredListings)
           .where(and(
             eq(featuredListings.sellerId, sellerId),
-            gte(featuredListings.createdAt, startOfMonth)
+            gte(featuredListings.createdAt, startOfMonth),
+            eq(featuredListings.amountPaid, 0)
           ));
-        const usedThisMonth = Number(monthlyResult?.count || 0);
-        if (usedThisMonth < tier.featuredListingsIncluded) {
+        const usedCredits = freePromos.reduce((sum, p) => sum + (prices[p.duration] || 0), 0);
+        const remaining = tier.monthlyPromotionCredits - usedCredits;
+        if (remaining >= amount) {
           amount = 0;
         }
       }
@@ -182,4 +186,44 @@ const adminSetFeaturedPrice = async (req, res) => {
   }
 };
 
-module.exports = { promoteProduct, getPromotionPrices, getActiveFeatured, getMyFeaturedListings, adminSetFeaturedPrice };
+const getRemainingFeaturedQuota = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const [sellerUser] = await db.select({
+      tierId: users.tierId, tierExpiresAt: users.tierExpiresAt,
+    }).from(users).where(eq(users.id, sellerId)).limit(1);
+
+    const result = { total: 0, used: 0, remaining: 0, tierName: null, freeDuration: 7 };
+
+    if (sellerUser.tierId && sellerUser.tierExpiresAt && new Date(sellerUser.tierExpiresAt) > new Date()) {
+      const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, sellerUser.tierId)).limit(1);
+      if (tier && (tier.monthlyPromotionCredits || 0) > 0) {
+        const prices = await loadFeaturedPrices();
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        // Sum the value of free promotions this month
+        const freePromos = await db.select()
+          .from(featuredListings)
+          .where(and(
+            eq(featuredListings.sellerId, sellerId),
+            gte(featuredListings.createdAt, startOfMonth),
+            eq(featuredListings.amountPaid, 0)
+          ));
+        const usedCredits = freePromos.reduce((sum, p) => sum + (prices[p.duration] || 0), 0);
+        result.total = tier.monthlyPromotionCredits;
+        result.used = usedCredits;
+        result.remaining = Math.max(0, result.total - result.used);
+        result.tierName = tier.name;
+        result.freeDuration = tier.freeFeaturedDuration || 7;
+      }
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching remaining quota:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { promoteProduct, getPromotionPrices, getActiveFeatured, getMyFeaturedListings, adminSetFeaturedPrice, getRemainingFeaturedQuota };

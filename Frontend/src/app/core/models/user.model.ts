@@ -18,6 +18,7 @@ export interface User {
   joinedAt: Date;
   isVerified: boolean;
   isSuspended?: boolean;
+  trustBadge?: string | null;
   phoneNumber?: string;
   location?: string;
   governorate?: string;
@@ -38,6 +39,7 @@ export interface UserSummary {
   avatar?: string;
   rating: number;
   isVerified: boolean;
+  trustBadge?: string | null;
   successRate?: number;
   totalSales?: number;
 }
@@ -59,5 +61,6 @@ export interface LoginRequest {
 /** What the backend returns after successful login */
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
   user: User;
 }

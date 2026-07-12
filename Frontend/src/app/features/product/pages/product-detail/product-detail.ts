@@ -10,6 +10,7 @@ import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { OrderService } from '../../../../core/services/order.service';
+import { SettingsService } from '../../../../core/services/settings.service';
 import { PaymentMethod } from '../../../../core/models/order.model';
 import { Product, ProductSummary, CONDITION_LABELS, CATEGORY_LABELS } from '../../../../core/models/product.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
@@ -41,6 +42,7 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   wishlistService = inject(WishlistService);
   private offerService = inject(OfferService);
   private orderService = inject(OrderService);
+  private settingsService = inject(SettingsService);
   private flashSaleService = inject(FlashSaleService);
   private cdr = inject(ChangeDetectorRef);
   private timerService = inject(CountdownTimerService);
@@ -184,6 +186,10 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   private stripe: any = null;
   private cardElement: any = null;
   private elements: any = null;
+
+  // Platform Fee State
+  platformFeePercent = 0;
+  estimatedPlatformFee = 0;
 
   // Coupon State
   couponCode = '';
@@ -511,6 +517,29 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.destroyCardElement();
     }
+    this.loadPlatformFeePercent(method);
+  }
+
+  private loadPlatformFeePercent(method: 'cash_on_delivery' | 'online'): void {
+    if (method === 'cash_on_delivery') {
+      this.settingsService.getCodFee().subscribe({
+        next: (res) => {
+          this.platformFeePercent = res.codFeePercent;
+          this.estimatedPlatformFee = Math.round(this.effectivePrice * this.platformFeePercent) / 100;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.platformFeePercent = 0; this.estimatedPlatformFee = 0; }
+      });
+    } else {
+      this.settingsService.getPlatformFee().subscribe({
+        next: (res) => {
+          this.platformFeePercent = res.platformFeePercent;
+          this.estimatedPlatformFee = Math.round(this.effectivePrice * this.platformFeePercent) / 100;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.platformFeePercent = 0; this.estimatedPlatformFee = 0; }
+      });
+    }
   }
 
   private mountCardElement(): void {
@@ -580,12 +609,15 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
       this.couponDiscount = 0;
       this.couponValidationMessage = '';
       this.isValidatingCoupon = false;
+
+      // Fetch platform fee percentage
+      this.loadPlatformFeePercent('cash_on_delivery');
     });
   }
 
   closeBuy(): void {
     // Release the soft-reservation
-    if (this.product && this.product.status === 'available') {
+    if (this.product) {
       this.productService.releaseProduct(this.product.id).subscribe();
     }
 

@@ -10,6 +10,9 @@
         } @else {
           <span class="pc-badge-tag">{{ getConditionLabel(product().condition) }}</span>
         }
+        @if (product().trustBadge) {
+          <span class="pc-badge-trusted">⭐ {{ product().trustBadge }}</span>
+        }
       </div>
       <img [src]="product().thumbnail" [alt]="product().title" appImageFallback />
       <button class="pc-hero-wish" [class.wishlisted]="wishlistService.isWishlisted(product().id)" (click)="onWishlistToggle($event)">
@@ -61,6 +64,9 @@
           <span class="pc-badge-verified">Verified</span>
         } @else {
           <span class="pc-badge-tag">{{ getConditionLabel(product().condition) }}</span>
+        }
+        @if (product().trustBadge) {
+          <span class="pc-badge-trusted">⭐ {{ product().trustBadge }}</span>
         }
       </div>
       <img [src]="product().thumbnail" [alt]="product().title" appImageFallback />
@@ -124,6 +130,9 @@
           <span class="pc-badge-verified">Verified</span>
         } @else {
           <span class="pc-badge-tag">{{ getConditionLabel(product().condition) }}</span>
+        }
+        @if (product().trustBadge) {
+          <span class="pc-badge-trusted">⭐ {{ product().trustBadge }}</span>
         }
       </div>
       <button class="pc-list-compare" [class.compared]="compareService.isCompared(product().id)" (click)="onCompareToggle($event)">
@@ -264,6 +273,7 @@
       <div class="pc-carousel-badges">
         @if (product().soldByNafa3ni) { <span class="pc-carousel-badge">Official</span> }
         @if (product().badge) { <span class="pc-carousel-badge-tag">{{ product().badge }}</span> }
+        @if (product().trustBadge) { <span class="pc-carousel-badge-tag">⭐ Trusted Seller</span> }
       </div>
       @if (compareService.count() < 2 || compareService.isCompared(product().id)) {
         <button class="pc-carousel-compare" [class.compared]="compareService.isCompared(product().id)" (click)="onCompareToggle($event)">

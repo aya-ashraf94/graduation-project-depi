@@ -20,6 +20,7 @@ const users = pgTable('users', {
   autoRenew: boolean('auto_renew').default(false).notNull(),
   cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
   tags: text('tags').array().default([]).notNull(),
+  trustBadge: text('trust_badge'),
   rating: doublePrecision('rating').default(5.0).notNull(),
   totalSales: integer('total_sales').default(0).notNull(),
   totalPurchases: integer('total_purchases').default(0).notNull(),
@@ -103,6 +104,8 @@ const orders = pgTable('orders', {
   orderProductIdx: index('order_product_idx').on(table.productId),
   orderBuyerIdx: index('order_buyer_idx').on(table.buyerId),
   orderSellerIdx: index('order_seller_idx').on(table.sellerId),
+  orderBuyerCreatedAtIdx: index('order_buyer_created_at_idx').on(table.buyerId, table.createdAt),
+  orderSellerCreatedAtIdx: index('order_seller_created_at_idx').on(table.sellerId, table.createdAt),
   orderBuyerCouponIdx: index('order_buyer_coupon_idx').on(table.buyerId, table.couponCode),
 }));
 
@@ -327,6 +330,18 @@ const featuredListings = pgTable('featured_listings', {
   featuredActiveIdx: index('featured_active_idx').on(table.isActive, table.endDate),
 }));
 
+const subscriptionTransactions = pgTable('subscription_transactions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tierId: uuid('tier_id').notNull().references(() => sellerTiers.id, { onDelete: 'set null' }),
+  amount: doublePrecision('amount').notNull(),
+  billingCycle: text('billing_cycle').notNull(),
+  status: text('status').default('completed').notNull(),
+  stripePaymentIntentId: text('stripe_payment_intent_id'),
+  tierName: text('tier_name').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
 const sellerTiers = pgTable('seller_tiers', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull().unique(),
@@ -335,6 +350,8 @@ const sellerTiers = pgTable('seller_tiers', {
   monthlyPrice: doublePrecision('monthly_price').default(0).notNull(),
   yearlyPrice: doublePrecision('yearly_price').default(0).notNull(),
   featuredListingsIncluded: integer('featured_listings_included').default(0).notNull(),
+  freeFeaturedDuration: integer('free_featured_duration').default(7),
+  monthlyPromotionCredits: doublePrecision('monthly_promotion_credits').default(0),
   badgeLabel: text('badge_label'),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
@@ -379,5 +396,6 @@ module.exports = {
   refundRequests,
   featuredListings,
   sellerTiers,
+  subscriptionTransactions,
   refreshTokens,
 };

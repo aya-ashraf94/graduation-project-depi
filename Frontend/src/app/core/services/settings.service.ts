@@ -15,4 +15,12 @@ export class SettingsService {
   updateDiscount(discount: number): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/discount`, { discount });
   }
+
+  getCodFee(): Observable<{ codFeePercent: number }> {
+    return this.http.get<{ codFeePercent: number }>(`${this.apiUrl}/cod-fee`);
+  }
+
+  getPlatformFee(): Observable<{ platformFeePercent: number }> {
+    return this.http.get<{ platformFeePercent: number }>(`${this.apiUrl}/platform-fee`);
+  }
 }

@@ -46,6 +46,7 @@ export interface Product {
   favoriteCount: number;
   soldByNafa3ni?: boolean;
   isVerified?: boolean;
+  trustBadge?: string | null;
   categoryName?: string;
 
   location?: string;

@@ -51,7 +51,7 @@ const formatOrder = (row, currentUserId) => {
     couponDiscount: o.couponDiscount,
     offerAmount: o.offerAmount,
     platformFee: o.platformFee,
-    totalPrice: o.price,
+    totalPrice: o.price + (o.platformFee || 0),
     status: o.status,
     paymentMethod: o.paymentMethod,
     shippingAddress: o.shippingAddress,
@@ -343,12 +343,22 @@ const updateOrder = async (req, res) => {
         linkedRoute: "/profile/me?tab=orders&view=purchases", linkedEntityId: order.id,
       });
     } else if (status === "delivered") {
-      // Credit seller's balance for online payments when order is delivered (net of platform fee)
-      if (order.status !== "delivered" && order.paymentMethod === "online") {
-        const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
-        await db.update(users)
-          .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
-          .where(eq(users.id, order.sellerId));
+      if (order.status !== "delivered") {
+        if (order.paymentMethod === "online") {
+          // Credit seller's balance net of platform fee
+          const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
+          await db.update(users)
+            .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
+            .where(eq(users.id, order.sellerId));
+        } else if (order.paymentMethod === "cash_on_delivery") {
+          // Deduct COD platform fee from seller's wallet (seller keeps the cash)
+          const codFee = order.platformFee || 0;
+          if (codFee > 0) {
+            await db.update(users)
+              .set({ balance: sql`${users.balance} - ${codFee}`, updatedAt: new Date() })
+              .where(eq(users.id, order.sellerId));
+          }
+        }
       }
 
       await createNotification({
@@ -487,6 +497,13 @@ const autoConfirmDelivery = async () => {
         await db.update(users)
           .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
           .where(eq(users.id, order.sellerId));
+      } else if (order.paymentMethod === "cash_on_delivery") {
+        const codFee = order.platformFee || 0;
+        if (codFee > 0) {
+          await db.update(users)
+            .set({ balance: sql`${users.balance} - ${codFee}`, updatedAt: new Date() })
+            .where(eq(users.id, order.sellerId));
+        }
       }
 
       await updateUserStats(order.buyerId);

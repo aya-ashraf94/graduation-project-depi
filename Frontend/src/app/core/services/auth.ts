@@ -13,6 +13,7 @@ import { User, LoginRequest, RegisterRequest, AuthResponse } from '../models/use
 import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'nafa3ni_token';
+const REFRESH_TOKEN_KEY = 'nafa3ni_refresh';
 const USER_KEY = 'nafa3ni_user';
 
 @Injectable({ providedIn: 'root' })
@@ -34,13 +35,13 @@ export class AuthService {
 
   /**
    * LOGIN
-   * Sends credentials to Backend, maps user and persists token & user.
+   * Sends credentials to Backend, maps user and persists token, refreshToken & user.
    */
   login(payload: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, payload).pipe(
       tap((res) => {
         const mappedUser = this._mapUser(res.user);
-        this._persist(res.token, mappedUser);
+        this._persist(res.token, res.refreshToken, mappedUser);
       })
     );
   }
@@ -75,13 +76,26 @@ export class AuthService {
     return this.http.post<any>(`${environment.apiUrl}/auth/validate-reset-token`, { token });
   }
 
-  /** Logout — clears token and user from memory and storage, and redirects to home */
+  /** Logout — calls backend to revoke refresh token, then clears local session */
   logout(): void {
-    this._token.set(null);
-    this._currentUser.set(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (refreshToken) {
+      this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken }).subscribe({
+        error: () => {}
+      });
+    }
+    this._clearSession();
     this.router.navigate(['/']);
+  }
+
+  /** Clear all auth state without calling backend (used by interceptor on refresh failure) */
+  clearSession(): void {
+    this._clearSession();
+  }
+
+  /** Get the stored refresh token (used by interceptor) */
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
   }
 
   /** Update current logged in user details locally */
@@ -92,11 +106,20 @@ export class AuthService {
 
   // ── Private helpers ───────────────────────────────────────────────────────
 
-  private _persist(token: string, user: User): void {
+  private _persist(token: string, refreshToken: string, user: User): void {
     this._token.set(token);
     this._currentUser.set(user);
     localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+
+  private _clearSession(): void {
+    this._token.set(null);
+    this._currentUser.set(null);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   }
 
   private _loadToken(): string | null {

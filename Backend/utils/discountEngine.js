@@ -400,7 +400,7 @@ async function loadPlatformFeePercent() {
       if (val >= 0 && val <= 100) return val;
     }
   } catch (e) { /* settings table may not exist yet */ }
-  return 5; // default 5%
+  return 8; // default 8%
 }
 
 /**

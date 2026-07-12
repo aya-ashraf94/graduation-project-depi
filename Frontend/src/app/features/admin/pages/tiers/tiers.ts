@@ -28,7 +28,7 @@ export class AdminTiers implements OnInit {
   editingTier = signal<SellerTier | null>(null);
 
   form = signal<Partial<SellerTier>>({
-    name: '', description: '', feePercent: undefined, monthlyPrice: 0, yearlyPrice: 0, featuredListingsIncluded: 0, badgeLabel: '', isActive: true
+    name: '', description: '', feePercent: undefined, monthlyPrice: 0, yearlyPrice: 0, featuredListingsIncluded: 0, monthlyPromotionCredits: 0, badgeLabel: '', isActive: true
   });
 
   ngOnInit(): void {
@@ -46,7 +46,7 @@ export class AdminTiers implements OnInit {
 
   openCreateModal(): void {
     this.editingTier.set(null);
-    this.form.set({ name: '', description: '', feePercent: undefined, monthlyPrice: 0, yearlyPrice: 0, featuredListingsIncluded: 0, badgeLabel: '', isActive: true });
+    this.form.set({ name: '', description: '', feePercent: undefined, monthlyPrice: 0, yearlyPrice: 0, featuredListingsIncluded: 0, monthlyPromotionCredits: 0, badgeLabel: '', isActive: true });
     this.showCreateModal.set(true);
   }
 

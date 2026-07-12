@@ -3,10 +3,25 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface Transaction {
+  id: string;
+  productTitle: string;
+  productThumbnail: string;
+  amount: number;
+  platformFee: number;
+  netEarnings: number;
+  status: string;
+  paymentMethod: string;
+  createdAt: string;
+  type?: 'order' | 'subscription' | 'refund';
+}
+
 export interface WalletStats {
   balance: number;
   pendingBalance: number;
   lifetimeEarnings: number;
+  totalCodFeesDeducted: number;
+  recentTransactions: Transaction[];
 }
 
 export interface PayoutRequest {

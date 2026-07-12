@@ -12,7 +12,7 @@ import { OrderService } from '../../../../core/services/order.service';
 import { WalletService, WalletStats, PayoutRequest } from '../../../../core/services/wallet.service';
 import { RefundService } from '../../../../core/services/refund.service';
 import { FeaturedService } from '../../../../core/services/featured.service';
-import { TierService, SubscriptionInfo } from '../../../../core/services/tier.service';
+import { TierService } from '../../../../core/services/tier.service';
 
 import { User } from '../../../../core/models/user.model';
 import { ProductSummary } from '../../../../core/models/product.model';
@@ -80,7 +80,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   submittingBuyerRating = false;
   dismissedOrderIds: Set<string> = new Set();
   expandedOrderIds: Set<string> = new Set();
-  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'wallet' = 'products';
+  activeTab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' = 'products';
   blockedUsers: any[] = [];
 
   // Wallet / Payout states
@@ -100,20 +100,15 @@ export class MyProfile implements OnInit, AfterViewInit {
   refundDetails = '';
   submittingRefund = false;
 
-  // Subscription state
-  subscriptionInfo: SubscriptionInfo | null = null;
-  availableTiers: any[] = [];
-  showTierModal = false;
-  selectedTierId = '';
-  selectedBillingCycle: 'monthly' | 'yearly' = 'monthly';
-  subscribing = false;
-
   // Featured/Promote state
   showPromoteModal = false;
   selectedProductForPromote: ProductSummary | null = null;
   featuredPrices: { [key: number]: number } = { 2: 5, 7: 12, 14: 20 };
   selectedDuration = 7;
   promoting = false;
+  featuredQuota: { total: number; used: number; remaining: number; tierName: string | null; freeDuration: number } | null = null;
+  featuredPricesLoaded = false;
+  loadingQuota = false;
   myFeaturedListings: any[] = [];
   showMyFeatured = false;
 
@@ -125,6 +120,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   // Products Pagination state
   currentPage = 1;
   pageSize = 8;
+  openCardMenuId: string | null = null;
 
   get filteredListingsByTab(): ProductSummary[] {
     if (this.isViewerBlocked) return [];
@@ -206,8 +202,19 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openCardMenuId = null;
+    this.cdr.markForCheck();
+  }
+
   goToAdminPanel() {
     this.router.navigate(['/admin']);
+  }
+
+  toggleCardMenu(id: string): void {
+    this.openCardMenuId = this.openCardMenuId === id ? null : id;
+    this.cdr.markForCheck();
   }
 
   editProduct(productId: string) {
@@ -336,18 +343,6 @@ export class MyProfile implements OnInit, AfterViewInit {
             this.reviewsByOrderId = new Map(revs.filter((r: any) => r.orderId).map((r: any) => [r.orderId, r]));
             this.cdr.detectChanges();
           });
-          this.orderService.getOrders().subscribe(orders => {
-            this.myOrders = orders;
-            this.cdr.detectChanges();
-          });
-          this.reviewService.getReviewsByUser(currentUser.id).subscribe(written => {
-            this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
-            this.cdr.detectChanges();
-          });
-          this.refundService.getMyRefundRequests().subscribe(refs => {
-            this.myRefundRequests = refs;
-            this.cdr.detectChanges();
-          });
         } else {
           this.isLoadingProfile = false;
         }
@@ -357,13 +352,13 @@ export class MyProfile implements OnInit, AfterViewInit {
     // Handle Tabs (reading from query params)
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'];
-      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked' || tab === 'wallet') {
+      if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked') {
         this.activeTab = tab;
-        if (tab === 'wallet') {
-          this.loadWalletData();
-        }
         if (tab === 'blocked') {
           this.loadBlockedUsers();
+        }
+        if (tab === 'orders' && this.isOwnProfile) {
+          this.loadOrdersData();
         }
         if (!this.isLocalTabClick) {
           this.shouldScrollToTabs = true;
@@ -613,18 +608,13 @@ export class MyProfile implements OnInit, AfterViewInit {
 
     this.orderService.updateOrder(orderId, payload).subscribe({
       next: (updated) => {
-        // Refresh orders list
-        this.orderService.getOrders().subscribe({
-          next: (orders) => {
-            this.myOrders = orders;
-            delete this.updatingOrders[orderId];
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            delete this.updatingOrders[orderId];
-            this.cdr.detectChanges();
-          }
-        });
+        // Update the order in-place instead of re-fetching all orders
+        const idx = this.myOrders.findIndex((o: any) => o.id === orderId);
+        if (idx !== -1) {
+          this.myOrders[idx] = { ...this.myOrders[idx], status: updated.status, trackingNumber: updated.trackingNumber || this.myOrders[idx].trackingNumber };
+        }
+        delete this.updatingOrders[orderId];
+        this.cdr.detectChanges();
 
         // Refresh listings and wishlist so the product status updates instantly
         if (this.user?.id) {
@@ -679,15 +669,15 @@ export class MyProfile implements OnInit, AfterViewInit {
     }
   }
 
-  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked' | 'wallet'): void {
+  selectTab(tab: 'products' | 'drafts' | 'wishlist' | 'reviews' | 'orders' | 'blocked'): void {
     this.activeTab = tab;
     this.currentPage = 1; // Reset products page on tab switch
     this.showAllListingsMobile = false; // Reset slider expansion
     if (tab === 'blocked') {
       this.loadBlockedUsers();
     }
-    if (tab === 'wallet') {
-      this.loadWalletData();
+    if (tab === 'orders' && this.isOwnProfile) {
+      this.loadOrdersData();
     }
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
@@ -714,7 +704,24 @@ export class MyProfile implements OnInit, AfterViewInit {
       },
       error: (err) => console.error('Error loading payouts:', err)
     });
-    this.loadSubscriptionData();
+  }
+
+  loadOrdersData(): void {
+    const currentUser = this.authService.currentUser();
+    this.orderService.getOrders().subscribe(orders => {
+      this.myOrders = orders;
+      this.cdr.detectChanges();
+    });
+    if (currentUser) {
+      this.reviewService.getReviewsByUser(currentUser.id).subscribe(written => {
+        this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
+        this.cdr.detectChanges();
+      });
+      this.refundService.getMyRefundRequests().subscribe(refs => {
+        this.myRefundRequests = refs;
+        this.cdr.detectChanges();
+      });
+    }
   }
 
   submitPayoutRequest() {
@@ -822,11 +829,12 @@ export class MyProfile implements OnInit, AfterViewInit {
         this.toastService.success('Dispute submitted. Admin will review the case.');
         this.closeDisputeModal();
         this.submittingDispute = false;
-        // Refresh orders
-        this.orderService.getOrders().subscribe(orders => {
-          this.myOrders = orders;
-          this.cdr.detectChanges();
-        });
+        // Update order status in-place instead of re-fetching all orders
+        const idx = this.myOrders.findIndex((o: any) => o.id === this.selectedOrderForDispute?.id);
+        if (idx !== -1) {
+          this.myOrders[idx] = { ...this.myOrders[idx], status: 'disputed' as OrderStatus };
+        }
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.toastService.error(err?.error?.message || 'Failed to submit dispute');
@@ -878,58 +886,9 @@ export class MyProfile implements OnInit, AfterViewInit {
     });
   }
 
-  // ── Tier/Subscription Methods ──────────────────────────────────
-  loadSubscriptionData() {
-    this.tierService.getMySubscription().subscribe({
-      next: (info) => { this.subscriptionInfo = info; this.cdr.detectChanges(); },
-      error: () => {}
-    });
-    this.tierService.getActiveTiers().subscribe({
-      next: (tiers) => { this.availableTiers = tiers; this.cdr.detectChanges(); },
-      error: () => {}
-    });
-  }
-
+  // ── Tier/Subscription Methods (redirect to /earnings) ──────────
   openTierModal() {
-    this.selectedTierId = '';
-    this.selectedBillingCycle = 'monthly';
-    this.showTierModal = true;
-  }
-
-  closeTierModal() {
-    this.showTierModal = false;
-  }
-
-  get selectedTierDetails(): any {
-    return this.availableTiers.find(t => t.id === this.selectedTierId) || null;
-  }
-
-  subscribeToTier() {
-    if (!this.selectedTierId) return;
-    this.subscribing = true;
-    this.tierService.subscribe(this.selectedTierId, this.selectedBillingCycle).subscribe({
-      next: () => {
-        this.toastService.success('Subscription activated!');
-        this.closeTierModal();
-        this.loadSubscriptionData();
-        this.loadWalletData();
-        this.subscribing = false;
-      },
-      error: (err) => {
-        this.toastService.error(err?.error?.message || 'Subscription failed');
-        this.subscribing = false;
-      }
-    });
-  }
-
-  cancelSubscription() {
-    this.tierService.cancelSubscription().subscribe({
-      next: () => {
-        this.toastService.success('Subscription cancelled');
-        this.loadSubscriptionData();
-      },
-      error: (err) => this.toastService.error(err?.error?.message || 'Failed to cancel')
-    });
+    this.router.navigate(['/earnings']);
   }
 
   // ── Featured/Promote Methods ───────────────────────────────────
@@ -937,11 +896,20 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.selectedProductForPromote = product;
     this.selectedDuration = 7;
     this.promoting = false;
+    this.featuredQuota = null;
+    this.featuredPricesLoaded = false;
     this.featuredService.getPrices().subscribe({
-      next: (prices) => { this.featuredPrices = prices; },
-      error: () => {}
+      next: (prices) => { this.featuredPrices = prices; this.featuredPricesLoaded = true; this.cdr.markForCheck(); },
+      error: () => { this.featuredPricesLoaded = true; this.cdr.markForCheck(); }
     });
+    this.loadingQuota = true;
+    this.featuredService.getRemainingQuota().subscribe({
+      next: (q) => { this.featuredQuota = q; this.loadingQuota = false; this.cdr.markForCheck(); },
+      error: () => { this.loadingQuota = false; this.cdr.markForCheck(); }
+    });
+    this.loadWalletData();
     this.showPromoteModal = true;
+    this.cdr.markForCheck();
   }
 
   closePromoteModal() {
@@ -950,7 +918,9 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   get promoteCost(): number {
-    return this.featuredPrices[this.selectedDuration] || 0;
+    const price = this.featuredPrices[this.selectedDuration] || 0;
+    if ((this.featuredQuota?.remaining ?? 0) >= price) return 0;
+    return price;
   }
 
   promoteProduct() {

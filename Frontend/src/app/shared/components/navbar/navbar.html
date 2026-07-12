@@ -159,6 +159,7 @@
           @if (showProfileDropdown) {
             <div class="profile-dropdown">
               <a routerLink="/profile/me" class="dropdown-item" (click)="closeProfileDropdown()">My Profile</a>
+              <a routerLink="/earnings" class="dropdown-item" (click)="closeProfileDropdown()">Earnings</a>
               <button class="dropdown-item dropdown-logout" (click)="logout()">Log Out</button>
             </div>
           }

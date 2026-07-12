@@ -3,6 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface FeaturedQuota {
+  total: number;
+  used: number;
+  remaining: number;
+  tierName: string | null;
+  freeDuration: number;
+}
+
 export interface FeaturedListing {
   id: string;
   productId: string;
@@ -40,6 +48,10 @@ export class FeaturedService {
 
   getMyFeaturedListings(): Observable<FeaturedListing[]> {
     return this.http.get<FeaturedListing[]>(`${this.apiUrl}/my`, { withCredentials: true });
+  }
+
+  getRemainingQuota(): Observable<FeaturedQuota> {
+    return this.http.get<FeaturedQuota>(`${this.apiUrl}/remaining`, { withCredentials: true });
   }
 
   adminSetFeaturedPrice(duration: number, price: number): Observable<any> {

@@ -122,6 +122,12 @@ export const routes: Routes = [
       import('./features/product/pages/edit-listing/edit-listing').then((m) => m.EditListing),
   },
   {
+    path: 'earnings',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/earnings/pages/earnings-page/earnings-page').then((m) => m.EarningsPage),
+  },
+  {
     path: 'chat',
     canActivate: [authGuard],
     loadComponent: () =>
