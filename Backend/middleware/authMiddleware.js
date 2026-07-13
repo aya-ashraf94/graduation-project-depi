@@ -18,7 +18,26 @@ const authMiddleware = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Lookup user in the database to verify if they exist and are not suspended
-        const [user] = await db.select().from(users).where(eq(users.id, decoded.id)).limit(1);
+        const [user] = await db.select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          role: users.role,
+          avatar: users.avatar,
+          isSuspended: users.isSuspended,
+          isVerified: users.isVerified,
+          balance: users.balance,
+          phoneNumber: users.phoneNumber,
+          governorate: users.governorate,
+          city: users.city,
+          district: users.district,
+          tierId: users.tierId,
+          tierExpiresAt: users.tierExpiresAt,
+          trustBadge: users.trustBadge,
+          totalSales: users.totalSales,
+          totalPurchases: users.totalPurchases,
+          successRate: users.successRate,
+        }).from(users).where(eq(users.id, decoded.id)).limit(1);
         if (!user) {
             return res.status(401).json({ message: "Token is valid, but user no longer exists" });
         }

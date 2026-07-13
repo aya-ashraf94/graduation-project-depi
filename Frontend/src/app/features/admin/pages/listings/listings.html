@@ -103,7 +103,7 @@
               </app-empty-state>
             } @else {
               @for (product of products(); track product.id; let idx = $index) {
-                <tr [style.animation-delay]="idx * 0.04 + 's'">
+                <tr [style.animation-delay]="idx * 0.04 + 's'" [class.row-active]="activeDropdownProductId() === product.id">
                   <td>
                     <div class="product-profile-cell">
                       <div class="product-thumbnail-container">
@@ -164,7 +164,7 @@
                     <app-status-badge [status]="product.status"></app-status-badge>
                   </td>
                   <td>
-                    <div class="product-action-dropdown-container">
+                    <div class="product-action-dropdown-container" [class.active]="activeDropdownProductId() === product.id">
                       <button 
                         (click)="toggleProductDropdown(product.id, $event)" 
                         class="manage-btn"

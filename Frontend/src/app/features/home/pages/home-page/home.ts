@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TextPlugin } from 'gsap/TextPlugin';
@@ -24,7 +26,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   newsletterEmail = '';
   newsletterSuccessMessage = '';
   newsletterErrorMessage = '';
-  departments = [
+  departments: any[] = [
     {
       name: 'Electronics & Gadgets',
       count: '.. items',
@@ -54,7 +56,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   featuredProducts: ProductSummary[] = [];
 
-  features = [
+  features: any[] = [
     {
       title: 'Trusted Community',
       desc: 'Trade with neighbors and verified community members safely.',
@@ -83,7 +85,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     { value: '24/7', label: 'Community Support', highlight: false },
   ];
 
-  steps = [
+  steps: any[] = [
     {
       title: 'Browse',
       desc: 'Search through thousands of secondhand items and hidden treasures in your area.',
@@ -103,6 +105,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   private ctx: gsap.Context | null = null;
   private _heroListeners: { el: HTMLElement; type: string; fn: (e: any) => void }[] = [];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
@@ -115,7 +118,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.productService.getProducts({ limit: 20 }).subscribe({
+    this.productService.getProducts({ limit: 20 }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => {
         const diverse: ProductSummary[] = [];
         const seenCategories = new Set<string>();
@@ -148,7 +151,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.productService.getCategoryCounts().subscribe({
+    this.productService.getCategoryCounts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (categoryCounts) => {
         const counts = {
           electronics: 0,
@@ -186,6 +189,17 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error fetching category counts:', err);
       }
     });
+    // Precompute safeHtml values and query params for template (avoid function calls in template)
+    this.departments.forEach((d: any) => {
+      d.safeIcon = this.sanitizer.bypassSecurityTrustHtml(d.icon);
+      d.queryParams = { category: this.getDbCategoryName(d.name) };
+    });
+    this.features.forEach((f: any) => {
+      f.safeIcon = this.sanitizer.bypassSecurityTrustHtml(f.icon);
+    });
+    this.steps.forEach((s: any) => {
+      s.safeIcon = this.sanitizer.bypassSecurityTrustHtml(s.icon);
+    });
   }
 
   getDbCategoryName(name: string): string {
@@ -200,7 +214,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.route.fragment.subscribe(fragment => {
+    this.route.fragment.pipe(takeUntil(this.destroy$)).subscribe(fragment => {
       if (fragment) {
         setTimeout(() => {
           const el = document.getElementById(fragment);
@@ -245,6 +259,8 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.ctx?.revert();
     for (const l of this._heroListeners) {
       l.el.removeEventListener(l.type, l.fn);
@@ -513,7 +529,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   subscribeNewsletter() {
     if (!this.newsletterEmail.trim()) return;
 
-    this.productService.subscribeNewsletter(this.newsletterEmail).subscribe({
+    this.productService.subscribeNewsletter(this.newsletterEmail).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.newsletterSuccessMessage = res.message || 'Subscribed successfully!';
         this.newsletterErrorMessage = '';

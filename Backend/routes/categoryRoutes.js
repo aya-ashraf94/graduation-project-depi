@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const db = require("../db");
 const { categories, categoryAttributes } = require("../db/schema");
-const { eq } = require("drizzle-orm");
+const { eq, sql } = require("drizzle-orm");
 const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 
 router.get('/', async (req, res) => {
   try {
-    const result = await db.select().from(categories);
+    const result = await db.select().from(categories).orderBy(sql`name = 'Other' ASC, name ASC`);
     const catsWithAttrs = await Promise.all(result.map(async (cat) => {
       const attrs = await db.select()
         .from(categoryAttributes)

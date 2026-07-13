@@ -141,8 +141,8 @@
     <div class="section-label">Core Categories</div>
     <div class="departments-grid">
       @for (dept of departments; track $index) {
-        <div class="dept-card" [routerLink]="['/products']" [queryParams]="{ category: getDbCategoryName(dept.name) }">
-          <div class="dept-icon" [innerHTML]="toSafeHtml(dept.icon)"></div>
+        <div class="dept-card" [routerLink]="['/products']" [queryParams]="dept.queryParams">
+          <div class="dept-icon" [innerHTML]="dept.safeIcon"></div>
           <h3 class="dept-name">{{ dept.name }}</h3>
           <span class="dept-count">{{ dept.count }}</span>
         </div>
@@ -181,7 +181,7 @@
     <div class="features-grid">
       @for (f of features; track $index) {
         <div class="feature-item">
-          <div class="feature-icon" [innerHTML]="toSafeHtml(f.icon)"></div>
+          <div class="feature-icon" [innerHTML]="f.safeIcon"></div>
           <div>
             <h4 class="feature-title">{{ f.title }}</h4>
             <p class="feature-desc">{{ f.desc }}</p>
@@ -219,7 +219,7 @@
           <div class="step-num">0{{ i + 1 }}</div>
           <h3 class="step-title">{{ step.title }}</h3>
           <p class="step-desc">{{ step.desc }}</p>
-          <div class="step-icon" [innerHTML]="toSafeHtml(step.icon)"></div>
+          <div class="step-icon" [innerHTML]="step.safeIcon"></div>
         </div>
       }
     </div>

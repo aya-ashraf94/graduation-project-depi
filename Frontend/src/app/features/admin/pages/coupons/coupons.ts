@@ -1,9 +1,11 @@
 import { Component, OnInit, signal, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AdminService } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
+import { FormFieldComponent } from '../../../../shared/components/form-field/form-field';
+import { percentageRange, positiveNumber } from '../../../../shared/utils/validators';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
@@ -11,7 +13,7 @@ import { AdminLoaderComponent } from '../../../../shared/components/admin-loader
 @Component({
   selector: 'app-admin-coupons',
   standalone: true,
-  imports: [CommonModule, FormsModule, EmptyStateComponent, AdminErrorPanelComponent, AdminLoaderComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FormFieldComponent, EmptyStateComponent, AdminErrorPanelComponent, AdminLoaderComponent],
   templateUrl: './coupons.html',
   styleUrl: './coupons.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -20,6 +22,7 @@ export class Coupons implements OnInit {
   private adminService = inject(AdminService);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
+  private fb = inject(FormBuilder);
 
   couponsList = signal<any[]>([]);
   isLoading = signal(true);
@@ -64,6 +67,25 @@ export class Coupons implements OnInit {
   showCreateModal = signal(false);
   isDropdownOpen = signal(false);
 
+  // Reactive forms
+  createForm = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(3)]],
+    discountValue: [null as number | null, [Validators.required, positiveNumber()]],
+    expiryDate: [''],
+    maxUses: [null as number | null],
+    maxPerUser: [null as number | null],
+  });
+
+  editForm = this.fb.group({
+    discountType: ['percentage'],
+    discountValue: [null as number | null, [Validators.required, positiveNumber()]],
+    expiryDate: [''],
+    maxUses: [null as number | null],
+    maxPerUser: [null as number | null],
+    minOrderValue: [null as number | null],
+    isActive: [true],
+  });
+
   // Edit Modal
   showEditModal = signal(false);
   isEditDropdownOpen = signal(false);
@@ -78,6 +100,13 @@ export class Coupons implements OnInit {
 
   ngOnInit(): void {
     this.loadCoupons();
+  }
+
+  openCreateModal(): void {
+    this.createForm.reset();
+    this.newCode = '';
+    this.newDiscountValue = null;
+    this.showCreateModal.set(true);
   }
 
   toggleDropdown(): void {
@@ -111,44 +140,34 @@ export class Coupons implements OnInit {
   }
 
   createCoupon(): void {
-    if (!this.newCode.trim()) {
-      this.toastService.error('Coupon code is required');
-      return;
-    }
-    if (this.newDiscountValue === null || this.newDiscountValue <= 0) {
-      this.toastService.error('Discount value must be greater than 0');
-      return;
-    }
-    if (this.newDiscountType === 'percentage' && this.newDiscountValue > 100) {
+    if (this.createForm.invalid) { this.createForm.markAllAsTouched(); return; }
+    const fv = this.createForm.value;
+    if (this.newDiscountType === 'percentage' && (fv.discountValue ?? 0) > 100) {
       this.toastService.error('Percentage discount cannot exceed 100%');
       return;
     }
 
     this.isSubmitting = true;
-    const payload = {
-      code: this.newCode.trim().toUpperCase(),
+    const payload: any = {
+      code: (fv.code ?? '').trim().toUpperCase(),
       discountType: this.newDiscountType,
-      discountValue: this.newDiscountValue,
-      expiryDate: this.newExpiryDate ? this.newExpiryDate : null,
-      maxUses: this.newMaxUses,
-      maxPerUser: this.newMaxPerUser
+      discountValue: fv.discountValue ?? 0,
+      expiryDate: fv.expiryDate || null,
+      maxUses: fv.maxUses,
+      maxPerUser: fv.maxPerUser,
     };
 
     this.adminService.createCoupon(payload).subscribe({
       next: (newCoupon) => {
         this.toastService.success(`Coupon ${newCoupon.code} created successfully.`);
         this.couponsList.update(list => [newCoupon, ...list]);
-        // Reset form
+        this.createForm.reset();
         this.newCode = '';
         this.newDiscountValue = null;
-        this.newExpiryDate = '';
-        this.newMaxUses = null;
-        this.newMaxPerUser = null;
         this.isSubmitting = false;
         this.showCreateModal.set(false);
       },
       error: (err) => {
-        console.error('Failed to create coupon:', err);
         this.toastService.error(err?.error?.message || 'Failed to create coupon.');
         this.isSubmitting = false;
       }

@@ -112,7 +112,7 @@
               </app-empty-state>
             } @else {
               @for (user of users(); track user.id; let idx = $index) {
-                <tr [style.animation-delay]="idx * 0.04 + 's'" [class.user-suspended-row]="user.isSuspended">
+                <tr [style.animation-delay]="idx * 0.04 + 's'" [class.user-suspended-row]="user.isSuspended" [class.row-active]="activeDropdownUserId() === user.id">
                   <td>
                     <div class="user-profile-cell">
                       <div class="avatar-container">
@@ -154,7 +154,7 @@
                     }
                   </td>
                   <td>
-                    <div class="user-action-dropdown-container">
+                    <div class="user-action-dropdown-container" [class.active]="activeDropdownUserId() === user.id">
                       <button 
                         (click)="toggleUserDropdown(user.id, $event)" 
                         class="manage-btn"

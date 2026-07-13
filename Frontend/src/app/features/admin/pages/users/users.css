@@ -238,11 +238,12 @@
   border: 2px solid #2F2F2F;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .table-container {
   overflow-x: auto;
+  overflow-y: visible;
 }
 
 .admin-data-table {
@@ -576,7 +577,13 @@
 /* ===== ACTIONS DROPDOWN ===== */
 .user-action-dropdown-container {
   position: relative;
+  isolation: isolate;
+  z-index: 9999;
   display: inline-block;
+}
+
+.user-action-dropdown-container.active {
+  z-index: 10000;
 }
 
 .manage-btn {
@@ -608,7 +615,7 @@
   border: 2px solid var(--black);
   border-radius: 10px;
   box-shadow: 3px 3px 0 var(--black);
-  z-index: 100;
+  z-index: 99999;
   min-width: 170px;
   display: flex;
   flex-direction: column;
@@ -993,6 +1000,11 @@ textarea.form-control {
 }
 .admin-data-table tbody tr {
   animation: userFadeIn 0.3s ease both;
+}
+
+.admin-data-table tbody tr.row-active {
+  position: relative;
+  z-index: 10;
 }
 @keyframes userFadeIn {
   from { opacity: 0; transform: translateY(6px); }

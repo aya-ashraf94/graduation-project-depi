@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ProductService } from '../../../../core/services/product.service';
 import { AuthService } from '../../../../core/services/auth';
 import { WishlistService } from '../../../../core/services/wishlist.service';
@@ -24,13 +26,16 @@ type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'locatio
   styleUrl: './product-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductList implements OnInit {
+export class ProductList implements OnInit, OnDestroy {
   protected productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   protected authService = inject(AuthService);
   wishlistService = inject(WishlistService);
   protected locationService = inject(LocationService);
+
+  private destroy$ = new Subject<void>();
+  private proximityCache = new Map<string, LocationProximity>();
 
   Math = Math;
   showAuthModal = false;
@@ -95,6 +100,10 @@ export class ProductList implements OnInit {
 
   // ── Location ───────────────────────────────────────────────────────────
   getProximity(product: ProductSummary): LocationProximity {
+    return this.proximityCache.get(product.id) ?? this.computeProximity(product);
+  }
+
+  private computeProximity(product: ProductSummary): LocationProximity {
     const user = this.authService.currentUser();
     if (!user || !this.browsingGovernorate) return 'other';
     const pGov = product.sellerGovernorate;
@@ -105,6 +114,11 @@ export class ProductList implements OnInit {
     if (this.browsingCity && pCity && this.browsingCity === pCity) return 'same_city';
     if (this.browsingGovernorate === pGov) return 'same_governorate';
     return 'other';
+  }
+
+  private buildProximityCache(): void {
+    this.proximityCache.clear();
+    this.products.forEach(p => this.proximityCache.set(p.id, this.computeProximity(p)));
   }
 
   openLocationModal(): void {
@@ -132,11 +146,11 @@ export class ProductList implements OnInit {
       return;
     }
     const seq = ++this.locationLabelSeq;
-    this.locationService.getGovernorateName(this.browsingGovernorate).subscribe(govName => {
+    this.locationService.getGovernorateName(this.browsingGovernorate).pipe(takeUntil(this.destroy$)).subscribe(govName => {
       if (seq !== this.locationLabelSeq) return;
       let label = govName || this.browsingGovernorate;
       if (this.browsingCity) {
-        this.locationService.getCityName(this.browsingGovernorate, this.browsingCity).subscribe(cityName => {
+        this.locationService.getCityName(this.browsingGovernorate, this.browsingCity).pipe(takeUntil(this.destroy$)).subscribe(cityName => {
           if (seq !== this.locationLabelSeq) return;
           label += `, ${cityName || this.browsingCity}`;
           this.locationLabel.set(label);
@@ -193,7 +207,7 @@ export class ProductList implements OnInit {
     }
 
     // 2. Fetch backend categories
-    this.productService.getCategories().subscribe({
+    this.productService.getCategories().pipe(takeUntil(this.destroy$)).subscribe({
       next: (cats) => {
         this.categories = cats.map(c => c.name);
         this.cdr.detectChanges();
@@ -206,7 +220,7 @@ export class ProductList implements OnInit {
     });
 
     // 2. Subscribe to query params for category filtering from Home Page
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const cat = params['category'];
       if (cat) {
         this.selectedCategories.clear();
@@ -220,7 +234,7 @@ export class ProductList implements OnInit {
     const startTime = Date.now();
 
     // 3. Fetch products dynamically
-    this.productService.getProducts().subscribe({
+    this.productService.getProducts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (apiProducts) => {
         // const mapped = apiProducts.map(p => {
         //   const conditionLabel = this.productService.conditionLabels[p.condition] || p.condition;
@@ -363,6 +377,7 @@ export class ProductList implements OnInit {
     // Paginate: show only the current page's items
     const start = (this.currentPage - 1) * this.pageSize;
     this.products = result.slice(start, start + this.pageSize);
+    this.buildProximityCache();
 
     this.sortOpen = false;
     this.mobileFiltersOpen = false;
@@ -458,6 +473,11 @@ export class ProductList implements OnInit {
 
   toggleMobileFilters(): void {
     this.mobileFiltersOpen = !this.mobileFiltersOpen;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 }

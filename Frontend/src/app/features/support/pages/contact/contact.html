@@ -3,35 +3,32 @@
     <h1 class="legal-title">Contact Us</h1>
     <p class="legal-subtitle">We're here to help.</p>
   </div>
-  
+
   <div class="contact-grid">
     <div class="contact-info">
       <h3>Get in touch</h3>
       <p>Have a question or need assistance? Fill out the form or reach out directly.</p>
-      
+
       <div class="info-block">
         <strong>Email:</strong> support@nafa3ni.com<br>
         <strong>Twitter:</strong> @nafa3ni_support<br>
       </div>
     </div>
-    
+
     <div class="contact-form-box">
-      <form class="neo-form" (ngSubmit)="submit()" #contactForm="ngForm">
-        <div class="form-group">
-          <label>Name</label>
-          <input type="text" class="neo-input" placeholder="Your name" [(ngModel)]="name" name="name" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Email</label>
-           <input type="email" class="neo-input" placeholder="your@email.com" [(ngModel)]="email" name="email" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Message</label>
-          <textarea class="neo-input" rows="5" placeholder="How can we help?" [(ngModel)]="message" name="message" required></textarea>
-        </div>
-        
+      <form class="neo-form" [formGroup]="contactForm" (ngSubmit)="submit()">
+        <app-form-field label="Name" [control]="contactForm.get('name')" [required]="true" [fullWidth]="true">
+          <input type="text" class="neo-input" placeholder="Your name" formControlName="name" [disabled]="sending()">
+        </app-form-field>
+
+        <app-form-field label="Email" [control]="contactForm.get('email')" [required]="true" [fullWidth]="true">
+          <input type="email" class="neo-input" placeholder="your@email.com" formControlName="email" [disabled]="sending()">
+        </app-form-field>
+
+        <app-form-field label="Message" [control]="contactForm.get('message')" [required]="true" [fullWidth]="true">
+          <textarea class="neo-input" rows="5" placeholder="How can we help?" formControlName="message" [disabled]="sending()"></textarea>
+        </app-form-field>
+
         <button type="submit" class="btn-neo-primary" [disabled]="sending()">
           {{ sending() ? 'Sending...' : 'Send Message' }}
         </button>

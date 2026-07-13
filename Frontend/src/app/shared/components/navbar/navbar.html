@@ -84,7 +84,10 @@
           </a>
         </li>
 
-        <!-- Mobile-only: profile + logout in the drawer -->
+        <!-- Mobile-only: sell, profile, logout in the drawer -->
+        <li class="mobile-only">
+          <a routerLink="/listings/create" class="nav-link nav-link-sell" (click)="closeMenu()">+ Sell Item</a>
+        </li>
         <li class="mobile-only">
           <a routerLink="/profile/me" class="nav-link" (click)="closeMenu()">My Profile</a>
         </li>

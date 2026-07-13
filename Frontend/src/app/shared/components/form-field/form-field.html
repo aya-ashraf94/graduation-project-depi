@@ -1,0 +1,19 @@
+<div class="ff-group" [class.ff-full]="fullWidth()" [class.ff-has-error]="!!error">
+  @if (label()) {
+    <label class="ff-label">
+      {{ label() }}
+      @if (required()) {
+        <span class="ff-required">*</span>
+      }
+    </label>
+  }
+  <div class="ff-input-row">
+    <ng-content></ng-content>
+    @if (error) {
+      <div class="ff-error">{{ error }}</div>
+    }
+  </div>
+  @if (hint() && !error) {
+    <span class="ff-hint">{{ hint() }}</span>
+  }
+</div>

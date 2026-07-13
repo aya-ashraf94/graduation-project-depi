@@ -59,11 +59,10 @@
         <button class="modal-close-btn-header" (click)="closeModal()">✕</button>
       </div>
       <div class="panel-body">
-        <form (ngSubmit)="saveCategory()" class="cat-form">
-          <div class="form-group">
-            <label class="form-label">Category Name</label>
-            <input type="text" [(ngModel)]="formName" name="catName" class="form-control" placeholder="e.g. Electronics" required />
-          </div>
+        <form (ngSubmit)="saveCategory()" class="cat-form" [formGroup]="categoryForm">
+          <app-form-field label="Category Name" [control]="categoryForm.get('name')" [required]="true">
+            <input type="text" class="form-control" placeholder="e.g. Electronics" formControlName="name" />
+          </app-form-field>
 
           <div class="form-group">
             <div class="attrs-header">

@@ -120,9 +120,6 @@ const loginUser = async (req, res) => {
     }
 
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    if (user) {
-      await updateUserStats(user.id);
-    }
 
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });

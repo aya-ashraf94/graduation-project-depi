@@ -1,4 +1,5 @@
 const { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, primaryKey, index } = require('drizzle-orm/pg-core');
+const { sql } = require('drizzle-orm');
 
 const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -76,6 +77,8 @@ const products = pgTable('products', {
   categoryIdx: index('product_category_idx').on(table.categoryId),
   userIdx: index('product_user_idx').on(table.userId),
   createdAtIdx: index('product_created_at_idx').on(table.createdAt),
+  statusIdx: index('product_status_idx').on(table.status),
+  reservedAtIdx: index('product_reserved_at_idx').on(table.reservedAt),
 }));
 
 const orders = pgTable('orders', {
@@ -107,6 +110,8 @@ const orders = pgTable('orders', {
   orderBuyerCreatedAtIdx: index('order_buyer_created_at_idx').on(table.buyerId, table.createdAt),
   orderSellerCreatedAtIdx: index('order_seller_created_at_idx').on(table.sellerId, table.createdAt),
   orderBuyerCouponIdx: index('order_buyer_coupon_idx').on(table.buyerId, table.couponCode),
+  orderStatusIdx: index('order_status_idx').on(table.status),
+  orderStripePiIdx: index('order_stripe_pi_idx').on(table.stripePaymentIntentId),
 }));
 
 const reviews = pgTable('reviews', {
@@ -172,6 +177,7 @@ const notifications = pgTable('notifications', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
   userNotifIdx: index('notif_user_idx').on(table.userId, table.createdAt),
+  notifUserReadIdx: index('notif_user_read_idx').on(table.userId, table.isRead),
 }));
 
 const reports = pgTable('reports', {
@@ -186,6 +192,7 @@ const reports = pgTable('reports', {
 }, (table) => ({
   reportProductIdx: index('report_product_idx').on(table.productId),
   reportReporterIdx: index('report_reporter_idx').on(table.reporterId),
+  reportStatusIdx: index('report_status_idx').on(table.status),
 }));
 
 const contacts = pgTable('contacts', {
@@ -227,6 +234,8 @@ const offers = pgTable('offers', {
 }, (table) => ({
   offerProductIdx: index('offer_product_idx').on(table.productId),
   offerBuyerIdx: index('offer_buyer_idx').on(table.buyerId),
+  offerSellerIdx: index('offer_seller_idx').on(table.sellerId),
+  offerStatusExpiresIdx: index('offer_status_expires_idx').on(table.status, table.expiresAt),
 }));
 
 const follows = pgTable('follows', {
@@ -273,7 +282,9 @@ const flashSales = pgTable('flash_sales', {
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
-});
+}, (table) => ({
+  flashActiveDatesIdx: index('flash_active_dates_idx').on(table.isActive, table.startDate, table.endDate),
+}));
 
 const userBlocks = pgTable('user_blocks', {
   blockerId: uuid('blocker_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -296,6 +307,7 @@ const payouts = pgTable('payouts', {
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
   payoutSellerIdx: index('payout_seller_idx').on(table.sellerId),
+  payoutStatusCreatedIdx: index('payout_status_created_idx').on(table.status, table.createdAt),
 }));
 
 const refundRequests = pgTable('refund_requests', {
@@ -340,7 +352,9 @@ const subscriptionTransactions = pgTable('subscription_transactions', {
   stripePaymentIntentId: text('stripe_payment_intent_id'),
   tierName: text('tier_name').notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-});
+}, (table) => ({
+  subTxUserIdx: index('sub_tx_user_idx').on(table.userId),
+}));
 
 const sellerTiers = pgTable('seller_tiers', {
   id: uuid('id').defaultRandom().primaryKey(),

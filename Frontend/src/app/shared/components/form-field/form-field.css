@@ -1,0 +1,56 @@
+.ff-group {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  position: relative;
+}
+.ff-group.ff-full { width: 100%; }
+
+.ff-label {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--black);
+}
+.ff-required { color: var(--danger); margin-left: 2px; }
+
+.ff-hint {
+  font-size: 0.65rem; color: var(--gray-3); font-weight: 500;
+}
+
+.ff-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* ── Inline error ────────────────────────── */
+.ff-error {
+  font-family: var(--font-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  animation: ffSlide 0.15s ease;
+}
+
+.ff-error::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: var(--danger);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+@keyframes ffSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Error border on input */
+.ff-group.ff-has-error ::ng-deep input,
+.ff-group.ff-has-error ::ng-deep select,
+.ff-group.ff-has-error ::ng-deep textarea {
+  border-color: var(--danger) !important;
+  border-left-width: 3px !important;
+  box-shadow: 0 0 0 1.5px rgba(220, 53, 69, 0.08) !important;
+}

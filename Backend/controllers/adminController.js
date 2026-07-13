@@ -19,6 +19,8 @@ const getDashboard = async (req, res) => {
     // ── Core counts ───────────────────────────────────────────────
     const [userCount] = await db.select({ value: count() }).from(users);
     const [productCount] = await db.select({ value: count() }).from(products);
+    const [activeProductCount] = await db.select({ value: count() }).from(products)
+      .where(eq(products.status, 'active'));
     const [reportCount] = await db.select({ value: count() }).from(reports)
       .where(eq(reports.status, 'pending'));
 
@@ -78,16 +80,15 @@ const getDashboard = async (req, res) => {
       .orderBy(desc(orders.createdAt))
       .limit(5);
 
-    // ── Top categories by product count ───────────────────────────
-    const catCounts = await db.select({
-      name: categories.name,
-      productCount: count(),
-    })
-      .from(categories)
-      .leftJoin(products, eq(products.categoryId, categories.id))
-      .groupBy(categories.id, categories.name)
-      .orderBy(desc(count()))
-      .limit(5);
+    // ── Top categories by product count (marketplace active) ──────
+    const catResult = await db.execute(sql`
+      SELECT c.name, COUNT(p.id)::int AS "productCount"
+      FROM categories c
+      LEFT JOIN products p ON p.category_id = c.id AND p.status = 'active'
+      GROUP BY c.id, c.name
+      ORDER BY c.name = 'Other' ASC, COUNT(p.id) DESC
+    `);
+    const catCounts = catResult.rows || [];
 
     const totalCatProducts = catCounts.reduce((sum, c) => sum + Number(c.productCount), 0);
     const topCategories = catCounts.map(c => ({
@@ -101,6 +102,49 @@ const getDashboard = async (req, res) => {
       .where(and(eq(flashSales.isActive, true), lte(flashSales.startDate, now), gte(flashSales.endDate, now)));
     const [totalDiscount] = await db.select({ value: sql`COALESCE(SUM(${orders.flashSaleDiscount}), 0)` }).from(orders)
       .where(and(isNotNull(orders.flashSaleDiscount), ne(orders.status, 'cancelled'), sql`${orders.flashSaleDiscount} > 0`));
+
+    // ── Top sellers by revenue (last 30 days) ─────────────────────
+    const topSellersRaw = await db.select({
+      sellerId: orders.sellerId,
+      sellerName: seller.name,
+      sellerAvatar: seller.avatar,
+      totalRevenue: sql`COALESCE(SUM(${orders.price} - ${orders.platformFee}), 0)`,
+      orderCount: count(),
+    })
+      .from(orders)
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
+      .where(and(gte(orders.createdAt, thirtyDaysAgo), ne(orders.status, 'cancelled')))
+      .groupBy(orders.sellerId, seller.name, seller.avatar)
+      .orderBy(desc(sql`COALESCE(SUM(${orders.price} - ${orders.platformFee}), 0)`))
+      .limit(5);
+
+    const topSellers = topSellersRaw.map(s => ({
+      sellerId: s.sellerId,
+      name: s.sellerName || 'Unknown',
+      avatar: s.sellerAvatar || '',
+      totalRevenue: Number(s.totalRevenue),
+      orderCount: Number(s.orderCount),
+    }));
+
+    // ── User registration history (last 30 days) ──────────────────
+    const userRows = await db.execute(sql`
+      SELECT DATE(created_at) AS day, COUNT(*) AS count
+      FROM users
+      WHERE created_at >= ${thirtyDaysAgo}
+      GROUP BY DATE(created_at)
+      ORDER BY day ASC
+    `);
+    const userRegMap = {};
+    for (const row of userRows.rows || []) {
+      const dayStr = row.day instanceof Date ? row.day.toISOString().slice(0, 10) : String(row.day).slice(0, 10);
+      userRegMap[dayStr] = Number(row.count);
+    }
+    const userGrowthHistory = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().slice(0, 10);
+      userGrowthHistory.push({ date: key, count: userRegMap[key] || 0 });
+    }
 
     // Refund + featured stats (gracefully handle missing tables)
     let pendingRefundsCount = 0;
@@ -120,6 +164,7 @@ const getDashboard = async (req, res) => {
       stats: {
         totalUsers: Number(userCount.value),
         totalProducts: Number(productCount.value),
+        activeProducts: Number(activeProductCount.value),
         openReports: Number(reportCount.value),
         todayRevenue: Number(todayRevenue[0]?.value || 0),
         todayPlatformFee: Number(todayPlatformFee[0]?.value || 0),
@@ -142,6 +187,8 @@ const getDashboard = async (req, res) => {
         unverifiedProducts: Number(unverifiedProducts.value),
         unverifiedUsers: Number(unverifiedUsers.value),
       },
+      topSellers,
+      userGrowthHistory,
       flashSaleStats: {
         activeSales: Number(activeFlashSales.value),
         totalDiscountGiven: Number(totalDiscount?.value || 0),
@@ -750,6 +797,83 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
+const getRevenueOverview = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+
+    // All-time totals (excluding cancelled)
+    const [allTimeGross] = await db.select({ value: sql`COALESCE(SUM(${orders.price}), 0)` }).from(orders)
+      .where(ne(orders.status, 'cancelled'));
+    const [allTimeFees] = await db.select({ value: sql`COALESCE(SUM(${orders.platformFee}), 0)` }).from(orders)
+      .where(ne(orders.status, 'cancelled'));
+
+    // This month revenue
+    const [thisMonthGross] = await db.select({ value: sql`COALESCE(SUM(${orders.price}), 0)` }).from(orders)
+      .where(and(gte(orders.createdAt, startOfThisMonth), ne(orders.status, 'cancelled')));
+    const [thisMonthFees] = await db.select({ value: sql`COALESCE(SUM(${orders.platformFee}), 0)` }).from(orders)
+      .where(and(gte(orders.createdAt, startOfThisMonth), ne(orders.status, 'cancelled')));
+
+    // Last month revenue
+    const [lastMonthGross] = await db.select({ value: sql`COALESCE(SUM(${orders.price}), 0)` }).from(orders)
+      .where(and(gte(orders.createdAt, startOfLastMonth), lte(orders.createdAt, endOfLastMonth), ne(orders.status, 'cancelled')));
+
+    const allTime = {
+      gross: Number(allTimeGross?.value || 0),
+      fees: Number(allTimeFees?.value || 0),
+    };
+    allTime.net = allTime.gross - allTime.fees;
+
+    const thisMonthGrossVal = Number(thisMonthGross?.value || 0);
+    const lastMonthGrossVal = Number(lastMonthGross?.value || 0);
+    const monthChange = lastMonthGrossVal > 0
+      ? Math.round(((thisMonthGrossVal - lastMonthGrossVal) / lastMonthGrossVal) * 100)
+      : (thisMonthGrossVal > 0 ? 100 : 0);
+
+    // Pending payouts: recent delivered orders
+    const pendingRows = await db.select({
+      id: orders.id,
+      price: orders.price,
+      platformFee: orders.platformFee,
+      createdAt: orders.createdAt,
+      productTitle: products.title,
+      productThumbnail: sql`(${products.images})[1]`,
+      sellerName: seller.name,
+      sellerId: seller.id,
+    })
+      .from(orders)
+      .leftJoin(products, eq(orders.productId, products.id))
+      .leftJoin(seller, eq(orders.sellerId, seller.id))
+      .where(eq(orders.status, 'delivered'))
+      .orderBy(desc(orders.createdAt))
+      .limit(10);
+
+    res.json({
+      allTime,
+      thisMonth: {
+        gross: thisMonthGrossVal,
+        fees: Number(thisMonthFees?.value || 0),
+      },
+      lastMonthGross: lastMonthGrossVal,
+      monthChange,
+      pendingPayouts: pendingRows.map(p => ({
+        id: p.id,
+        productTitle: p.productTitle || '[Deleted]',
+        productThumbnail: p.productThumbnail || '',
+        amount: (p.price || 0) - (p.platformFee || 0),
+        sellerName: p.sellerName || 'Unknown',
+        sellerId: p.sellerId,
+        createdAt: p.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching revenue overview:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getDashboard,
   getStats,
@@ -768,4 +892,5 @@ module.exports = {
   createCoupon,
   patchCoupon,
   deleteCoupon,
+  getRevenueOverview,
 };

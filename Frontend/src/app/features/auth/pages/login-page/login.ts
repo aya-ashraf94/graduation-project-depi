@@ -1,25 +1,32 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth';
-import { LoginRequest } from '../../../../core/models/user.model';
 import { AuthLayoutComponent } from '../../../../shared/components/auth-layout/auth-layout';
+import { FormFieldComponent } from '../../../../shared/components/form-field/form-field';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AuthLayoutComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, AuthLayoutComponent, FormFieldComponent],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
+export class Login implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private subs: Subscription[] = [];
 
-  form: LoginRequest = { email: '', password: '' };
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
+
+  loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]],
+  });
 
   // Forgot password signals
   showForgotModal = signal(false);
@@ -39,13 +46,28 @@ export class Login {
   resetError = signal<string | null>(null);
   resetLoading = signal(false);
 
+  ngOnInit(): void {
+    // Clear banner on any value change
+    this.subs.push(this.loginForm.valueChanges.subscribe(() => this.errorMessage.set(null)));
+  }
+
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
+  }
+
   signIn() {
-    if (!this.form.email || !this.form.password) return;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.auth.login(this.form).subscribe({
+    this.auth.login({
+      email: this.loginForm.value.email!,
+      password: this.loginForm.value.password!,
+    }).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(['/']);
@@ -67,17 +89,13 @@ export class Login {
     this.showForgotModal.set(true);
   }
 
-  closeForgotModal() {
-    this.showForgotModal.set(false);
-  }
+  closeForgotModal() { this.showForgotModal.set(false); }
 
   sendForgot() {
     if (!this.forgotEmail.trim()) return;
-    
     this.forgotLoading.set(true);
     this.forgotError.set(null);
     this.forgotMessage.set(null);
-    
     this.auth.forgotPassword(this.forgotEmail).subscribe({
       next: (res) => {
         this.forgotLoading.set(false);
@@ -107,12 +125,10 @@ export class Login {
 
   verifyAndOpenReset() {
     if (!this.manualToken.trim()) return;
-    
     this.forgotLoading.set(true);
     this.forgotError.set(null);
-    
     this.auth.validateResetToken(this.manualToken).subscribe({
-      next: (res) => {
+      next: () => {
         this.forgotLoading.set(false);
         this.openResetModal(this.manualToken);
       },
@@ -123,9 +139,7 @@ export class Login {
     });
   }
 
-  closeResetModal() {
-    this.showResetModal.set(false);
-  }
+  closeResetModal() { this.showResetModal.set(false); }
 
   sendReset() {
     if (!this.resetTokenInput || !this.resetPasswordInput) return;
@@ -137,18 +151,14 @@ export class Login {
       this.resetError.set('Password must be at least 6 characters');
       return;
     }
-    
     this.resetLoading.set(true);
     this.resetError.set(null);
     this.resetSuccess.set(null);
-    
     this.auth.resetPassword(this.resetTokenInput, this.resetPasswordInput).subscribe({
-      next: (res) => {
+      next: () => {
         this.resetLoading.set(false);
         this.resetSuccess.set('Password reset successfully! You can now log in.');
-        setTimeout(() => {
-          this.closeResetModal();
-        }, 2000);
+        setTimeout(() => this.closeResetModal(), 2000);
       },
       error: (err) => {
         this.resetLoading.set(false);

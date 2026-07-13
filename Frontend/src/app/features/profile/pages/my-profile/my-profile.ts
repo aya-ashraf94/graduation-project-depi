@@ -1,7 +1,9 @@
-import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef, signal, computed, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../../core/services/auth';
 import { ChatService } from '../../../../core/services/chat.service';
 import { ProductService } from '../../../../core/services/product.service';
@@ -36,7 +38,7 @@ import { ToastService } from '../../../../core/services/toast.service';
   styleUrl: './my-profile.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MyProfile implements OnInit, AfterViewInit {
+export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
   private chatService = inject(ChatService);
   private productService = inject(ProductService);
@@ -53,6 +55,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   private refundService = inject(RefundService);
   private featuredService = inject(FeaturedService);
   private tierService = inject(TierService);
+  private destroy$ = new Subject<void>();
 
   @ViewChild('tabsSection') tabsSection!: ElementRef;
 
@@ -240,7 +243,7 @@ export class MyProfile implements OnInit, AfterViewInit {
     const id = this.productIdToDelete;
     this.closeDeleteModal();
 
-    this.productService.deleteProduct(id).subscribe({
+    this.productService.deleteProduct(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.profileSuccess.set('Product listing deleted successfully!');
         setTimeout(() => this.profileSuccess.set(null), 3000);
@@ -258,7 +261,7 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.loadDismissedOrders();
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params.get('id');
       const currentUser = this.authService.currentUser();
       this.isViewerBlocked = false;
@@ -270,7 +273,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       if (id && id !== 'me' && id !== currentUser?.id) {
         this.isOwnProfile = false;
         // Load target user profile
-        this.userService.getUserById(id).subscribe({
+        this.userService.getUserById(id).pipe(takeUntil(this.destroy$)).subscribe({
           next: (user) => {
             this.user = user;
             this.isLoadingProfile = false;
@@ -280,19 +283,19 @@ export class MyProfile implements OnInit, AfterViewInit {
               if (user.id === currentId) {
                 this.isOwnProfile = true;
                 this.loadUserListings(user.id);
-                this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
+                this.reviewService.getReviewsForUser(user.id).pipe(takeUntil(this.destroy$)).subscribe(revs => {
                   this.reviews = this.formatReviews(revs);
                   this.cdr.detectChanges();
                 });
               } else {
                 this.isOwnProfile = false;
-                this.chatService.checkBlockStatus(user.id).subscribe({
+                this.chatService.checkBlockStatus(user.id).pipe(takeUntil(this.destroy$)).subscribe({
                   next: (status) => {
                     this.isViewerBlocked = status.isBlockedByPartner;
                     this.isPartnerBlockedByMe = status.isBlocked;
                     if (!this.isViewerBlocked) {
                       this.loadUserListings(user.id);
-                      this.reviewService.getReviewsForUser(user.id).subscribe(revs => {
+                      this.reviewService.getReviewsForUser(user.id).pipe(takeUntil(this.destroy$)).subscribe(revs => {
                         this.reviews = this.formatReviews(revs);
                         this.cdr.detectChanges();
                       });
@@ -322,7 +325,7 @@ export class MyProfile implements OnInit, AfterViewInit {
           this.isLoadingProfile = false;
 
           // Load fresh user profile details (sales/purchases/successRate) from backend
-          this.userService.getUserById(currentUser.id).subscribe({
+          this.userService.getUserById(currentUser.id).pipe(takeUntil(this.destroy$)).subscribe({
             next: (freshUser) => {
               this.user = freshUser;
               this.authService.updateLocalUser(freshUser);
@@ -338,7 +341,7 @@ export class MyProfile implements OnInit, AfterViewInit {
 
           this.loadUserListings(currentUser.id);
           this.loadWishlist();
-          this.reviewService.getReviewsForUser(currentUser.id).subscribe(revs => {
+          this.reviewService.getReviewsForUser(currentUser.id).pipe(takeUntil(this.destroy$)).subscribe(revs => {
             this.reviews = this.formatReviews(revs);
             this.reviewsByOrderId = new Map(revs.filter((r: any) => r.orderId).map((r: any) => [r.orderId, r]));
             this.cdr.detectChanges();
@@ -350,7 +353,7 @@ export class MyProfile implements OnInit, AfterViewInit {
     });
 
     // Handle Tabs (reading from query params)
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const tab = params['tab'];
       if (tab === 'products' || tab === 'drafts' || tab === 'wishlist' || tab === 'reviews' || tab === 'orders' || tab === 'blocked') {
         this.activeTab = tab;
@@ -385,7 +388,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   loadUserListings(userId: string) {
-    this.productService.getProductsBySeller(userId).subscribe({
+    this.productService.getProductsBySeller(userId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => {
         this.myListings = products;
         this.cdr.detectChanges();
@@ -397,7 +400,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   loadWishlist(): void {
-    this.wishlistService.getWishlistProducts().subscribe({
+    this.wishlistService.getWishlistProducts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (products) => {
         this.wishlistItems = products;
         this.cdr.detectChanges();
@@ -564,7 +567,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       comment: this.reviewForm.comment
     };
 
-    this.reviewService.createReview(payload).subscribe({
+    this.reviewService.createReview(payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: (rev) => {
         this.reviewLoading = false;
         this.reviewSuccess.set('Review submitted successfully!');
@@ -576,7 +579,7 @@ export class MyProfile implements OnInit, AfterViewInit {
 
         // Refresh reviews displayed on profile
         if (this.user?.id) {
-          this.reviewService.getReviewsForUser(this.user.id).subscribe(revs => {
+          this.reviewService.getReviewsForUser(this.user.id).pipe(takeUntil(this.destroy$)).subscribe(revs => {
             this.reviews = this.formatReviews(revs);
             this.cdr.detectChanges();
           });
@@ -606,7 +609,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       payload.trackingNumber = order._trackingValue;
     }
 
-    this.orderService.updateOrder(orderId, payload).subscribe({
+    this.orderService.updateOrder(orderId, payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: (updated) => {
         // Update the order in-place instead of re-fetching all orders
         const idx = this.myOrders.findIndex((o: any) => o.id === orderId);
@@ -690,14 +693,14 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   loadWalletData() {
     if (!this.isOwnProfile) return;
-    this.walletService.getWalletStats().subscribe({
+    this.walletService.getWalletStats().pipe(takeUntil(this.destroy$)).subscribe({
       next: (stats) => {
         this.walletStats = stats;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error loading wallet stats:', err)
     });
-    this.walletService.getPayouts().subscribe({
+    this.walletService.getPayouts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => {
         this.payoutsList = list;
         this.cdr.detectChanges();
@@ -708,16 +711,16 @@ export class MyProfile implements OnInit, AfterViewInit {
 
   loadOrdersData(): void {
     const currentUser = this.authService.currentUser();
-    this.orderService.getOrders().subscribe(orders => {
+    this.orderService.getOrders().pipe(takeUntil(this.destroy$)).subscribe(orders => {
       this.myOrders = orders;
       this.cdr.detectChanges();
     });
     if (currentUser) {
-      this.reviewService.getReviewsByUser(currentUser.id).subscribe(written => {
+      this.reviewService.getReviewsByUser(currentUser.id).pipe(takeUntil(this.destroy$)).subscribe(written => {
         this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
         this.cdr.detectChanges();
       });
-      this.refundService.getMyRefundRequests().subscribe(refs => {
+      this.refundService.getMyRefundRequests().pipe(takeUntil(this.destroy$)).subscribe(refs => {
         this.myRefundRequests = refs;
         this.cdr.detectChanges();
       });
@@ -743,7 +746,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       this.payoutForm.amount,
       this.payoutForm.paymentMethod,
       this.payoutForm.paymentDetails
-    ).subscribe({
+    ).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.toastService.success('Payout request submitted successfully!');
         this.payoutForm.amount = 0;
@@ -779,7 +782,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       return;
     }
     this.submittingRefund = true;
-    this.refundService.requestRefund(this.selectedOrderForRefund.id, this.refundReason, this.refundDetails).subscribe({
+    this.refundService.requestRefund(this.selectedOrderForRefund.id, this.refundReason, this.refundDetails).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Refund request submitted! Admin will review it.');
         this.closeRefundModal();
@@ -824,7 +827,7 @@ export class MyProfile implements OnInit, AfterViewInit {
       return;
     }
     this.submittingDispute = true;
-    this.orderService.disputeOrder(this.selectedOrderForDispute.id, this.disputeReason).subscribe({
+    this.orderService.disputeOrder(this.selectedOrderForDispute.id, this.disputeReason).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Dispute submitted. Admin will review the case.');
         this.closeDisputeModal();
@@ -866,14 +869,14 @@ export class MyProfile implements OnInit, AfterViewInit {
       orderId: this.selectedOrderForRateBuyer.id,
       rating: this.buyerRating,
       comment: this.buyerReviewComment,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Buyer rating submitted!');
         this.closeRateBuyerModal();
         this.submittingBuyerRating = false;
         // Refresh written reviews to mark as reviewed
         if (this.user?.id) {
-          this.reviewService.getReviewsByUser(this.user.id).subscribe(written => {
+          this.reviewService.getReviewsByUser(this.user.id).pipe(takeUntil(this.destroy$)).subscribe(written => {
             this.reviewedOrderIds = new Set(written.map((r: any) => r.orderId?._id || r.orderId || r.id));
             this.cdr.detectChanges();
           });
@@ -898,12 +901,12 @@ export class MyProfile implements OnInit, AfterViewInit {
     this.promoting = false;
     this.featuredQuota = null;
     this.featuredPricesLoaded = false;
-    this.featuredService.getPrices().subscribe({
+    this.featuredService.getPrices().pipe(takeUntil(this.destroy$)).subscribe({
       next: (prices) => { this.featuredPrices = prices; this.featuredPricesLoaded = true; this.cdr.markForCheck(); },
       error: () => { this.featuredPricesLoaded = true; this.cdr.markForCheck(); }
     });
     this.loadingQuota = true;
-    this.featuredService.getRemainingQuota().subscribe({
+    this.featuredService.getRemainingQuota().pipe(takeUntil(this.destroy$)).subscribe({
       next: (q) => { this.featuredQuota = q; this.loadingQuota = false; this.cdr.markForCheck(); },
       error: () => { this.loadingQuota = false; this.cdr.markForCheck(); }
     });
@@ -926,7 +929,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   promoteProduct() {
     if (!this.selectedProductForPromote) return;
     this.promoting = true;
-    this.featuredService.promoteProduct(this.selectedProductForPromote.id, this.selectedDuration).subscribe({
+    this.featuredService.promoteProduct(this.selectedProductForPromote.id, this.selectedDuration).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success(`Product promoted for ${this.selectedDuration} days!`);
         this.closePromoteModal();
@@ -941,14 +944,14 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   loadMyFeatured() {
-    this.featuredService.getMyFeaturedListings().subscribe({
+    this.featuredService.getMyFeaturedListings().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => { this.myFeaturedListings = list; this.showMyFeatured = true; this.cdr.detectChanges(); },
       error: () => this.toastService.error('Failed to load featured listings')
     });
   }
 
   loadBlockedUsers() {
-    this.chatService.getBlockedUsers().subscribe({
+    this.chatService.getBlockedUsers().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => {
         this.blockedUsers = list;
         this.cdr.detectChanges();
@@ -958,7 +961,7 @@ export class MyProfile implements OnInit, AfterViewInit {
   }
 
   unblockUser(userId: string) {
-    this.chatService.unblockUser(userId).subscribe({
+    this.chatService.unblockUser(userId).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.blockedUsers = this.blockedUsers.filter(u => u.id !== userId);
         this.toastService.success('User unblocked successfully.');
@@ -1035,4 +1038,10 @@ export class MyProfile implements OnInit, AfterViewInit {
       }, 200);
     }
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 }

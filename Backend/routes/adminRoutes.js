@@ -16,6 +16,7 @@ const {
     resolveReport,
     getAllOrders,
     updateOrderStatus,
+    getRevenueOverview,
     getCoupons,
     createCoupon,
     patchCoupon,
@@ -58,6 +59,8 @@ router.delete("/reports/:id", deleteReport);
 router.get("/orders", getAllOrders);
 router.patch("/orders/:id/status", updateOrderStatus);
 router.post("/orders/:id/resolve-dispute", resolveDispute);
+
+router.get("/revenue-overview", getRevenueOverview);
 
 router.get("/coupons", getCoupons);
 router.post("/coupons", createCoupon);

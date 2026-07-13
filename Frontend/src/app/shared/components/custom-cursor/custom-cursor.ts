@@ -17,6 +17,8 @@ export class CustomCursor implements OnInit, OnDestroy {
   private isVisible = false;
 
   private hoverTargets = 'a, button, [routerLink], .product-card, .dept-card, .stack-card, .feature-item, .step-item, .sell-cta .btn, .stat-item, .hero-btn, input, select, textarea';
+  private onMouseOver!: (e: Event) => void;
+  private onMouseOut!: (e: Event) => void;
 
   ngOnInit(): void {
     if (window.matchMedia('(pointer: coarse)').matches) return;
@@ -32,6 +34,8 @@ export class CustomCursor implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.body.style.cursor = '';
+    document.removeEventListener('mouseover', this.onMouseOver);
+    document.removeEventListener('mouseout', this.onMouseOut);
   }
 
   @HostListener('document:mousemove', ['$event'])
@@ -83,7 +87,7 @@ export class CustomCursor implements OnInit, OnDestroy {
   }
 
   private addHoverListeners(): void {
-    document.addEventListener('mouseover', (e: Event) => {
+    this.onMouseOver = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target && target.matches?.(this.hoverTargets)) {
         this.isHovering = true;
@@ -95,9 +99,9 @@ export class CustomCursor implements OnInit, OnDestroy {
           ease: 'power2.out',
         });
       }
-    });
+    };
 
-    document.addEventListener('mouseout', (e: Event) => {
+    this.onMouseOut = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target && target.matches?.(this.hoverTargets)) {
         this.isHovering = false;
@@ -109,6 +113,9 @@ export class CustomCursor implements OnInit, OnDestroy {
           ease: 'power2.out',
         });
       }
-    });
+    };
+
+    document.addEventListener('mouseover', this.onMouseOver);
+    document.addEventListener('mouseout', this.onMouseOut);
   }
 }

@@ -263,6 +263,22 @@
   color: var(--gray-3);
 }
 
+.wiz-field-error {
+  font-family: var(--font-secondary);
+  font-size: 0.78rem;
+  color: var(--danger);
+  line-height: 1.4;
+}
+
+.wiz-char-count {
+  font-family: var(--font-secondary);
+  font-size: 0.72rem;
+  color: var(--gray-3);
+  text-align: right;
+}
+.wiz-char-count.warn { color: var(--yellow-dark); font-weight: 600; }
+.wiz-char-count.error { color: var(--danger); font-weight: 700; }
+
 /* Condition buttons */
 .wiz-condition-grid {
   display: grid;
@@ -447,7 +463,29 @@
   box-shadow: var(--shadow-brutal);
 }
 
-.wiz-toggle-btn:hover:not(.active) { border-color: var(--black); }
+.wiz-toggle-btn:hover:not(.active):not(:disabled) { border-color: var(--black); }
+
+.wiz-toggle-coming-soon {
+  position: relative;
+  opacity: 0.45;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.wiz-coming-soon-badge {
+  font-family: var(--font-primary);
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  background: var(--gray-3);
+  color: var(--white);
+  padding: 0.125rem 0.35rem;
+  border-radius: var(--radius-xs);
+  line-height: 1;
+}
 
 .wiz-price-wrap { position: relative; }
 

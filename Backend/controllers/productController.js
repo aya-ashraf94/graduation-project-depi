@@ -23,9 +23,6 @@ const getProductById = async (req, res) => {
       }
     }
 
-    // Auto-release expired reservations
-    await cleanupExpiredReservations();
-
     // Read product first — do NOT increment viewCount yet
     const [product] = await db.select().from(products).where(eq(products.id, req.params.id)).limit(1);
 
@@ -82,8 +79,6 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    await cleanupExpiredReservations();
-
     // Extract token optionally to get logged in user ID
     let currentUserId = null;
     let token = req.header('Authorization')?.replace('Bearer ', '');
@@ -342,6 +337,27 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ message: "Please provide all required fields" });
     }
 
+    const TITLE_MIN = 10;
+    const TITLE_MAX = 100;
+    const DESC_MAX = 2000;
+    const PRICE_MAX = 99999.99;
+
+    if (title.length < TITLE_MIN || title.length > TITLE_MAX) {
+      return res.status(400).json({ message: `Title must be between ${TITLE_MIN} and ${TITLE_MAX} characters` });
+    }
+
+    if (description && description.length > DESC_MAX) {
+      return res.status(400).json({ message: `Description must be ${DESC_MAX} characters or fewer` });
+    }
+
+    const parsedPrice = Number(price);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      return res.status(400).json({ message: "Price must be a valid positive number" });
+    }
+    if (parsedPrice > PRICE_MAX) {
+      return res.status(400).json({ message: `Price cannot exceed $${PRICE_MAX.toLocaleString()}` });
+    }
+
     // Check if user has completed profile (has phone number and location data)
     const [seller] = await db.select({
       phoneNumber: users.phoneNumber,
@@ -443,6 +459,24 @@ const updateProduct = async (req, res) => {
       });
       const uploadedResults = await Promise.all(uploadPromises);
       savedImages = uploadedResults.filter(Boolean);
+    }
+
+    const TITLE_MIN = 10;
+    const TITLE_MAX = 100;
+    const DESC_MAX = 2000;
+    const PRICE_MAX = 99999.99;
+
+    const newTitle = req.body.title !== undefined ? req.body.title : existing.title;
+    const newDescription = req.body.description !== undefined ? req.body.description : existing.description;
+
+    if (newTitle.length < TITLE_MIN || newTitle.length > TITLE_MAX) {
+      return res.status(400).json({ message: `Title must be between ${TITLE_MIN} and ${TITLE_MAX} characters` });
+    }
+    if (newDescription && newDescription.length > DESC_MAX) {
+      return res.status(400).json({ message: `Description must be ${DESC_MAX} characters or fewer` });
+    }
+    if (req.body.price !== undefined && newPrice > PRICE_MAX) {
+      return res.status(400).json({ message: `Price cannot exceed $${PRICE_MAX.toLocaleString()}` });
     }
 
     const allowedUpdates = {};

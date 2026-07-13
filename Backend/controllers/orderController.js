@@ -435,31 +435,23 @@ const validateCoupon = async (req, res) => {
 
 const getRandomActiveCoupon = async (req, res) => {
   try {
-    // Use a transaction with FOR UPDATE to atomically reserve a coupon
-    const order = await db.transaction(async (tx) => {
-      const allCoupons = await tx.execute(sql`SELECT * FROM coupons WHERE is_active = true FOR UPDATE`);
-      const rows = allCoupons.rows || allCoupons;
+    // Atomically grab a single random valid coupon with SKIP LOCKED
+    const result = await db.execute(sql`
+      UPDATE coupons
+      SET used_count = used_count + 1, updated_at = NOW()
+      WHERE id = (
+        SELECT id FROM coupons
+        WHERE is_active = true
+          AND (expiry_date IS NULL OR expiry_date > NOW())
+          AND (max_uses IS NULL OR used_count < max_uses)
+        ORDER BY RANDOM()
+        LIMIT 1
+        FOR UPDATE SKIP LOCKED
+      )
+      RETURNING code, discount_type, discount_value, expiry_date
+    `);
 
-      // Filter out expired and maxed-out coupons
-      const validCoupons = rows.filter(coupon => {
-        if (coupon.expiryDate && new Date(coupon.expiryDate) <= new Date()) return false;
-        if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) return false;
-        return true;
-      });
-
-      if (validCoupons.length === 0) {
-        return null;
-      }
-
-      // Pick one at random
-      const randomIndex = Math.floor(Math.random() * validCoupons.length);
-      const chosenCoupon = validCoupons[randomIndex];
-
-      // Atomically increment usedCount to reserve it
-      await tx.execute(sql`UPDATE coupons SET used_count = used_count + 1, updated_at = NOW() WHERE id = ${chosenCoupon.id}`);
-
-      return chosenCoupon;
-    });
+    const order = result?.rows?.[0] || null;
 
     if (!order) {
       return res.status(404).json({ message: "No active coupons available at the moment. Try again later!" });

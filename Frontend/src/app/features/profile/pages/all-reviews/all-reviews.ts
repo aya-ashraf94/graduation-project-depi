@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ReviewService } from '../../../../core/services/review.service';
 import { Review } from '../../../../core/models/review.model';
 import { UserAvatarComponent } from '../../../../shared/components/user-avatar/user-avatar';
@@ -186,20 +188,22 @@ import { formatReviews, getReviewerName, getReviewerId } from '../../../../share
     }
   `]
 })
-export class AllReviews implements OnInit {
+export class AllReviews implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private reviewService = inject(ReviewService);
+
+  private destroy$ = new Subject<void>();
 
   reviews = signal<Review[]>([]);
   loading = signal(true);
   userId = '';
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.userId = id;
-        this.reviewService.getReviewsForUser(id).subscribe({
+        this.reviewService.getReviewsForUser(id).pipe(takeUntil(this.destroy$)).subscribe({
           next: (revs) => {
             this.reviews.set(this.formatReviews(revs));
             this.loading.set(false);
@@ -208,6 +212,11 @@ export class AllReviews implements OnInit {
         });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private formatReviews = formatReviews;

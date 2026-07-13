@@ -1,43 +1,45 @@
 import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ToastService } from '../../../../core/services/toast.service';
 import { environment } from '../../../../../environments/environment';
+import { FormFieldComponent } from '../../../../shared/components/form-field/form-field';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormFieldComponent],
   templateUrl: './contact.html',
   styleUrl: './contact.css'
 })
 export class Contact {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private fb = inject(FormBuilder);
 
-  name = signal('');
-  email = signal('');
-  message = signal('');
   sending = signal(false);
 
-  submit(): void {
-    const name = this.name().trim();
-    const email = this.email().trim();
-    const message = this.message().trim();
+  contactForm = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    message: ['', [Validators.required, Validators.minLength(10)]],
+  });
 
-    if (!name || !email || !message) {
-      this.toast.error('Please fill in all fields');
+  submit(): void {
+    if (this.contactForm.invalid) {
+      this.contactForm.markAllAsTouched();
       return;
     }
 
     this.sending.set(true);
+    const { name, email, message } = this.contactForm.value;
+
     this.http.post<{ message: string }>(`${environment.apiUrl}/support/contact`, { name, email, message })
       .subscribe({
         next: (res) => {
           this.toast.success(res.message);
-          this.name.set('');
-          this.email.set('');
-          this.message.set('');
+          this.contactForm.reset();
           this.sending.set(false);
         },
         error: (err) => {

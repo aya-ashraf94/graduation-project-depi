@@ -1,6 +1,6 @@
 import { Component, signal, inject, OnInit, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FlashSaleService } from '../../../../core/services/flash-sale.service';
 import { FlashSale } from '../../../../core/models/flash-sale.model';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -9,6 +9,8 @@ import { AdminErrorPanelComponent } from '../../../../shared/components/admin-er
 import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
 import { ProductService } from '../../../../core/services/product.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
+import { FormFieldComponent } from '../../../../shared/components/form-field/form-field';
+import { percentageRange } from '../../../../shared/utils/validators';
 
 @Component({
   selector: 'app-admin-flash-sales',
@@ -23,6 +25,12 @@ export class AdminFlashSales implements OnInit {
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
   private productService = inject(ProductService);
+  private fb = inject(FormBuilder);
+
+  saleForm = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    discountPercent: [0, [Validators.required, percentageRange()]],
+  });
 
   sales = signal<FlashSale[]>([]);
   isLoading = signal(true);

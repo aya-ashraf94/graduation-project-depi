@@ -68,11 +68,22 @@ export class ProductService {
     );
   }
 
+  private productByIdCache = new Map<string, Observable<Product>>();
+  private readonly CACHE_MAX_SIZE = 20;
+
   /** Get product details by ID */
   getProductById(id: string): Observable<Product> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-      map(p => this.mapProduct(p))
-    );
+    if (!this.productByIdCache.has(id)) {
+      if (this.productByIdCache.size >= this.CACHE_MAX_SIZE) {
+        const firstKey = this.productByIdCache.keys().next().value;
+        if (firstKey) this.productByIdCache.delete(firstKey);
+      }
+      this.productByIdCache.set(id, this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+        map(p => this.mapProduct(p)),
+        shareReplay(1)
+      ));
+    }
+    return this.productByIdCache.get(id)!;
   }
 
   /** Get all listings by a specific seller */

@@ -5,7 +5,8 @@
       <h2>🎫 Coupons Management</h2>
       <p>Manage and create discount codes for store orders.</p>
     </div>
-    <button (click)="showCreateModal.set(true)" class="btn-create-trigger">
+    <button (click)="openCreateModal()" 
+class="btn-create-trigger">
       <span>➕ Create Coupon</span>
     </button>
   </header>
@@ -182,20 +183,14 @@
           <button class="modal-close-btn-header" (click)="showCreateModal.set(false)">✕</button>
         </div>
         <div class="panel-body">
-          <form (ngSubmit)="createCoupon()" #couponForm="ngForm" class="create-coupon-form">
+          <form (ngSubmit)="createCoupon()" [formGroup]="createForm" class="create-coupon-form">
             <!-- Coupon Code Input -->
-            <div class="form-group">
-              <label class="form-label">Coupon Code</label>
+            <app-form-field label="Coupon Code" [control]="createForm.get('code')" [required]="true" [fullWidth]="true">
               <div class="input-with-prefix-icon">
                 <span class="input-icon-label">🏷️</span>
-                <input type="text" 
-                       [(ngModel)]="newCode" 
-                       name="code" 
-                       placeholder="e.g. MEGA20" 
-                       required
-                       class="form-control uppercase-input" />
+                <input type="text" formControlName="code" placeholder="e.g. MEGA20" class="form-control uppercase-input" />
               </div>
-            </div>
+            </app-form-field>
 
             <!-- Type and Value Side-by-Side Grid Row -->
             <div class="form-row-grid">
@@ -223,21 +218,14 @@
               </div>
 
               <!-- Discount Value Input -->
-              <div class="form-group">
-                <label class="form-label">Discount Value</label>
+              <app-form-field label="Discount Value" [control]="createForm.get('discountValue')" [required]="true" [fullWidth]="true">
                 <div class="input-with-suffix">
-                  <input type="number" 
-                         [(ngModel)]="newDiscountValue" 
-                         name="discountValue" 
-                         placeholder="e.g. 15" 
-                         required
-                         min="1"
-                         class="form-control" />
+                  <input type="number" formControlName="discountValue" placeholder="e.g. 15" class="form-control" />
                   <span class="input-suffix-tag">
                     {{ newDiscountType === 'percentage' ? '%' : '$' }}
                   </span>
                 </div>
-              </div>
+              </app-form-field>
             </div>
 
             <!-- Expiry Date Input -->
@@ -381,5 +369,5 @@
   }
 
   <!-- FLOATING ACTION BUTTON (FAB) FOR MOBILE -->
-  <button (click)="showCreateModal.set(true)" class="fab-create-btn" title="Create Coupon">➕</button>
+  <button (click)="openCreateModal()" class="fab-create-btn" title="Create Coupon">➕</button>
 </div>

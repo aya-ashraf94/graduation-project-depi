@@ -2,7 +2,8 @@ import { Component, HostListener, inject, computed, OnInit, OnDestroy, effect, s
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { AuthService } from '../../../core/services/auth';
 import { NotificationService } from '../../../core/services/notification.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
@@ -35,6 +36,7 @@ export class Navbar implements OnInit, OnDestroy {
   reservationTimeRemaining = signal<string>('');
   private timerIntervalId: any = null;
   private refreshIntervalId: any = null;
+  private destroy$ = new Subject<void>();
 
   readonly isChatRoute = signal(false);
 
@@ -44,7 +46,8 @@ export class Navbar implements OnInit, OnDestroy {
 
   constructor() {
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
     ).subscribe(() => {
       this.isChatRoute.set(this.router.url.includes('/chat'));
     });
@@ -80,6 +83,8 @@ export class Navbar implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.timerIntervalId) clearInterval(this.timerIntervalId);
     if (this.refreshIntervalId) clearInterval(this.refreshIntervalId);
   }

@@ -2,37 +2,60 @@ import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectionStrategy, 
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject, timer } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { AdminService, DashboardData } from '../../../../core/services/admin.service';
+import { AdminService, DashboardData, RevenueOverview } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { ConfirmService } from '../../../../core/services/confirm.service';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { AdminErrorPanelComponent } from '../../../../shared/components/admin-error-panel/admin-error-panel';
-import { AdminLoaderComponent } from '../../../../shared/components/admin-loader/admin-loader';
+
+interface Category {
+  id: string;
+  name: string;
+  discountPercent?: number;
+  saleStart?: string;
+  saleEnd?: string;
+}
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe, AdminErrorPanelComponent, AdminLoaderComponent],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe, AdminErrorPanelComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   readonly Math = Math;
   private adminService = inject(AdminService);
   private toastService = inject(ToastService);
-  private confirmService = inject(ConfirmService);
   private http = inject(HttpClient);
+  private destroy$ = new Subject<void>();
+  private readonly POLL_INTERVAL = 30000;
 
   data = signal<DashboardData | null>(null);
+  revenueOverview = signal<RevenueOverview | null>(null);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+  lastLoadTime = signal<string | null>(null);
+  refreshFlash = signal(false);
+
   // Category sale management
   showCategorySaleModal = signal(false);
-  categories = signal<any[]>([]);
+  categories = signal<Category[]>([]);
+  selectedCatId = signal<string>('');
+  salePercent = signal<number>(0);
+  saleFormStart = signal<string>('');
+  saleFormEnd = signal<string>('');
+  saleStartDateVal = signal<string>('');
+  saleStartTimeVal = signal<string>('00:00');
+  saleEndDateVal = signal<string>('');
+  saleEndTimeVal = signal<string>('23:59');
+  savingSale = signal(false);
+  isDropdownOpen = signal(false);
+
   // Announcement broadcast
   showAnnounceModal = signal(false);
   announceTitle = '';
@@ -45,37 +68,67 @@ export class Dashboard implements OnInit {
   platformFeePercentInput = signal(0);
   codFeePercentInput = signal(0);
   savingFee = signal(false);
-  selectedCatId = signal<string>('');
-  salePercent = signal<number>(0);
-  saleFormStart = signal<string>('');
-  saleFormEnd = signal<string>('');
-  saleStartDateVal = signal<string>('');
-  saleStartTimeVal = signal<string>('00:00');
-  saleEndDateVal = signal<string>('');
-  saleEndTimeVal = signal<string>('23:59');
-  savingSale = signal(false);
-  loadingCats = signal(false);
-  isDropdownOpen = signal(false);
-  showGuide = signal(true);
 
   // Chart sizing
-  maxRevenue = signal(0);
   barHeights = signal<number[]>([]);
+
   // Health check
   dbConnected = signal(true);
   apiOnline = signal(true);
-  appVersion = signal('2.0.0');
+  appVersion = signal('');
+
+  readonly palette = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'];
+
+  get todayLabel(): string {
+    return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  get lastUpdatedLabel(): string {
+    const t = this.lastLoadTime();
+    return t ? `Last updated ${t}` : 'Loading...';
+  }
+
+  get gridLines(): { pct: number; label: string }[] {
+    return [
+      { pct: 0, label: '100%' },
+      { pct: 25, label: '75%' },
+      { pct: 50, label: '50%' },
+      { pct: 75, label: '25%' },
+      { pct: 100, label: '0' },
+    ];
+  }
+
+  catColor(i: number): string {
+    return this.palette[i % this.palette.length];
+  }
+
+  catPercent(productCount: number): number {
+    const d = this.data();
+    if (!d) return 0;
+    const total = d.stats.activeProducts ?? d.stats.totalProducts;
+    return total ? parseFloat(((productCount / total) * 100).toFixed(1)) : 0;
+  }
 
   ngOnInit(): void {
-    this.loadData();
-    this.checkHealth();
+    this.startPolling();
+  }
+
+  private startPolling(): void {
+    timer(0, this.POLL_INTERVAL)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        const silent = !!this.data();
+        this.loadData(silent);
+        this.checkHealth();
+      });
   }
 
   private checkHealth(): void {
-    this.http.get<{ status: string; database: string }>(`${environment.apiUrl}/health`).subscribe({
+    this.http.get<{ status: string; database: string; version?: string }>(`${environment.apiUrl}/health`).pipe(takeUntil(this.destroy$)).subscribe({
       next: (h) => {
         this.dbConnected.set(h.database === 'connected');
         this.apiOnline.set(h.status === 'healthy');
+        if (h.version) this.appVersion.set(h.version);
       },
       error: () => {
         this.dbConnected.set(false);
@@ -84,45 +137,53 @@ export class Dashboard implements OnInit {
     });
   }
 
-  loadData(): void {
+  refreshMetrics(): void {
     this.isLoading.set(true);
-    this.errorMessage.set(null);
+    this.refreshFlash.set(false);
+    this.loadData(true, () => {
+      this.refreshFlash.set(true);
+      setTimeout(() => this.refreshFlash.set(false), 1200);
+    });
+  }
 
-    this.adminService.getDashboard().subscribe({
+  loadData(silent = false, onSuccess?: () => void): void {
+    if (!this.data() && !silent) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+    }
+
+    this.adminService.getDashboard().pipe(takeUntil(this.destroy$)).subscribe({
       next: (d) => {
         this.data.set(d);
         this.computeChart(d.revenueHistory);
         this.isLoading.set(false);
-        this.loadCategories();
+        this.lastLoadTime.set(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+        if (!silent) { this.loadCategories(); }
+        onSuccess?.();
       },
       error: (err) => {
         console.error('Error loading dashboard:', err);
-        this.errorMessage.set('Failed to load dashboard metrics.');
+        if (!this.data()) {
+          this.errorMessage.set('Failed to load dashboard metrics.');
+        }
         this.isLoading.set(false);
       }
+    });
+
+    this.adminService.getRevenueOverview().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (r) => this.revenueOverview.set(r),
+      error: (err) => console.error('Error loading revenue overview:', err)
     });
   }
 
   private computeChart(history: { date: string; revenue: number; gross?: number; platformFees?: number }[]): void {
     const max = Math.max(...history.map(h => h.gross || h.revenue), 1);
-    this.maxRevenue.set(max);
     this.barHeights.set(history.map(h => ((h.gross || h.revenue) / max) * 100));
   }
 
   get latestRevenue(): number {
     const h = this.data()?.revenueHistory;
     return h && h.length > 0 ? h[h.length - 1].revenue : 0;
-  }
-
-  get latestPlatformFees(): number {
-    const h = this.data()?.revenueHistory;
-    return h && h.length > 0 ? h[h.length - 1].platformFees : 0;
-  }
-
-  get totalPlatformFees(): number {
-    const h = this.data()?.revenueHistory;
-    if (!h) return 0;
-    return h.reduce((sum, d) => sum + d.platformFees, 0);
   }
 
   get revenueTrend(): number {
@@ -138,9 +199,8 @@ export class Dashboard implements OnInit {
     return this.revenueTrend >= 0;
   }
 
-  get weekLabel(): string {
-    const h = this.data()?.recentOrders;
-    return h && h.length > 0 ? 'Latest' : 'No orders';
+  get monthIsUp(): boolean {
+    return (this.revenueOverview()?.monthChange ?? 0) >= 0;
   }
 
   // ── Category sale management ───────────────────────────────────
@@ -163,12 +223,12 @@ export class Dashboard implements OnInit {
     this.isDropdownOpen.set(false);
   }
 
-  get selectedCategory(): any {
+  get selectedCategory(): Category | null {
     return this.categories().find(c => c.id === this.selectedCatId()) || null;
   }
 
   get hasActiveCategorySales(): boolean {
-    return this.categories().some(c => c.discountPercent > 0);
+    return this.categories().some(c => (c.discountPercent ?? 0) > 0);
   }
 
   get isCategoryOnSale(): boolean {
@@ -188,8 +248,8 @@ export class Dashboard implements OnInit {
 
     if (cat?.saleStart) {
       const startDt = new Date(cat.saleStart);
-      this.saleStartDateVal.set(this.formatJustDate(startDt));
-      this.saleStartTimeVal.set(this.formatJustTime(startDt));
+      this.saleStartDateVal.set(this.formatJustDateUTC(startDt));
+      this.saleStartTimeVal.set(this.formatJustTimeUTC(startDt));
     } else {
       this.saleStartDateVal.set('');
       this.saleStartTimeVal.set('00:00');
@@ -197,8 +257,8 @@ export class Dashboard implements OnInit {
 
     if (cat?.saleEnd) {
       const endDt = new Date(cat.saleEnd);
-      this.saleEndDateVal.set(this.formatJustDate(endDt));
-      this.saleEndTimeVal.set(this.formatJustTime(endDt));
+      this.saleEndDateVal.set(this.formatJustDateUTC(endDt));
+      this.saleEndTimeVal.set(this.formatJustTimeUTC(endDt));
     } else {
       this.saleEndDateVal.set('');
       this.saleEndTimeVal.set('23:59');
@@ -206,7 +266,7 @@ export class Dashboard implements OnInit {
   }
 
   loadCategories(): void {
-    this.http.get<any[]>(`${environment.apiUrl}/categories`).subscribe({
+    this.http.get<Category[]>(`${environment.apiUrl}/categories`).pipe(takeUntil(this.destroy$)).subscribe({
       next: (cats) => this.categories.set(cats),
       error: () => this.toastService.error('Failed to load categories.')
     });
@@ -218,14 +278,14 @@ export class Dashboard implements OnInit {
     this.savingSale.set(true);
     const pct = this.salePercent() > 0 ? this.salePercent() : null;
 
-    const startIso = this.saleStartDateVal() && this.saleStartTimeVal() ? new Date(`${this.saleStartDateVal()}T${this.saleStartTimeVal()}`).toISOString() : null;
-    const endIso = this.saleEndDateVal() && this.saleEndTimeVal() ? new Date(`${this.saleEndDateVal()}T${this.saleEndTimeVal()}`).toISOString() : null;
+    const startIso = this.saleStartDateVal() && this.saleStartTimeVal() ? new Date(`${this.saleStartDateVal()}T${this.saleStartTimeVal()}:00.000Z`).toISOString() : null;
+    const endIso = this.saleEndDateVal() && this.saleEndTimeVal() ? new Date(`${this.saleEndDateVal()}T${this.saleEndTimeVal()}:00.000Z`).toISOString() : null;
 
     this.http.put(`${environment.apiUrl}/categories/${catId}/sale`, {
       discountPercent: pct,
       saleStart: startIso,
       saleEnd: endIso,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (updated: any) => {
         this.categories.update(list => list.map(c => c.id === catId ? { ...c, ...updated } : c));
         this.toastService.success(`✅ ${updated.name || 'Category'} sale updated successfully.`);
@@ -256,7 +316,7 @@ export class Dashboard implements OnInit {
       body: this.announceBody.trim(),
       type: 'system',
       targetRole: this.announceTarget,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
         this.toastService.success(res.message || 'Announcement sent!');
         this.savingAnnounce.set(false);
@@ -273,7 +333,7 @@ export class Dashboard implements OnInit {
     forkJoin([
       this.http.get<{ platformFeePercent: number }>(`${environment.apiUrl}/settings/platform-fee`),
       this.http.get<{ codFeePercent: number }>(`${environment.apiUrl}/settings/cod-fee`)
-    ]).subscribe({
+    ]).pipe(takeUntil(this.destroy$)).subscribe({
       next: ([pfRes, codRes]) => {
         this.platformFeePercentInput.set(pfRes.platformFeePercent);
         this.codFeePercentInput.set(codRes.codFeePercent);
@@ -298,7 +358,7 @@ export class Dashboard implements OnInit {
     forkJoin([
       this.http.put(`${environment.apiUrl}/settings/platform-fee`, { platformFeePercent: pf }),
       this.http.put(`${environment.apiUrl}/settings/cod-fee`, { codFeePercent: cf })
-    ]).subscribe({
+    ]).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success(`Platform fee: ${pf}% | COD fee: ${cf}%`);
         this.savingFee.set(false);
@@ -315,7 +375,7 @@ export class Dashboard implements OnInit {
     const catId = this.selectedCatId();
     if (!catId) return;
     this.savingSale.set(true);
-    this.http.put(`${environment.apiUrl}/categories/${catId}/sale/clear`, {}).subscribe({
+    this.http.put(`${environment.apiUrl}/categories/${catId}/sale/clear`, {}).pipe(takeUntil(this.destroy$)).subscribe({
       next: (updated: any) => {
         this.categories.update(list => list.map(c => c.id === catId ? { ...c, ...updated } : c));
         this.toastService.success(`✅ ${updated.name || 'Category'} sale cleared successfully.`);
@@ -341,12 +401,12 @@ export class Dashboard implements OnInit {
     return d.toISOString().slice(0, 16);
   }
 
-  private formatJustDate(d: Date): string {
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  private formatJustDateUTC(d: Date): string {
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
   }
 
-  private formatJustTime(d: Date): string {
-    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  private formatJustTimeUTC(d: Date): string {
+    return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
   }
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
@@ -364,26 +424,30 @@ export class Dashboard implements OnInit {
     else if (this.showCategorySaleModal()) this.saveCategorySale();
   }
 
-  dismissReport(id: string): void {
-    this.confirmService.show({
-      title: 'Dismiss Report',
-      message: 'Are you sure you want to dismiss this report?',
-      onConfirm: () => {
-        this.adminService.deleteReport(id).subscribe({
-          next: () => {
-            const d = this.data();
-            if (d) {
-              d.stats.openReports = Math.max(0, d.stats.openReports - 1);
-              this.data.set({ ...d });
-            }
-            this.adminService.refreshPendingCount();
-            this.toastService.success('Report dismissed successfully.');
-          },
-          error: () => {
-            this.toastService.error('Failed to dismiss report.');
-          }
-        });
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  svgLinePath(): string {
+    const history = this.data()?.userGrowthHistory;
+    if (!history || history.length === 0) return '';
+    const max = Math.max(...history.map(h => h.count), 1);
+    const stepX = 500 / (history.length - 1);
+    return history.map((h, index) => {
+      const x = index * stepX;
+      const y = 75 - (h.count / max) * 70;
+      return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  svgAreaPath(): string {
+    const linePath = this.svgLinePath();
+    if (!linePath) return '';
+    const history = this.data()?.userGrowthHistory;
+    if (!history || history.length === 0) return '';
+    const stepX = 500 / (history.length - 1);
+    const lastX = (history.length - 1) * stepX;
+    return `${linePath} L ${lastX.toFixed(1)} 80 L 0 80 Z`;
   }
 }

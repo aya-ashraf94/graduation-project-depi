@@ -55,6 +55,12 @@
             <input id="w-title" class="wiz-input" type="text" placeholder="e.g. Vintage 35mm SLR Camera"
               [(ngModel)]="title" />
             <span class="wiz-hint">Be specific — good titles get more views</span>
+            <div class="wiz-char-count" [class.warn]="title.length > 0 && title.length < TITLE_MIN" [class.error]="title.length > TITLE_MAX">
+              {{ title.length }}/{{ TITLE_MAX }}
+            </div>
+            @if (titleError) {
+              <span class="wiz-field-error">{{ titleError }}</span>
+            }
           </div>
 
           <div class="wiz-field">
@@ -62,6 +68,14 @@
             <textarea id="w-desc" class="wiz-input wiz-textarea"
               placeholder="Describe the item's history, included accessories, any flaws..." [(ngModel)]="description"
               rows="4"></textarea>
+            @if (description) {
+              <div class="wiz-char-count" [class.error]="description.length > DESC_MAX">
+                {{ description.length }}/{{ DESC_MAX }}
+              </div>
+            }
+            @if (descriptionError) {
+              <span class="wiz-field-error">{{ descriptionError }}</span>
+            }
           </div>
 
           <!-- <div class="wiz-field">
@@ -211,6 +225,10 @@
               can select multiple photos at once</span>
           </div>
 
+          @if (imageError) {
+            <div class="wiz-field-error" style="margin-top: 0.75rem;">{{ imageError }}</div>
+          }
+
           @if (missingPhase1Fields.length > 0) {
           <div class="wiz-validation-errors"
             style="margin-top: 1.25rem; padding: 1rem; background: color-mix(in srgb, var(--danger) 5%, transparent); border: 2px solid var(--danger); border-radius: 8px; width: 100%;">
@@ -259,8 +277,10 @@
             <div class="wiz-toggle">
               <button type="button" class="wiz-toggle-btn" [class.active]="pricingMode === 'fixed'"
                 (click)="setPricingMode('fixed')">FIXED PRICE</button>
-              <button type="button" class="wiz-toggle-btn" [class.active]="pricingMode === 'trade'"
-                (click)="setPricingMode('trade')">OPEN TO TRADE</button>
+              <button type="button" class="wiz-toggle-btn wiz-toggle-coming-soon" disabled title="Coming Soon">
+                OPEN TO TRADE
+                <span class="wiz-coming-soon-badge">SOON</span>
+              </button>
             </div>
           </div>
 
@@ -269,9 +289,12 @@
             <label class="wiz-label" for="w-price">ASK PRICE *</label>
             <div class="wiz-price-wrap">
               <span class="wiz-currency">$</span>
-              <input id="w-price" class="wiz-input wiz-price-input" type="number" placeholder="0" min="0"
+              <input id="w-price" class="wiz-input wiz-price-input" type="number" placeholder="0" min="0" max="{{ PRICE_MAX }}"
                 [(ngModel)]="price" />
             </div>
+            @if (priceError) {
+              <span class="wiz-field-error">{{ priceError }}</span>
+            }
           </div>
 
           <div class="wiz-field">

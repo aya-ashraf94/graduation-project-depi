@@ -468,6 +468,15 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
     this.location.back();
   }
 
+  goToExploreAll(): void {
+    if (this.product?.category) {
+      const catLabel = CATEGORY_LABELS[this.product.category] || this.product.category;
+      this.router.navigate(['/products'], { queryParams: { category: catLabel } });
+    } else {
+      this.router.navigate(['/products']);
+    }
+  }
+
   toggleWishlist(): void {
     this.executeAuthorizedAction(() => {
       if (this.product) {

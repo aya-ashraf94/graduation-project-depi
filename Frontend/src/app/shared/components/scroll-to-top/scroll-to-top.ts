@@ -30,7 +30,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 500;
       transition: all 0.2s ease;
     }
     .scroll-top-btn:hover {
@@ -40,6 +40,13 @@ import { CommonModule } from '@angular/common';
     .scroll-top-btn:active {
       transform: translate(0, 0);
       box-shadow: 1px 1px 0 var(--black);
+    }
+    @media (max-width: 768px) {
+      .scroll-top-btn {
+        bottom: 5.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
+      }
     }
   `],
 })

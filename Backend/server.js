@@ -6,6 +6,7 @@ const rateLimit = require("express-rate-limit");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const { connectDB } = require("./config/db");
+const pkg = require("./package.json");
 
 dotenv.config();
 
@@ -42,7 +43,7 @@ app.use(
   })
 );
 
-app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads"), { maxAge: '7d', etag: true }));
 
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: "20mb" }));
@@ -85,6 +86,7 @@ app.get("/api/health", async (req, res) => {
     res.json({
       status: "healthy",
       database: "connected",
+      version: pkg.version,
       uptime: process.uptime()
     });
   } catch (error) {

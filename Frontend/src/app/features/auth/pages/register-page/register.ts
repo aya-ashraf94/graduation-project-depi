@@ -1,44 +1,47 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth';
-import { RegisterRequest } from '../../../../core/models/user.model';
 import { AuthLayoutComponent } from '../../../../shared/components/auth-layout/auth-layout';
+import { FormFieldComponent } from '../../../../shared/components/form-field/form-field';
+import { passwordStrength, matchField } from '../../../../shared/utils/validators';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AuthLayoutComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, AuthLayoutComponent, FormFieldComponent],
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
 export class Register {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
 
-  form = { firstName: '', lastName: '', email: '', password: '', confirmPassword: '' };
   errorMessage = signal<string | null>(null);
   isLoading = signal(false);
 
+  registerForm: FormGroup = this.fb.group({
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, passwordStrength()]],
+    confirmPassword: ['', [Validators.required, matchField('password', () => this.registerForm.get('password'))]],
+  });
+
   register() {
-    if (!this.form.email || !this.form.password || !this.form.firstName) return;
-    if (this.form.password !== this.form.confirmPassword) {
-      this.errorMessage.set("Passwords do not match");
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
       return;
     }
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const request: RegisterRequest = {
-      firstName: this.form.firstName,
-      lastName: this.form.lastName,
-      email: this.form.email,
-      password: this.form.password
-    };
+    const { firstName, lastName, email, password } = this.registerForm.value;
 
-    this.auth.register(request).subscribe({
+    this.auth.register({ firstName: firstName!, lastName: lastName!, email: email!, password: password! }).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(['/']);

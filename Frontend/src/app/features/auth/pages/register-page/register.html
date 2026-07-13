@@ -10,72 +10,27 @@
     </div>
   }
 
-  <form class="auth-form" (ngSubmit)="register()">
+  <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="register()">
     <div class="auth-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-      <div class="auth-field">
-        <input
-          id="register-firstname"
-          type="text"
-          class="auth-input"
-          placeholder="First name"
-          [(ngModel)]="form.firstName"
-          name="firstName"
-          required
-          [disabled]="isLoading()"
-        />
-      </div>
-      <div class="auth-field">
-        <input
-          id="register-lastname"
-          type="text"
-          class="auth-input"
-          placeholder="Last name"
-          [(ngModel)]="form.lastName"
-          name="lastName"
-          required
-          [disabled]="isLoading()"
-        />
-      </div>
+      <app-form-field label="First Name" [control]="registerForm.get('firstName')" [required]="true" >
+        <input id="register-firstname" type="text" class="auth-input" placeholder="First name" formControlName="firstName" [disabled]="isLoading()" />
+      </app-form-field>
+      <app-form-field label="Last Name" [control]="registerForm.get('lastName')" [required]="true" >
+        <input id="register-lastname" type="text" class="auth-input" placeholder="Last name" formControlName="lastName" [disabled]="isLoading()" />
+      </app-form-field>
     </div>
 
-    <div class="auth-field">
-      <input
-        id="register-email"
-        type="email"
-        class="auth-input"
-        placeholder="Email address"
-        [(ngModel)]="form.email"
-        name="email"
-        required
-        [disabled]="isLoading()"
-      />
-    </div>
+    <app-form-field label="Email" [control]="registerForm.get('email')" [required]="true" >
+      <input id="register-email" type="email" class="auth-input" placeholder="Email address" formControlName="email" [disabled]="isLoading()" />
+    </app-form-field>
 
     <div class="auth-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-      <div class="auth-field">
-        <input
-          id="register-password"
-          type="password"
-          class="auth-input"
-          placeholder="Password"
-          [(ngModel)]="form.password"
-          name="password"
-          required
-          [disabled]="isLoading()"
-        />
-      </div>
-      <div class="auth-field">
-        <input
-          id="register-confirm"
-          type="password"
-          class="auth-input"
-          placeholder="Confirm password"
-          [(ngModel)]="form.confirmPassword"
-          name="confirmPassword"
-          required
-          [disabled]="isLoading()"
-        />
-      </div>
+      <app-form-field label="Password" [control]="registerForm.get('password')" [required]="true"  hint="8+ chars, upper + lowercase, number &amp; symbol">
+        <input id="register-password" type="password" class="auth-input" placeholder="Password" formControlName="password" [disabled]="isLoading()" />
+      </app-form-field>
+      <app-form-field label="Confirm" [control]="registerForm.get('confirmPassword')" [required]="true" >
+        <input id="register-confirm" type="password" class="auth-input" placeholder="Confirm password" formControlName="confirmPassword" [disabled]="isLoading()" />
+      </app-form-field>
     </div>
 
     <button type="submit" class="auth-submit-btn" [disabled]="isLoading()">

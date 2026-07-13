@@ -77,36 +77,52 @@ export class CreateListing implements OnInit {
   }
 
 
-  // ── Step validation ─────────────────────────────────────────────────────
-  // get missingPhase1Fields(): string[] {
-  //   const missing: string[] = [];
-  //   if (!this.title.trim()) {
-  //     missing.push('Title');
-  //   }
-  //   if (!this.selectedCategory()) {
-  //     missing.push('Category');
-  //   } else {
-  //     const attrs = this.selectedCategory().attributes || [];
-  //     for (const attr of attrs) {
-  //       if (attr.required !== false) {
-  //         const val = this.dynamicFields[attr.name];
-  //         if (val === undefined || val === '') {
-  //           missing.push(attr.name);
-  //         }
-  //       }
-  //     }
-  //   }
-  //   if (!this.imageSlots().some(s => s !== null)) {
-  //     missing.push('At least one photo');
-  //   }
-  //   return missing;
-  // }
+  // ── Field-level validation errors ────────────────────────────────────
+  readonly TITLE_MIN = 10;
+  readonly TITLE_MAX = 100;
+  readonly DESC_MAX = 2000;
+  readonly PRICE_MAX = 99999.99;
+  readonly ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  readonly MAX_IMAGE_SIZE_MB = 5;
 
+  get titleError(): string | null {
+    const v = this.title.trim();
+    if (!v) return null; // handled by missingPhase1Fields
+    if (v.length < this.TITLE_MIN) return `Title must be at least ${this.TITLE_MIN} characters (${v.length}/${this.TITLE_MIN})`;
+    if (v.length > this.TITLE_MAX) return `Title must be ${this.TITLE_MAX} characters or fewer`;
+    return null;
+  }
+
+  get descriptionError(): string | null {
+    if (!this.description) return null;
+    if (this.description.length > this.DESC_MAX) return `Description must be ${this.DESC_MAX} characters or fewer`;
+    return null;
+  }
+
+  get priceError(): string | null {
+    if (this.pricingMode === 'trade' || this.price === null || this.price === undefined) return null;
+    if (this.price <= 0) return 'Price must be greater than 0';
+    if (this.price > this.PRICE_MAX) return `Price cannot exceed $${this.PRICE_MAX.toLocaleString()}`;
+    return null;
+  }
+
+  get imageError(): string | null {
+    return this._imageError;
+  }
+  private _imageError: string | null = null;
+
+  // ── Step validation ─────────────────────────────────────────────────────
   get missingPhase1Fields(): string[] {
     const missing: string[] = [];
 
     if (!this.title.trim()) {
       missing.push('Title');
+    } else if (this.titleError) {
+      missing.push('Title (' + this.titleError + ')');
+    }
+
+    if (this.descriptionError) {
+      missing.push('Description (' + this.descriptionError + ')');
     }
 
     if (!this.selectedCategory()) {
@@ -115,33 +131,33 @@ export class CreateListing implements OnInit {
       const attrs = this.selectedCategory().attributes || [];
 
       for (const attr of attrs) {
-        console.log('attr = ', attr.name);
-        console.log('value = ', this.dynamicFields[attr.name]);
-
         if (attr.required !== false) {
           const val = this.dynamicFields[attr.name];
-
           if (val === undefined || val === '') {
             missing.push(attr.name);
           }
         }
       }
     }
-        if (!this.imageSlots().some(s => s !== null)) {
+
+    if (!this.imageSlots().some(s => s !== null)) {
       missing.push('At least one photo');
+    } else if (this._imageError) {
+      missing.push('Photos (' + this._imageError + ')');
     }
+
     return missing;
   }
-  
+
   get phase1Valid(): boolean {
     return this.missingPhase1Fields.length === 0;
   }
 
   get phase2Valid(): boolean {
-    // السعر مطلوب في حالة الـ fixed فقط
     const priceOk = this.pricingMode === 'trade' || (this.price !== null && this.price > 0);
+    const priceCeilingOk = this.pricingMode === 'trade' || !this.priceError;
     const minPriceOk = this.pricingMode === 'trade' || this.minPrice === null || this.minPrice === undefined || (this.minPrice >= 0 && this.minPrice <= (this.price || 0));
-    return priceOk && minPriceOk;
+    return priceOk && priceCeilingOk && minPriceOk;
   }
 
   get allValid(): boolean {
@@ -184,7 +200,10 @@ export class CreateListing implements OnInit {
     this.dynamicFields = {}; // Reset الـ fields عند تغيير الكاتيجوري
   }
 
-  setPricingMode(mode: PricingMode) { this.pricingMode = mode; }
+  setPricingMode(mode: PricingMode) {
+    if (mode === 'trade') return; // Open to Trade — coming soon
+    this.pricingMode = mode;
+  }
 
   triggerFileInput(index: number) {
     this.activeSlotIndex = index;
@@ -199,8 +218,25 @@ export class CreateListing implements OnInit {
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
+    this._imageError = null;
     if (input.files && input.files.length > 0) {
       const files = Array.from(input.files);
+
+      // Validate each file's type and size
+      for (const file of files) {
+        if (!this.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+          this._imageError = `Only JPEG, PNG, and WebP images are allowed (got "${file.type}")`;
+          input.value = '';
+          this.cdr.detectChanges();
+          return;
+        }
+        if (file.size > this.MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+          this._imageError = `Each image must be under ${this.MAX_IMAGE_SIZE_MB}MB (got ${(file.size / (1024 * 1024)).toFixed(1)}MB)`;
+          input.value = '';
+          this.cdr.detectChanges();
+          return;
+        }
+      }
 
       // Limit check: maximum of 4 images total
       const currentFilledCount = this.imageSlots().filter(s => s !== null).length;

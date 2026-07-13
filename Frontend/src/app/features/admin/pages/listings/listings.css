@@ -157,12 +157,13 @@
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-soft);
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 1.5rem;
 }
 
 .table-container {
   overflow-x: auto;
+  overflow-y: visible;
 }
 
 .admin-data-table {
@@ -197,6 +198,11 @@
 
 .admin-data-table tbody tr:hover {
   background-color: var(--surface); /* Very soft warm cream color */
+}
+
+.admin-data-table tbody tr.row-active {
+  position: relative;
+  z-index: 10;
 }
 
 .admin-data-table tbody tr:last-child td {
@@ -479,7 +485,13 @@
 /* Dropdown actions column styling */
 .product-action-dropdown-container {
   position: relative;
+  isolation: isolate;
+  z-index: 9999;
   display: inline-block;
+}
+
+.product-action-dropdown-container.active {
+  z-index: 10000;
 }
 
 .manage-btn {
@@ -511,7 +523,7 @@
   border: 2px solid var(--black);
   border-radius: 6px;
   box-shadow: 3px 3px 0 var(--black);
-  z-index: 100;
+  z-index: 99999;
   min-width: 170px;
   display: flex;
   flex-direction: column;

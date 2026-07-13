@@ -24,6 +24,7 @@ export interface DashboardData {
   stats: {
     totalUsers: number;
     totalProducts: number;
+    activeProducts?: number;
     openReports: number;
     todayRevenue: number;
     todayPlatformFee: number;
@@ -42,6 +43,8 @@ export interface DashboardData {
     createdAt: string;
   }[];
   topCategories: { name: string; productCount: number; percentage: number }[];
+  topSellers: { sellerId: string; name: string; avatar: string; totalRevenue: number; orderCount: number }[];
+  userGrowthHistory: { date: string; count: number }[];
   pendingApprovals: { unverifiedProducts: number; unverifiedUsers: number };
   flashSaleStats: { activeSales: number; totalDiscountGiven: number };
   refundStats?: { pendingRefunds: number };
@@ -70,11 +73,28 @@ export interface PaginatedOrders {
   totals?: { grossRevenue: number; platformFees: number };
 }
 
+export interface RevenueOverview {
+  allTime: { gross: number; fees: number; net: number };
+  thisMonth: { gross: number; fees: number };
+  lastMonthGross: number;
+  monthChange: number;
+  pendingPayouts: {
+    id: string;
+    productTitle: string;
+    productThumbnail: string;
+    amount: number;
+    sellerName: string;
+    sellerId: string;
+    createdAt: string;
+  }[];
+}
+
 export interface AdminReport {
   id: string;
   productId: {
     id: string;
     title: string;
+    images: string[];
     userId?: {
       id: string;
       name: string;
@@ -237,6 +257,10 @@ export class AdminService {
         totals: res.totals
       }))
     );
+  }
+
+  getRevenueOverview(): Observable<RevenueOverview> {
+    return this.http.get<RevenueOverview>(`${this.apiUrl}/revenue-overview`);
   }
 
   getCoupons(): Observable<any[]> {

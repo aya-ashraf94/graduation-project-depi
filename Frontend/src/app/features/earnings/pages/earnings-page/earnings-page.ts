@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, signal, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { WalletService, WalletStats, PayoutRequest } from '../../../../core/services/wallet.service';
 import { TierService, SubscriptionInfo } from '../../../../core/services/tier.service';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
@@ -18,7 +20,7 @@ declare const Stripe: any;
   templateUrl: './earnings-page.html',
   styleUrl: './earnings-page.css',
 })
-export class EarningsPage implements OnInit, AfterViewInit {
+export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
   private walletService = inject(WalletService);
   private tierService = inject(TierService);
   private authService = inject(AuthService);
@@ -26,6 +28,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('cardElement') cardElementRef!: ElementRef;
+  private destroy$ = new Subject<void>();
 
   isLoading = true;
   walletStats: WalletStats | null = null;
@@ -70,25 +73,25 @@ export class EarningsPage implements OnInit, AfterViewInit {
 
   private loadData() {
     this.isLoading = true;
-    this.walletService.getWalletStats().subscribe({
+    this.walletService.getWalletStats().pipe(takeUntil(this.destroy$)).subscribe({
       next: (stats) => {
         this.walletStats = stats;
         this.cdr.detectChanges();
       },
       error: () => this.isLoading = false
     });
-    this.walletService.getPayouts().subscribe({
+    this.walletService.getPayouts().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => {
         this.payoutsList = list;
         this.cdr.detectChanges();
       },
       error: () => {}
     });
-    this.tierService.getMySubscription().subscribe({
+    this.tierService.getMySubscription().pipe(takeUntil(this.destroy$)).subscribe({
       next: (info) => { this.subscriptionInfo = info; this.cdr.detectChanges(); },
       error: () => {}
     });
-    this.tierService.getActiveTiers().subscribe({
+    this.tierService.getActiveTiers().pipe(takeUntil(this.destroy$)).subscribe({
       next: (tiers) => { this.availableTiers = tiers; this.cdr.detectChanges(); this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
@@ -123,7 +126,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
       this.payoutForm.amount,
       this.payoutForm.paymentMethod,
       this.payoutForm.paymentDetails
-    ).subscribe({
+    ).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Payout request submitted!');
         this.payoutForm.amount = 0;
@@ -204,7 +207,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
 
     if (price > 0 && this.stripe && this.cardElementRef) {
       // Pay via Stripe
-      this.tierService.createSubscriptionPaymentIntent(this.selectedTierId, this.selectedBillingCycle).subscribe({
+      this.tierService.createSubscriptionPaymentIntent(this.selectedTierId, this.selectedBillingCycle).pipe(takeUntil(this.destroy$)).subscribe({
         next: (res) => {
           this.clientSecret = res.clientSecret;
           this.showCardPayment = true;
@@ -225,7 +228,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
       });
     } else {
       // Free tier or wallet balance payment
-      this.tierService.subscribe(this.selectedTierId, this.selectedBillingCycle).subscribe({
+      this.tierService.subscribe(this.selectedTierId, this.selectedBillingCycle).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.toastService.success('Subscription activated!');
           this.closeTierModal();
@@ -254,7 +257,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
           result.paymentIntent.id,
           this.selectedTierId,
           this.selectedBillingCycle
-        ).subscribe({
+        ).pipe(takeUntil(this.destroy$)).subscribe({
           next: () => {
             this.toastService.success('Subscription activated!');
             this.closeTierModal();
@@ -280,7 +283,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
 
   confirmCancel() {
     this.subscribing = true;
-    this.tierService.cancelSubscription(false).subscribe({
+    this.tierService.cancelSubscription(false).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
         const refundMsg = res?.refundAmount > 0 ? ` — $${res.refundAmount.toFixed(2)} refunded` : '';
         this.toastService.success('Subscription cancelled, reverted to Free tier' + refundMsg);
@@ -304,7 +307,7 @@ export class EarningsPage implements OnInit, AfterViewInit {
   }
 
   confirmReactivate() {
-    this.tierService.toggleAutoRenew(true).subscribe({
+    this.tierService.toggleAutoRenew(true).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Auto-renew enabled — your subscription will continue');
         this.closeReactivateModal();
@@ -321,4 +324,10 @@ export class EarningsPage implements OnInit, AfterViewInit {
     }
     return null;
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 }
