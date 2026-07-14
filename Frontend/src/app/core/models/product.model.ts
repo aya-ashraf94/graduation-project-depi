@@ -48,7 +48,8 @@ export interface Product {
   isVerified?: boolean;
   trustBadge?: string | null;
   categoryName?: string;
-
+  isFeatured?: boolean;
+  featuredEndDate?: Date | string | null;
   location?: string;
   phoneNumber?: string;
   showContactInfo?: boolean;
@@ -99,6 +100,8 @@ export interface ProductSummary {
   soldByNafa3ni?: boolean;
   isVerified?: boolean;
   location?: string;
+  isFeatured?: boolean;
+  featuredEndDate?: Date | string | null;
   /** Structured location from seller profile */
   sellerGovernorate?: string;
   sellerCity?: string;

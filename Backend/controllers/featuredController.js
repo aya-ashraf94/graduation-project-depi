@@ -2,6 +2,7 @@ const db = require("../db");
 const { featuredListings, products, users, orders, settings, sellerTiers } = require("../db/schema");
 const { eq, and, or, gt, gte, lte, desc, ilike, sql } = require("drizzle-orm");
 const { createNotification } = require("../utils/notifications");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const DEFAULT_FEATURED_PRICES = { 2: 5.00, 7: 12.00, 14: 20.00 };
 
@@ -20,6 +21,80 @@ async function loadFeaturedPrices() {
   return prices;
 }
 
+async function calculatePromotionCost(sellerId, productId, duration) {
+  const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
+  if (!product) {
+    throw Object.assign(new Error("Product not found"), { status: 404 });
+  }
+  if (product.userId !== sellerId) {
+    throw Object.assign(new Error("You can only promote your own products"), { status: 403 });
+  }
+
+  const prices = await loadFeaturedPrices();
+  let amount = prices[duration];
+  if (!amount) {
+    throw Object.assign(new Error("Invalid duration"), { status: 400 });
+  }
+
+  const [sellerUser] = await db.select({
+    tierId: users.tierId,
+    tierExpiresAt: users.tierExpiresAt,
+  }).from(users).where(eq(users.id, sellerId)).limit(1);
+
+  let isFreeFromSlot = false;
+  let discountedAmount = amount;
+  let creditsApplied = 0;
+
+  if (sellerUser?.tierId && sellerUser.tierExpiresAt && new Date(sellerUser.tierExpiresAt) > new Date()) {
+    const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, sellerUser.tierId)).limit(1);
+    if (tier) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const monthlyPromos = await db.select()
+        .from(featuredListings)
+        .where(and(
+          eq(featuredListings.sellerId, sellerId),
+          gte(featuredListings.createdAt, startOfMonth)
+        ));
+
+      const sortedPromos = [...monthlyPromos].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+      let freeSlotsUsed = 0;
+      let totalDiscountUsed = 0;
+
+      for (const p of sortedPromos) {
+        if (p.amountPaid === 0) {
+          if (tier.featuredListingsIncluded > 0 && p.duration <= (tier.freeFeaturedDuration || 7) && freeSlotsUsed < tier.featuredListingsIncluded) {
+            freeSlotsUsed++;
+          } else {
+            const origPrice = prices[p.duration] || 0;
+            totalDiscountUsed += origPrice;
+          }
+        } else {
+          const origPrice = prices[p.duration] || 0;
+          const discount = Math.max(0, origPrice - p.amountPaid);
+          totalDiscountUsed += discount;
+        }
+      }
+
+      if (tier.featuredListingsIncluded > 0 && duration <= (tier.freeFeaturedDuration || 7) && freeSlotsUsed < tier.featuredListingsIncluded) {
+        isFreeFromSlot = true;
+        discountedAmount = 0;
+      } else if ((tier.monthlyPromotionCredits || 0) > 0) {
+        const remainingCredits = Math.max(0, tier.monthlyPromotionCredits - totalDiscountUsed);
+        if (remainingCredits > 0) {
+          creditsApplied = Math.min(amount, remainingCredits);
+          discountedAmount = Math.max(0, amount - creditsApplied);
+        }
+      }
+    }
+  }
+
+  return { amount: discountedAmount, originalAmount: amount, isFreeFromSlot, creditsApplied };
+}
+
 const promoteProduct = async (req, res) => {
   try {
     const sellerId = req.user.id;
@@ -34,14 +109,6 @@ const promoteProduct = async (req, res) => {
       return res.status(400).json({ message: "Duration must be 2, 7, or 14 days" });
     }
 
-    const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    if (product.userId !== sellerId) {
-      return res.status(403).json({ message: "You can only promote your own products" });
-    }
-
     // Check for duplicate active featured listing
     const now = new Date();
     const [existingFeatured] = await db.select()
@@ -53,68 +120,58 @@ const promoteProduct = async (req, res) => {
         gt(featuredListings.endDate, now)
       ))
       .limit(1);
-    if (existingFeatured) {
-      return res.status(400).json({ message: "This product is already actively promoted. Wait until the current promotion expires or extend it." });
-    }
 
-    const prices = await loadFeaturedPrices();
-    let amount = prices[duration];
-
-    // Check if seller's tier grants promotion credits
-    const [sellerUser] = await db.select({
-      balance: users.balance, tierId: users.tierId, tierExpiresAt: users.tierExpiresAt,
-    }).from(users).where(eq(users.id, sellerId)).limit(1);
-    if (!sellerUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (sellerUser.tierId && sellerUser.tierExpiresAt && new Date(sellerUser.tierExpiresAt) > new Date()) {
-      const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, sellerUser.tierId)).limit(1);
-      if (tier && (tier.monthlyPromotionCredits || 0) > 0) {
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-        // Sum the value of all promotions covered by credits this month
-        const freePromos = await db.select()
-          .from(featuredListings)
-          .where(and(
-            eq(featuredListings.sellerId, sellerId),
-            gte(featuredListings.createdAt, startOfMonth),
-            eq(featuredListings.amountPaid, 0)
-          ));
-        const usedCredits = freePromos.reduce((sum, p) => sum + (prices[p.duration] || 0), 0);
-        const remaining = tier.monthlyPromotionCredits - usedCredits;
-        if (remaining >= amount) {
-          amount = 0;
-        }
-      }
-    }
-
-    if (amount > 0 && sellerUser.balance < amount) {
-      return res.status(400).json({ message: `Insufficient balance. Promotion costs $${amount.toFixed(2)}. Please top up your balance.` });
-    }
-
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + duration);
+    const { amount, originalAmount, isFreeFromSlot, creditsApplied } = await calculatePromotionCost(sellerId, productId, duration);
 
     if (amount > 0) {
+      const [sellerUser] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, sellerId)).limit(1);
+      if (sellerUser.balance < amount) {
+        return res.status(400).json({ message: `Insufficient balance. Promotion costs $${amount.toFixed(2)}. Please top up your balance or pay by card.` });
+      }
       await db.update(users).set({
         balance: sql`${users.balance} - ${amount}`,
         updatedAt: new Date(),
       }).where(eq(users.id, sellerId));
     }
 
-    const [featured] = await db.insert(featuredListings).values({
-      productId, sellerId, duration, amountPaid: amount, endDate,
-    }).returning();
+    let endDate;
+    let featured;
+    let msg = `Product promoted for ${duration} days!`;
 
-    const msg = amount === 0
-      ? `Product promoted for ${duration} days (free via tier benefits)!`
-      : `Product promoted for ${duration} days!`;
+    if (existingFeatured) {
+      endDate = new Date(existingFeatured.endDate);
+      endDate.setDate(endDate.getDate() + duration);
+
+      const [updated] = await db.update(featuredListings)
+        .set({
+          endDate,
+          duration: existingFeatured.duration + duration,
+          amountPaid: sql`${featuredListings.amountPaid} + ${amount}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(featuredListings.id, existingFeatured.id))
+        .returning();
+      featured = updated;
+      msg = `Promotion successfully extended by ${duration} days!`;
+    } else {
+      endDate = new Date();
+      endDate.setDate(endDate.getDate() + duration);
+
+      const [inserted] = await db.insert(featuredListings).values({
+        productId, sellerId, duration, amountPaid: amount, endDate,
+      }).returning();
+      featured = inserted;
+    }
+
+    if (isFreeFromSlot) {
+      msg += ` (free via tier slots)`;
+    } else if (creditsApplied > 0) {
+      msg += ` (discounted $${creditsApplied.toFixed(2)} via tier credits)`;
+    }
     res.status(201).json({ message: msg, featured });
   } catch (error) {
     console.error("Error promoting product:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(error.status || 500).json({ message: error.message || "Server Error" });
   }
 };
 
@@ -193,29 +250,51 @@ const getRemainingFeaturedQuota = async (req, res) => {
       tierId: users.tierId, tierExpiresAt: users.tierExpiresAt,
     }).from(users).where(eq(users.id, sellerId)).limit(1);
 
-    const result = { total: 0, used: 0, remaining: 0, tierName: null, freeDuration: 7 };
+    const result = { total: 0, used: 0, remaining: 0, tierName: null, freeDuration: 7, freeListingsTotal: 0, freeListingsUsed: 0, freeListingsRemaining: 0 };
 
     if (sellerUser.tierId && sellerUser.tierExpiresAt && new Date(sellerUser.tierExpiresAt) > new Date()) {
       const [tier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, sellerUser.tierId)).limit(1);
-      if (tier && (tier.monthlyPromotionCredits || 0) > 0) {
+      if (tier) {
         const prices = await loadFeaturedPrices();
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
-        // Sum the value of free promotions this month
-        const freePromos = await db.select()
+
+        const monthlyPromos = await db.select()
           .from(featuredListings)
           .where(and(
             eq(featuredListings.sellerId, sellerId),
-            gte(featuredListings.createdAt, startOfMonth),
-            eq(featuredListings.amountPaid, 0)
+            gte(featuredListings.createdAt, startOfMonth)
           ));
-        const usedCredits = freePromos.reduce((sum, p) => sum + (prices[p.duration] || 0), 0);
-        result.total = tier.monthlyPromotionCredits;
-        result.used = usedCredits;
+
+        const sortedPromos = [...monthlyPromos].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+        let freeSlotsUsed = 0;
+        let discountUsed = 0;
+
+        for (const p of sortedPromos) {
+          if (p.amountPaid === 0) {
+            if (tier.featuredListingsIncluded > 0 && p.duration <= (tier.freeFeaturedDuration || 7) && freeSlotsUsed < tier.featuredListingsIncluded) {
+              freeSlotsUsed++;
+            } else {
+              const origPrice = prices[p.duration] || 0;
+              discountUsed += origPrice;
+            }
+          } else {
+            const origPrice = prices[p.duration] || 0;
+            const discount = Math.max(0, origPrice - p.amountPaid);
+            discountUsed += discount;
+          }
+        }
+
+        result.total = tier.monthlyPromotionCredits || 0;
+        result.used = discountUsed;
         result.remaining = Math.max(0, result.total - result.used);
         result.tierName = tier.name;
         result.freeDuration = tier.freeFeaturedDuration || 7;
+        result.freeListingsTotal = tier.featuredListingsIncluded || 0;
+        result.freeListingsUsed = freeSlotsUsed;
+        result.freeListingsRemaining = Math.max(0, result.freeListingsTotal - freeSlotsUsed);
       }
     }
 
@@ -316,4 +395,138 @@ const adminGetAllFeaturedListings = async (req, res) => {
   }
 };
 
-module.exports = { promoteProduct, getPromotionPrices, getActiveFeatured, getMyFeaturedListings, adminSetFeaturedPrice, getRemainingFeaturedQuota, adminGetAllFeaturedListings };
+const createPromotionPaymentIntent = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const { productId } = req.body;
+    let { duration } = req.body;
+
+    if (!productId || !duration) {
+      return res.status(400).json({ message: "Product ID and duration are required" });
+    }
+    duration = parseInt(duration, 10);
+    if (![2, 7, 14].includes(duration)) {
+      return res.status(400).json({ message: "Duration must be 2, 7, or 14 days" });
+    }
+
+
+
+    const { amount } = await calculatePromotionCost(sellerId, productId, duration);
+    if (amount <= 0) {
+      return res.status(400).json({ message: "This promotion is free and does not require card payment." });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: "usd",
+      metadata: {
+        userId: String(sellerId),
+        productId,
+        duration: String(duration),
+        type: "promotion",
+      },
+      automatic_payment_methods: { enabled: true },
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error("Error creating promotion payment intent:", error);
+    res.status(error.status || 500).json({ message: error.message || "Server Error" });
+  }
+};
+
+const confirmPromotionPayment = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const { paymentIntentId, productId, duration } = req.body;
+
+    if (!paymentIntentId || !productId || !duration) {
+      return res.status(400).json({ message: "Payment intent ID, product ID, and duration are required" });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({ message: "Payment has not been completed" });
+    }
+
+    const meta = paymentIntent.metadata;
+    if (meta.type !== "promotion" || meta.userId !== String(sellerId) || meta.productId !== productId || meta.duration !== String(duration)) {
+      return res.status(400).json({ message: "Payment intent metadata mismatch" });
+    }
+
+    const now = new Date();
+    const [existingFeatured] = await db.select()
+      .from(featuredListings)
+      .where(and(
+        eq(featuredListings.productId, productId),
+        eq(featuredListings.sellerId, sellerId),
+        eq(featuredListings.isActive, true),
+        gt(featuredListings.endDate, now)
+      ))
+      .limit(1);
+
+    const { amount } = await calculatePromotionCost(sellerId, productId, duration);
+
+    let endDate;
+    let featured;
+    let msg = `Product promoted successfully via card payment!`;
+
+    if (existingFeatured) {
+      endDate = new Date(existingFeatured.endDate);
+      endDate.setDate(endDate.getDate() + duration);
+
+      const [updated] = await db.update(featuredListings)
+        .set({
+          endDate,
+          duration: existingFeatured.duration + duration,
+          amountPaid: sql`${featuredListings.amountPaid} + ${amount}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(featuredListings.id, existingFeatured.id))
+        .returning();
+      featured = updated;
+      msg = `Promotion successfully extended by ${duration} days via card payment!`;
+    } else {
+      endDate = new Date();
+      endDate.setDate(endDate.getDate() + duration);
+
+      const [inserted] = await db.insert(featuredListings).values({
+        productId, sellerId, duration, amountPaid: amount, endDate,
+      }).returning();
+      featured = inserted;
+    }
+
+    res.status(201).json({ message: msg, featured });
+  } catch (error) {
+    console.error("Error confirming promotion payment:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const processFeaturedExpirations = async () => {
+  try {
+    const now = new Date();
+    const result = await db.update(featuredListings)
+      .set({ isActive: false })
+      .where(and(eq(featuredListings.isActive, true), lte(featuredListings.endDate, now)))
+      .returning();
+    if (result.length > 0) {
+      console.log(`[Featured Expiration] Deactivated ${result.length} expired promotions`);
+    }
+  } catch (error) {
+    console.error("[Featured Expiration] Error processing expirations:", error);
+  }
+};
+
+module.exports = {
+  promoteProduct,
+  getPromotionPrices,
+  getActiveFeatured,
+  getMyFeaturedListings,
+  adminSetFeaturedPrice,
+  getRemainingFeaturedQuota,
+  adminGetAllFeaturedListings,
+  createPromotionPaymentIntent,
+  confirmPromotionPayment,
+  processFeaturedExpirations
+};

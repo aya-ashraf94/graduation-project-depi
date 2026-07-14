@@ -13,7 +13,7 @@ export interface Transaction {
   status: string;
   paymentMethod: string;
   createdAt: string;
-  type?: 'order' | 'subscription' | 'refund';
+  type?: 'order' | 'subscription' | 'refund' | 'promotion';
 }
 
 export interface WalletStats {

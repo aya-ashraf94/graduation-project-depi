@@ -214,21 +214,24 @@ const getProducts = async (req, res) => {
     const total = Number(totalCountRow.value);
 
     const now = new Date();
-    const activeFeaturedRows = await db.select({ productId: featuredListings.productId })
+    const activeFeaturedSub = db.select({
+        productId: featuredListings.productId,
+        endDate: sql`max(${featuredListings.endDate})`.as('end_date')
+      })
       .from(featuredListings)
-      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)));
-    const featuredProductIds = activeFeaturedRows.map(f => f.productId);
-    const featuredSet = new Set(featuredProductIds);
+      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)))
+      .groupBy(featuredListings.productId)
+      .as('active_featured');
 
     const result = await db.select()
       .from(products)
-      .where(and(...conditions))
       .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(activeFeaturedSub, eq(products.id, activeFeaturedSub.productId))
+      .where(and(...conditions))
       .orderBy(
-        featuredProductIds.length > 0
-          ? sql`CASE WHEN ${products.id} IN (${sql.join(featuredProductIds.map(id => sql`${id}`), sql`, `)}) THEN 0 ELSE 1 END, ${orderBy}`
-          : orderBy
+        sql`CASE WHEN ${activeFeaturedSub.productId} IS NOT NULL THEN 0 ELSE 1 END`,
+        orderBy
       )
       .offset(skip)
       .limit(limit);
@@ -238,7 +241,8 @@ const getProducts = async (req, res) => {
       userId: r.users,
       categoryId: r.categories,
       trustBadge: r.users?.trustBadge || null,
-      isFeatured: featuredSet.has(r.products.id),
+      isFeatured: r.active_featured !== null && r.active_featured.productId !== null,
+      featuredEndDate: r.active_featured ? r.active_featured.endDate : null,
     }));
 
     // Apply active promotions (flash sales + category sales)
@@ -259,17 +263,30 @@ const getProducts = async (req, res) => {
 
 const getMyProducts = async (req, res) => {
   try {
+    const now = new Date();
+    const activeFeaturedSub = db.select({
+        productId: featuredListings.productId,
+        endDate: sql`max(${featuredListings.endDate})`.as('end_date')
+      })
+      .from(featuredListings)
+      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)))
+      .groupBy(featuredListings.productId)
+      .as('active_featured');
+
     const result = await db.select()
       .from(products)
-      .where(eq(products.userId, req.user.id))
       .leftJoin(users, eq(products.userId, users.id))
-      .leftJoin(categories, eq(products.categoryId, categories.id));
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(activeFeaturedSub, eq(products.id, activeFeaturedSub.productId))
+      .where(eq(products.userId, req.user.id));
 
     const formatted = result.map(r => ({
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
       trustBadge: r.users?.trustBadge || null,
+      isFeatured: r.active_featured !== null && r.active_featured.productId !== null,
+      featuredEndDate: r.active_featured ? r.active_featured.endDate : null,
     }));
 
     // Apply active promotions (flash sales + category sales)
@@ -305,17 +322,30 @@ const getUserProducts = async (req, res) => {
       conditions.push(ne(products.status, 'draft'));
     }
 
+    const now = new Date();
+    const activeFeaturedSub = db.select({
+        productId: featuredListings.productId,
+        endDate: sql`max(${featuredListings.endDate})`.as('end_date')
+      })
+      .from(featuredListings)
+      .where(and(eq(featuredListings.isActive, true), gt(featuredListings.endDate, now)))
+      .groupBy(featuredListings.productId)
+      .as('active_featured');
+
     const result = await db.select()
       .from(products)
-      .where(and(...conditions))
       .leftJoin(users, eq(products.userId, users.id))
-      .leftJoin(categories, eq(products.categoryId, categories.id));
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(activeFeaturedSub, eq(products.id, activeFeaturedSub.productId))
+      .where(and(...conditions));
 
     const formatted = result.map(r => ({
       ...r.products,
       userId: r.users,
       categoryId: r.categories,
       trustBadge: r.users?.trustBadge || null,
+      isFeatured: r.active_featured !== null && r.active_featured.productId !== null,
+      featuredEndDate: r.active_featured ? r.active_featured.endDate : null,
     }));
 
     // Apply active promotions (flash sales + category sales)

@@ -363,7 +363,9 @@ export class ProductService {
       categorySalePercent: p.categorySalePercent ?? undefined,
       savingsPercent: p.savingsPercent ?? undefined,
       savingsValue: p.savingsValue ?? undefined,
-      saleEnd: p.saleEnd ?? undefined
+      saleEnd: p.saleEnd ?? undefined,
+      isFeatured: p.isFeatured ?? false,
+      featuredEndDate: p.featuredEndDate ?? null
 
     } as any;
   }
@@ -406,7 +408,9 @@ export class ProductService {
       categorySalePercent: mapped.categorySalePercent,
       savingsPercent: mapped.savingsPercent,
       savingsValue: mapped.savingsValue,
-      saleEnd: mapped.saleEnd
+      saleEnd: mapped.saleEnd,
+      isFeatured: mapped.isFeatured ?? false,
+      featuredEndDate: mapped.featuredEndDate ?? null
     } as any;
   }
 

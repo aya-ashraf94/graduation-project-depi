@@ -209,10 +209,15 @@ const { checkAndNotifyFlashSales } = require("./controllers/flashSaleController"
 const { processTierRenewals } = require("./controllers/tierController");
 const { processExpiredOffers } = require("./controllers/offerController");
 const { processAutoPayouts } = require("./controllers/payoutController");
+const { processFeaturedExpirations } = require("./controllers/featuredController");
+
+// Run once on startup
+processFeaturedExpirations();
 
 setInterval(() => checkAndNotifyFlashSales(io), 60 * 1000); // Every minute — flash sales
 setInterval(() => processExpiredOffers(), 60 * 1000); // Every minute — offer expiry
 setInterval(() => processTierRenewals(), 60 * 60 * 1000); // Every hour — tier renewals & notifications
+setInterval(() => processFeaturedExpirations(), 60 * 60 * 1000); // Every hour — featured listing deactivations
 setInterval(async () => {
   try {
     const result = await processAutoPayouts();

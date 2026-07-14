@@ -308,6 +308,9 @@
                     />
                   </svg>
                 </button>
+                <div class="card-featured-badge" *ngIf="item.isFeatured">
+                  <span>⭐ PROMOTED</span>
+                </div>
                 <img
                   [src]="item.thumbnail"
                   [alt]="item.title"
@@ -1125,9 +1128,18 @@
       <button class="brutal-modal-close" (click)="closePromoteModal()">✕</button>
     </div>
     <div class="brutal-modal-body">
+      <!-- Already Promoted Warning / Extension Notice -->
+      <div *ngIf="selectedProductForPromote?.isFeatured" class="confirm-notice" style="margin-bottom: 1.25rem; background: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px; box-shadow: 2px 2px 0 #3b82f6; display: flex; gap: 0.5rem; padding: 0.75rem; color: #1e3a8a; font-size: 0.85rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" style="flex-shrink: 0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div>
+          <strong>This product is already actively promoted!</strong>
+          Choosing a duration below will **extend** the promotion. The current promotion is active until <strong>{{ selectedProductForPromote?.featuredEndDate | date:'medium' }}</strong> (the new days will start after this date).
+        </div>
+      </div>
+
       <div class="form-group-v2">
         <label>Promotion Duration</label>
-        <select [(ngModel)]="selectedDuration" class="neo-select">
+        <select [(ngModel)]="selectedDuration" (change)="onDurationChange()" class="neo-select">
           <option [ngValue]="2">2 Days — ${{ featuredPrices[2] || 5 }}.00</option>
           <option [ngValue]="7">1 Week — ${{ featuredPrices[7] || 12 }}.00</option>
           <option [ngValue]="14">2 Weeks — ${{ featuredPrices[14] || 20 }}.00</option>
@@ -1138,23 +1150,61 @@
         <div class="skeleton-line skeleton-line-sm"></div>
         <div class="skeleton-line skeleton-line-xs" style="margin-top: 0.3rem;"></div>
       </div>
-      <div *ngIf="!loadingQuota && featuredQuota && featuredQuota.total > 0" class="promo-credit-banner">
-        <p class="promo-credit-title">🏆 {{ featuredQuota.tierName }} — <span class="promo-credit-amount">${{ featuredQuota.remaining.toFixed(2) }}</span> promotion credit remaining this month</p>
-        <p class="promo-credit-hint">
-          <span *ngIf="promoteCost === 0">This promotion is covered by your credits at no charge.</span>
-          <span *ngIf="promoteCost !== 0">You've used all your monthly credits. Promotions will be charged to your balance.</span>
+      <div *ngIf="!loadingQuota && featuredQuota && (featuredQuota.total > 0 || (featuredQuota.freeListingsTotal ?? 0) > 0)" class="promo-credit-banner">
+        <p class="promo-credit-title" *ngIf="(featuredQuota.freeListingsTotal ?? 0) > 0">
+          🎁 {{ featuredQuota.tierName }} — <span class="promo-credit-amount">{{ featuredQuota.freeListingsRemaining }} / {{ featuredQuota.freeListingsTotal }}</span> free listings (up to {{ featuredQuota.freeDuration }} days) remaining this month
+        </p>
+        <p class="promo-credit-title" *ngIf="featuredQuota.total > 0" style="margin-top: 0.5rem;">
+          🏆 {{ featuredQuota.tierName }} — <span class="promo-credit-amount">${{ featuredQuota.remaining.toFixed(2) }}</span> promotion credits remaining this month
+        </p>
+        <p class="promo-credit-hint" style="margin-top: 0.5rem;">
+          <span *ngIf="promoteCost === 0">This promotion is covered by your tier benefits at no charge.</span>
+          <span *ngIf="promoteCost !== 0">The cost will be paid via your selected payment method.</span>
         </p>
       </div>
 
-      <div class="promo-cost-box">
-        <p class="promo-cost-text">💰 Cost: <strong>${{ promoteCost.toFixed(2) }}</strong> will be deducted from your balance.</p>
-        <p class="promo-balance-text">Available balance: <strong>${{ walletStats?.balance?.toFixed(2) || '0.00' }}</strong></p>
+      <!-- Payment Method Selector if cost > 0 -->
+      <div *ngIf="promoteCost > 0 && !showCardPayment" class="sub-payment-selector">
+        <label class="sub-payment-selector-title">Select Payment Method</label>
+        
+        <div class="sub-payment-option" [class.disabled]="(walletStats?.balance || 0) < promoteCost" (click)="selectPromotePaymentMethod('wallet')">
+          <input type="radio" id="promo-pay-wallet" name="promotePaymentMethod" [checked]="promotePaymentMethod === 'wallet'" [disabled]="(walletStats?.balance || 0) < promoteCost">
+          <label for="promo-pay-wallet">
+            <strong>Pay with Wallet Balance</strong>
+            <span class="sub-payment-balance">Available: ${{ walletStats?.balance?.toFixed(2) || '0.00' }}</span>
+          </label>
+        </div>
+
+        <div class="sub-payment-option" (click)="selectPromotePaymentMethod('stripe')">
+          <input type="radio" id="promo-pay-stripe" name="promotePaymentMethod" [checked]="promotePaymentMethod === 'stripe'">
+          <label for="promo-pay-stripe">
+            <strong>Pay with Credit/Debit Card</strong>
+            <span class="sub-payment-balance">Powered by Stripe</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Stripe Card Input -->
+      <div *ngIf="showCardPayment && clientSecret" class="form-group" style="margin-top: 1rem;">
+        <label>Card Details</label>
+        <div #cardElement class="stripe-card-element"></div>
+      </div>
+
+      <div class="promo-cost-box" *ngIf="!showCardPayment">
+        <p class="promo-cost-text">💰 Cost: <strong>${{ promoteCost.toFixed(2) }}</strong></p>
+        <p class="promo-balance-text" *ngIf="promotePaymentMethod === 'wallet'">Available balance: <strong>${{ walletStats?.balance?.toFixed(2) || '0.00' }}</strong></p>
       </div>
 
       <div class="brutal-modal-footer">
-        <button class="brutal-btn brutal-btn-secondary" (click)="closePromoteModal()">Cancel</button>
-        <button class="brutal-btn brutal-btn-primary" (click)="promoteProduct()" [disabled]="promoting || promoteCost > (walletStats?.balance || 0)">
-          {{ promoting ? 'Processing...' : '⭐ Promote Now' }}
+        <button class="brutal-btn brutal-btn-secondary" (click)="showCardPayment ? (showCardPayment = false) : closePromoteModal()">
+          {{ showCardPayment ? 'Back' : 'Cancel' }}
+        </button>
+        
+        <button *ngIf="showCardPayment" class="brutal-btn brutal-btn-primary" [disabled]="promoting" (click)="confirmCardPayment()">
+          {{ promoting ? 'Processing...' : (selectedProductForPromote?.isFeatured ? '💳 Pay & Extend' : '💳 Pay & Promote') }}
+        </button>
+        <button *ngIf="!showCardPayment" class="brutal-btn brutal-btn-primary" (click)="promoteProduct()" [disabled]="promoting || (promoteCost > 0 && promotePaymentMethod === 'wallet' && promoteCost > (walletStats?.balance || 0))">
+          {{ promoting ? 'Processing...' : (promoteCost > 0 && promotePaymentMethod === 'stripe' ? (selectedProductForPromote?.isFeatured ? '🔁 Continue to Extend' : '⭐ Continue to Payment') : (selectedProductForPromote?.isFeatured ? '🔁 Extend Promotion' : '⭐ Promote Now')) }}
         </button>
       </div>
     </div>

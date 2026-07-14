@@ -15,6 +15,9 @@ import { WalletService, WalletStats, PayoutRequest } from '../../../../core/serv
 import { RefundService } from '../../../../core/services/refund.service';
 import { FeaturedService } from '../../../../core/services/featured.service';
 import { TierService } from '../../../../core/services/tier.service';
+import { environment } from '../../../../../environments/environment';
+
+declare const Stripe: any;
 
 import { User } from '../../../../core/models/user.model';
 import { ProductSummary } from '../../../../core/models/product.model';
@@ -109,11 +112,45 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
   featuredPrices: { [key: number]: number } = { 2: 5, 7: 12, 14: 20 };
   selectedDuration = 7;
   promoting = false;
-  featuredQuota: { total: number; used: number; remaining: number; tierName: string | null; freeDuration: number } | null = null;
+  featuredQuota: { total: number; used: number; remaining: number; tierName: string | null; freeDuration: number; freeListingsTotal?: number; freeListingsUsed?: number; freeListingsRemaining?: number } | null = null;
   featuredPricesLoaded = false;
   loadingQuota = false;
   myFeaturedListings: any[] = [];
   showMyFeatured = false;
+
+  // Stripe direct promotion payment state
+  stripe: any = null;
+  card: any = null;
+  showCardPayment = false;
+  clientSecret = '';
+  promotePaymentMethod: 'wallet' | 'stripe' = 'wallet';
+  @ViewChild('cardElement') cardElementRef!: ElementRef;
+
+  selectPromotePaymentMethod(method: 'wallet' | 'stripe') {
+    if (method === 'wallet' && this.walletStats && this.walletStats.balance < this.promoteCost) {
+      return;
+    }
+    this.promotePaymentMethod = method;
+  }
+
+  updatePromotePaymentMethodDefault() {
+    const cost = this.promoteCost;
+    if (cost === 0 || (this.walletStats && this.walletStats.balance >= cost)) {
+      this.promotePaymentMethod = 'wallet';
+    } else {
+      this.promotePaymentMethod = 'stripe';
+    }
+  }
+
+  onDurationChange() {
+    this.showCardPayment = false;
+    this.clientSecret = '';
+    if (this.card) {
+      this.card.destroy();
+      this.card = null;
+    }
+    this.updatePromotePaymentMethodDefault();
+  }
 
   isViewerBlocked = false;
   isPartnerBlockedByMe = false;
@@ -901,13 +938,27 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
     this.promoting = false;
     this.featuredQuota = null;
     this.featuredPricesLoaded = false;
+    this.showCardPayment = false;
+    this.clientSecret = '';
+    this.promotePaymentMethod = 'wallet';
+
     this.featuredService.getPrices().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (prices) => { this.featuredPrices = prices; this.featuredPricesLoaded = true; this.cdr.markForCheck(); },
+      next: (prices) => { 
+        this.featuredPrices = prices; 
+        this.featuredPricesLoaded = true; 
+        this.updatePromotePaymentMethodDefault();
+        this.cdr.markForCheck(); 
+      },
       error: () => { this.featuredPricesLoaded = true; this.cdr.markForCheck(); }
     });
     this.loadingQuota = true;
     this.featuredService.getRemainingQuota().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (q) => { this.featuredQuota = q; this.loadingQuota = false; this.cdr.markForCheck(); },
+      next: (q) => { 
+        this.featuredQuota = q; 
+        this.loadingQuota = false; 
+        this.updatePromotePaymentMethodDefault();
+        this.cdr.markForCheck(); 
+      },
       error: () => { this.loadingQuota = false; this.cdr.markForCheck(); }
     });
     this.loadWalletData();
@@ -918,27 +969,112 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
   closePromoteModal() {
     this.showPromoteModal = false;
     this.selectedProductForPromote = null;
+    this.showCardPayment = false;
+    this.clientSecret = '';
+    if (this.card) {
+      this.card.destroy();
+      this.card = null;
+    }
   }
 
   get promoteCost(): number {
     const price = this.featuredPrices[this.selectedDuration] || 0;
-    if ((this.featuredQuota?.remaining ?? 0) >= price) return 0;
+    
+    // Check if covered by free listings slot from tier
+    if (this.featuredQuota && (this.featuredQuota.freeListingsRemaining ?? 0) > 0 && this.selectedDuration <= this.featuredQuota.freeDuration) {
+      return 0;
+    }
+    
+    // Check if covered by promotion credits
+    if ((this.featuredQuota?.remaining ?? 0) >= price) {
+      return 0;
+    }
+    
+    // Partially covered by credits: they pay the difference!
+    const credits = this.featuredQuota?.remaining ?? 0;
+    if (credits > 0) {
+      return Math.max(0, price - credits);
+    }
+    
     return price;
   }
 
   promoteProduct() {
     if (!this.selectedProductForPromote) return;
     this.promoting = true;
-    this.featuredService.promoteProduct(this.selectedProductForPromote.id, this.selectedDuration).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.toastService.success(`Product promoted for ${this.selectedDuration} days!`);
-        this.closePromoteModal();
-        this.loadWalletData();
+
+    const cost = this.promoteCost;
+
+    if (cost > 0 && this.promotePaymentMethod === 'stripe' && this.stripe) {
+      this.featuredService.createPromotionPaymentIntent(this.selectedProductForPromote.id, this.selectedDuration)
+        .pipe(takeUntil(this.destroy$)).subscribe({
+          next: (res) => {
+            this.clientSecret = res.clientSecret;
+            this.showCardPayment = true;
+            this.promoting = false;
+            this.cdr.detectChanges();
+
+            setTimeout(() => {
+              const elements = this.stripe.elements();
+              this.card = elements.create('card', { style: { base: { fontSize: '16px' } } });
+              this.card.mount(this.cardElementRef.nativeElement);
+              this.cdr.detectChanges();
+            });
+          },
+          error: (err) => {
+            this.toastService.error(err?.error?.message || 'Failed to initialize payment');
+            this.promoting = false;
+            this.cdr.detectChanges();
+          }
+        });
+    } else {
+      this.featuredService.promoteProduct(this.selectedProductForPromote.id, this.selectedDuration)
+        .pipe(takeUntil(this.destroy$)).subscribe({
+          next: (res) => {
+            this.toastService.success(res?.message || `Product promoted for ${this.selectedDuration} days!`);
+            this.closePromoteModal();
+            this.loadWalletData();
+            this.promoting = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.toastService.error(err?.error?.message || 'Failed to promote product');
+            this.promoting = false;
+            this.cdr.detectChanges();
+          }
+        });
+    }
+  }
+
+  confirmCardPayment() {
+    if (!this.stripe || !this.card || !this.clientSecret || !this.selectedProductForPromote) return;
+    this.promoting = true;
+    this.stripe.confirmCardPayment(this.clientSecret, {
+      payment_method: { card: this.card },
+    }).then((result: any) => {
+      if (result.error) {
+        this.toastService.error(result.error.message || 'Card payment failed');
         this.promoting = false;
-      },
-      error: (err) => {
-        this.toastService.error(err?.error?.message || 'Failed to promote product');
-        this.promoting = false;
+        this.cdr.detectChanges();
+      } else {
+        this.featuredService.confirmPromotionPayment(
+          result.paymentIntent.id,
+          this.selectedProductForPromote!.id,
+          this.selectedDuration
+        ).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.toastService.success(`Product promoted for ${this.selectedDuration} days!`);
+            this.closePromoteModal();
+            this.loadWalletData();
+            this.promoting = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.toastService.error(err?.error?.message || 'Failed to confirm promotion');
+            this.promoting = false;
+            this.cdr.detectChanges();
+          }
+        });
       }
     });
   }
@@ -1028,6 +1164,9 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.scrollToTabsSection();
+    if (typeof Stripe !== 'undefined') {
+      this.stripe = Stripe(environment.stripePublishableKey);
+    }
   }
 
   scrollToTabsSection(): void {

@@ -101,6 +101,10 @@
                       <div class="tx-thumb-placeholder tx-sub-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                       </div>
+                    } @else if (tx.type === 'promotion') {
+                      <div class="tx-thumb-placeholder" style="background: #fef9c3; border: 1.5px solid #ca8a04; color: #a16207;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      </div>
                     } @else if (tx.productThumbnail) {
                       <img [src]="tx.productThumbnail" alt="" />
                     } @else {
@@ -111,10 +115,10 @@
                   </div>
                   <div class="tx-info">
                     <span class="tx-title">{{ tx.productTitle }}</span>
-                    <span class="tx-meta">{{ tx.createdAt | date:'mediumDate' }} · {{ tx.type === 'refund' ? 'Refund' : (tx.type === 'subscription' ? 'Subscription' : (tx.paymentMethod === 'online' ? 'Card' : 'COD')) }}</span>
+                    <span class="tx-meta">{{ tx.createdAt | date:'mediumDate' }} · {{ tx.type === 'refund' ? 'Refund' : (tx.type === 'subscription' ? 'Subscription' : (tx.type === 'promotion' ? 'Promotion' : (tx.paymentMethod === 'online' ? 'Card' : 'COD'))) }}</span>
                   </div>
                   <div class="tx-amounts">
-                    <span class="tx-net" [class.tx-net-negative]="tx.type === 'subscription'" [class.tx-net-positive]="tx.type === 'refund'">{{ tx.netEarnings | currencyFormat }}</span>
+                    <span class="tx-net" [class.tx-net-negative]="tx.type === 'subscription' || tx.type === 'promotion'" [class.tx-net-positive]="tx.type === 'refund'">{{ tx.netEarnings | currencyFormat }}</span>
                     @if (tx.platformFee > 0) {
                       <span class="tx-fee">Fee: -{{ tx.platformFee | currencyFormat }}</span>
                     }
@@ -203,8 +207,8 @@
       </div>
       <div class="brutal-modal-body">
         <div class="billing-toggle">
-          <button class="bill-btn" [class.active]="selectedBillingCycle === 'monthly'" (click)="selectedBillingCycle = 'monthly'">Monthly</button>
-          <button class="bill-btn" [class.active]="selectedBillingCycle === 'yearly'" (click)="selectedBillingCycle = 'yearly'">Yearly <span class="bill-save">Save ~17%</span></button>
+          <button class="bill-btn" [class.active]="selectedBillingCycle === 'monthly'" (click)="setBillingCycle('monthly')">Monthly</button>
+          <button class="bill-btn" [class.active]="selectedBillingCycle === 'yearly'" (click)="setBillingCycle('yearly')">Yearly <span class="bill-save">Save ~17%</span></button>
         </div>
 
         <div class="tier-grid">
@@ -219,7 +223,7 @@
               [style.--card-border]="selectedTierId === tier.id ? colors.accent : colors.border"
               [class.selected]="selectedTierId === tier.id"
               [class.current-tier]="isCurrent"
-              (click)="selectedTierId = tier.id">
+              (click)="selectTier(tier.id)">
 
               <div class="tier-card-header">
                 <span class="tier-icon">{{ colors.icon }}</span>
@@ -279,6 +283,28 @@
           }
         </div>
 
+        @if (selectedTierDetails && tierPrice(selectedTierDetails) > 0 && !showCardPayment) {
+          <div class="sub-payment-selector">
+            <label class="sub-payment-selector-title">Select Payment Method</label>
+            
+            <div class="sub-payment-option" [class.disabled]="(walletStats?.balance || 0) < tierPrice(selectedTierDetails)" (click)="selectSubPaymentMethod('wallet')">
+              <input type="radio" id="pay-wallet" name="subPaymentMethod" [checked]="subPaymentMethod === 'wallet'" [disabled]="(walletStats?.balance || 0) < tierPrice(selectedTierDetails)">
+              <label for="pay-wallet">
+                <strong>Pay with Wallet Balance</strong>
+                <span class="sub-payment-balance">Available: ${{ walletStats?.balance?.toFixed(2) }}</span>
+              </label>
+            </div>
+
+            <div class="sub-payment-option" (click)="selectSubPaymentMethod('stripe')">
+              <input type="radio" id="pay-stripe" name="subPaymentMethod" [checked]="subPaymentMethod === 'stripe'">
+              <label for="pay-stripe">
+                <strong>Pay with Credit/Debit Card</strong>
+                <span class="sub-payment-balance">Powered by Stripe</span>
+              </label>
+            </div>
+          </div>
+        }
+
         @if (showCardPayment && clientSecret) {
           <div class="form-group">
             <label>Card Details</label>
@@ -294,7 +320,7 @@
           <div class="brutal-modal-footer">
             <button class="brutal-btn brutal-btn-secondary" (click)="closeTierModal()">Cancel</button>
             <button class="brutal-btn brutal-btn-primary" [disabled]="!selectedTierId || subscribing" (click)="subscribeToTier()">
-              {{ subscribing ? 'Processing...' : 'Subscribe' }}
+              {{ subscribing ? 'Processing...' : (selectedTierDetails && tierPrice(selectedTierDetails) > 0 && subPaymentMethod === 'stripe' ? '⭐ Continue to Payment' : 'Subscribe') }}
             </button>
           </div>
         }
@@ -336,15 +362,15 @@
         <div class="confirm-notice">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <div>
-            <strong>Your plan will be cancelled immediately.</strong>
-            You'll revert to the Free tier (8% fee). A <strong>prorated refund</strong> for unused days will be credited back — via Stripe if paid by card, or to your wallet balance.
+            <strong>Your plan will be cancelled at the end of your billing cycle.</strong>
+            You will keep all tier benefits (fee discounts, credits, etc.) until <strong>{{ cancelDate }}</strong>. No refund will be issued, and auto-renew will be disabled.
           </div>
         </div>
 
         <div class="brutal-modal-footer">
           <button class="brutal-btn brutal-btn-secondary" (click)="closeCancelModal()">Keep My Plan</button>
           <button class="brutal-btn brutal-btn-danger" (click)="confirmCancel()" [disabled]="subscribing">
-            {{ subscribing ? 'Processing...' : 'Confirm Cancel & Refund' }}
+            {{ subscribing ? 'Processing...' : 'Confirm Cancellation' }}
           </button>
         </div>
       </div>

@@ -42,6 +42,22 @@ export class FeaturedService {
     return this.http.post<any>(`${this.apiUrl}/promote`, { productId, duration }, { withCredentials: true });
   }
 
+  createPromotionPaymentIntent(productId: string, duration: number): Observable<{ clientSecret: string }> {
+    return this.http.post<{ clientSecret: string }>(
+      `${this.apiUrl}/create-promotion-payment-intent`,
+      { productId, duration },
+      { withCredentials: true }
+    );
+  }
+
+  confirmPromotionPayment(paymentIntentId: string, productId: string, duration: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/confirm-promotion-payment`,
+      { paymentIntentId, productId, duration },
+      { withCredentials: true }
+    );
+  }
+
   getActiveFeatured(): Observable<FeaturedListing[]> {
     return this.http.get<FeaturedListing[]>(`${this.apiUrl}/active`);
   }

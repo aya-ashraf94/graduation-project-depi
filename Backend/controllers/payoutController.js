@@ -1,5 +1,5 @@
 const db = require("../db");
-const { payouts, users, orders, products, settings, subscriptionTransactions, sellerTiers } = require("../db/schema");
+const { payouts, users, orders, products, settings, subscriptionTransactions, sellerTiers, featuredListings } = require("../db/schema");
 const { eq, and, desc, sql, lte } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { createNotification } = require("../utils/notifications");
@@ -179,8 +179,38 @@ const getWalletStats = async (req, res) => {
       type: 'order',
     }));
 
+    // Recent featured listings (promotions)
+    const recentFeatured = await db.select({
+      id: featuredListings.id,
+      duration: featuredListings.duration,
+      amountPaid: featuredListings.amountPaid,
+      createdAt: featuredListings.createdAt,
+      productTitle: products.title,
+      productThumbnail: products.images,
+    }).from(featuredListings)
+      .leftJoin(products, eq(featuredListings.productId, products.id))
+      .where(and(
+        eq(featuredListings.sellerId, sellerId),
+        sql`${featuredListings.amountPaid} > 0`
+      ))
+      .orderBy(desc(featuredListings.createdAt))
+      .limit(20);
+
+    const promoTransactions = recentFeatured.map(f => ({
+      id: f.id,
+      productTitle: `Promotion — ${f.productTitle || 'Product'} (${f.duration} Days)`,
+      productThumbnail: (f.productThumbnail || [])[0] || '',
+      amount: f.amountPaid,
+      platformFee: 0,
+      netEarnings: -f.amountPaid,
+      status: 'completed',
+      paymentMethod: 'wallet/card',
+      createdAt: f.createdAt,
+      type: 'promotion',
+    }));
+
     // Merge and sort by most recent
-    const recentTransactions = [...orderTransactions, ...subTransactions]
+    const recentTransactions = [...orderTransactions, ...subTransactions, ...promoTransactions]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 20);
 

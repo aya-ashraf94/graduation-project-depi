@@ -143,9 +143,12 @@ export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Subscription ──
 
+  subPaymentMethod: 'wallet' | 'stripe' = 'stripe';
+
   openTierModal() {
     this.selectedTierId = '';
     this.selectedBillingCycle = 'monthly';
+    this.subPaymentMethod = 'stripe';
     this.showTierModal = true;
   }
 
@@ -157,6 +160,35 @@ export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.card) {
       this.card.destroy();
       this.card = null;
+    }
+  }
+
+  selectTier(tierId: string) {
+    this.selectedTierId = tierId;
+    const tier = this.availableTiers.find(t => t.id === tierId);
+    if (tier) {
+      const price = this.tierPrice(tier);
+      if (price > 0 && this.walletStats && this.walletStats.balance >= price) {
+        this.subPaymentMethod = 'wallet';
+      } else {
+        this.subPaymentMethod = 'stripe';
+      }
+    }
+  }
+
+  selectSubPaymentMethod(method: 'wallet' | 'stripe') {
+    const tier = this.selectedTierDetails;
+    const price = tier ? this.tierPrice(tier) : 0;
+    if (method === 'wallet' && this.walletStats && this.walletStats.balance < price) {
+      return;
+    }
+    this.subPaymentMethod = method;
+  }
+
+  setBillingCycle(cycle: 'monthly' | 'yearly') {
+    this.selectedBillingCycle = cycle;
+    if (this.selectedTierId) {
+      this.selectTier(this.selectedTierId);
     }
   }
 
@@ -205,7 +237,7 @@ export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
     const selectedTier = this.selectedTierDetails;
     const price = this.selectedBillingCycle === 'monthly' ? selectedTier?.monthlyPrice : selectedTier?.yearlyPrice;
 
-    if (price > 0 && this.stripe && this.cardElementRef) {
+    if (price > 0 && this.subPaymentMethod === 'stripe' && this.stripe) {
       // Pay via Stripe
       this.tierService.createSubscriptionPaymentIntent(this.selectedTierId, this.selectedBillingCycle).pipe(takeUntil(this.destroy$)).subscribe({
         next: (res) => {
@@ -283,10 +315,9 @@ export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
 
   confirmCancel() {
     this.subscribing = true;
-    this.tierService.cancelSubscription(false).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res: any) => {
-        const refundMsg = res?.refundAmount > 0 ? ` — $${res.refundAmount.toFixed(2)} refunded` : '';
-        this.toastService.success('Subscription cancelled, reverted to Free tier' + refundMsg);
+    this.tierService.cancelSubscription(true).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.toastService.success('Auto-renew disabled. Your subscription will end at the close of this billing cycle.');
         this.closeCancelModal();
         this.subscribing = false;
         this.loadData();
