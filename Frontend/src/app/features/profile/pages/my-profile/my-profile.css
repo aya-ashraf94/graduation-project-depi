@@ -3730,3 +3730,153 @@
   box-shadow: 1px 1px 0 var(--black);
   z-index: 10;
 }
+
+/* ---------- PREMIUM REFUND MODAL DESIGN ---------- */
+.refund-modal-card {
+  background: var(--white);
+  border: 3px solid var(--black);
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 var(--black);
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  animation: modalScaleIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.refund-modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid var(--black);
+  color: var(--black);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  z-index: 10;
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.refund-modal-close:hover {
+  background: var(--gray-light);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.refund-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fef3c7;
+  border: 3.5px solid var(--black);
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.refund-btn-primary {
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  border: 3px solid var(--black);
+  border-radius: 10px;
+  background: var(--yellow);
+  color: var(--black);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--black);
+  transition: all 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.refund-btn-primary:hover:not(:disabled) {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4.5px 4.5px 0 var(--black);
+  background: var(--yellow-dark);
+}
+
+.refund-btn-primary:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--black);
+}
+
+.refund-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 1px 1px 0 var(--black) !important;
+}
+
+.refund-btn-secondary {
+  font-family: var(--font-primary);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  border: 2.5px solid var(--black);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--black);
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--black);
+  transition: all 0.12s ease;
+}
+
+.refund-btn-secondary:hover:not(:disabled) {
+  background: var(--gray-light);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--black);
+}
+
+.refund-btn-secondary:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--black);
+}
+
+.refund-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.spinner-ring {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2.5px solid var(--black);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spinRing 0.6s linear infinite;
+}
+
+@keyframes spinRing {
+  to { transform: rotate(360deg); }
+}
+
+.refund-form-lock {
+  position: relative;
+}
+
+.refund-form-lock.locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.4);
+  z-index: 5;
+  cursor: not-allowed;
+}

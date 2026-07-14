@@ -1,5 +1,5 @@
 const db = require("../db");
-const { orders, products, users, coupons, offers, settings } = require("../db/schema");
+const { orders, products, users, coupons, offers, settings, refundRequests } = require("../db/schema");
 const { createNotification } = require("../utils/notifications");
 const { eq, or, and, desc, sql, lt } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
@@ -22,7 +22,7 @@ const formatOrder = (row, currentUserId) => {
       id: u.id,
       firstName: nameParts[0] || '',
       lastName: nameParts.slice(1).join(' ') || '',
-      avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email}`,
+      avatar: u.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
       isVerified: u.isVerified || false,
       rating: u.rating || 5.0,
     };
@@ -51,7 +51,7 @@ const formatOrder = (row, currentUserId) => {
     couponDiscount: o.couponDiscount,
     offerAmount: o.offerAmount,
     platformFee: o.platformFee,
-    totalPrice: o.price + (o.platformFee || 0),
+    totalPrice: o.price,
     status: o.status,
     paymentMethod: o.paymentMethod,
     shippingAddress: o.shippingAddress,
@@ -345,19 +345,41 @@ const updateOrder = async (req, res) => {
     } else if (status === "delivered") {
       if (order.status !== "delivered") {
         if (order.paymentMethod === "online") {
-          // Credit seller's balance net of platform fee
-          const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
-          await db.update(users)
-            .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
-            .where(eq(users.id, order.sellerId));
+          // Fetch seller details to check if they are Tier 1 (trusted)
+          const [sellerUser] = await db.select({
+            totalSales: users.totalSales,
+            rating: users.rating,
+          }).from(users).where(eq(users.id, order.sellerId)).limit(1);
+
+          const isTrusted = sellerUser && sellerUser.totalSales >= 5 && Number(sellerUser.rating) >= 4.5;
+
+          if (isTrusted) {
+            // Credit seller's balance immediately
+            const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
+            await db.update(users)
+              .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
+              .where(eq(users.id, order.sellerId));
+            
+            await db.update(orders)
+              .set({ fundsReleased: true, updatedAt: new Date() })
+              .where(eq(orders.id, order.id));
+          } else {
+            // New/untrusted seller: hold funds in escrow (fundsReleased = false) for 3 days
+            await db.update(orders)
+              .set({ fundsReleased: false, updatedAt: new Date() })
+              .where(eq(orders.id, order.id));
+          }
         } else if (order.paymentMethod === "cash_on_delivery") {
-          // Deduct COD platform fee from seller's wallet (seller keeps the cash)
+          // Deduct platform fee immediately for COD
           const codFee = order.platformFee || 0;
           if (codFee > 0) {
             await db.update(users)
               .set({ balance: sql`${users.balance} - ${codFee}`, updatedAt: new Date() })
               .where(eq(users.id, order.sellerId));
           }
+          await db.update(orders)
+            .set({ fundsReleased: true, updatedAt: new Date() })
+            .where(eq(orders.id, order.id));
         }
       }
 
@@ -459,9 +481,9 @@ const getRandomActiveCoupon = async (req, res) => {
 
     res.json({
       code: order.code,
-      discountType: order.discountType,
-      discountValue: order.discountValue,
-      expiryDate: order.expiryDate
+      discountType: order.discount_type,
+      discountValue: order.discount_value,
+      expiryDate: order.expiry_date
     });
   } catch (error) {
     console.error("Error fetching random coupon:", error);
@@ -481,7 +503,7 @@ const autoConfirmDelivery = async () => {
     let confirmed = 0;
     for (const order of staleOrders) {
       await db.update(orders)
-        .set({ status: "delivered", updatedAt: new Date() })
+        .set({ status: "delivered", fundsReleased: true, updatedAt: new Date() })
         .where(eq(orders.id, order.id));
 
       if (order.paymentMethod === "online") {
@@ -584,7 +606,16 @@ const resolveDispute = async (req, res) => {
         linkedRoute: "/profile/me?tab=orders&view=sales", linkedEntityId: order.id,
       });
     } else {
-      await db.update(orders).set({ status: "delivered", updatedAt: new Date() }).where(eq(orders.id, order.id));
+      await db.update(orders)
+        .set({ status: "delivered", fundsReleased: true, updatedAt: new Date() })
+        .where(eq(orders.id, order.id));
+
+      if (order.paymentMethod === "online" && !order.fundsReleased) {
+        const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
+        await db.update(users)
+          .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
+          .where(eq(users.id, order.sellerId));
+      }
 
       await createNotification({
         userId: order.buyerId, type: "system", title: "Dispute Resolved — Seller Side",
@@ -608,6 +639,57 @@ const resolveDispute = async (req, res) => {
   }
 };
 
+const processPendingEscrowFunds = async () => {
+  try {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    // Find all online orders that are delivered, not yet released, and were delivered at least 3 days ago
+    const pendingOrders = await db.select().from(orders)
+      .where(and(
+        eq(orders.status, "delivered"),
+        eq(orders.paymentMethod, "online"),
+        eq(orders.fundsReleased, false),
+        sql`${orders.updatedAt} <= ${threeDaysAgo}`
+      ));
+
+    let releasedCount = 0;
+    for (const order of pendingOrders) {
+      // Check if there is an active refund request
+      const [pendingRefund] = await db.select().from(refundRequests)
+        .where(and(
+          eq(refundRequests.orderId, order.id),
+          eq(refundRequests.status, "pending")
+        ))
+        .limit(1);
+
+      if (pendingRefund) {
+        // Dispute active, keep funds locked
+        continue;
+      }
+
+      // No dispute, release funds to the seller
+      const netEarnings = Math.max(0, (order.price || 0) - (order.platformFee || 0));
+      await db.transaction(async (tx) => {
+        await tx.update(users)
+          .set({ balance: sql`${users.balance} + ${netEarnings}`, updatedAt: new Date() })
+          .where(eq(users.id, order.sellerId));
+
+        await tx.update(orders)
+          .set({ fundsReleased: true, updatedAt: new Date() })
+          .where(eq(orders.id, order.id));
+      });
+
+      releasedCount++;
+    }
+
+    return { processed: releasedCount };
+  } catch (error) {
+    console.error("[processPendingEscrowFunds] Error:", error.message);
+    return { processed: 0 };
+  }
+};
+
 module.exports = {
   createOrder,
   getOrdersByUser,
@@ -618,4 +700,5 @@ module.exports = {
   autoConfirmDelivery,
   disputeOrder,
   resolveDispute,
+  processPendingEscrowFunds,
 };

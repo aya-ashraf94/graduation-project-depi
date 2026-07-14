@@ -234,7 +234,7 @@ const { cleanupExpiredReservations } = require("./controllers/productController"
 setInterval(cleanupExpiredReservations, 2 * 60 * 1000);
 
 // Auto-confirm delivery for orders shipped more than 14 days ago
-const { autoConfirmDelivery } = require("./controllers/orderController");
+const { autoConfirmDelivery, processPendingEscrowFunds } = require("./controllers/orderController");
 setInterval(async () => {
   try {
     const result = await autoConfirmDelivery();
@@ -243,6 +243,18 @@ setInterval(async () => {
     }
   } catch (e) {
     console.error("[AutoConfirm] Scheduler error:", e.message);
+  }
+}, 15 * 60 * 1000); // Every 15 minutes
+
+// Process escrow release for Tier 2 sellers every 15 minutes
+setInterval(async () => {
+  try {
+    const result = await processPendingEscrowFunds();
+    if (result && result.processed > 0) {
+      console.log(`[EscrowRelease] Released escrow funds for ${result.processed} order(s)`);
+    }
+  } catch (e) {
+    console.error("[EscrowRelease] Scheduler error:", e.message);
   }
 }, 15 * 60 * 1000); // Every 15 minutes
 

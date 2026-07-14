@@ -284,7 +284,7 @@ export class ProductService {
       id: '',
       firstName: 'SELLER',
       lastName: '',
-      avatar: 'https://i.pravatar.cc/150',
+      avatar: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
       rating: 5.0,
       isVerified: false
     };
@@ -299,7 +299,7 @@ export class ProductService {
         id: sellerUser._id || sellerUser.id,
         firstName,
         lastName,
-        avatar: sellerUser.avatar || `https://i.pravatar.cc/150?u=${sellerUser.email || sellerUser.id || sellerUser._id}`,
+        avatar: sellerUser.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
         rating: sellerUser.rating ?? 5.0,
         isVerified: sellerUser.isVerified ?? false,
         successRate: sellerUser.successRate ?? 100,

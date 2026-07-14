@@ -101,6 +101,7 @@ const orders = pgTable('orders', {
   couponCode: text('coupon_code'),
   offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'set null' }),
   stripePaymentIntentId: text('stripe_payment_intent_id'),
+  fundsReleased: boolean('funds_released').default(false).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({

@@ -465,7 +465,8 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goBack(): void {
-    this.location.back();
+    sessionStorage.setItem('restore_listings_state', 'true');
+    this.router.navigate(['/products']);
   }
 
   goToExploreAll(): void {
@@ -591,8 +592,14 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
 
       // Soft-reserve the product
       if (this.product && this.product.status === 'available') {
+        this.product.status = 'reserved';
+        this.cdr.detectChanges();
         this.productService.reserveProduct(this.product.id).subscribe({
           error: (err) => {
+            if (this.product) {
+              this.product.status = 'available';
+              this.cdr.detectChanges();
+            }
             if (err.status === 409) {
               this.buyError.set(err.error?.message || 'This product is no longer available');
             }
@@ -625,8 +632,10 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   closeBuy(): void {
-    // Release the soft-reservation
-    if (this.product) {
+    // Release the soft-reservation only if it wasn't sold
+    if (this.product && this.product.status !== 'sold') {
+      this.product.status = 'available';
+      this.cdr.detectChanges();
       this.productService.releaseProduct(this.product.id).subscribe();
     }
 
@@ -636,6 +645,7 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
       clearInterval(this.checkoutTimerId);
       this.checkoutTimerId = null;
     }
+    this.cdr.detectChanges();
   }
 
   startCheckoutCountdown(expiresAtStr: string | Date) {
@@ -739,6 +749,7 @@ export class ProductDetail implements OnInit, AfterViewInit, OnDestroy {
           localStorage.setItem(`purchased_${this.product.id}`, order.id);
         }
         this.offerService.activeReservation.set(null);
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.closeBuy();
         }, 2500);

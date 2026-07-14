@@ -1075,22 +1075,24 @@
 </div>
 
 <!-- REFUND MODAL -->
-<div class="report-overlay" *ngIf="showRefundModal" (click)="closeRefundModal()">
-  <div class="modal-standard-card" (click)="$event.stopPropagation()" style="max-width: 500px;">
-    <button class="modal-standard-close" (click)="closeRefundModal()">✕</button>
+<div class="report-overlay" *ngIf="showRefundModal" (click)="!submittingRefund && closeRefundModal()">
+  <div class="refund-modal-card" (click)="$event.stopPropagation()">
+    <button [disabled]="submittingRefund" class="refund-modal-close" (click)="closeRefundModal()">✕</button>
     <div class="modal-standard-icon-header">
-      <div class="lock-icon-circle" style="background: #fef3c7; border-color: #f59e0b; color: #92400e;">
-        <span style="font-size: 1.5rem;">🛡️</span>
+      <div class="refund-icon-circle">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: block;">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
       </div>
-      <h3 class="modal-standard-title" style="color: var(--black); font-weight: 900; text-transform: uppercase;">Request Refund</h3>
-      <p class="modal-standard-desc" style="font-size: 0.85rem;">
+      <h3 class="modal-standard-title" style="color: var(--black); font-weight: 900; text-transform: uppercase; margin: 0 0 0.25rem;">Request Refund</h3>
+      <p class="modal-standard-desc" style="font-size: 0.85rem; color: var(--gray-3); margin: 0;">
         For order #{{ selectedOrderForRefund?.id?.slice(0,8) }} — ${{ selectedOrderForRefund?.price }}
       </p>
     </div>
-    <div style="padding: 0 1.5rem 1.5rem;">
+    <div class="refund-form-lock" [class.locked]="submittingRefund" style="padding: 0 1.5rem 1.5rem;">
       <div class="form-group-v2">
-        <label>Reason *</label>
-        <select [(ngModel)]="refundReason" class="neo-select" required>
+        <label style="font-family: var(--font-primary); font-weight: 800; text-transform: uppercase; font-size: 0.72rem; color: var(--black); display: block; margin-bottom: 0.4rem;">Reason *</label>
+        <select [(ngModel)]="refundReason" [disabled]="submittingRefund" class="neo-select" required>
           <option value="">Select a reason...</option>
           <option value="item_not_as_described">Item not as described</option>
           <option value="damaged_or_defective">Damaged or defective</option>
@@ -1099,16 +1101,16 @@
           <option value="other">Other</option>
         </select>
       </div>
-      <div class="form-group-v2">
-        <label>Details (optional)</label>
-        <textarea [(ngModel)]="refundDetails" class="neo-textarea" rows="3" placeholder="Explain what happened..."></textarea>
+      <div class="form-group-v2" style="margin-top: 1rem;">
+        <label style="font-family: var(--font-primary); font-weight: 800; text-transform: uppercase; font-size: 0.72rem; color: var(--black); display: block; margin-bottom: 0.4rem;">Details (optional)</label>
+        <textarea [(ngModel)]="refundDetails" [disabled]="submittingRefund" class="neo-textarea" rows="3" placeholder="Explain what happened..."></textarea>
       </div>
     </div>
     <div class="modal-standard-footer" style="display: flex; gap: 1rem; justify-content: flex-end; padding: 0 1.5rem 1.5rem;">
-      <button type="button" class="modal-btn-secondary" (click)="closeRefundModal()" style="margin:0;">Cancel</button>
-      <button type="button" class="modal-btn-primary" (click)="submitRefund()" [disabled]="submittingRefund || !refundReason"
-        style="margin:0; background: var(--yellow); color: var(--black);">
-        {{ submittingRefund ? 'Submitting...' : 'Submit Refund Request' }}
+      <button type="button" [disabled]="submittingRefund" class="refund-btn-secondary" (click)="closeRefundModal()">Cancel</button>
+      <button type="button" class="refund-btn-primary" (click)="submitRefund()" [disabled]="submittingRefund || !refundReason">
+        <span *ngIf="submittingRefund" class="spinner-ring"></span>
+        <span>{{ submittingRefund ? 'Submitting...' : 'Submit Refund Request' }}</span>
       </button>
     </div>
   </div>

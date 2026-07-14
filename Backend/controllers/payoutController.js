@@ -1,6 +1,6 @@
 const db = require("../db");
 const { payouts, users, orders, products, settings, subscriptionTransactions, sellerTiers, featuredListings } = require("../db/schema");
-const { eq, and, desc, sql, lte } = require("drizzle-orm");
+const { eq, and, or, desc, sql, lte } = require("drizzle-orm");
 const { alias } = require("drizzle-orm/pg-core");
 const { createNotification } = require("../utils/notifications");
 
@@ -84,14 +84,20 @@ const getWalletStats = async (req, res) => {
     const [user] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, sellerId)).limit(1);
     const balance = user ? user.balance : 0;
 
-    // Pending balance (orders shipped/pending, net of platform fee)
+    // Pending balance (orders shipped/pending/delivered-escrow, net of platform fee)
     const [pendingResult] = await db.select({
       value: sql`COALESCE(SUM(${orders.price} - ${orders.platformFee}), 0)`
     }).from(orders)
       .where(and(
         eq(orders.sellerId, sellerId),
         eq(orders.paymentMethod, "online"),
-        sql`${orders.status} IN ('pending', 'shipped')`
+        or(
+          sql`${orders.status} IN ('pending', 'shipped')`,
+          and(
+            eq(orders.status, "delivered"),
+            eq(orders.fundsReleased, false)
+          )
+        )
       ));
     const pendingBalance = Number(pendingResult?.value || 0);
 
@@ -118,13 +124,14 @@ const getWalletStats = async (req, res) => {
       ));
     const lifetimeEarnings = Number(earningsResult?.value || 0) - totalCodFeesDeducted;
 
-    // Recent transactions (last 20 delivered/paid orders for this seller)
+    // Recent transactions (last 20 delivered/paid/cancelled orders for this seller)
     const recentOrders = await db.select({
       id: orders.id,
       price: orders.price,
       platformFee: orders.platformFee,
       status: orders.status,
       paymentMethod: orders.paymentMethod,
+      fundsReleased: orders.fundsReleased,
       createdAt: orders.createdAt,
       productTitle: products.title,
       productThumbnail: products.images,
@@ -132,7 +139,7 @@ const getWalletStats = async (req, res) => {
       .leftJoin(products, eq(orders.productId, products.id))
       .where(and(
         eq(orders.sellerId, sellerId),
-        sql`${orders.status} IN ('delivered', 'shipped', 'pending')`
+        sql`${orders.status} IN ('delivered', 'shipped', 'pending', 'cancelled', 'disputed')`
       ))
       .orderBy(desc(orders.createdAt))
       .limit(20);
@@ -166,18 +173,26 @@ const getWalletStats = async (req, res) => {
       };
     });
 
-    const orderTransactions = recentOrders.map(o => ({
-      id: o.id,
-      productTitle: o.productTitle || 'Unknown Product',
-      productThumbnail: (o.productThumbnail || [])[0] || '',
-      amount: o.price,
-      platformFee: o.platformFee || 0,
-      netEarnings: (o.price || 0) - (o.platformFee || 0),
-      status: o.status,
-      paymentMethod: o.paymentMethod,
-      createdAt: o.createdAt,
-      type: 'order',
-    }));
+    const orderTransactions = recentOrders.map(o => {
+      let netEarnings = (o.price || 0) - (o.platformFee || 0);
+      if (o.status === 'cancelled') {
+        // If funds were never released, the seller's net impact is 0.
+        // If they were released, the seller's balance was clawed back (-netEarnings).
+        netEarnings = o.fundsReleased ? -netEarnings : 0;
+      }
+      return {
+        id: o.id,
+        productTitle: o.productTitle || 'Unknown Product',
+        productThumbnail: (o.productThumbnail || [])[0] || '',
+        amount: o.price,
+        platformFee: o.platformFee || 0,
+        netEarnings,
+        status: o.status,
+        paymentMethod: o.paymentMethod,
+        createdAt: o.createdAt,
+        type: 'order',
+      };
+    });
 
     // Recent featured listings (promotions)
     const recentFeatured = await db.select({

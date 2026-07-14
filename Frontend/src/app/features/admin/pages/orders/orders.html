@@ -133,7 +133,7 @@
                     @if (order.couponDiscount) { <dt>Coupon</dt><dd class="neg">-{{ order.couponDiscount | currencyFormat }}</dd> }
                     @if (order.offerAmount) { <dt>Offer Amount</dt><dd>{{ order.offerAmount | currencyFormat }}</dd> }
                     <dt>Platform Fee</dt><dd>{{ order.platformFee | currencyFormat }}</dd>
-                    <dt class="total-label">Total Charged</dt><dd class="total-val">{{ order.totalPrice || order.price + (order.platformFee || 0) | currencyFormat }}</dd>
+                    <dt class="total-label">Total Charged</dt><dd class="total-val">{{ order.totalPrice || order.price | currencyFormat }}</dd>
                   </dl>
                 </div>
                 <div class="order-detail-col">

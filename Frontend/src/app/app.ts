@@ -47,10 +47,21 @@ export class App implements OnDestroy {
   private socket: any;
 
   constructor() {
+    let previousUrl = '';
+    let currentUrl = this.router.url;
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       const url = event.urlAfterRedirects || event.url || '';
+      
+      // Update previous URL before updating current
+      if (currentUrl && currentUrl !== url) {
+        previousUrl = currentUrl;
+        sessionStorage.setItem('previousUrl', previousUrl);
+      }
+      currentUrl = url;
+
       this.isAuthRoute.set(url.includes('/auth/'));
       this.isChatRoute.set(url.includes('/chat'));
       this.isAdminRoute.set(url.startsWith('/admin'));

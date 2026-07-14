@@ -94,7 +94,7 @@ const getReviewsForUser = async (req, res) => {
     const formatted = result.map(r => ({
       ...r.reviews,
       orderId: r.reviews.orderId,
-      reviewerId: r.reviewer ? { id: r.reviewer.id, name: r.reviewer.name, email: r.reviewer.email, avatar: r.reviewer.avatar || `https://i.pravatar.cc/150?u=${r.reviewer.email}` } : null,
+      reviewerId: r.reviewer ? { id: r.reviewer.id, name: r.reviewer.name, email: r.reviewer.email, avatar: r.reviewer.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y' } : null,
       productId: r.products ? { id: r.products.id, title: r.products.title, price: r.products.price, thumbnail: (r.products.images || [])[0] } : null,
     }));
 
@@ -118,7 +118,7 @@ const getReviewsByUser = async (req, res) => {
     const formatted = result.map(r => ({
       ...r.reviews,
       orderId: r.reviews.orderId,
-      revieweeId: r.reviewee ? { id: r.reviewee.id, name: r.reviewee.name, email: r.reviewee.email, avatar: r.reviewee.avatar || `https://i.pravatar.cc/150?u=${r.reviewee.email}` } : null,
+      revieweeId: r.reviewee ? { id: r.reviewee.id, name: r.reviewee.name, email: r.reviewee.email, avatar: r.reviewee.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y' } : null,
       productId: r.products ? { id: r.products.id, title: r.products.title, price: r.products.price, thumbnail: (r.products.images || [])[0] } : null,
     }));
 

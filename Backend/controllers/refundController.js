@@ -86,7 +86,14 @@ const adminGetRefundRequests = async (req, res) => {
 
     const formatted = list.map(r => ({
       ...r.refund_requests,
-      order: r.orders ? { id: r.orders.id, price: r.orders.price, status: r.orders.status, paymentMethod: r.orders.paymentMethod, platformFee: r.orders.platformFee } : null,
+      order: r.orders ? {
+        id: r.orders.id,
+        price: r.orders.price,
+        status: r.orders.status,
+        paymentMethod: r.orders.paymentMethod,
+        platformFee: r.orders.platformFee,
+        fundsReleased: r.orders.fundsReleased
+      } : null,
       product: r.products ? { id: r.products.id, title: r.products.title, thumbnail: (r.products.images || [])[0] } : null,
       buyer: r.users ? { id: r.users.id, name: r.users.name, email: r.users.email } : null,
     }));
@@ -125,19 +132,19 @@ const adminProcessRefund = async (req, res) => {
 
     if (status === "approved") {
       const sellerNet = Math.max(0, (order.price || 0) - (order.platformFee || 0));
-      const [seller] = await db.select({ balance: users.balance }).from(users).where(eq(users.id, order.sellerId)).limit(1);
-      if (!seller || seller.balance < sellerNet) {
-        await db.update(refundRequests).set({
-          status: "rejected",
-          resolution: `Rejected: seller insufficient balance (needed $${sellerNet.toFixed(2)}, had $${seller?.balance?.toFixed(2) || '0.00'})`,
+
+      if (order.fundsReleased) {
+        // If the funds were already released to the seller's balance, claw them back.
+        // We allow the balance to go negative to prevent the Cash Out exploit.
+        await db.update(users).set({
+          balance: sql`${users.balance} - ${sellerNet}`,
           updatedAt: new Date(),
-        }).where(eq(refundRequests.id, id));
-        return res.status(400).json({ message: `Seller balance insufficient for refund. Required: $${sellerNet.toFixed(2)}, Available: $${(seller?.balance || 0).toFixed(2)}` });
+        }).where(eq(users.id, order.sellerId));
+      } else {
+        // If the funds were held in escrow (never released to the seller), we do not deduct
+        // anything from the seller's balance (as they never received the credit).
+        console.log(`[Refund] Escrow refund: order ${order.id} funds were not yet released. No seller balance deduction needed.`);
       }
-      await db.update(users).set({
-        balance: sql`${users.balance} - ${sellerNet}`,
-        updatedAt: new Date(),
-      }).where(eq(users.id, order.sellerId));
 
       await db.update(orders).set({ status: "cancelled", updatedAt: new Date() }).where(eq(orders.id, order.id));
 

@@ -20,6 +20,7 @@ export interface RefundRequest {
     status: string;
     paymentMethod: string;
     platformFee?: number;
+    fundsReleased?: boolean;
   };
   product?: {
     id: string;

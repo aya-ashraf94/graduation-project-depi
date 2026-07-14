@@ -108,30 +108,41 @@
 
 @if (modalState().show) {
   <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
+    <div class="modal-content-brutal" (click)="$event.stopPropagation()">
+      <div class="modal-header-brutal">
         <h3>{{ modalState().action === 'approved' ? 'Approve' : 'Reject' }} Refund</h3>
-        <button class="modal-close" (click)="closeModal()">✕</button>
+        <button class="modal-close-brutal" (click)="closeModal()">✕</button>
       </div>
-      <div class="modal-body">
-        <p><strong>Reason:</strong> {{ modalState().refund?.reason }}</p>
-        @if (modalState().refund?.details) {
-          <p><strong>Details:</strong> {{ modalState().refund?.details }}</p>
-        }
-        <p><strong>Amount:</strong> ${{ modalState().refund?.order?.price }}</p>
-        <div class="form-group">
-          <label for="resolution">Resolution Notes (optional):</label>
-          <textarea id="resolution" [(ngModel)]="modalState().resolution" rows="3" class="form-control mt-1" placeholder="Explain the decision..."></textarea>
+      <div class="modal-body-brutal">
+        <div class="info-group">
+          <p><strong>Reason:</strong> <span class="badge-reason">{{ modalState().refund?.reason }}</span></p>
+          @if (modalState().refund?.details) {
+            <p><strong>Details:</strong> <span class="details-text">"{{ modalState().refund?.details }}"</span></p>
+          }
+          <p><strong>Amount:</strong> <span class="amount-text">${{ modalState().refund?.order?.price }}</span></p>
         </div>
+        
+        <div class="form-group-brutal">
+          <label for="resolution">Resolution Notes (optional):</label>
+          <textarea id="resolution" [disabled]="isProcessing()" [(ngModel)]="modalState().resolution" rows="3" class="form-control-brutal" placeholder="Explain the decision..."></textarea>
+        </div>
+
         @if (modalState().action === 'approved') {
-          <div class="warning-box">
-            ⚠️ This will cancel the order, return the product to active listings, and deduct the amount from the seller's balance.
-          </div>
+          @if (modalState().refund?.order?.fundsReleased) {
+            <div class="warning-box-brutal warning-released">
+              <strong>⚠️ Funds already released:</strong> This will cancel the order, reactivate the product listing, and deduct <strong>${{ (modalState().refund?.order?.price || 0) - (modalState().refund?.order?.platformFee || 0) }}</strong> from the seller's balance.
+            </div>
+          } @else {
+            <div class="warning-box-brutal warning-escrow">
+              <strong>🛡️ Funds held in escrow:</strong> This will cancel the order, reactivate the product listing, and refund the buyer directly from the escrow pool without impacting the seller's balance.
+            </div>
+          }
         }
       </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-        <button class="btn-confirm" [ngClass]="modalState().action === 'approved' ? 'btn-approve' : 'btn-reject'" (click)="processRefund()">
+      <div class="modal-footer-brutal">
+        <button class="btn-cancel-brutal" [disabled]="isProcessing()" (click)="closeModal()">Cancel</button>
+        <button class="btn-confirm-brutal" [disabled]="isProcessing()" [ngClass]="modalState().action === 'approved' ? 'btn-approve-brutal' : 'btn-reject-brutal'" (click)="processRefund()">
+          <span *ngIf="isProcessing()" class="spinner-ring" style="border-top-color: transparent; border-color: inherit; margin-right: 0.25rem;"></span>
           {{ modalState().action === 'approved' ? '✓ Approve Refund' : '✕ Reject Refund' }}
         </button>
       </div>

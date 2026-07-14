@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ProductService } from '../../../../core/services/product.service';
@@ -29,12 +29,21 @@ type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'locatio
 export class ProductList implements OnInit, OnDestroy {
   protected productService = inject(ProductService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   protected authService = inject(AuthService);
   wishlistService = inject(WishlistService);
   protected locationService = inject(LocationService);
 
   private destroy$ = new Subject<void>();
+  private isPopstate = false;
+
+  constructor() {
+    const nav = this.router.getCurrentNavigation();
+    if (nav?.trigger === 'popstate') {
+      this.isPopstate = true;
+    }
+  }
   private proximityCache = new Map<string, LocationProximity>();
 
   Math = Math;
@@ -194,6 +203,30 @@ export class ProductList implements OnInit, OnDestroy {
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
   ngOnInit(): void {
+    // Restore listings state if going back (popstate trigger or explicit flag)
+    const restore = this.isPopstate || sessionStorage.getItem('restore_listings_state') === 'true';
+    sessionStorage.removeItem('restore_listings_state');
+
+    if (restore) {
+      const savedStateStr = sessionStorage.getItem('listings_state');
+      if (savedStateStr) {
+        try {
+          const state = JSON.parse(savedStateStr);
+          this.currentPage = state.currentPage || 1;
+          this.selectedSort = state.selectedSort || 'relevance';
+          this.selectedCategories = new Set(state.selectedCategories || []);
+          this.selectedConditions = new Set(state.selectedConditions || []);
+          this.minPrice = state.minPrice ?? 0;
+          this.maxPrice = state.maxPrice ?? 100000;
+          this.viewMode = state.viewMode || 'grid';
+        } catch (e) {
+          console.error('Error restoring listings state:', e);
+        }
+      }
+    } else {
+      sessionStorage.removeItem('listings_state');
+    }
+
     // 1. Init browsing location from user profile
     const user = this.authService.currentUser();
     if (user) {
@@ -201,7 +234,7 @@ export class ProductList implements OnInit, OnDestroy {
       this.browsingCity = user.city || '';
       this.browsingDistrict = user.district || '';
       this.updateLocationLabel();
-      if (this.browsingGovernorate) {
+      if (this.browsingGovernorate && !restore) {
         this.selectedSort = 'location';
       }
     }
@@ -381,7 +414,20 @@ export class ProductList implements OnInit, OnDestroy {
 
     this.sortOpen = false;
     this.mobileFiltersOpen = false;
+    this.saveListingsState();
     this.cdr.detectChanges();
+  }
+
+  private saveListingsState(): void {
+    sessionStorage.setItem('listings_state', JSON.stringify({
+      currentPage: this.currentPage,
+      selectedSort: this.selectedSort,
+      selectedCategories: Array.from(this.selectedCategories),
+      selectedConditions: Array.from(this.selectedConditions),
+      minPrice: this.minPrice,
+      maxPrice: this.maxPrice,
+      viewMode: this.viewMode
+    }));
   }
 
   // ── Pagination Navigation Helpers ─────────────────────────────────────

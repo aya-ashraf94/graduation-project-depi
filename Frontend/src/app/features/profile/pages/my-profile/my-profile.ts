@@ -811,6 +811,7 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
   closeRefundModal() {
     this.showRefundModal = false;
     this.selectedOrderForRefund = null;
+    this.cdr.detectChanges();
   }
 
   submitRefund() {
@@ -819,15 +820,18 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.submittingRefund = true;
+    this.cdr.detectChanges();
     this.refundService.requestRefund(this.selectedOrderForRefund.id, this.refundReason, this.refundDetails).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toastService.success('Refund request submitted! Admin will review it.');
         this.closeRefundModal();
         this.submittingRefund = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.toastService.error(err?.error?.message || 'Failed to submit refund request');
         this.submittingRefund = false;
+        this.cdr.detectChanges();
       }
     });
   }

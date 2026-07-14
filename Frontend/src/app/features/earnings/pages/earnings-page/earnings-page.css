@@ -630,9 +630,15 @@
 
 .tier-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
   margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .tier-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tier-card {
@@ -924,4 +930,31 @@
   font-size: 0.75rem;
   color: var(--gray-3);
   margin-top: 0.1rem;
+}
+
+/* ── Transaction Status Badges ── */
+.tx-status-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-left: 0.25rem;
+}
+.tx-status-badge.status-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+.tx-status-badge.status-shipped {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.tx-status-badge.status-delivered {
+  background: #dcfce7;
+  color: #15803d;
+}
+.tx-status-badge.status-cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
 }

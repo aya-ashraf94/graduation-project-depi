@@ -70,7 +70,7 @@ const getConversations = async (req, res) => {
       const participantsFormatted = parts.map(p => {
         const u = p.users;
         const nameParts = (u?.name || '').trim().split(/\s+/);
-        return { id: u.id, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', avatar: u.avatar || `https://i.pravatar.cc/150?u=${u.email}`, isVerified: u.isVerified || false, rating: u.rating || 5.0 };
+        return { id: u.id, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', avatar: u.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y', isVerified: u.isVerified || false, rating: u.rating || 5.0 };
       });
 
       let lastMsgData = null;

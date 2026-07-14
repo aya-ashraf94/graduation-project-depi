@@ -173,8 +173,15 @@
 }
 
 .table-container {
-  overflow-x: auto;
+  overflow-x: visible;
   overflow-y: visible;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
 }
 
 .admin-data-table {
@@ -412,12 +419,12 @@
 .action-dropdown-container {
   position: relative;
   isolation: isolate;
-  z-index: 9999;
+  z-index: 100;
   display: inline-block;
 }
 
 .action-dropdown-container.active {
-  z-index: 10000;
+  z-index: 1000;
 }
 
 .review-btn {
@@ -450,7 +457,7 @@
   border: 2px solid var(--black);
   border-radius: 8px;
   box-shadow: 4px 4px 0 var(--black);
-  z-index: 99999;
+  /* z-index: 99999; */
   min-width: 200px;
   display: flex;
   flex-direction: column;

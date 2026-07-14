@@ -37,7 +37,7 @@ export class UserService {
       email: u.email || '',
       avatar: u.avatar && u.avatar.startsWith('/uploads')
         ? `${baseUrl}${u.avatar}`
-        : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id}`,
+        : u.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
       role: u.role || 'user',
       rating: u.rating ?? 5.0,
       totalSales: u.totalSales ?? 0,

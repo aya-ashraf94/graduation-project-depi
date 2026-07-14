@@ -166,7 +166,7 @@
                         Review ▾
                       </button>
                       @if (activeDropdownReportId() === report.id) {
-                        <div class="action-dropdown-menu" [class.open-up]="idx >= filteredReports().length - 3" (click)="$event.stopPropagation()">
+                        <div class="action-dropdown-menu" [class.open-up]="filteredReports().length > 3 && idx >= filteredReports().length - 3" (click)="$event.stopPropagation()">
                           @if (report.productId) {
                             <a [routerLink]="['/products', report.productId.id]" class="dropdown-item">
                               👁️ Inspect Listing

@@ -604,7 +604,7 @@ const getAllOrders = async (req, res) => {
 
     const formatted = result.map(r => ({
       ...r.orders,
-      totalPrice: (r.orders.price || 0) + (r.orders.platformFee || 0),
+      totalPrice: r.orders.price || 0,
       productId: r.products ? { id: r.products.id, title: r.products.title, thumbnail: (r.products.images || [])[0] || '', price: r.products.price } : null,
       buyerId: r.buyer ? { id: r.buyer.id, name: r.buyer.name, email: r.buyer.email } : null,
       sellerId: r.seller ? { id: r.seller.id, name: r.seller.name, email: r.seller.email } : null,

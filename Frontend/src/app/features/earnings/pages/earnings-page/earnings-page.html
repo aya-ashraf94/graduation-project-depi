@@ -115,7 +115,12 @@
                   </div>
                   <div class="tx-info">
                     <span class="tx-title">{{ tx.productTitle }}</span>
-                    <span class="tx-meta">{{ tx.createdAt | date:'mediumDate' }} · {{ tx.type === 'refund' ? 'Refund' : (tx.type === 'subscription' ? 'Subscription' : (tx.type === 'promotion' ? 'Promotion' : (tx.paymentMethod === 'online' ? 'Card' : 'COD'))) }}</span>
+                    <span class="tx-meta">
+                      {{ tx.createdAt | date:'mediumDate' }} · {{ tx.type === 'refund' ? 'Refund' : (tx.type === 'subscription' ? 'Subscription' : (tx.type === 'promotion' ? 'Promotion' : (tx.paymentMethod === 'online' ? 'Card' : 'COD'))) }}
+                      @if (tx.type === 'order' && tx.status) {
+                        · <span class="tx-status-badge status-{{ tx.status }}">{{ tx.status | titlecase }}</span>
+                      }
+                    </span>
                   </div>
                   <div class="tx-amounts">
                     <span class="tx-net" [class.tx-net-negative]="tx.type === 'subscription' || tx.type === 'promotion'" [class.tx-net-positive]="tx.type === 'refund'">{{ tx.netEarnings | currencyFormat }}</span>

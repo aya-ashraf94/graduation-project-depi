@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -21,8 +21,10 @@ export class AdminRefunds implements OnInit {
   private refundService = inject(RefundService);
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
+  private cdr = inject(ChangeDetectorRef);
 
   refunds = signal<RefundRequest[]>([]);
+  isProcessing = signal(false);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
   filterStatus = signal<string>('all');
@@ -38,14 +40,17 @@ export class AdminRefunds implements OnInit {
   loadRefunds(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
+    this.cdr.detectChanges();
     this.refundService.adminGetRefundRequests().subscribe({
       next: (list) => {
         this.refunds.set(list);
         this.isLoading.set(false);
+        this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage.set('Failed to load refund requests.');
         this.isLoading.set(false);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -58,24 +63,33 @@ export class AdminRefunds implements OnInit {
 
   openProcessModal(refund: RefundRequest, action: 'approved' | 'rejected'): void {
     this.modalState.set({ show: true, refund, action, resolution: '' });
+    this.cdr.detectChanges();
   }
 
   closeModal(): void {
     this.modalState.set({ show: false, refund: null, action: null, resolution: '' });
+    this.cdr.detectChanges();
   }
 
   processRefund(): void {
     const state = this.modalState();
-    if (!state.refund || !state.action) return;
+    if (!state.refund || !state.action || this.isProcessing()) return;
+
+    this.isProcessing.set(true);
+    this.cdr.detectChanges();
 
     this.refundService.adminProcessRefund(state.refund.id, state.action, state.resolution || undefined).subscribe({
       next: () => {
         this.toastService.success(`Refund ${state.action} successfully!`);
+        this.isProcessing.set(false);
         this.closeModal();
         this.loadRefunds();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.toastService.error(err?.error?.message || 'Failed to process refund');
+        this.isProcessing.set(false);
+        this.cdr.detectChanges();
       }
     });
   }

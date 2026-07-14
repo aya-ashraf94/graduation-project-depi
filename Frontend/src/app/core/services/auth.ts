@@ -155,7 +155,7 @@ export class AuthService {
       isSuspended: u.isSuspended ?? false,
       avatar: u.avatar && u.avatar.startsWith('/uploads')
         ? `${baseUrl}${u.avatar}`
-        : u.avatar || `https://i.pravatar.cc/150?u=${u.email || u._id || u.id}`,
+        : u.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
       bio: u.bio || '',
       phoneNumber: u.phoneNumber || '',
       location: u.location || '',
