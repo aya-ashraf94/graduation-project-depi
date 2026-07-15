@@ -37,9 +37,14 @@ async function calculatePromotionCost(sellerId, productId, duration) {
   }
 
   const [sellerUser] = await db.select({
+    email: users.email,
     tierId: users.tierId,
     tierExpiresAt: users.tierExpiresAt,
   }).from(users).where(eq(users.id, sellerId)).limit(1);
+
+  if (sellerUser?.email === 'store@nafa3ni.com') {
+    return { amount: 0, originalAmount: amount, isFreeFromSlot: true, creditsApplied: 0 };
+  }
 
   let isFreeFromSlot = false;
   let discountedAmount = amount;

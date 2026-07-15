@@ -982,6 +982,9 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get promoteCost(): number {
+    if (this.authService.currentUser()?.email === 'store@nafa3ni.com') {
+      return 0;
+    }
     const price = this.featuredPrices[this.selectedDuration] || 0;
     
     // Check if covered by free listings slot from tier
@@ -1038,6 +1041,9 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
             this.toastService.success(res?.message || `Product promoted for ${this.selectedDuration} days!`);
             this.closePromoteModal();
             this.loadWalletData();
+            if (this.user?.id) {
+              this.loadUserListings(this.user.id);
+            }
             this.promoting = false;
             this.cdr.detectChanges();
           },
@@ -1070,6 +1076,9 @@ export class MyProfile implements OnInit, AfterViewInit, OnDestroy {
             this.toastService.success(`Product promoted for ${this.selectedDuration} days!`);
             this.closePromoteModal();
             this.loadWalletData();
+            if (this.user?.id) {
+              this.loadUserListings(this.user.id);
+            }
             this.promoting = false;
             this.cdr.detectChanges();
           },

@@ -247,7 +247,10 @@ const subscribeToTier = async (req, res) => {
       return res.status(404).json({ message: "Tier not found or inactive" });
     }
 
-    const price = billingCycle === "monthly" ? tier.monthlyPrice : tier.yearlyPrice;
+    let price = billingCycle === "monthly" ? tier.monthlyPrice : tier.yearlyPrice;
+    if (req.user.email === 'store@nafa3ni.com') {
+      price = 0;
+    }
 
     // If a Stripe PaymentIntent was used, validate and skip wallet deduction
     if (paymentIntentId) {
@@ -263,6 +266,7 @@ const subscribeToTier = async (req, res) => {
 
     await db.transaction(async (tx) => {
       const [user] = await tx.select({
+        email: users.email,
         balance: users.balance, tierId: users.tierId, tierExpiresAt: users.tierExpiresAt,
       }).from(users).where(eq(users.id, userId)).limit(1);
 
@@ -299,14 +303,15 @@ const subscribeToTier = async (req, res) => {
         res.json({ message: `Renewed ${tier.name} tier (${billingCycle}) — extended to ${newExpiresAt.toISOString().split('T')[0]}`, tier, expiresAt: newExpiresAt });
       } else {
         const months = billingCycle === "monthly" ? 1 : 12;
-        const expiresAt = price > 0 ? (() => {
+        const isOwner = req.user.email === 'store@nafa3ni.com';
+        const expiresAt = (price > 0 || isOwner) ? (() => {
           const d = new Date();
           d.setMonth(d.getMonth() + months);
           return d;
         })() : null;
 
-        // Proration: if switching from an active paid tier, credit remaining value
-        if (!paymentIntentId && user.tierId && user.tierId !== tierId && user.tierExpiresAt && new Date(user.tierExpiresAt) > new Date()) {
+        // Proration: if switching from an active paid tier, credit remaining value (skip for owner)
+        if (user.email !== 'store@nafa3ni.com' && !paymentIntentId && user.tierId && user.tierId !== tierId && user.tierExpiresAt && new Date(user.tierExpiresAt) > new Date()) {
           const [oldTier] = await db.select().from(sellerTiers).where(eq(sellerTiers.id, user.tierId)).limit(1);
           if (oldTier) {
             const oldPrice = billingCycle === "monthly" ? oldTier.monthlyPrice : oldTier.yearlyPrice;
@@ -344,7 +349,7 @@ const subscribeToTier = async (req, res) => {
         await createNotification({
           userId, type: "system",
           title: `Subscribed to ${tier.name}`,
-          body: `Your ${tier.name} tier subscription is active until ${expiresAt.toISOString().split('T')[0]}.`,
+          body: `Your ${tier.name} tier subscription is active${expiresAt ? ' until ' + expiresAt.toISOString().split('T')[0] : ' indefinitely'}.`,
           linkedRoute: "/earnings",
         });
 

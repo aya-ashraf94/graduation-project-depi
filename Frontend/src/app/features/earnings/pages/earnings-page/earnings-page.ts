@@ -215,6 +215,9 @@ export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   tierPrice(tier: any): number {
+    if (this.authService.currentUser()?.email === 'store@nafa3ni.com') {
+      return 0;
+    }
     return this.selectedBillingCycle === 'monthly' ? tier.monthlyPrice : tier.yearlyPrice;
   }
 
@@ -235,7 +238,10 @@ export class EarningsPage implements OnInit, AfterViewInit, OnDestroy {
     this.subscribing = true;
 
     const selectedTier = this.selectedTierDetails;
-    const price = this.selectedBillingCycle === 'monthly' ? selectedTier?.monthlyPrice : selectedTier?.yearlyPrice;
+    let price = this.selectedBillingCycle === 'monthly' ? selectedTier?.monthlyPrice : selectedTier?.yearlyPrice;
+    if (this.authService.currentUser()?.email === 'store@nafa3ni.com') {
+      price = 0;
+    }
 
     if (price > 0 && this.subPaymentMethod === 'stripe' && this.stripe) {
       // Pay via Stripe
