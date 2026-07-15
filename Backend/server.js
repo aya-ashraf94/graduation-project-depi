@@ -35,9 +35,23 @@ app.use(
   })
 );
 
+const allowedOrigins = [
+  "http://localhost:4200",
+  "http://localhost:3000",
+];
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(
   cors({
-    origin: ["http://localhost:4200"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === "production") {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
@@ -102,6 +116,17 @@ app.get("/", (req, res) => {
   res.send("API Running...");
 });
 
+const isProduction = process.env.NODE_ENV === "production";
+const angularDistPath = path.join(__dirname, "../Frontend/dist/nefisant-app/browser");
+
+if (isProduction) {
+  app.use(express.static(angularDistPath));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(angularDistPath, "index.html"));
+  });
+}
+
 const http = require("http");
 const { Server } = require("socket.io");
 
@@ -123,7 +148,9 @@ const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:4200"],
+    origin: process.env.NODE_ENV === "production"
+      ? true
+      : ["http://localhost:4200"],
     methods: ["GET", "POST"],
   },
 });
