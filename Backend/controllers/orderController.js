@@ -431,9 +431,23 @@ const validateCoupon = async (req, res) => {
       return res.status(404).json({ message: "Coupon code not found" });
     }
 
+    // Check if there is an accepted offer for this product and buyer
+    const activeOffers = await db.select().from(offers)
+      .where(and(
+        eq(offers.productId, productId),
+        eq(offers.status, "accepted"),
+        eq(offers.buyerId, req.user.id)
+      ))
+      .limit(1);
+
+    let offerAmount = null;
+    if (activeOffers.length > 0) {
+      offerAmount = activeOffers[0].counterAmount || activeOffers[0].amount;
+    }
+
     // Use the discount engine to validate the coupon and compute pricing
     const promotions = await loadActivePromotions();
-    const result = await calculateCheckoutPrice(product, promotions, { couponCode: code, buyerId: req.user.id });
+    const result = await calculateCheckoutPrice(product, promotions, { couponCode: code, offerAmount, buyerId: req.user.id });
 
     if (!result.couponValid) {
       return res.status(400).json({ message: result.couponMessage || "Invalid coupon code" });

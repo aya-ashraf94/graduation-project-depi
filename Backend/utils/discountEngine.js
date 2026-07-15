@@ -291,6 +291,10 @@ async function calculateCheckoutPrice(product, promotions, { couponCode, offerAm
 
     let rejectReason = null;
 
+    // Backend enforcement: no coupon on negotiated offers
+    if (!rejectReason && offerAmount !== null && offerAmount !== undefined && offerAmount > 0) {
+      rejectReason = 'Coupons cannot be applied to negotiated offers';
+    }
     // Backend enforcement: no coupon on flash sale items
     if (!rejectReason && display.isFlashSale) {
       rejectReason = 'Coupons are not available for flash sale items';

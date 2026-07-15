@@ -106,6 +106,10 @@ const getProducts = async (req, res) => {
       conditions.push(notInArray(products.userId, blockedUserIds));
     }
 
+    if (currentUserId) {
+      conditions.push(ne(products.userId, currentUserId));
+    }
+
     if (req.query.category) {
       const catQuery = req.query.category.trim();
       const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;

@@ -640,11 +640,17 @@
               <input type="text" [(ngModel)]="shippingBuilding" name="shippingBuilding" placeholder="Building / Apartment (optional)" style="width: 100%; padding: 0.45rem 0.55rem; border: 1.5px solid var(--border); border-radius: 6px; font-family: var(--font-secondary); font-size: 0.8rem; outline: none; box-sizing: border-box;" />
             </div>
 
-            <!-- Coupon Code — disabled during flash sales -->
+            <!-- Coupon Code — disabled during flash sales or negotiated offers -->
             @if (isFlashSaleItem) {
               <div style="display: flex; flex-direction: column; gap: 0.2rem; padding: 0.5rem; background: var(--gray-light); border-radius: 6px; border: 1.5px dashed var(--gray-2);">
                 <span style="font-family: var(--font-secondary); font-size: 0.7rem; color: var(--gray-3); font-weight: 600;">
                   Coupons are not available for flash sale items. The flash sale price is already the best offer.
+                </span>
+              </div>
+            } @else if (negotiatedPrice() !== null) {
+              <div style="display: flex; flex-direction: column; gap: 0.2rem; padding: 0.5rem; background: var(--gray-light); border-radius: 6px; border: 1.5px dashed var(--gray-2);">
+                <span style="font-family: var(--font-secondary); font-size: 0.7rem; color: var(--gray-3); font-weight: 600;">
+                  Coupons cannot be applied to negotiated offers.
                 </span>
               </div>
             } @else {
