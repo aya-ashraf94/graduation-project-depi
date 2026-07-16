@@ -25,7 +25,7 @@
     </app-form-field>
 
     <div class="auth-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-      <app-form-field label="Password" [control]="registerForm.get('password')" [required]="true"  hint="8+ chars, upper + lowercase, number &amp; symbol">
+      <app-form-field label="Password" [control]="registerForm.get('password')" [required]="true"  hint="Use 8+ characters with uppercase, lowercase, a number and a symbol.">
         <input id="register-password" type="password" class="auth-input" placeholder="Password" formControlName="password" [disabled]="isLoading()" />
       </app-form-field>
       <app-form-field label="Confirm" [control]="registerForm.get('confirmPassword')" [required]="true" >

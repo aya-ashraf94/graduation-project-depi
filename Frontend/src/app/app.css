@@ -270,22 +270,22 @@
 
 /* Progressive enhancement for Desktop (min-width: 861px) */
 @media (min-width: 861px) {
-  .auth-minimal-nav {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .auth-minimal-nav,
+  .auth-minimal-footer {
+    display: none !important;
   }
 
   .auth-main {
-    height: 100vh;
+    height: 100vh !important;
     min-height: 100vh !important;
-    overflow: hidden;
+    overflow: hidden !important;
+    padding: 0 !important;
+    display: block !important;
   }
 
-  .auth-minimal-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+  body:has(.auth-page) {
+    overflow: hidden !important;
+    height: 100vh !important;
   }
 }
 

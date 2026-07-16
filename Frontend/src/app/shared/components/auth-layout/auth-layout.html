@@ -3,59 +3,73 @@
 
     <!-- LEFT: FORM -->
     <div class="split-left">
-      <div class="auth-header">
-        <div class="brand-tag">NAFA3NI</div>
-        @if (title()) {
-          <h2 class="auth-title">{{ title() }}</h2>
-        }
-        @if (subtitle()) {
-          <p class="auth-desc">{{ subtitle() }}</p>
-        }
+      <!-- Desktop Header (integrated) -->
+      <div class="split-left-header">
+        <a routerLink="/" class="minimal-brand">
+          <div class="brand-box"></div>
+          <span class="brand-text">NAFA3NI</span>
+        </a>
+        <a routerLink="/" class="back-home-btn">← Back to Home</a>
       </div>
 
-      <ng-content></ng-content>
+      <div class="split-left-body">
+        <div class="auth-header">
+          <div class="brand-tag-mobile">NAFA3NI</div>
+          @if (title()) {
+            <h2 class="auth-title">{{ title() }}</h2>
+          }
+          @if (subtitle()) {
+            <p class="auth-desc">{{ subtitle() }}</p>
+          }
+        </div>
 
+        <ng-content></ng-content>
+      </div>
+
+      <!-- Desktop Footer (integrated) -->
+      <div class="split-left-footer">
+        <a routerLink="/support" [queryParams]="{tab: 'privacy'}" class="minimal-footer-link">Privacy Policy</a>
+        <a routerLink="/support" [queryParams]="{tab: 'terms'}" class="minimal-footer-link">Terms & Conditions</a>
+        <a routerLink="/support" [queryParams]="{tab: 'help'}" class="minimal-footer-link">Help Center</a>
+      </div>
     </div>
 
     <!-- RIGHT: GRAPHIC -->
     <div class="split-right">
       <div class="graphic-bg-pattern"></div>
 
-      <div class="graphic-content">
-        <div class="graphic-icon">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-        </div>
-        <h3 class="graphic-title">SECURE YOUR TRADES</h3>
-        <p class="graphic-desc">Join thousands of users securely buying and selling on Nafa3ni.</p>
+      <!-- One Bold Focal Illustration Card -->
+      <div class="huge-graphic-wrapper">
+        <svg class="huge-shield-svg" width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
       </div>
 
-      <div class="graphic-features">
-        <div class="gf-item">
-          <span class="gf-check">✓</span>
-          <span>Secure Trades</span>
+      <!-- Integrated Benefits & Trust Section (No nested card boxes) -->
+      <div class="graphic-details-panel">
+        <h3 class="panel-header-title">SECURE MARKETPLACE</h3>
+        
+        <div class="panel-benefits-list">
+          <div class="pbl-item">
+            <span class="pbl-check">✓</span>
+            <span>Secure Trades & Verification</span>
+          </div>
+          <div class="pbl-item">
+            <span class="pbl-check">✓</span>
+            <span>Verified Member Listings</span>
+          </div>
+          <div class="pbl-item">
+            <span class="pbl-check">✓</span>
+            <span>Real-time Chat & Support</span>
+          </div>
         </div>
-        <div class="gf-item">
-          <span class="gf-check">✓</span>
-          <span>Chat with Sellers</span>
-        </div>
-        <div class="gf-item">
-          <span class="gf-check">✓</span>
-          <span>Verified Listings</span>
-        </div>
-        <div class="gf-item">
-          <span class="gf-check">✓</span>
-          <span>Fast Search</span>
+
+        <div class="panel-trust-badge">
+          <span class="ptb-star">★</span> Verified & Protected Marketplace
         </div>
       </div>
 
-      <div class="graphic-rating">
-        <span class="gr-number">8,000+</span>
-        <span class="gr-text">ACTIVE USERS</span>
-      </div>
-
-      <!-- Decorative abstract elements -->
+      <!-- Decorative abstract elements with tension (rotated and offset) -->
       <div class="dec-circle dec-1"></div>
       <div class="dec-box dec-2"></div>
     </div>

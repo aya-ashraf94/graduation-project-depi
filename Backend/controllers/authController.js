@@ -8,7 +8,7 @@ const { updateUserStats } = require("../utils/userStats");
 const { uploadBase64ToCloudinary } = require("../utils/upload");
 const { createNotification } = require("../utils/notifications");
 
-const ACCESS_TOKEN_EXPIRY = "1h";
+const ACCESS_TOKEN_EXPIRY = "7d";
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
 const generateAccessToken = (user) => {
@@ -38,7 +38,7 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 60 * 60 * 1000, // 1 hour
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   if (refreshToken) {
