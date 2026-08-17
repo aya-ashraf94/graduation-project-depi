@@ -6,9 +6,12 @@
     "scripts": {
         "start": "node server.js",
         "dev": "nodemon server.js",
-        "export-db": "node export-db.js",
-        "generate-official": "node generate-official-products.js",
-        "seed": "node seed.js",
+        "export-db": "node scripts/export-db.js",
+        "generate-official": "node scripts/generate-official-products.js",
+        "seed": "node scripts/seed.js",
+        "seed:admin": "node scripts/seedAdmin.js",
+        "seed:coupons": "node scripts/seedCoupons.js",
+        "seed:tiers": "node scripts/seedTiers.js",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit push",
         "test": "echo \"Error: no test specified\" && exit 1"

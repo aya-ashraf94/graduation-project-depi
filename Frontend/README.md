@@ -1,84 +1,88 @@
-# Market.Arch (Nafa3ni) — Marketplace Platform
-> Built on **Angular 21** featuring high-fidelity **Neo-Brutalist** Architectural System Design.
+# 💻 Frontend Client — Market.Arch (Nafa3ni)
 
-![Angular](https://img.shields.io/badge/Angular-21.2-DD0031?style=for-the-badge&logo=angular&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Production_Ready-10B981?style=for-the-badge)
-
-A premium, highly secure peer-to-peer marketplace enabling users to safely buy, sell, and trade equipment, electronics, furniture, and more. Designed from the ground up to prepare for a production microservices backend integration.
+> **Modern Single Page Application built on Angular 21 with a bold Neo-Brutalist design system, GSAP animations, Signals state management, and real-time Socket.io integration.**
 
 ---
 
-## ✨ Features Implemented
-
-### 🏛️ Premium Architectural Design System
-- **Strict Brand Visuals**: Implements consistent bold borders (`3px solid var(--black)`), high-visibility hard offset drop shadows (`box-shadow: 4px 4px 0 var(--black)`), and customized editorial web typography.
-- **Universal Modern Dialogs**: Elegant, high-conversion, accessible pop-up frameworks utilizing native background-blur tinted overlays and smooth interactive component transitions.
-
-### 🔐 Multi-State Authorization Integration
-- **Role Differentiation**: Dynamic reactive rendering automatically distinguishes between anonymous public browsers and authenticated full-access members.
-- **Action Safeguards**: Strict security-wrapper validation gates P2P messaging networks, reporting dispatches, and permanent wishlist persistence mechanisms.
-
-### 📦 Core Operational Interfaces
-- **Immersive Split Hero Dashboard**: Editorial campus liquid asset stats visualization paired with real-time dynamic layout interaction badges.
-- **High-Fidelity Archive Views**: Deep multi-column query-filtered grid interfaces for smooth category navigation.
-- **P2P Communication Hub**: Fully mock-wired native live messaging threads mapping active product items and historical conversation logs.
-- **Listing Engine**: Robust multi-step forms equipped with auto-scaling dynamic attributes and live file-fallback preview directives.
-- **Regulatory Frameworks**: Built-in support documentation pages including dynamically rendered legal matrices (Guidelines, Contact APIs, FAQ sections, Terms of Service, and Privacy directives).
+<p align="center">
+  <img src="https://img.shields.io/badge/Angular-21.2-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/GSAP-v3.15-88CE02?style=for-the-badge&logo=greensock&logoColor=white" alt="GSAP" />
+  <img src="https://img.shields.io/badge/Socket.io_Client-v4.8-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="Socket.io" />
+  <img src="https://img.shields.io/badge/Design-Neo--Brutalist-yellow?style=for-the-badge" alt="Neo-Brutalist" />
+</p>
 
 ---
 
-## 🛠️ Project Workspace Installation
+## ✨ Features & Architecture
+
+### 🎨 1. Neo-Brutalist Design & Motion Engine
+* **Aesthetic Standard**: Heavy high-contrast borders (`3px solid var(--black)`), hard offset geometric drop shadows (`4px 4px 0 var(--black)`), and curated typography (Outfit & Inter).
+* **GSAP Splash Loader**: High-fidelity brand entrance animation on initial visit and browser refresh.
+* **Micro-Animations**: Tactile button presses, hover lifts, dynamic status badges, and custom branded cursor.
+
+### 🧩 2. Core Feature Modules (`src/app/features/`)
+* **`auth/`**: Multi-step registration, login with automatic JWT refresh interceptor, and token-based password reset flows.
+* **`home/`**: Interactive hero sections, category navigation cards, live flash sale countdowns, and featured listings.
+* **`product/`**: Marketplace catalog, faceted filtering by dynamic category attributes, product detail views with multi-image gallery, and interactive **Make Offer** negotiation.
+* **`admin/`**: Executive command center with real-time metrics, revenue graphs, category & dynamic attribute schema editor, flash sale creator, coupon manager, and report dispute resolution.
+* **`chat/`**: Live peer-to-peer messaging threads powered by Socket.io client.
+* **`profile/` & `wallet/`**: User account settings, order history (My Sales & My Purchases), earnings balance, and withdrawal requests.
+* **`scratch-card/`**: Gamified canvas scratch-off mini-game to unlock exclusive promo coupons.
+
+### 🌟 3. Global Interactive Components (`src/app/shared/components/`)
+* **`compare-bar`**: Floating multi-item comparison tray with side-by-side spec comparisons and **direct PDF export** via `jspdf` and `html2canvas`.
+* **`lucky-cat`**: Interactive floating gamified mascot that dispenses promotional coupons.
+* **`flash-sale-banner`**: Real-time broadcast banner displaying active flash sales and synchronized countdown timers.
+* **`toast` & `confirm`**: Global reactive notification banners and confirmation modal dialogs.
+
+---
+
+## 🛠️ Local Development
 
 ### 1. Prerequisites
-Ensure you have Node.js and the Angular CLI globally accessible:
-```bash
-node -v
-npm -v
-ng version
-```
+* **Node.js** (v18.x or higher)
+* **npm** (v9.x or higher)
 
-### 2. Local Initialization
-Clone the repository and install the standard Angular dependencies:
+### 2. Installation & Run
 ```bash
-git clone https://github.com/aya-ashraf94/graduation-project-depi.git
-cd graduation-project-depi
+# Navigate to the Frontend directory
+cd Frontend
+
+# Install dependencies
 npm install
+
+# Start the Angular development server
+npm start
 ```
 
-### 3. Launch Development Console
-Launch the local compilation engine with real-time automatic file diff reloads:
-```bash
-ng serve -o
-```
-Navigate to `http://localhost:4200/` in your preferred web browser to view the running interface.
+Navigate to [http://localhost:4200](http://localhost:4200) to view the application.
 
 ---
 
-## 🏗️ Architectural Topology
-The application directory tree follows modern feature-based encapsulation principles:
+## 🏗️ Directory Topology
+
 ```text
-src/app/
+Frontend/src/app/
 ├── core/
-│   ├── guards/         # Route navigation interceptors (authGuard)
-│   ├── models/         # Shared robust TypeScript domain definitions
-│   └── services/       # Centralized state stores prepared for HttpClient migration
+│   ├── guards/         # Route navigation guards (authGuard, adminGuard)
+│   ├── interceptors/   # Auth interceptor with automatic JWT refresh flow
+│   ├── models/         # TypeScript interfaces & domain models
+│   └── services/       # Centralized HTTP & state services (Signals-based)
 ├── features/
-│   ├── auth/           # Login credentials validation & member on-boarding
-│   ├── chat/           # Live WebSockets/polling P2P conversation UI
-│   ├── home/           # Editorial portal dashboards
-│   ├── product/        # Deep marketplace details, inventory archives, and authoring modules
-│   ├── profile/        # Member profile settings and synchronized favorite listings
-│   └── support/        # Static regulatory and legal communication pages
+│   ├── admin/          # Admin management dashboards, categories & coupons
+│   ├── auth/           # Login, Register, Forgot & Reset Password
+│   ├── chat/           # Real-time WebSocket messaging UI
+│   ├── earnings/       # Seller revenue & payout summaries
+│   ├── home/           # Main portal & discovery feeds
+│   ├── product/        # Catalog, product details, dynamic listing forms
+│   ├── profile/        # User profile, sales, and purchase management
+│   ├── scratch-card/   # Interactive gamification scratch game
+│   ├── search/         # Search results & filtering
+│   ├── support/        # Help center, FAQs, guidelines & legal terms
+│   └── wallet/         # Balance ledger & payout request modal
 └── shared/
-    ├── directives/     # Dynamic image load state fallbacks
-    └── pipes/          # ISO currency and humanized time-ago computational formatters
+    ├── components/     # Loading-screen, compare-bar, lucky-cat, flash-sale-banner, navbar, footer, toast
+    ├── directives/     # Dynamic image fallbacks
+    └── pipes/          # Currency formatters & humanized time-ago pipes
 ```
-
----
-
-## 🤝 Collaborative Setup (GitHub Workflow)
-To contribute features without overriding main branch architecture:
-1. Always synchronize upstream states before coding: `git pull origin main`
-2. Instantiate local feature workspaces: `git checkout -b feature/<your-feature-name>`
-3. Package source code cleanly and open Pull Requests for peer architectural review.

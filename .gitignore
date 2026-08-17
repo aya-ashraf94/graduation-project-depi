@@ -60,3 +60,6 @@ Backend/public/uploads/
 
 # Documentation and Blueprints
 docs/
+
+# Ngrok tunnel binary
+ngrok/
